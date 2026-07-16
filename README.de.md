@@ -106,10 +106,11 @@ EVCOCKPIT_CFGDIR=~/.evcockpit-zweitwagen EVCOCKPIT_PORT=8100 ./start.sh
 
 ## Haftung
 
-Freies Community-Projekt, gebaut in der Freizeit, **ohne jede Gewähr** — siehe
-[LICENSE](LICENSE). Nutzung auf eigene Verantwortung. Kein offizielles BYD-Produkt und in
-keiner Weise mit BYD verbunden. „BYD" ist eine Marke der jeweiligen Rechteinhaber.
+Freies, nicht-kommerzielles Community-Projekt, gebaut in der Freizeit, **ohne jede Gewähr** —
+siehe [LICENSE](LICENSE). Nutzung auf eigene Verantwortung. Kein offizielles BYD-Produkt und
+in keiner Weise mit BYD verbunden. „BYD" ist eine Marke der jeweiligen Rechteinhaber.
 
-## Impressum
+## Fragen & Fehler
 
-Verantwortlich: siehe <https://byd.serveone.at/impressum> · Kontakt: office@photo-aigner.at
+Bitte [ein Issue aufmachen](../../issues) — das ist der beste Weg zum Betreuer, und es hilft
+auch allen anderen.

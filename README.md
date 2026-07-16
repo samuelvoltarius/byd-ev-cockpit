@@ -109,10 +109,11 @@ EVCOCKPIT_CFGDIR=~/.evcockpit-second EVCOCKPIT_PORT=8100 ./start.sh
 
 ## Liability
 
-Free community project, built in spare time, **with no warranty whatsoever** — see
-[LICENSE](LICENSE). Use at your own risk. Not an official BYD product and in no way affiliated
-with BYD. "BYD" is a trademark of its respective owners.
+Free, non-commercial community project, built in spare time, **with no warranty whatsoever** —
+see [LICENSE](LICENSE). Use at your own risk. Not an official BYD product and in no way
+affiliated with BYD. "BYD" is a trademark of its respective owners.
 
-## Legal notice
+## Questions & bugs
 
-Responsible party: see <https://byd.serveone.at/impressum> · Contact: office@photo-aigner.at
+Please [open an issue](../../issues) — that's the best way to reach the maintainer, and it
+helps everyone else too.
