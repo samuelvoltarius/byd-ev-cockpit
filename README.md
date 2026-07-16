@@ -1,49 +1,54 @@
 # EV-Cockpit
 
-**Ein kleines Cockpit für dein BYD — läuft auf deinem eigenen Rechner. Deine Auto-Daten
-bleiben bei dir und werden an niemanden gesendet.**
+*🇬🇧 English · [🇩🇪 Deutsch](README.de.md)*
 
-Ladestand mit ehrlicher Reichweite (aus deinem echten Verbrauch gerechnet, nicht die
-geschönte Werksangabe), Vorklimatisieren, Batterie-Vorheizen, Sitzheizung, Auto finden,
-Reifendruck-Warnung, Ladesäulen auf der Karte, Strompreis — und optional an dein Home
-Assistant angebunden. Ein Assistent führt dich in fünf Schritten durch die Einrichtung.
+**A small dashboard for your BYD — runs on your own computer. Your car data stays
+with you and is sent to no one.**
 
-Gebaut und getestet an genau **einem** Auto (BYD Dolphin Surf). Für andere Modelle fragt
-das Tool dein Auto selbst, was es kann, und zeigt nur das an. Läuft es bei dir nicht wie
-erwartet: [bitte ein Issue aufmachen](../../issues) — das hilft allen anderen mit.
+State of charge with an honest range estimate (calculated from your *actual* consumption,
+not the flattering factory figure), pre-conditioning, battery preheat, seat heating, find
+car, tyre-pressure warning, chargers on a map, electricity price — and optionally wired
+into your Home Assistant. A wizard walks you through the setup in five steps.
 
----
+> **Heads up:** the app's interface is currently **German only**. English is planned — if
+> you'd use it, please [open an issue](../../issues) and say so; that helps prioritise it.
 
-## „Bleibt wirklich alles bei mir?" — deshalb ist der Code offen
-
-Dieses Tool fragt dich nach deinem BYD-Cloud-Login. Das ist Vertrauenssache, und
-„vertrau mir" ist zu wenig. Darum liegt hier der **komplette Quelltext offen**: Du (oder
-jemand, dem du vertraust) kann nachlesen, dass das Programm
-
-- deine Zugangsdaten **nur lokal** speichert (`~/.evcockpit/` auf deinem Rechner),
-- **nichts** an den Autor oder irgendeine Webseite sendet,
-- nur mit **zwei** Gegenstellen redet: der **BYD-Cloud** (dein Auto) und — nur wenn du es
-  einschaltest — **deinem eigenen Home Assistant**.
-
-Es gibt genau **eine** freiwillige, standardmäßig **abgeschaltete** Ausnahme: einen
-anonymen Zähl-Ping (nur „jemand hat es installiert" + Modell, **keine** IP, **kein**
-Fahrzeug, **keine** Kennung), den du im Assistenten per Häkchen erlauben kannst. Such im
-Code nach `PING_URL` — mehr verlässt deinen Rechner nicht.
-
-**Bitte lege dir für dieses Tool einen zweiten BYD-Account an** und lade ihn in der
-BYD-App als Zusatznutzer zum Auto ein. So gibst du deine Haupt-Zugangsdaten nicht aus der
-Hand, und du kannst den Zugang jederzeit wieder entziehen.
+Built and tested on exactly **one** car (a BYD Dolphin Surf). For other models the tool
+asks your car what it can do and shows only that. If something doesn't work as expected,
+please [open an issue](../../issues) — it helps everyone else.
 
 ---
 
-## Loslegen
+## "Does my data really stay with me?" — that's why the code is open
+
+This tool asks for your BYD cloud login. That's a matter of trust, and "trust me" isn't
+enough. So the **full source is here in the open**: you (or someone you trust) can read
+that the program
+
+- stores your credentials **locally only** (`~/.evcockpit/` on your machine),
+- sends **nothing** to the author or any website,
+- talks to exactly **two** endpoints: the **BYD cloud** (your car) and — only if you turn
+  it on — **your own Home Assistant**.
+
+There is exactly **one** optional, **off-by-default** exception: an anonymous install ping
+(only "someone installed it" + model, **no** IP, **no** vehicle, **no** identifier) that
+you can allow with a checkbox in the wizard. Search the code for `PING_URL` — nothing more
+than that leaves your machine.
+
+**Please create a second BYD account for this tool** and add it to the car as a secondary
+user in the BYD app. That way you don't hand over your main credentials, and you can revoke
+access at any time.
+
+---
+
+## Getting started
 
 ### Windows
-1. Fertiges Paket herunterladen: **[Releases](../../releases)** → `ev-cockpit-windows.zip`
-2. Entpacken, `Start.bat` doppelklicken.
-3. Der Browser öffnet sich von selbst. Falls nicht: <http://127.0.0.1:8099>
+1. Download the ready-made package: **[Releases](../../releases)** → `ev-cockpit-windows.zip`
+2. Unzip, double-click `Start.bat`.
+3. Your browser opens on its own. If not: <http://127.0.0.1:8099>
 
-Python ist im Windows-Paket enthalten — du musst nichts installieren.
+Python is bundled in the Windows package — you don't install anything.
 
 ### Linux / macOS / Raspberry Pi
 ```bash
@@ -51,63 +56,63 @@ git clone https://github.com/samuelvoltarius/byd-ev-cockpit.git
 cd byd-ev-cockpit
 ./start.sh
 ```
-`start.sh` legt beim ersten Start eine eigene Umgebung im Ordner an (`.venv/`) und lädt
-die BYD-Bibliothek hinein — dein System bleibt unangetastet. Fehlt auf Debian/Ubuntu/
-Raspberry Pi das venv-Paket, sagt dir das Skript den passenden `apt`-Befehl.
+On first run `start.sh` creates its own environment in the folder (`.venv/`) and installs
+the BYD library into it — your system stays untouched. If the venv package is missing on
+Debian/Ubuntu/Raspberry Pi, the script tells you the exact `apt` command.
 
-Danach im Browser: <http://127.0.0.1:8099>
+Then open <http://127.0.0.1:8099> in your browser.
 
 ---
 
 ## Home Assistant (optional)
 
-Im Assistenten unter „Extras" aktivierbar. Das Auto taucht dann in Home Assistant von
-selbst auf (MQTT-Discovery) — mit allen Werten und Schaltern. Braucht einen MQTT-Broker
-(bei HA meist das Mosquitto-Add-on). Wer eine PV-Anlage in HA hat, kann seine
-Solar-Leistung neben Ladestand und Strompreis anzeigen lassen — **nur lesend**.
+Enable it under "Extras" in the wizard. Your car then appears in Home Assistant on its own
+(MQTT discovery) — with all values and buttons. Needs an MQTT broker (usually the Mosquitto
+add-on in HA). If you have a PV system in HA, you can show your solar output next to state
+of charge and electricity price — **read-only**.
 
-## Zwei Autos
+## Two cars
 
-Zweite Instanz mit eigenem Konfig-Ordner und Port starten:
+Start a second instance with its own config folder and port:
 ```bash
-EVCOCKPIT_CFGDIR=~/.evcockpit-zweitwagen EVCOCKPIT_PORT=8100 ./start.sh
+EVCOCKPIT_CFGDIR=~/.evcockpit-second EVCOCKPIT_PORT=8100 ./start.sh
 ```
 
-## Einstellungen (Umgebungsvariablen)
+## Settings (environment variables)
 
-| Variable | Standard | Bedeutung |
+| Variable | Default | Meaning |
 |---|---|---|
-| `EVCOCKPIT_PORT` | `8099` | Port des Cockpits |
-| `EVCOCKPIT_BIND` | `127.0.0.1` | Nur der eigene Rechner. Für LAN-Zugriff auf `0.0.0.0` setzen. |
-| `EVCOCKPIT_CFGDIR` | `~/.evcockpit` | Wo Konfiguration und Zugangsdaten liegen |
+| `EVCOCKPIT_PORT` | `8099` | Port of the cockpit |
+| `EVCOCKPIT_BIND` | `127.0.0.1` | Your machine only. For LAN access set to `0.0.0.0`. |
+| `EVCOCKPIT_CFGDIR` | `~/.evcockpit` | Where config and credentials live |
 
 ---
 
-## Was es braucht
+## Requirements
 
-- Ein BYD mit Cloud-Anbindung (BYD-App-Konto).
-- Python 3.10+ (bei Linux/Mac), Windows-Paket bringt es mit.
-- Steht auf den Schultern von [**pyBYD**](https://pypi.org/project/pybyd/) — ohne diese
-  Bibliothek gäbe es das hier nicht.
+- A BYD with cloud connectivity (a BYD app account).
+- Python 3.10+ (Linux/Mac); the Windows package bundles it.
+- Stands on the shoulders of [**pyBYD**](https://pypi.org/project/pybyd/) — without that
+  library this wouldn't exist.
 
-## Grenzen — ehrlich
+## Limitations — honestly
 
-- **Getestet an einem einzigen Auto.** Andere BYD-Modelle: ungetestet. Rückmeldungen
-  ([Issues](../../issues)) sehr willkommen.
-- Der Dolphin Surf hat **keinen Innenraum-Temperaturfühler** — deshalb keine Innentemp
-  und kein Thermostat. Klima wird über eine Zieltemperatur geschaltet, nicht geregelt.
-- **Aufsperren gibt es bewusst nicht.** Ein Knopf im Browser, der dein Auto öffnet, wäre
-  ein Einbruchswerkzeug für jeden, der an deinen Rechner kommt. Zusperren ist harmlos und
-  ist drin.
-- Klappt ein Befehl mal nicht: kurz warten und **einmal** nochmal — nicht hektisch
-  mehrfach, das mag die BYD-Cloud nicht.
+- **Tested on a single car.** Other BYD models: untested. Feedback ([issues](../../issues))
+  very welcome.
+- The Dolphin Surf has **no cabin temperature sensor** — so no inside temperature and no
+  thermostat. Climate is switched to a target temperature, not regulated.
+- **There is deliberately no unlock button.** A button in a browser that opens your car
+  would be a burglary tool for anyone with access to your computer. Locking is harmless and
+  is included.
+- If a command doesn't go through: wait a moment and try **once** more — not frantically
+  several times, the BYD cloud doesn't like that.
 
-## Haftung
+## Liability
 
-Freies Community-Projekt, gebaut in der Freizeit, **ohne jede Gewähr** — siehe
-[LICENSE](LICENSE). Nutzung auf eigene Verantwortung. Kein offizielles BYD-Produkt und in
-keiner Weise mit BYD verbunden. „BYD" ist eine Marke der jeweiligen Rechteinhaber.
+Free community project, built in spare time, **with no warranty whatsoever** — see
+[LICENSE](LICENSE). Use at your own risk. Not an official BYD product and in no way affiliated
+with BYD. "BYD" is a trademark of its respective owners.
 
-## Impressum
+## Legal notice
 
-Verantwortlich: siehe <https://byd.serveone.at/impressum> · Kontakt: office@photo-aigner.at
+Responsible party: see <https://byd.serveone.at/impressum> · Contact: office@photo-aigner.at
