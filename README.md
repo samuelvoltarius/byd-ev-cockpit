@@ -10,8 +10,8 @@ not the flattering factory figure), pre-conditioning, battery preheat, seat heat
 car, tyre-pressure warning, chargers on a map, electricity price — and optionally wired
 into your Home Assistant. A wizard walks you through the setup in five steps.
 
-> **Heads up:** the app's interface is currently **German only**. English is planned — if
-> you'd use it, please [open an issue](../../issues) and say so; that helps prioritise it.
+> The interface is **bilingual — English and German**. It follows your browser's language
+> automatically, and there's a 🌐 toggle in the corner to switch anytime.
 
 Built and tested on exactly **one** car (a BYD Dolphin Surf). For other models the tool
 asks your car what it can do and shows only that. If something doesn't work as expected,
