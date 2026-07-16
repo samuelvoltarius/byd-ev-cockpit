@@ -1,0 +1,19 @@
+# Nutzer-Konfiguration und Zugangsdaten (dürfen NIE ins Repo)
+.evcockpit/
+*.cfg.json
+cfg.json
+cache.json
+install_id*
+
+# venv, das start.sh anlegt
+.venv/
+__pycache__/
+*.pyc
+
+# gebaute Pakete (kommen als Release-Anhang, nicht in git)
+*.zip
+*.tar.gz
+
+# Betriebssystem-Krempel
+.DS_Store
+Thumbs.db
