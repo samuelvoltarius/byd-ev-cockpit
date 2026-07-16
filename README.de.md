@@ -5,6 +5,8 @@
 **Ein kleines Cockpit für dein BYD — läuft auf deinem eigenen Rechner. Deine Auto-Daten
 bleiben bei dir und werden an niemanden gesendet.**
 
+> Die Oberfläche ist **zweisprachig — Deutsch und Englisch**. Sie richtet sich automatisch nach deiner Browsersprache; unten in der Ecke gibt es einen 🌐-Umschalter.
+
 Ladestand mit ehrlicher Reichweite (aus deinem echten Verbrauch gerechnet, nicht die
 geschönte Werksangabe), Vorklimatisieren, Batterie-Vorheizen, Sitzheizung, Auto finden,
 Reifendruck-Warnung, Ladesäulen auf der Karte, Strompreis — und optional an dein Home
