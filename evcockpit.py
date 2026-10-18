@@ -2151,7 +2151,10 @@ ENERGY_PANEL = r'''<section id="energy-panel" style="margin:22px auto;max-width:
    const d=await response.json();if(!response.ok)throw Error(d.error||'API error');
    const site=d.site||{};
    el('evcc-values').innerHTML=card('☀️ PV',kw(site.pv_w))+card('⚡ Netz (+ Bezug / − Einspeisung)',kw(site.grid_w))+card('🔋 Speicher',kw(site.battery_w))+card('🏠 Haus',kw(site.home_w));
-   el('evcc-points').innerHTML=(d.loadpoints||[]).map((x,i)=>card(escapeHtml(x.title||x.name||'Ladepunkt '+(i+1)),kw(x.chargePower))).join('')||'Keine Ladepunkte in evcc konfiguriert';
+   const vehicles=d.vehicles||[];
+   const vehicleCards=vehicles.map(v=>card('🚘 '+escapeHtml(v.title), 'Akku: '+(typeof v.soc==='number'?escapeHtml(v.soc)+' %':'–')+' · '+escapeHtml(v.loadpoint||'Kein Ladepunkt')+' · '+kw(v.charge_power_w))).join('');
+   const points=(d.loadpoints||[]).map((x,i)=>card('🔌 '+escapeHtml(x.title||x.name||'Ladepunkt '+(i+1)),kw(x.chargePower))).join('');
+   el('evcc-points').innerHTML=vehicleCards+points||'Noch keine Fahrzeuge oder Ladepunkte in evcc konfiguriert';
    el('evcc-message').textContent='evcc verbunden · '+new Date().toLocaleTimeString();
   }catch(e){el('evcc-message').textContent='evcc: '+e.message;}
  }
