@@ -2152,9 +2152,22 @@ ENERGY_PANEL = r'''<section id="energy-panel" style="margin:22px auto;max-width:
    const site=d.site||{};
    el('evcc-values').innerHTML=card('☀️ PV',kw(site.pv_w))+card('⚡ Netz (+ Bezug / − Einspeisung)',kw(site.grid_w))+card('🔋 Speicher',kw(site.battery_w))+card('🏠 Haus',kw(site.home_w));
    const vehicles=d.vehicles||[];
-   const vehicleCards=vehicles.map(v=>card('🚘 '+escapeHtml(v.title), 'Akku: '+(typeof v.soc==='number'?escapeHtml(v.soc)+' %':'–')+' · '+escapeHtml(v.loadpoint||'Kein Ladepunkt')+' · '+kw(v.charge_power_w))).join('');
+   const selected=localStorage.getItem('evc_selected_vehicle')||'';
+   const vehicleCards=vehicles.map(v=>'<button type="button" data-vehicle="'+escapeHtml(v.id)+'" style="text-align:left;background:#192d44;border:1px solid '+(selected===v.id?'#4dd8ce':'#34506c')+';color:#eaf2ff;border-radius:12px;padding:14px;cursor:pointer">🚘 '+escapeHtml(v.title)+' · '+(typeof v.soc==='number'?escapeHtml(v.soc)+' %':'–')+'</button>').join('');
+   const chosen=vehicles.find(v=>v.id===selected)||vehicles[0];
+   const details=chosen?card('Fahrzeugdetails · '+escapeHtml(chosen.title),
+    'Akku: '+(typeof chosen.soc==='number'?escapeHtml(chosen.soc)+' %':'–')+
+    ' · Reichweite: '+(typeof chosen.range_km==='number'?escapeHtml(chosen.range_km)+' km':'–')+
+    ' · Ladepunkt: '+escapeHtml(chosen.loadpoint||'nicht zugeordnet')+
+    ' · Ladeleistung: '+kw(chosen.charge_power_w)+
+    ' · Status: '+(chosen.charging?'Lädt':chosen.connected?'Angeschlossen':'Nicht angeschlossen')+
+    ' · Fahrzeugsteuerung: über Herstellerintegration (hier nur Anzeige)'):'';
+
    const points=(d.loadpoints||[]).map((x,i)=>card('🔌 '+escapeHtml(x.title||x.name||'Ladepunkt '+(i+1)),kw(x.chargePower))).join('');
-   el('evcc-points').innerHTML=vehicleCards+points||'Noch keine Fahrzeuge oder Ladepunkte in evcc konfiguriert';
+   el('evcc-points').innerHTML=vehicleCards+details+points||'Noch keine Fahrzeuge oder Ladepunkte in evcc konfiguriert';
+   el('evcc-points').querySelectorAll('[data-vehicle]').forEach(button=>button.addEventListener('click',()=>{
+    localStorage.setItem('evc_selected_vehicle',button.getAttribute('data-vehicle'));refresh();
+   }));
    el('evcc-message').textContent='evcc verbunden · '+new Date().toLocaleTimeString();
   }catch(e){el('evcc-message').textContent='evcc: '+e.message;}
  }
