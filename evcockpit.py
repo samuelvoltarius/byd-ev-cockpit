@@ -2123,6 +2123,53 @@ def _ha_test(cfg):
 
 
 # ---------------------------------------------------------------- Webserver
+
+ENERGY_PANEL = r'''<section id="energy-panel" style="margin:22px auto;max-width:1100px;padding:20px;border:1px solid #34506c;border-radius:18px;background:#101e30;color:#eaf2ff;font:15px system-ui">
+<h2 style="margin:0 0 8px">⚡ Energie &amp; Ladepunkte</h2>
+<p style="color:#a8bed5">PV, Netz, Speicher und mehrere Ladepunkte – direkt in deinem Cockpit. evcc steuert; das Cockpit zeigt nur an.</p>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="evcc-host" placeholder="evcc-IP (z. B. 192.168.1.20)" style="padding:10px;border-radius:8px;background:#1b3047;color:white;border:1px solid #456">
+<input id="evcc-port" type="number" value="7070" style="width:90px;padding:10px;background:#1b3047;color:white;border:1px solid #456;border-radius:8px">
+<button id="evcc-connect" style="padding:10px;border-radius:8px;cursor:pointer">Verbinden</button>
+<button id="evcc-discover" style="padding:10px;border-radius:8px;cursor:pointer">Geräte suchen</button></div>
+<div id="evcc-message" style="margin:12px 0;color:#a8bed5">Optional – noch nicht verbunden</div>
+<div id="evcc-values" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px"></div>
+<h3>Ladepunkte / Fahrzeuge</h3><div id="evcc-points" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px"></div>
+<div id="evcc-discovery" style="margin-top:12px"></div>
+</section>
+<script>
+(function(){
+ const el=id=>document.getElementById(id), h=el('evcc-host'),p=el('evcc-port');
+ h.value=localStorage.getItem('evc_evcc_host')||'';
+ p.value=localStorage.getItem('evc_evcc_port')||'7070';
+ const card=(name,value)=>'<div style="background:#192d44;border-radius:12px;padding:14px"><div style="color:#a8bed5">'+name+'</div><strong style="font-size:23px">'+value+'</strong></div>';
+ const kw=v=>typeof v==='number'?(v/1000).toLocaleString('de-DE',{maximumFractionDigits:2})+' kW':'–';
+ const escapeHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ async function refresh(){
+  if(!h.value)return;
+  try{
+   const response=await fetch('/energy/state?host='+encodeURIComponent(h.value)+'&port='+encodeURIComponent(p.value));
+   const d=await response.json();if(!response.ok)throw Error(d.error||'API error');
+   const site=d.site||{};
+   el('evcc-values').innerHTML=card('☀️ PV',kw(site.pv_w))+card('⚡ Netz (+ Bezug / − Einspeisung)',kw(site.grid_w))+card('🔋 Speicher',kw(site.battery_w))+card('🏠 Haus',kw(site.home_w));
+   el('evcc-points').innerHTML=(d.loadpoints||[]).map((x,i)=>card(escapeHtml(x.title||x.name||'Ladepunkt '+(i+1)),kw(x.chargePower))).join('')||'Keine Ladepunkte in evcc konfiguriert';
+   el('evcc-message').textContent='evcc verbunden · '+new Date().toLocaleTimeString();
+  }catch(e){el('evcc-message').textContent='evcc: '+e.message;}
+ }
+ el('evcc-connect').onclick=()=>{localStorage.setItem('evc_evcc_host',h.value);localStorage.setItem('evc_evcc_port',p.value);refresh();};
+ el('evcc-discover').onclick=async()=>{
+  const cidr=prompt('Privates LAN-Netz eingeben (z. B. 192.168.1.0/24). Nur mit Berechtigung scannen:');
+  if(!cidr)return;el('evcc-discovery').textContent='Suche läuft …';
+  try{
+   const r=await fetch('/energy/discover',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cidr})});
+   const d=await r.json();if(!r.ok)throw Error(d.error||'Fehler');
+   el('evcc-discovery').textContent=(d.found||[]).map(x=>x.vendor+' – '+x.ip).join(' | ')||'Keine unterstützten Geräte gefunden';
+  }catch(e){el('evcc-discovery').textContent=e.message;}
+ };
+ setInterval(refresh,15000);if(h.value)refresh();
+})();
+</script>'''
+
+
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
@@ -2178,6 +2225,14 @@ class H(BaseHTTPRequestHandler):
                 self._send(PHOTO_FILE.read_bytes(), "image/jpeg")
             except Exception:
                 self._send(b"", "image/jpeg", 404)
+        elif p == "/energy/state":
+            try:
+                from evcc_backend import get_evcc_state
+                q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+                result = get_evcc_state(q["host"][0], int(q.get("port", ["7070"])[0]))
+                self._send(json.dumps(result), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"error": str(e)[:160]}), "application/json", 400)
         elif p == "/data":
             d = dict(_STATE)
             # Entfernungen IMMER aus der aktuellen Position rechnen — sonst zeigt die Liste
@@ -2204,13 +2259,20 @@ class H(BaseHTTPRequestHandler):
         elif p == "/setup" or not _CFG.get("vin"):
             self._wizard()
         else:
-            self._send(_i18n(COCKPIT))
+            self._send(_i18n(COCKPIT.replace("</body>", ENERGY_PANEL + "</body>")))
 
     def do_POST(self):
         u = urllib.parse.urlparse(self.path)
         ln = int(self.headers.get("Content-Length") or 0)
         raw = self.rfile.read(ln).decode("utf-8") if ln else "{}"
-        if u.path == "/detect":
+        if u.path == "/energy/discover":
+            try:
+                from device_hub import discover
+                found = discover(json.loads(raw)["cidr"])
+                self._send(json.dumps({"found": [{k: v for k, v in item.items() if k != "data"} for item in found]}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"error": str(e)[:160]}), "application/json", 400)
+        elif u.path == "/detect":
             try:
                 vs = asyncio.run(_fetch_vehicles(json.loads(raw)))
                 if not vs:
