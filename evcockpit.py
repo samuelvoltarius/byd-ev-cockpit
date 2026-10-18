@@ -2241,6 +2241,21 @@ class H(BaseHTTPRequestHandler):
                 self._send(PHOTO_FILE.read_bytes(), "image/jpeg")
             except Exception:
                 self._send(b"", "image/jpeg", 404)
+        elif p == "/vehicles/profiles":
+            try:
+                from vehicle_profiles import read_profiles, combine_profiles
+                saved = read_profiles(CFG_DIR / "vehicles.json")
+                if _CFG.get("vin") and not any(x["source"] == "byd" for x in saved):
+                    saved.insert(0, {"id": "legacy_byd", "title": _CFG.get("model") or "BYD",
+                                     "brand": "BYD", "source": "byd", "external_id": ""})
+                q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+                external = []
+                if q.get("host"):
+                    from evcc_backend import get_evcc_state
+                    external = get_evcc_state(q["host"][0], int(q.get("port", ["7070"])[0]))["vehicles"]
+                self._send(json.dumps({"vehicles": combine_profiles(saved, external, _STATE)}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"error": str(e)[:160]}), "application/json", 400)
         elif p == "/energy/state":
             try:
                 from evcc_backend import get_evcc_state
