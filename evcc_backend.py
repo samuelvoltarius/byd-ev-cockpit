@@ -39,8 +39,10 @@ def get_evcc_state(host: str, port: int = 7070, timeout: float = 3.0) -> dict:
     state = data.get("result", data)
     if not isinstance(state, dict):
         raise ValueError("Invalid evcc result")
+    from vehicle_registry import normalize_vehicles
     return {
         "backend": "evcc",
+        "vehicles": normalize_vehicles(state),
         "site": {
             "grid_w": state.get("gridPower"),
             "pv_w": state.get("pvPower"),
