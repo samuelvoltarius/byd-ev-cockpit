@@ -168,6 +168,7 @@ class Bruecke:
                                    st.get("temp_out"))
         if fahrt and cfg.get("planer_fahrten") and cfg.get("planer_fahrzeug"):
             fahrt["fahrzeug"] = cfg["planer_fahrzeug"]
+            fahrt["quelle"] = "ev-cockpit"          # Planer erkennt so dieselbe Fahrt aus Panoptes
             code, d = self.anfrage("fahrt", token, fahrt)
             if code == 200 and d.get("ok"):
                 self.status["fahrten"] += 1
