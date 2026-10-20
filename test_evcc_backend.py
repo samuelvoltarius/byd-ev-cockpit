@@ -63,6 +63,23 @@ class EvccSteuernTests(unittest.TestCase):
         self.assertEqual(self.calls, [("POST", "http://192.168.1.8:7070/api/loadpoints/1/mode/pv")])
         self.assertEqual(r, {"ok": True, "mode": "pv", "limit_soc": 80})
 
+    def test_neues_evcc_meldet_smart(self):
+        # Aktuelles evcc: pv/minpv sind Aliase und kommen als "smart" zurueck -> gilt als uebernommen
+        from evcc_backend import set_loadpoint
+        self.assertTrue(set_loadpoint("192.168.1.8", 7070, 1, mode="pv", read_state=self.lies("smart"))["ok"])
+        self.assertTrue(set_loadpoint("192.168.1.8", 7070, 1, mode="minpv", read_state=self.lies("smart"))["ok"])
+        self.assertFalse(set_loadpoint("192.168.1.8", 7070, 1, mode="now", read_state=self.lies("smart"))["ok"])
+
+    def test_anmeldung_verlangt(self):
+        import urllib.error
+        from evcc_backend import set_loadpoint
+        self.patcher.stop()
+        with patch("evcc_backend.open_lan_url",
+                   side_effect=urllib.error.HTTPError("u", 401, "Unauthorized", {}, None)):
+            with self.assertRaisesRegex(ValueError, "Anmeldung"):
+                set_loadpoint("192.168.1.8", 7070, 1, mode="pv", read_state=self.lies())
+        self.patcher.start()
+
     def test_ziel_ladestand(self):
         from evcc_backend import set_loadpoint
         r = set_loadpoint("192.168.1.8", 7070, 1, limit_soc=90, read_state=self.lies(limit=80))

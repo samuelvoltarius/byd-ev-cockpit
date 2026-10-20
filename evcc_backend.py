@@ -8,6 +8,7 @@ No dependency on evcc is required when this adapter is unused.
 from __future__ import annotations
 
 import json
+import urllib.error
 from network_safety import open_lan_url, private_ipv4
 
 
@@ -88,6 +89,10 @@ def get_evcc_state(host: str, port: int = 7070, timeout: float = 3.0) -> dict:
 
 
 MODES = ("off", "now", "minpv", "pv")
+# Aktuelles evcc kennt off/smart/now; pv und minpv sind dort Aliase und werden als "smart" zurueckgemeldet.
+# Aeltere evcc-Versionen kennen nur off/now/minpv/pv. Gesendet wird deshalb pv/minpv (geht ueberall),
+# beim Zuruecklesen gilt "smart" als uebernommen.
+GLEICH = {"pv": ("pv", "smart"), "minpv": ("minpv", "smart"), "off": ("off",), "now": ("now",)}
 
 
 def set_loadpoint(host: str, port: int, lp: int, mode=None, limit_soc=None, timeout: float = 4.0,
@@ -109,14 +114,19 @@ def set_loadpoint(host: str, port: int, lp: int, mode=None, limit_soc=None, time
         if not isinstance(limit_soc, int) or isinstance(limit_soc, bool) or not 20 <= limit_soc <= 100:
             raise ValueError("Charge limit must be 20-100 %")
         path = f"/api/loadpoints/{lp}/limitsoc/{limit_soc}"
-    with open_lan_url(base + path, timeout=timeout, method="POST") as response:
-        if response.status != 200:
-            raise ValueError(f"evcc HTTP {response.status}")
+    try:
+        with open_lan_url(base + path, timeout=timeout, method="POST") as response:
+            if response.status != 200:
+                raise ValueError(f"evcc HTTP {response.status}")
+    except urllib.error.HTTPError as exc:
+        if exc.code in (401, 403):
+            raise ValueError("evcc verlangt eine Anmeldung - Steuern geht mit diesem evcc noch nicht") from exc
+        raise ValueError(f"evcc HTTP {exc.code}") from exc
     state = (read_state or get_evcc_state)(host, port)
     points = state.get("loadpoints") or []
     if len(points) < lp:
         raise ValueError("Loadpoint not found after change")
     point = points[lp - 1]
     now_mode, now_limit = point.get("mode"), point.get("limitSoc")
-    ok = (now_mode == mode) if mode is not None else (now_limit == limit_soc)
+    ok = (now_mode in GLEICH[mode]) if mode is not None else (now_limit == limit_soc)
     return {"ok": ok, "mode": now_mode, "limit_soc": now_limit}

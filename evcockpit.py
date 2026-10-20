@@ -2978,7 +2978,7 @@ ENERGY_PANEL = r'''<style>
   if(!an) return '<div class="lp-ctl"><button type="button" class="lp-off" data-lp="'+(i+1)+'" '+a+' data-tun="erlauben">⚙ '+
    escapeHtml(__T('Steuern erlauben'))+'</button></div>';
   const ziele=[50,60,70,80,90,100];
-  return '<div class="lp-ctl">'+MODI.map(([m,n])=>'<button type="button" class="'+(x.mode===m?'lp-on':'')+'" data-lp="'+(i+1)+'" '+a+
+  return '<div class="lp-ctl">'+MODI.map(([m,n])=>'<button type="button" class="'+(x.mode===m||(m==='pv'&&x.mode==='smart')?'lp-on':'')+'" data-lp="'+(i+1)+'" '+a+
    ' data-modus="'+m+'">'+escapeHtml(__T(n))+'</button>').join('')+
    '<select data-lpziel="'+(i+1)+'" '+a+' aria-label="'+escapeHtml(__T('Ziel-Ladestand'))+'">'+
    ziele.map(z=>'<option value="'+z+'"'+(x.limitSoc===z?' selected':'')+'>'+escapeHtml(__T('Ziel'))+' '+z+' %</option>').join('')+
