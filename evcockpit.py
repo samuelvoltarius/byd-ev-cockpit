@@ -16,7 +16,7 @@ denselben Account nutzt wie deine BYD-App am Handy, stoeren sich beide
 => Lege einen ZWEITEN BYD-Account an und gib ihn im Auto als "Zusatznutzer"
    frei. Dann laufen App und Cockpit konfliktfrei nebeneinander.
 """
-import asyncio, json, os, threading, time, urllib.parse, uuid
+import asyncio, json, os, re, threading, time, urllib.parse, uuid
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -1006,7 +1006,7 @@ I18N_BODY = r'''<script>
     var b=document.createElement('button');
     b.textContent=(LANG==='en')?'🌐 DE':'🌐 EN';
     b.setAttribute('aria-label',LANG==='en'?'Auf Deutsch umschalten':'Switch to English');
-    b.style.cssText='position:fixed;right:12px;bottom:12px;z-index:9999;padding:7px 12px;border-radius:20px;border:1px solid rgba(120,165,235,.35);background:rgba(12,20,34,.85);color:#cfe0f5;font:600 13px system-ui,sans-serif;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)';
+    b.style.cssText='position:fixed;right:12px;bottom:12px;z-index:9999;padding:7px 12px;border-radius:20px;border:1px solid rgba(160,230,240,.35);background:rgba(12,20,34,.85);color:#E8FBFD;font:600 13px system-ui,sans-serif;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)';
     b.onclick=function(){try{localStorage.setItem('evc_lang',LANG==='en'?'de':'en');}catch(e){}location.reload();};
     document.body.appendChild(b);
   }
@@ -1015,13 +1015,32 @@ I18N_BODY = r'''<script>
 </script>'''
 def _i18n(h):
     h = h.replace('<head><meta charset=utf-8>', '<head><meta charset=utf-8>' + I18N_HEAD, 1)
+    if '</head>' in h:
+        h = h.replace('</head>', LOOK_CSS + '</head>', 1)
     return h.replace('</body>', I18N_BODY + '</body>', 1) if '</body>' in h else h + I18N_BODY
+
+# Look wie die Panoptes-App (Ozean, Aqua, Limette; Sora + Manrope). Schriften im Paket (OFL), kein CDN.
+LOOK_CSS = """<style>
+@font-face{font-family:'Sora';font-weight:400;font-display:swap;src:url(/static/fonts/sora-400.woff2) format('woff2')}
+@font-face{font-family:'Sora';font-weight:600;font-display:swap;src:url(/static/fonts/sora-600.woff2) format('woff2')}
+@font-face{font-family:'Sora';font-weight:700;font-display:swap;src:url(/static/fonts/sora-700.woff2) format('woff2')}
+@font-face{font-family:'Manrope';font-weight:400;font-display:swap;src:url(/static/fonts/manrope-400.woff2) format('woff2')}
+@font-face{font-family:'Manrope';font-weight:500;font-display:swap;src:url(/static/fonts/manrope-500.woff2) format('woff2')}
+@font-face{font-family:'Manrope';font-weight:600;font-display:swap;src:url(/static/fonts/manrope-600.woff2) format('woff2')}
+@font-face{font-family:'Manrope';font-weight:700;font-display:swap;src:url(/static/fonts/manrope-700.woff2) format('woff2')}
+:root{--deep:#071a2b;--ocean:#0A2238;--aqua:#5FD6E6;--lime:#B5F23D;--lime-ink:#1d2a00;--coral:#FF8A6B;--amber:#FFC266;
+ --ink:#EAF6F8;--ink-2:#A9C7CE;--ink-3:#6E8E97;--line:rgba(160,230,240,.14)}
+body{font-family:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important;
+ background:radial-gradient(1200px 700px at 85% -10%,rgba(11,92,102,.55),transparent 60%),
+  linear-gradient(160deg,var(--ocean),var(--deep) 70%) fixed!important}
+h1,h2,h3,.sect,.big,.val,.v,.nav button,.kpi,.num{font-family:'Sora',system-ui,sans-serif}
+</style>"""
 
 ABOUT = r"""<!doctype html><html lang=de><head><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1"><title>EV-Cockpit — Über &amp; Rechtliches</title>
 <style>
-:root{--blue:#3aa0ff;--txt:#eef4fb;--mut:#8ea3bd;--line:rgba(120,165,235,.18)}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(1100px 700px at 50% -8%,#12213f,#0a1120 55%,#05080f);
+:root{--blue:#5FD6E6;--txt:#EAF6F8;--mut:#A9C7CE;--line:rgba(160,230,240,.18)}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1100px 700px at 50% -8%,#0d3a4a,#071a2b 55%,#04101b);
  color:var(--txt);font:15px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:26px}
 .w{max-width:700px;margin:0 auto}
 h1{font-weight:300;font-size:28px;margin:0 0 18px}
@@ -1096,8 +1115,8 @@ small{color:var(--mut)}
 WIZARD = r"""<!doctype html><html lang=de><head><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1"><title>EV-Cockpit — Einrichtung</title>
 <style>
-:root{--blue:#3aa0ff;--cyan:#37e6ff;--txt:#eef4fb;--mut:#8ea3bd;--line:rgba(120,165,235,.18)}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(1100px 700px at 50% -8%,#12213f,#0a1120 55%,#05080f);
+:root{--blue:#5FD6E6;--cyan:#43c9db;--txt:#EAF6F8;--mut:#A9C7CE;--line:rgba(160,230,240,.18)}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1100px 700px at 50% -8%,#0d3a4a,#071a2b 55%,#04101b);
  color:var(--txt);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:26px 20px 60px}
 .w{max-width:680px;margin:0 auto}
 h1{font-weight:300;font-size:29px;margin:0 0 4px}.sub{color:var(--mut);margin-bottom:20px;font-size:15px}
@@ -1108,27 +1127,27 @@ h1{font-weight:300;font-size:29px;margin:0 0 4px}.sub{color:var(--mut);margin-bo
  display:flex;align-items:center;justify-content:center;font-size:12px;font-style:normal;color:var(--mut);z-index:2}
 .dot2 b{font-size:10px;color:var(--mut);font-weight:400;text-align:center;letter-spacing:.3px}
 .dot2:not(:last-child):after{content:"";position:absolute;top:13px;left:50%;width:100%;height:1px;background:var(--line);z-index:1}
-.dot2.on i{background:linear-gradient(135deg,#3aa0ff,#37e6ff);color:#04101f;border-color:transparent;font-weight:700}
+.dot2.on i{background:linear-gradient(135deg,#5FD6E6,#43c9db);color:#04101b;border-color:transparent;font-weight:700}
 .dot2.on b{color:var(--txt)}
-.dot2.done i{background:rgba(91,227,163,.25);border-color:rgba(91,227,163,.5);color:#5be3a3}
+.dot2.done i{background:rgba(91,227,163,.25);border-color:rgba(91,227,163,.5);color:#B5F23D}
 .card{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid var(--line);
  border-radius:18px;padding:20px;margin-bottom:14px}
 .warn{background:rgba(255,176,32,.10);border:1px solid rgba(255,176,32,.45);border-radius:16px;padding:16px 18px;margin-bottom:14px}
-.warn b{color:#ffb020}
+.warn b{color:#FFC266}
 .ok{background:rgba(91,227,163,.08);border:1px solid rgba(91,227,163,.35);border-radius:16px;padding:14px 16px;margin-bottom:14px;font-size:14px}
 label{display:block;color:var(--mut);font-size:12px;letter-spacing:1px;margin:12px 0 5px}
 input,select{width:100%;padding:12px 13px;border-radius:11px;border:1px solid var(--line);
  background:rgba(255,255,255,.05);color:var(--txt);font-size:15px}
-select{background-color:#16233c;color:#eef4fb}
-select option{background-color:#16233c;color:#eef4fb}
+select{background-color:#0A2238;color:#EAF6F8}
+select option{background-color:#0A2238;color:#EAF6F8}
 input::placeholder{color:#6f83a0}
 input[type=file]{padding:9px;background:rgba(255,255,255,.05)}
-input[type=file]::file-selector-button{background:rgba(58,160,255,.18);color:#cfe6ff;border:1px solid var(--line);
+input[type=file]::file-selector-button{background:rgba(95,214,230,.18);color:#E8FBFD;border:1px solid var(--line);
  border-radius:8px;padding:7px 12px;margin-right:10px;cursor:pointer}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:560px){.row{grid-template-columns:1fr}.dot2 b{display:none}}
-button{padding:13px 22px;border:0;border-radius:26px;background:linear-gradient(90deg,#3aa0ff,#37e6ff);
- color:#04101f;font-weight:700;font-size:15px;cursor:pointer}
+button{padding:13px 22px;border:0;border-radius:26px;background:linear-gradient(90deg,#5FD6E6,#43c9db);
+ color:#04101b;font-weight:700;font-size:15px;cursor:pointer}
 button:disabled{opacity:.45;cursor:not-allowed}
 button.sec{background:rgba(255,255,255,.08);color:var(--txt);border:1px solid var(--line)}
 .nav{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
@@ -1417,7 +1436,7 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
   <div style="color:var(--mut);font-size:12px;letter-spacing:1px;margin-bottom:8px">ABMELDEN</div>
   <small>Löscht deine BYD-Zugangsdaten, die gespeicherten Fahrzeugdaten und dein Foto
   <b>von diesem Rechner</b>. Dein BYD-Konto selbst bleibt unangetastet.</small>
-  <div style="margin-top:12px"><button class=sec style="border-color:rgba(255,120,90,.5);color:#ff9d84"
+  <div style="margin-top:12px"><button class=sec style="border-color:rgba(255,120,90,.5);color:#FF8A6B"
    onclick="logout()">🚪 Abmelden & Daten löschen</button></div>
   <div class=msg id=lmsg></div>
  </div>
@@ -1503,7 +1522,7 @@ function vorfuellen(){
  s.innerHTML='<option value="'+VOR.vin+'">'+VOR.vin+' (gespeichert)</option>';
  if(VOR.has_pw) password.placeholder='••••••• (gespeichert — leer lassen zum Behalten)';
  if(VOR.has_photo) document.getElementById('pprev').innerHTML=
-   '<img src="/photo?t='+Date.now()+'" style="max-height:130px;border-radius:12px;border:1px solid rgba(120,165,235,.18)"><br><small>Aktuelles Foto — neues wählen zum Ersetzen</small>';
+   '<img src="/photo?t='+Date.now()+'" style="max-height:130px;border-radius:12px;border:1px solid rgba(160,230,240,.18)"><br><small>Aktuelles Foto — neues wählen zum Ersetzen</small>';
  document.getElementById('smsg').textContent='ℹ️ Deine Einstellungen sind vorausgefüllt. Ändere, was du willst, und speichere.';
 }
 async function logout(){
@@ -1596,7 +1615,7 @@ function pickphoto(inp){const f=inp.files[0];if(!f)return;
    const c=document.createElement('canvas');c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);
    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
    PHOTO=c.toDataURL('image/jpeg',0.86);
-   document.getElementById('pprev').innerHTML='<img src="'+PHOTO+'" style="max-height:130px;border-radius:12px;border:1px solid rgba(120,165,235,.18)">';
+   document.getElementById('pprev').innerHTML='<img src="'+PHOTO+'" style="max-height:130px;border-radius:12px;border:1px solid rgba(160,230,240,.18)">';
   };img.src=e.target.result;};
  r.readAsDataURL(f);}
 async function planerFz(){const m=document.getElementById('planermsg'), sel=document.getElementById('planerfz');
@@ -1656,15 +1675,15 @@ COCKPIT = r"""<!doctype html><html lang=de><head><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1"><title>EV-Cockpit</title>
 <link rel=stylesheet href="/static/leaflet.css">
 <style>
-:root{--blue:#3aa0ff;--cyan:#37e6ff;--txt:#eef4fb;--mut:#8ea3bd;--line:rgba(120,165,235,.16)}
+:root{--blue:#5FD6E6;--cyan:#43c9db;--txt:#EAF6F8;--mut:#A9C7CE;--line:rgba(160,230,240,.16)}
 *{box-sizing:border-box}html,body{margin:0;height:100%}
-body{background:radial-gradient(1100px 720px at 50% -8%,#12213f 0%,#0a1120 55%,#05080f 100%) fixed;
+body{background:radial-gradient(1100px 720px at 50% -8%,#0d3a4a 0%,#071a2b 55%,#04101b 100%) fixed;
  color:var(--txt);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:22px}
 .wrap{max-width:1040px;margin:0 auto}
 .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .brand{color:var(--mut);letter-spacing:4px;font-weight:700;font-size:13px}
 .on{color:var(--mut);font-size:12px;display:flex;align-items:center;gap:7px}
-.dot{width:9px;height:9px;border-radius:50%;background:#35e6a0;box-shadow:0 0 10px #35e6a0}.dot.off{background:#5a6b7d;box-shadow:none}
+.dot{width:9px;height:9px;border-radius:50%;background:#B5F23D;box-shadow:0 0 10px #B5F23D}.dot.off{background:#5a6b7d;box-shadow:none}
 .hero{display:grid;grid-template-columns:280px 1fr;gap:12px;align-items:center;margin:6px 0 16px}
 .ring{position:relative;width:250px;height:250px;margin:0 auto}
 svg.ring{transform:rotate(-90deg)}
@@ -1674,12 +1693,12 @@ svg.ring{transform:rotate(-90deg)}
 .range{text-align:center;margin-top:8px}.range b{font-size:28px;font-weight:300}.range b small{font-size:16px;color:var(--mut)}
 .range .lbl{color:var(--mut);font-size:11px;letter-spacing:2px}
 .car{display:flex;align-items:center;justify-content:center;min-height:250px}
-.car img{max-width:100%;max-height:250px;filter:drop-shadow(0 24px 40px rgba(58,160,255,.35))}
-.car svg{max-width:100%;max-height:210px;filter:drop-shadow(0 22px 38px rgba(58,160,255,.4))}
+.car img{max-width:100%;max-height:250px;filter:drop-shadow(0 24px 40px rgba(95,214,230,.35))}
+.car svg{max-width:100%;max-height:210px;filter:drop-shadow(0 22px 38px rgba(95,214,230,.4))}
 .car .hint{margin-top:12px;text-align:center}
 .car .hint a,.car .hint button{color:var(--mut);font-size:12px;text-decoration:none;border:1px solid var(--line);background:transparent;cursor:pointer;
  border-radius:20px;padding:7px 14px;display:inline-block;transition:.15s}
-.car .hint a:hover,.car .hint button:hover{color:var(--txt);border-color:rgba(120,165,235,.4);background:rgba(255,255,255,.04)}
+.car .hint a:hover,.car .hint button:hover{color:var(--txt);border-color:rgba(160,230,240,.4);background:rgba(255,255,255,.04)}
 .car .wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%}
 .car .ph{color:var(--mut);font-size:13px;text-align:center;opacity:.6}
 .sect{color:var(--mut);letter-spacing:2px;font-size:11px;font-weight:700;margin:18px 4px 8px}
@@ -1692,64 +1711,64 @@ svg.ring{transform:rotate(-90deg)}
 .pill{flex:1;min-width:110px;border:1px solid var(--line);border-radius:26px;padding:14px;text-align:center;font-weight:600;
  font-size:15px;cursor:pointer;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));color:var(--mut);user-select:none;transition:.15s}
 .pill:active{transform:scale(.97)}
-.pill.heat.on{background:rgba(255,90,70,.16);border-color:rgba(255,120,90,.55);color:#ff9d84;box-shadow:0 0 22px rgba(255,90,70,.25)}
-.pill.batt.on{background:rgba(255,90,70,.16);border-color:rgba(255,120,90,.55);color:#ff9d84;box-shadow:0 0 22px rgba(255,90,70,.25)}
-.pill.cool.on{background:rgba(58,160,255,.16);border-color:rgba(90,180,255,.55);color:#7cc4ff;box-shadow:0 0 22px rgba(58,160,255,.28)}
+.pill.heat.on{background:rgba(255,90,70,.16);border-color:rgba(255,120,90,.55);color:#FF8A6B;box-shadow:0 0 22px rgba(255,90,70,.25)}
+.pill.batt.on{background:rgba(255,90,70,.16);border-color:rgba(255,120,90,.55);color:#FF8A6B;box-shadow:0 0 22px rgba(255,90,70,.25)}
+.pill.cool.on{background:rgba(95,214,230,.16);border-color:rgba(90,180,255,.55);color:#5FD6E6;box-shadow:0 0 22px rgba(95,214,230,.28)}
 .msg{color:var(--mut);font-size:12.5px;min-height:18px;margin:8px 2px;text-align:center}
 .chips{display:flex;gap:10px;flex-wrap:wrap}
 .chip{border:1px solid var(--line);border-radius:16px;padding:8px 14px;font-size:13px;background:rgba(255,255,255,.03)}
-.chip .cm{color:var(--mut)}.okc{color:#5be3a3}.no{color:#8ea3bd}.warnc{color:#ffb020}
+.chip .cm{color:var(--mut)}.okc{color:#B5F23D}.no{color:#A9C7CE}.warnc{color:#FFC266}
 .bars{display:flex;align-items:flex-end;gap:3px;height:110px;margin-top:12px;padding:12px 10px 0;
  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:16px}
 .bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;position:relative}
-.bar i{display:block;width:100%;border-radius:4px 4px 0 0;background:rgba(120,165,235,.35);transition:.2s}
-.bar.now i{background:linear-gradient(180deg,#37e6ff,#3aa0ff);box-shadow:0 0 12px rgba(58,160,255,.6)}
-.bar.cheap i{background:linear-gradient(180deg,#5be3a3,#28c07d);box-shadow:0 0 12px rgba(91,227,163,.5)}
+.bar i{display:block;width:100%;border-radius:4px 4px 0 0;background:rgba(160,230,240,.35);transition:.2s}
+.bar.now i{background:linear-gradient(180deg,#43c9db,#5FD6E6);box-shadow:0 0 12px rgba(95,214,230,.6)}
+.bar.cheap i{background:linear-gradient(180deg,#B5F23D,#8fcf2a);box-shadow:0 0 12px rgba(91,227,163,.5)}
 .bar b{font-size:9px;color:var(--mut);margin-top:4px;font-weight:400}
 .bar.now b,.bar.cheap b{color:var(--txt);font-weight:700}
 .bar span.t{position:absolute;top:-13px;font-size:9px;color:var(--mut);white-space:nowrap}
 .chg{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 13px;
- border-bottom:1px solid rgba(120,165,235,.10)}
+ border-bottom:1px solid rgba(160,230,240,.10)}
 .chg:last-child{border-bottom:0}
 .chg .nm{font-size:14px}.chg .sub{color:var(--mut);font-size:11.5px;margin-top:2px}
 .chg .km{color:var(--cyan);font-size:15px;white-space:nowrap;font-weight:300}
 .chg a{color:inherit;text-decoration:none}
 .map{border:1px solid var(--line);border-radius:18px;overflow:hidden;height:340px;position:relative;z-index:0}
-#lmap{width:100%;height:100%;background:#0a1120}
+#lmap{width:100%;height:100%;background:#071a2b}
 .leaflet-tile{filter:grayscale(.55) brightness(.72) contrast(1.06)}
-.leaflet-container{background:#0a1120;font:inherit}
-.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#16233c;color:#eef4fb}
+.leaflet-container{background:#071a2b;font:inherit}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#0A2238;color:#EAF6F8}
 .leaflet-popup-content{margin:11px 14px;font-size:13px;line-height:1.5}
-.leaflet-popup-content b{color:#7cc4ff}
-.leaflet-control-attribution{background:rgba(10,17,32,.8)!important;color:#8ea3bd!important;font-size:10px!important}
-.leaflet-control-attribution a{color:#8ea3bd!important}
-.leaflet-bar a{background:#16233c!important;color:#eef4fb!important;border-color:rgba(120,165,235,.2)!important}
-.mk-car{width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,#37e6ff,#3aa0ff);
- border:2px solid #eef4fb;box-shadow:0 0 0 6px rgba(58,160,255,.28),0 0 16px rgba(58,160,255,.7)}
-.mk-chg{width:18px;height:18px;border-radius:50%;background:#28c07d;border:2px solid #0a1120;
+.leaflet-popup-content b{color:#5FD6E6}
+.leaflet-control-attribution{background:rgba(10,17,32,.8)!important;color:#A9C7CE!important;font-size:10px!important}
+.leaflet-control-attribution a{color:#A9C7CE!important}
+.leaflet-bar a{background:#0A2238!important;color:#EAF6F8!important;border-color:rgba(160,230,240,.2)!important}
+.mk-car{width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,#43c9db,#5FD6E6);
+ border:2px solid #EAF6F8;box-shadow:0 0 0 6px rgba(95,214,230,.28),0 0 16px rgba(95,214,230,.7)}
+.mk-chg{width:18px;height:18px;border-radius:50%;background:#8fcf2a;border:2px solid #071a2b;
  box-shadow:0 0 10px rgba(91,227,163,.6);display:flex;align-items:center;justify-content:center;
- font-size:10px;color:#04101f;font-weight:700}
+ font-size:10px;color:#04101b;font-weight:700}
 
 .err{background:rgba(255,90,70,.10);border:1px solid rgba(255,120,90,.4);border-radius:14px;padding:10px 14px;
- font-size:13px;color:#ff9d84;margin-bottom:12px;display:none}
+ font-size:13px;color:#FF8A6B;margin-bottom:12px;display:none}
 a.cfg{color:var(--mut);font-size:12px;text-decoration:none}
 .glocke{cursor:pointer;font-size:14px;user-select:none;opacity:.55;transition:.15s}
 .glocke:hover{opacity:1}.glocke.an{opacity:1}
 @media(max-width:640px){.hero{grid-template-columns:1fr}.car{min-height:170px}.car img{max-height:180px}}
 /* Industrial ops refresh: shared local design tokens, flat surfaces, fast controls. */
-:root{color-scheme:dark;--bg:#0B1020;--surface:#121A2B;--soft:#1B2438;--border:#2B3752;
- --txt:#F5F7FB;--mut:#9CA8C2;--blue:#4F7CFF;--cyan:#14B8A6;--line:#2B3752;
- --ok:#22C55E;--warn:#F59E0B;--danger:#EF4444;--fast:160ms;--ease:cubic-bezier(.22,1,.36,1)}
-html{scroll-behavior:smooth}body{background:radial-gradient(900px 500px at 50% -220px,rgba(79,124,255,.22),transparent 70%),var(--bg);
+:root{color-scheme:dark;--bg:#071a2b;--surface:#0A2238;--soft:#0f2c40;--border:#1d4152;
+ --txt:#EAF6F8;--mut:#A9C7CE;--blue:#5FD6E6;--cyan:#43c9db;--line:#1d4152;
+ --ok:#B5F23D;--warn:#FFC266;--danger:#FF8A6B;--fast:160ms;--ease:cubic-bezier(.22,1,.36,1)}
+html{scroll-behavior:smooth}body{background:radial-gradient(900px 500px at 50% -220px,rgba(95,214,230,.22),transparent 70%),var(--bg);
  font:15px/1.5 Inter,"Segoe UI Variable",Segoe UI,sans-serif;padding:24px}
-button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid rgba(79,124,255,.45);outline-offset:3px}
+button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid rgba(95,214,230,.45);outline-offset:3px}
 .wrap{max-width:1160px}.top{gap:18px;margin-bottom:14px;padding:4px 2px}.brand{color:var(--txt);letter-spacing:2.5px;font-size:15px}
 .brand b{color:var(--cyan)}.brand-sub{color:var(--mut);font-size:11px;letter-spacing:.04em;margin-top:2px}
 .on{gap:9px;flex-wrap:wrap;justify-content:flex-end}.dot{background:var(--ok);box-shadow:0 0 0 5px rgba(34,197,94,.12)}
 .dot.off{background:#64748B}.fresh{font-variant-numeric:tabular-nums}
 .iconbtn{min-width:40px;height:40px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--txt);cursor:pointer;
  transition:background var(--fast),border-color var(--fast),transform var(--fast)}
-.iconbtn:hover{background:var(--soft);border-color:#405078}.iconbtn:active{transform:scale(.96)}
+.iconbtn:hover{background:var(--soft);border-color:#2a5566}.iconbtn:active{transform:scale(.96)}
 .quicknav{position:sticky;top:10px;z-index:800;display:flex;gap:5px;overflow-x:auto;padding:6px;margin:0 0 18px;
  background:rgba(18,26,43,.96);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(11,16,32,.25)}
 .quicknav a{color:var(--mut);text-decoration:none;padding:9px 13px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap;
@@ -1760,26 +1779,26 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
 .vehicle-caption{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:8px;text-align:center}
 .vehicle-caption strong{font-size:15px;letter-spacing:.01em}.vehicle-caption span{color:var(--mut);font-size:11px}
 .overview-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important;margin-top:-8px}
-.overview-kpis .tile:first-child{border-color:rgba(79,124,255,.55);box-shadow:inset 0 3px #4F7CFF}
-.overview-kpis .tile:nth-child(2){box-shadow:inset 0 3px #14B8A6}.overview-kpis .tile .k:before{margin-right:7px;opacity:.9}
+.overview-kpis .tile:first-child{border-color:rgba(95,214,230,.55);box-shadow:inset 0 3px #5FD6E6}
+.overview-kpis .tile:nth-child(2){box-shadow:inset 0 3px #43c9db}.overview-kpis .tile .k:before{margin-right:7px;opacity:.9}
 .overview-kpis .tile:nth-child(1) .k:before{content:'↗'}.overview-kpis .tile:nth-child(2) .k:before{content:'◉'}
 .overview-kpis .tile:nth-child(3) .k:before{content:'∿'}.overview-kpis .tile:nth-child(4) .k:before{content:'●'}
 .sect{letter-spacing:1.8px;font-weight:800;margin:26px 4px 9px;scroll-margin-top:84px}
 .tile{background:var(--surface);border-color:var(--border);border-radius:14px;padding:17px 18px;backdrop-filter:none;transition:border-color var(--fast),transform var(--fast)}
-.tile:hover{border-color:#405078}.tile .k{font-size:10px;letter-spacing:1.6px;font-weight:800}.tile .v{font-size:26px;font-weight:700;letter-spacing:-.025em}
+.tile:hover{border-color:#2a5566}.tile .k{font-size:10px;letter-spacing:1.6px;font-weight:800}.tile .v{font-size:26px;font-weight:700;letter-spacing:-.025em}
 .tile .v small{font-weight:500}.pill{min-width:120px;border-color:var(--border);border-radius:14px;padding:15px;font-size:14px;font-weight:700;background:var(--surface);
  transition:background var(--fast),border-color var(--fast),color var(--fast),transform var(--fast)}
-.pill:hover{background:var(--soft);border-color:#405078;color:var(--txt)}.pill.busy{opacity:.55;pointer-events:none}
+.pill:hover{background:var(--soft);border-color:#2a5566;color:var(--txt)}.pill.busy{opacity:.55;pointer-events:none}
 .chip{border-color:var(--border);border-radius:999px;padding:8px 13px;font-size:12px;font-weight:650;background:var(--surface)}
 .bars{height:118px;background:var(--surface);border-color:var(--border);border-radius:14px}.map{border-color:var(--border);border-radius:20px;height:380px}
-.err{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.45);border-radius:14px;color:#FCA5A5}
+.err{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.45);border-radius:14px;color:#FFB4A0}
 @media(max-width:760px){body{padding:14px}.hero{grid-template-columns:1fr;padding:18px}.grid[style]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  .overview-kpis{margin-top:0}
  .top{align-items:flex-start}.brand-sub{display:none}}
 @media(max-width:460px){.grid[style]{grid-template-columns:1fr!important}.on #onl,.fresh{display:none}.hero{padding:14px}.quicknav{top:6px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
 </style></head><body><div class=wrap>
- <div id=updbar style="display:none;background:linear-gradient(90deg,rgba(58,160,255,.16),rgba(55,230,255,.10));
+ <div id=updbar style="display:none;background:linear-gradient(90deg,rgba(95,214,230,.16),rgba(95,214,230,.10));
   border:1px solid rgba(90,180,255,.45);border-radius:14px;padding:11px 15px;margin-bottom:14px;font-size:13.5px">
   🔔 <b>Version <span id=updver></span> ist da.</b> <span id=updwas style="color:var(--mut)"></span>
   <a id=updlink href="#" target="_blank" rel="noopener" style="color:var(--blue);margin-left:6px">Ansehen →</a>
@@ -1796,8 +1815,8 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
   <div>
    <div class=ring><svg class=ring width=250 height=250 viewBox="0 0 250 250">
     <circle cx=125 cy=125 r=112 fill=none stroke="#16243f" stroke-width=14/>
-    <circle id=arc cx=125 cy=125 r=112 fill=none stroke="#4F7CFF" stroke-width=14 stroke-linecap=round stroke-dasharray=703 stroke-dashoffset=703/>
-    <defs><linearGradient id=g x1=0 y1=0 x2=1 y2=1><stop offset=0% stop-color="#3aa0ff"/><stop offset=100% stop-color="#37e6ff"/></linearGradient></defs>
+    <circle id=arc cx=125 cy=125 r=112 fill=none stroke="#5FD6E6" stroke-width=14 stroke-linecap=round stroke-dasharray=703 stroke-dashoffset=703/>
+    <defs><linearGradient id=g x1=0 y1=0 x2=1 y2=1><stop offset=0% stop-color="#5FD6E6"/><stop offset=100% stop-color="#43c9db"/></linearGradient></defs>
    </svg><div class=val><div class=pct><span id=soc>–</span><small>%</small></div><div class=lbl>AKKU</div></div></div>
    <div class=range><b><span id=range>–</span><small> km</small></b><div class=lbl>REICHWEITE (ECHT)</div>
     <div class=lbl style="margin-top:3px">BYD sagt: <span id=bydrange>–</span> km</div></div>
@@ -1821,7 +1840,7 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
     <div class=v><span id=pvw>–</span><small> W</small></div>
     <div style="color:var(--mut);font-size:11.5px;margin-top:4px">
      <span>Quelle: dein Home Assistant</span> · <span id=pvsrc>–</span></div>
-    <div id=pverr style="display:none;color:#ffb020;font-size:12px;margin-top:6px"></div>
+    <div id=pverr style="display:none;color:#FFC266;font-size:12px;margin-top:6px"></div>
    </div>
   </div>
  </div>
@@ -1902,9 +1921,9 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
     <div class=k>LETZTE AUFNAHME</div>
     <div style="color:var(--blue);font-size:13px" id=s_time>–</div>
    </div>
-   <div id=s_err style="display:none;color:#ffb020;font-size:12.5px;margin-top:8px"></div>
+   <div id=s_err style="display:none;color:#FFC266;font-size:12.5px;margin-top:8px"></div>
    <img id=s_img alt="Wächter-Aufnahme" style="display:none;width:100%;max-height:440px;object-fit:contain;
-    background:#0a1120;border:1px solid var(--line);border-radius:14px;margin-top:10px">
+    background:#071a2b;border:1px solid var(--line);border-radius:14px;margin-top:10px">
   </div>
  </div>
 
@@ -1920,7 +1939,7 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
   <div class=sect>ROUTENPLANER</div>
   <div class=tile style="padding:14px 16px">
    <a href="/planer/oeffnen" target="_blank" rel="noopener"
-      style="display:inline-block;background:var(--blue);color:#05080f;font-weight:600;text-decoration:none;padding:10px 16px;border-radius:12px">🗺️ Route planen</a>
+      style="display:inline-block;background:#B5F23D;color:#1d2a00;font-weight:700;text-decoration:none;padding:10px 16px;border-radius:12px">🗺️ Route planen</a>
    <div id=planerstat style="color:var(--mut);font-size:12.5px;margin-top:10px"></div>
   </div>
  </div>
@@ -1940,12 +1959,12 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
 <script src="/static/leaflet.js"></script>
 <script>
 const SIL={
-klein:'<svg viewBox="0 0 320 130" xmlns="http://www.w3.org/2000/svg"><g transform="translate(16,14)"><path d="M 8,96 L 10,70 C 12,57 22,49 40,46 L 66,43 L 96,15 C 102,8 112,5 126,5 L 200,5 C 214,5 224,9 230,17 L 250,45 L 272,51 C 284,55 288,65 288,76 L 288,96 Z" fill="#3aa0ff"/><circle cx="60" cy="96" r="19" fill="#0a1120"/><circle cx="60" cy="96" r="12" fill="#3aa0ff"/><circle cx="240" cy="96" r="19" fill="#0a1120"/><circle cx="240" cy="96" r="12" fill="#3aa0ff"/></g></svg>',
-suv:'<svg viewBox="0 0 320 135" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,12)"><path d="M 6,100 L 8,62 C 10,48 20,40 38,37 L 60,34 L 88,10 C 94,4 104,1 118,1 L 214,1 C 228,1 238,5 242,13 L 252,36 L 278,42 C 290,46 294,56 294,68 L 294,100 Z" fill="#3aa0ff"/><circle cx="58" cy="100" r="22" fill="#0a1120"/><circle cx="58" cy="100" r="14" fill="#3aa0ff"/><circle cx="244" cy="100" r="22" fill="#0a1120"/><circle cx="244" cy="100" r="14" fill="#3aa0ff"/></g></svg>',
-limo:'<svg viewBox="0 0 330 130" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,14)"><path d="M 6,96 L 8,72 C 10,60 20,52 38,49 L 74,45 L 108,17 C 114,10 124,7 138,7 L 196,7 C 210,7 220,11 226,18 L 258,46 L 282,50 C 294,54 298,64 298,74 L 298,96 Z" fill="#3aa0ff"/><circle cx="62" cy="96" r="19" fill="#0a1120"/><circle cx="62" cy="96" r="12" fill="#3aa0ff"/><circle cx="248" cy="96" r="19" fill="#0a1120"/><circle cx="248" cy="96" r="12" fill="#3aa0ff"/></g></svg>',
-gross:'<svg viewBox="0 0 335 145" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,12)"><path d="M 4,112 L 6,66 C 8,52 18,44 36,41 L 56,38 L 82,14 C 88,8 98,5 112,5 L 228,5 C 242,5 252,9 256,17 L 264,40 L 288,46 C 300,50 304,60 304,72 L 304,112 Z" fill="#3aa0ff"/><circle cx="58" cy="112" r="23" fill="#0a1120"/><circle cx="58" cy="112" r="15" fill="#3aa0ff"/><circle cx="252" cy="112" r="23" fill="#0a1120"/><circle cx="252" cy="112" r="15" fill="#3aa0ff"/></g></svg>',
-kombi:'<svg viewBox="0 0 330 135" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,13)"><path d="M6 100 8 67c2-12 12-20 30-23l42-5 24-25c6-7 16-10 30-10h102c13 0 22 5 27 15l10 23 20 5c12 4 16 14 16 25v28Z" fill="#3aa0ff"/><circle cx="61" cy="100" r="20" fill="#0a1120"/><circle cx="61" cy="100" r="12" fill="#3aa0ff"/><circle cx="250" cy="100" r="20" fill="#0a1120"/><circle cx="250" cy="100" r="12" fill="#3aa0ff"/></g></svg>',
-van:'<svg viewBox="0 0 330 145" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,11)"><path d="M5 111 7 43c1-16 12-28 28-31h165c17 0 29 7 37 22l20 39 32 8c11 4 15 13 15 30Z" fill="#3aa0ff"/><circle cx="62" cy="111" r="22" fill="#0a1120"/><circle cx="62" cy="111" r="13" fill="#3aa0ff"/><circle cx="251" cy="111" r="22" fill="#0a1120"/><circle cx="251" cy="111" r="13" fill="#3aa0ff"/></g></svg>'};
+klein:'<svg viewBox="0 0 320 130" xmlns="http://www.w3.org/2000/svg"><g transform="translate(16,14)"><path d="M 8,96 L 10,70 C 12,57 22,49 40,46 L 66,43 L 96,15 C 102,8 112,5 126,5 L 200,5 C 214,5 224,9 230,17 L 250,45 L 272,51 C 284,55 288,65 288,76 L 288,96 Z" fill="#5FD6E6"/><circle cx="60" cy="96" r="19" fill="#071a2b"/><circle cx="60" cy="96" r="12" fill="#5FD6E6"/><circle cx="240" cy="96" r="19" fill="#071a2b"/><circle cx="240" cy="96" r="12" fill="#5FD6E6"/></g></svg>',
+suv:'<svg viewBox="0 0 320 135" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,12)"><path d="M 6,100 L 8,62 C 10,48 20,40 38,37 L 60,34 L 88,10 C 94,4 104,1 118,1 L 214,1 C 228,1 238,5 242,13 L 252,36 L 278,42 C 290,46 294,56 294,68 L 294,100 Z" fill="#5FD6E6"/><circle cx="58" cy="100" r="22" fill="#071a2b"/><circle cx="58" cy="100" r="14" fill="#5FD6E6"/><circle cx="244" cy="100" r="22" fill="#071a2b"/><circle cx="244" cy="100" r="14" fill="#5FD6E6"/></g></svg>',
+limo:'<svg viewBox="0 0 330 130" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,14)"><path d="M 6,96 L 8,72 C 10,60 20,52 38,49 L 74,45 L 108,17 C 114,10 124,7 138,7 L 196,7 C 210,7 220,11 226,18 L 258,46 L 282,50 C 294,54 298,64 298,74 L 298,96 Z" fill="#5FD6E6"/><circle cx="62" cy="96" r="19" fill="#071a2b"/><circle cx="62" cy="96" r="12" fill="#5FD6E6"/><circle cx="248" cy="96" r="19" fill="#071a2b"/><circle cx="248" cy="96" r="12" fill="#5FD6E6"/></g></svg>',
+gross:'<svg viewBox="0 0 335 145" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,12)"><path d="M 4,112 L 6,66 C 8,52 18,44 36,41 L 56,38 L 82,14 C 88,8 98,5 112,5 L 228,5 C 242,5 252,9 256,17 L 264,40 L 288,46 C 300,50 304,60 304,72 L 304,112 Z" fill="#5FD6E6"/><circle cx="58" cy="112" r="23" fill="#071a2b"/><circle cx="58" cy="112" r="15" fill="#5FD6E6"/><circle cx="252" cy="112" r="23" fill="#071a2b"/><circle cx="252" cy="112" r="15" fill="#5FD6E6"/></g></svg>',
+kombi:'<svg viewBox="0 0 330 135" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,13)"><path d="M6 100 8 67c2-12 12-20 30-23l42-5 24-25c6-7 16-10 30-10h102c13 0 22 5 27 15l10 23 20 5c12 4 16 14 16 25v28Z" fill="#5FD6E6"/><circle cx="61" cy="100" r="20" fill="#071a2b"/><circle cx="61" cy="100" r="12" fill="#5FD6E6"/><circle cx="250" cy="100" r="20" fill="#071a2b"/><circle cx="250" cy="100" r="12" fill="#5FD6E6"/></g></svg>',
+van:'<svg viewBox="0 0 330 145" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,11)"><path d="M5 111 7 43c1-16 12-28 28-31h165c17 0 29 7 37 22l20 39 32 8c11 4 15 13 15 30Z" fill="#5FD6E6"/><circle cx="62" cy="111" r="22" fill="#071a2b"/><circle cx="62" cy="111" r="13" fill="#5FD6E6"/><circle cx="251" cy="111" r="22" fill="#071a2b"/><circle cx="251" cy="111" r="13" fill="#5FD6E6"/></g></svg>'};
 const C=703;
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function nv(x){return (x==null||x==='')?'–':x}
@@ -1975,6 +1994,9 @@ function basiskarte(m){
  if(!KARTEN_STIL){osm();return;}
  const lade=src=>new Promise((ok,f)=>{const x=document.createElement('script');x.src=src;x.onload=ok;x.onerror=f;document.head.appendChild(x);});
  fetch(KARTEN_STIL).then(r=>{if(!r.ok)throw new Error('Stil '+r.status);return r.json();}).then(stil=>{
+  // Blitzer/Kontrollen nie zeigen (CH Art. 98a SVG, Einschraenkungen DE/FR)
+  stil.layers=(stil.layers||[]).filter(l=>!(/camera|blitz|enforcement|speed_?trap/i.test(l.id||'')||
+   (l['source-layer']==='signals'&&/camera/.test(JSON.stringify(l.filter||'')))));
   const q=Object.values(stil.sources||{}).find(x=>x.type==='vector'&&/^pmtiles:\/\//.test(x.url||''));
   if(!q) return stil;
   return fetch(q.url.replace(/^pmtiles:\/\//,''),{headers:{Range:'bytes=0-15'}})
@@ -1983,7 +2005,11 @@ function basiskarte(m){
   const c=document.createElement('link');c.rel='stylesheet';c.href='/static/maplibre-gl.css';document.head.appendChild(c);
   return lade('/static/maplibre-gl.js').then(()=>lade('/static/pmtiles.js')).then(()=>lade('/static/leaflet-maplibre-gl.js'))
    .then(()=>{const pr=new pmtiles.Protocol();maplibregl.addProtocol('pmtiles',pr.tile);
-    L.maplibreGL({style:stil,attribution:'© OpenStreetMap · Karte: BYD-Community'}).addTo(m);});
+    // Quellenangaben einmal und ohne Doppelungen (der Stil nennt OSM je Quelle)
+    Object.values(stil.sources||{}).forEach(q=>{delete q.attribution;});
+    m.attributionControl.setPrefix(false);
+    L.maplibreGL({style:stil}).addTo(m);
+    m.attributionControl.addAttribution('© OpenStreetMap-Mitwirkende · Protomaps · Höhen: Mapterhorn');});
  }).catch(()=>osm());
 }
 
@@ -2089,7 +2115,7 @@ async function load(){
  // Reifen-Ampel — nur wenn der Nutzer einen Sollwert eingetragen hat
  const tm=document.getElementById('tyremsg');
  if(s.reifen){tm.style.display='block';tm.textContent=s.reifen.text;
-  tm.style.color = s.reifen.stufe==='rot' ? '#ff9d84' : (s.reifen.stufe==='gelb' ? '#ffb020' : '#5be3a3');
+  tm.style.color = s.reifen.stufe==='rot' ? '#FF8A6B' : (s.reifen.stufe==='gelb' ? '#FFC266' : '#B5F23D');
   document.getElementById('tyrebox').style.borderColor =
     s.reifen.stufe==='rot' ? 'rgba(255,120,90,.55)' : (s.reifen.stufe==='gelb' ? 'rgba(255,176,32,.45)' : 'var(--line)');
  } else {tm.style.display='none';}
@@ -2515,26 +2541,26 @@ def _same_origin_request(headers):
     return parsed.scheme in ("http", "https") and parsed.netloc.lower() == (headers.get("Host") or "").lower()
 
 ENERGY_PANEL = r'''<style>
-.energy-shell{margin:28px auto;max-width:1160px;padding:22px;background:#121A2B;border:1px solid #2B3752;border-radius:20px;color:#F5F7FB;
+.energy-shell{margin:28px auto;max-width:1160px;padding:22px;background:#0A2238;border:1px solid #1d4152;border-radius:20px;color:#EAF6F8;
  font:15px/1.5 Inter,"Segoe UI Variable",Segoe UI,sans-serif;scroll-margin-top:84px}
 .energy-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}.energy-head h2{margin:0;font-size:22px}
-.energy-head p{margin:5px 0 0;color:#9CA8C2}.energy-form{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 10px}
-.energy-form input,.energy-form button{min-height:42px;padding:10px 12px;border-radius:10px;border:1px solid #2B3752;background:#1B2438;color:#F5F7FB}
+.energy-head p{margin:5px 0 0;color:#A9C7CE}.energy-form{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 10px}
+.energy-form input,.energy-form button{min-height:42px;padding:10px 12px;border-radius:10px;border:1px solid #1d4152;background:#0f2c40;color:#EAF6F8}
 .energy-form input{min-width:210px}.energy-form input[type=number]{min-width:90px;width:100px}.energy-form button{cursor:pointer;font-weight:700}
-.energy-form button.primary{background:#4F7CFF;border-color:#4F7CFF}.energy-form button:hover{border-color:#4F7CFF}
-.energy-auto{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 8px}.energy-auto button{min-height:48px;padding:0 18px;border:0;border-radius:12px;background:#4F7CFF;color:white;font-weight:800;cursor:pointer}
-.energy-auto button:disabled{opacity:.6;cursor:wait}.energy-auto span{color:#9CA8C2;font-size:12px}.energy-advanced{margin:10px 0;color:#9CA8C2;font-size:12px}
-.energy-advanced summary{cursor:pointer;width:max-content}.energy-placeholder{grid-column:1/-1;padding:20px;border:1px dashed #2B3752;border-radius:14px;color:#9CA8C2;background:#0F1728}
-.energy-message{margin:10px 0 14px;color:#9CA8C2;font-size:12px}.energy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}
-.energy-card{background:#1B2438;border:1px solid #2B3752;border-radius:14px;padding:14px;min-width:0}.energy-card .ek{color:#9CA8C2;font-size:10px;
+.energy-form button.primary{background:#5FD6E6;border-color:#5FD6E6}.energy-form button:hover{border-color:#5FD6E6}
+.energy-auto{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 8px}.energy-auto button{min-height:48px;padding:0 18px;border:0;border-radius:12px;background:#5FD6E6;color:white;font-weight:800;cursor:pointer}
+.energy-auto button:disabled{opacity:.6;cursor:wait}.energy-auto span{color:#A9C7CE;font-size:12px}.energy-advanced{margin:10px 0;color:#A9C7CE;font-size:12px}
+.energy-advanced summary{cursor:pointer;width:max-content}.energy-placeholder{grid-column:1/-1;padding:20px;border:1px dashed #1d4152;border-radius:14px;color:#A9C7CE;background:#0F1728}
+.energy-message{margin:10px 0 14px;color:#A9C7CE;font-size:12px}.energy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}
+.energy-card{background:#0f2c40;border:1px solid #1d4152;border-radius:14px;padding:14px;min-width:0}.energy-card .ek{color:#A9C7CE;font-size:10px;
  letter-spacing:1.2px;text-transform:uppercase;font-weight:800}.energy-card .ev{font-size:22px;font-weight:750;margin-top:5px;overflow-wrap:anywhere}
-.energy-card .es{color:#9CA8C2;font-size:12px;margin-top:5px}.vehicle-select{width:100%;display:grid;grid-template-columns:96px minmax(0,1fr) auto;
- grid-column:span 2;align-items:center;gap:12px;text-align:left;background:#1B2438;border:1px solid #2B3752;color:#F5F7FB;border-radius:14px;padding:12px;cursor:pointer}
-.vehicle-select:hover{border-color:#4F7CFF;background:#202B42}.vehicle-select.active{border-color:#14B8A6;box-shadow:inset 3px 0 #14B8A6}
-.vehicle-art{height:52px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#121A2B}.vehicle-art svg{width:88px;height:44px}
-.vehicle-copy{min-width:0}.vehicle-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.vehicle-copy small{display:block;color:#9CA8C2;margin-top:3px;font-weight:500}
-.vehicle-soc{font:750 19px/1 Inter,"Segoe UI Variable",Segoe UI,sans-serif;color:#F5F7FB;white-space:nowrap}.vehicle-legal{color:#9CA8C2;font-size:11px;margin:8px 2px 0}
-.energy-sub{margin:22px 0 9px;font-size:11px;letter-spacing:1.5px;color:#9CA8C2}.energy-discovery{margin-top:12px;color:#9CA8C2;font-size:12px}
+.energy-card .es{color:#A9C7CE;font-size:12px;margin-top:5px}.vehicle-select{width:100%;display:grid;grid-template-columns:96px minmax(0,1fr) auto;
+ grid-column:span 2;align-items:center;gap:12px;text-align:left;background:#0f2c40;border:1px solid #1d4152;color:#EAF6F8;border-radius:14px;padding:12px;cursor:pointer}
+.vehicle-select:hover{border-color:#5FD6E6;background:#202B42}.vehicle-select.active{border-color:#43c9db;box-shadow:inset 3px 0 #43c9db}
+.vehicle-art{height:52px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#0A2238}.vehicle-art svg{width:88px;height:44px}
+.vehicle-copy{min-width:0}.vehicle-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.vehicle-copy small{display:block;color:#A9C7CE;margin-top:3px;font-weight:500}
+.vehicle-soc{font:750 19px/1 Inter,"Segoe UI Variable",Segoe UI,sans-serif;color:#EAF6F8;white-space:nowrap}.vehicle-legal{color:#A9C7CE;font-size:11px;margin:8px 2px 0}
+.energy-sub{margin:22px 0 9px;font-size:11px;letter-spacing:1.5px;color:#A9C7CE}.energy-discovery{margin-top:12px;color:#A9C7CE;font-size:12px}
 @media(max-width:600px){.energy-shell{margin:20px 14px;padding:16px}.energy-form input{width:100%}.energy-form button{flex:1}.vehicle-select{grid-template-columns:76px minmax(0,1fr) auto}.vehicle-art svg{width:70px}}
 </style><section id="energy-panel" class="energy-shell">
 <div class="energy-head"><div><h2>⚡ Energie &amp; Ladepunkte</h2>
@@ -2568,7 +2594,7 @@ ENERGY_PANEL = r'''<style>
   kombi:'M7 34 10 24c2-5 7-8 15-9l16-2L50 4h43c7 0 11 4 15 11l9 2c7 2 9 7 9 17Z',
   suv:'M7 35 9 20c1-6 7-10 15-11l16-2 11-7h45c7 0 12 5 15 15l10 3c7 2 9 7 9 17Z',
   van:'M7 35 9 12C10 5 15 1 23 1h67c8 0 13 4 17 13l11 5c6 2 8 7 8 16Z'};
-  return'<svg viewBox="0 0 134 46" role="img" aria-label="'+escapeHtml(kind)+'"><path d="'+paths[kind]+'" fill="#4F7CFF"/><circle cx="31" cy="35" r="9" fill="#0B1020"/><circle cx="31" cy="35" r="5" fill="#9CA8C2"/><circle cx="104" cy="35" r="9" fill="#0B1020"/><circle cx="104" cy="35" r="5" fill="#9CA8C2"/></svg>';};
+  return'<svg viewBox="0 0 134 46" role="img" aria-label="'+escapeHtml(kind)+'"><path d="'+paths[kind]+'" fill="#5FD6E6"/><circle cx="31" cy="35" r="9" fill="#071a2b"/><circle cx="31" cy="35" r="5" fill="#A9C7CE"/><circle cx="104" cy="35" r="9" fill="#071a2b"/><circle cx="104" cy="35" r="5" fill="#A9C7CE"/></svg>';};
  const brandLabel=v=>escapeHtml(v.brand||([v.title,v.model].join(' ').match(/\b(BYD|Audi|VW|Volkswagen|Tesla|BMW|Mercedes|Skoda|Renault|Kia|Hyundai|Volvo|Cupra|Porsche)\b/i)||[])[0]||'EV');
  const kindLabel=k=>__T({klein:'Kompakt',limo:'Limousine',kombi:'Kombi',suv:'SUV',van:'Van'}[k]||'Kompakt');
  let busy=false,timer=null,last=null;
@@ -2609,8 +2635,8 @@ ENERGY_PANEL = r'''<style>
     localStorage.setItem('evc_selected_vehicle',button.getAttribute('data-vehicle'));refresh();
    }));
    el('evcc-message').textContent='Aktuell · '+new Date().toLocaleTimeString()+' · '+Math.round(performance.now()-started)+' ms · nur lesend';
-   el('evcc-health').textContent='VERBUNDEN';el('evcc-health').style.color='#22C55E';
-  }catch(e){el('evcc-message').textContent='evcc: '+e.message;el('evcc-health').textContent='FEHLER';el('evcc-health').style.color='#EF4444';}
+   el('evcc-health').textContent='VERBUNDEN';el('evcc-health').style.color='#B5F23D';
+  }catch(e){el('evcc-message').textContent='evcc: '+e.message;el('evcc-health').textContent='FEHLER';el('evcc-health').style.color='#FF8A6B';}
   finally{busy=false;el('evcc-connect').disabled=false;schedule();}
  }
  el('evcc-connect').onclick=()=>{localStorage.setItem('evc_evcc_host',h.value);localStorage.setItem('evc_evcc_port',p.value);refresh();};
@@ -2672,6 +2698,10 @@ class H(BaseHTTPRequestHandler):
             # mitbekommt, dass/wann du dein Auto anschaust.
             name = os.path.basename(p)
             f = STATIC_DIR / name
+            if p.startswith("/static/fonts/") and re.fullmatch(r"(sora|manrope)-[4-7]00\.woff2", name):
+                ff = STATIC_DIR / "fonts" / name
+                if ff.exists():
+                    return self._send(ff.read_bytes(), "font/woff2")
             if f.exists() and name in ("leaflet.js", "leaflet.css", "maplibre-gl.js", "maplibre-gl.css",
                                        "pmtiles.js", "leaflet-maplibre-gl.js"):
                 self._send(f.read_bytes(),
