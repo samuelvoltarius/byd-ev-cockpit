@@ -16,6 +16,8 @@ def normalize_vehicles(state):
                 "source": "evcc", "soc": value.get("soc"),
                 "capacity_kwh": value.get("capacity"),
                 "range_km": value.get("range"), "icon": value.get("icon"),
+                "brand": value.get("brand") or value.get("manufacturer") or "",
+                "model": value.get("model") or "",
                 "connected": False, "charging": False, "loadpoint": None,
                 "charge_power_w": None,
             }
@@ -27,7 +29,8 @@ def normalize_vehicles(state):
             v = vehicles.setdefault(name, {
                 "id": name, "title": point.get("vehicleTitle") or name,
                 "source": "evcc", "soc": None, "capacity_kwh": None,
-                "range_km": None, "icon": None, "connected": False,
+                "range_km": None, "icon": None, "brand": "", "model": "",
+                "connected": False,
                 "charging": False, "loadpoint": None, "charge_power_w": None,
             })
             v.update({

@@ -789,6 +789,12 @@ _I18N.update({
     "FAHRZEUGE & LADEPUNKTE": "VEHICLES & CHARGE POINTS", "PV-Erzeugung": "Solar production",
     "Netz": "Grid", "Speicher": "Battery", "Hausverbrauch": "Home consumption",
     "Netzpreis": "Grid tariff", "Grünstromanteil": "Green energy share",
+    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette",
+    "Eigenes Foto verwenden": "Use your own photo", "Reichweite": "Range",
+    "Verbunden": "Connected", "Nicht verbunden": "Not connected",
+    "Kompakt": "Compact", "Limousine": "Sedan", "Kombi": "Estate", "SUV": "SUV", "Van": "Van",
+    "Fahrzeugformen sind neutrale Illustrationen, keine Herstellerlogos oder exakten Modellabbildungen.":
+        "Vehicle shapes are neutral illustrations, not manufacturer logos or exact model images.",
 })
 I18N_HEAD = ("<script>window.__TR__=" + json.dumps(_I18N, ensure_ascii=False, separators=(',',':')) + ";"
     "window.__LANG__=(function(){try{var s=localStorage.getItem('evc_lang');if(s==='de'||s==='en')return s;}catch(e){}"
@@ -1531,6 +1537,13 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
 .hero{grid-template-columns:300px minmax(0,1fr);gap:28px;margin:4px 0 22px;padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:20px}
 .ring .pct{font-weight:700;letter-spacing:-.05em}.ring .pct small,.range b small{font-weight:500}.range b{font-weight:700}
 .car img,.car svg{filter:drop-shadow(0 22px 34px rgba(11,16,32,.55))}
+.vehicle-caption{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:8px;text-align:center}
+.vehicle-caption strong{font-size:15px;letter-spacing:.01em}.vehicle-caption span{color:var(--mut);font-size:11px}
+.overview-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important;margin-top:-8px}
+.overview-kpis .tile:first-child{border-color:rgba(79,124,255,.55);box-shadow:inset 0 3px #4F7CFF}
+.overview-kpis .tile:nth-child(2){box-shadow:inset 0 3px #14B8A6}.overview-kpis .tile .k:before{margin-right:7px;opacity:.9}
+.overview-kpis .tile:nth-child(1) .k:before{content:'↗'}.overview-kpis .tile:nth-child(2) .k:before{content:'◉'}
+.overview-kpis .tile:nth-child(3) .k:before{content:'∿'}.overview-kpis .tile:nth-child(4) .k:before{content:'●'}
 .sect{letter-spacing:1.8px;font-weight:800;margin:26px 4px 9px;scroll-margin-top:84px}
 .tile{background:var(--surface);border-color:var(--border);border-radius:14px;padding:17px 18px;backdrop-filter:none;transition:border-color var(--fast),transform var(--fast)}
 .tile:hover{border-color:#405078}.tile .k{font-size:10px;letter-spacing:1.6px;font-weight:800}.tile .v{font-size:26px;font-weight:700;letter-spacing:-.025em}
@@ -1541,6 +1554,7 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
 .bars{height:118px;background:var(--surface);border-color:var(--border);border-radius:14px}.map{border-color:var(--border);border-radius:20px;height:380px}
 .err{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.45);border-radius:14px;color:#FCA5A5}
 @media(max-width:760px){body{padding:14px}.hero{grid-template-columns:1fr;padding:18px}.grid[style]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .overview-kpis{margin-top:0}
  .top{align-items:flex-start}.brand-sub{display:none}}
 @media(max-width:460px){.grid[style]{grid-template-columns:1fr!important}.on #onl,.fresh{display:none}.hero{padding:14px}.quicknav{top:6px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
@@ -1571,7 +1585,7 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
   <div class=car id=car><div class=ph>Kein Foto hinterlegt<br><small>⚙︎ → Foto-URL</small></div></div>
  </div>
 
- <div class=grid style="grid-template-columns:repeat(4,1fr)">
+ <div class="grid overview-kpis" aria-label="Fahrzeugübersicht" style="grid-template-columns:repeat(4,1fr)">
   <div class=tile><div class=k>KILOMETERSTAND</div><div class=v><span id=odo>–</span><small> km</small></div></div>
   <div class=tile><div class=k>AUSSEN</div><div class=v><span id=tout>–</span><small> °C</small></div></div>
   <div class=tile><div class=k>VERBRAUCH Ø</div><div class=v><span id=cons>–</span><small> kWh</small></div></div>
@@ -1700,8 +1714,11 @@ const SIL={
 klein:'<svg viewBox="0 0 320 130" xmlns="http://www.w3.org/2000/svg"><g transform="translate(16,14)"><path d="M 8,96 L 10,70 C 12,57 22,49 40,46 L 66,43 L 96,15 C 102,8 112,5 126,5 L 200,5 C 214,5 224,9 230,17 L 250,45 L 272,51 C 284,55 288,65 288,76 L 288,96 Z" fill="#3aa0ff"/><circle cx="60" cy="96" r="19" fill="#0a1120"/><circle cx="60" cy="96" r="12" fill="#3aa0ff"/><circle cx="240" cy="96" r="19" fill="#0a1120"/><circle cx="240" cy="96" r="12" fill="#3aa0ff"/></g></svg>',
 suv:'<svg viewBox="0 0 320 135" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,12)"><path d="M 6,100 L 8,62 C 10,48 20,40 38,37 L 60,34 L 88,10 C 94,4 104,1 118,1 L 214,1 C 228,1 238,5 242,13 L 252,36 L 278,42 C 290,46 294,56 294,68 L 294,100 Z" fill="#3aa0ff"/><circle cx="58" cy="100" r="22" fill="#0a1120"/><circle cx="58" cy="100" r="14" fill="#3aa0ff"/><circle cx="244" cy="100" r="22" fill="#0a1120"/><circle cx="244" cy="100" r="14" fill="#3aa0ff"/></g></svg>',
 limo:'<svg viewBox="0 0 330 130" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,14)"><path d="M 6,96 L 8,72 C 10,60 20,52 38,49 L 74,45 L 108,17 C 114,10 124,7 138,7 L 196,7 C 210,7 220,11 226,18 L 258,46 L 282,50 C 294,54 298,64 298,74 L 298,96 Z" fill="#3aa0ff"/><circle cx="62" cy="96" r="19" fill="#0a1120"/><circle cx="62" cy="96" r="12" fill="#3aa0ff"/><circle cx="248" cy="96" r="19" fill="#0a1120"/><circle cx="248" cy="96" r="12" fill="#3aa0ff"/></g></svg>',
-gross:'<svg viewBox="0 0 335 145" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,12)"><path d="M 4,112 L 6,66 C 8,52 18,44 36,41 L 56,38 L 82,14 C 88,8 98,5 112,5 L 228,5 C 242,5 252,9 256,17 L 264,40 L 288,46 C 300,50 304,60 304,72 L 304,112 Z" fill="#3aa0ff"/><circle cx="58" cy="112" r="23" fill="#0a1120"/><circle cx="58" cy="112" r="15" fill="#3aa0ff"/><circle cx="252" cy="112" r="23" fill="#0a1120"/><circle cx="252" cy="112" r="15" fill="#3aa0ff"/></g></svg>'};
+gross:'<svg viewBox="0 0 335 145" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,12)"><path d="M 4,112 L 6,66 C 8,52 18,44 36,41 L 56,38 L 82,14 C 88,8 98,5 112,5 L 228,5 C 242,5 252,9 256,17 L 264,40 L 288,46 C 300,50 304,60 304,72 L 304,112 Z" fill="#3aa0ff"/><circle cx="58" cy="112" r="23" fill="#0a1120"/><circle cx="58" cy="112" r="15" fill="#3aa0ff"/><circle cx="252" cy="112" r="23" fill="#0a1120"/><circle cx="252" cy="112" r="15" fill="#3aa0ff"/></g></svg>',
+kombi:'<svg viewBox="0 0 330 135" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,13)"><path d="M6 100 8 67c2-12 12-20 30-23l42-5 24-25c6-7 16-10 30-10h102c13 0 22 5 27 15l10 23 20 5c12 4 16 14 16 25v28Z" fill="#3aa0ff"/><circle cx="61" cy="100" r="20" fill="#0a1120"/><circle cx="61" cy="100" r="12" fill="#3aa0ff"/><circle cx="250" cy="100" r="20" fill="#0a1120"/><circle cx="250" cy="100" r="12" fill="#3aa0ff"/></g></svg>',
+van:'<svg viewBox="0 0 330 145" xmlns="http://www.w3.org/2000/svg"><g transform="translate(14,11)"><path d="M5 111 7 43c1-16 12-28 28-31h165c17 0 29 7 37 22l20 39 32 8c11 4 15 13 15 30Z" fill="#3aa0ff"/><circle cx="62" cy="111" r="22" fill="#0a1120"/><circle cx="62" cy="111" r="13" fill="#3aa0ff"/><circle cx="251" cy="111" r="22" fill="#0a1120"/><circle cx="251" cy="111" r="13" fill="#3aa0ff"/></g></svg>'};
 const C=703;
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function nv(x){return (x==null||x==='')?'–':x}
 function yn(id,cond,ja,nein,warn){var e=document.getElementById(id);if(!e)return;
  e.textContent=cond?ja:nein;e.className=warn?(cond?'warnc':'okc'):(cond?'okc':'no');}
@@ -1828,9 +1845,11 @@ async function load(){
  // Eigenes Foto? Sonst gezeichnete Silhouette + Hinweis, dass man sein Auto einsetzen kann.
  const car=document.getElementById('car'), pk=s.photo||('sil:'+(s.silhouette||'klein'));
  if(car.dataset.p!==pk){car.dataset.p=pk;
-  if(s.photo){car.innerHTML='<img src="'+s.photo+'" alt="Auto">';}
-  else{car.innerHTML='<div class=wrap>'+(SIL[s.silhouette]||SIL.klein)+
-   '<div class=hint><a href="/setup">📷 Eigenes Foto deines Autos einsetzen</a></div></div>';}}
+  const model=esc(s.model||'Elektrofahrzeug');
+  const caption='<div class=vehicle-caption><strong>'+model+'</strong><span>'+__T('Rechtlich neutrale Silhouette')+'</span></div>';
+  if(s.photo){car.innerHTML='<div class=wrap><img src="'+esc(s.photo)+'" alt="'+model+'">'+caption+'</div>';}
+  else{car.innerHTML='<div class=wrap>'+(SIL[s.silhouette]||SIL.klein)+caption+
+   '<div class=hint><a href="/setup">📷 '+__T('Eigenes Foto verwenden')+'</a></div></div>';}}
  if(s.lan_url){document.getElementById('lanhint').style.display='block';
   document.getElementById('lanurl').textContent=s.lan_url;}
  // Lade-Ansicht: nur wenn das Kabel dran ist
@@ -2233,10 +2252,14 @@ ENERGY_PANEL = r'''<style>
 .energy-message{margin:10px 0 14px;color:#9CA8C2;font-size:12px}.energy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}
 .energy-card{background:#1B2438;border:1px solid #2B3752;border-radius:14px;padding:14px;min-width:0}.energy-card .ek{color:#9CA8C2;font-size:10px;
  letter-spacing:1.2px;text-transform:uppercase;font-weight:800}.energy-card .ev{font-size:22px;font-weight:750;margin-top:5px;overflow-wrap:anywhere}
-.energy-card .es{color:#9CA8C2;font-size:12px;margin-top:5px}.vehicle-select{width:100%;text-align:left;background:#1B2438;border:1px solid #2B3752;
- color:#F5F7FB;border-radius:12px;padding:13px;cursor:pointer;font-weight:700}.vehicle-select.active{border-color:#14B8A6;box-shadow:inset 3px 0 #14B8A6}
+.energy-card .es{color:#9CA8C2;font-size:12px;margin-top:5px}.vehicle-select{width:100%;display:grid;grid-template-columns:96px minmax(0,1fr) auto;
+ grid-column:span 2;align-items:center;gap:12px;text-align:left;background:#1B2438;border:1px solid #2B3752;color:#F5F7FB;border-radius:14px;padding:12px;cursor:pointer}
+.vehicle-select:hover{border-color:#4F7CFF;background:#202B42}.vehicle-select.active{border-color:#14B8A6;box-shadow:inset 3px 0 #14B8A6}
+.vehicle-art{height:52px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#121A2B}.vehicle-art svg{width:88px;height:44px}
+.vehicle-copy{min-width:0}.vehicle-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.vehicle-copy small{display:block;color:#9CA8C2;margin-top:3px;font-weight:500}
+.vehicle-soc{font:750 19px/1 Inter,"Segoe UI Variable",Segoe UI,sans-serif;color:#F5F7FB;white-space:nowrap}.vehicle-legal{color:#9CA8C2;font-size:11px;margin:8px 2px 0}
 .energy-sub{margin:22px 0 9px;font-size:11px;letter-spacing:1.5px;color:#9CA8C2}.energy-discovery{margin-top:12px;color:#9CA8C2;font-size:12px}
-@media(max-width:600px){.energy-shell{margin:20px 14px;padding:16px}.energy-form input{width:100%}.energy-form button{flex:1}}
+@media(max-width:600px){.energy-shell{margin:20px 14px;padding:16px}.energy-form input{width:100%}.energy-form button{flex:1}.vehicle-select{grid-template-columns:76px minmax(0,1fr) auto}.vehicle-art svg{width:70px}}
 </style><section id="energy-panel" class="energy-shell">
 <div class="energy-head"><div><h2>⚡ Energie &amp; Ladepunkte</h2>
 <p>Ein lesender Überblick für Wallboxen, PV, Speicher und Fahrzeuge via evcc.</p></div><span id="evcc-health" class="chip">NICHT VERBUNDEN</span></div>
@@ -2246,6 +2269,7 @@ ENERGY_PANEL = r'''<style>
 <div id="evcc-message" class="energy-message">Optional – noch nicht verbunden</div>
 <div id="evcc-values" class="energy-grid"></div>
 <h3 class="energy-sub">FAHRZEUGE &amp; LADEPUNKTE</h3><div id="evcc-points" class="energy-grid"></div>
+<div class="vehicle-legal">Fahrzeugformen sind neutrale Illustrationen, keine Herstellerlogos oder exakten Modellabbildungen.</div>
 <div id="evcc-discovery" class="energy-discovery"></div>
 </section>
 <script>
@@ -2256,6 +2280,20 @@ ENERGY_PANEL = r'''<style>
  const card=(name,value,sub='')=>'<div class="energy-card"><div class="ek">'+escapeHtml(__T(name))+'</div><div class="ev">'+value+'</div>'+(sub?'<div class="es">'+sub+'</div>':'')+'</div>';
  const kw=v=>typeof v==='number'&&Number.isFinite(v)?(v/1000).toLocaleString('de-DE',{maximumFractionDigits:2})+' kW':'–';
  const escapeHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const vehicleKind=v=>{const s=[v.icon,v.brand,v.model,v.title].filter(Boolean).join(' ').toLowerCase();
+  if(/\bvan\b|bus|buzz|transporter|multivan/.test(s))return'van';
+  if(/kombi|wagon|estate|avant|variant|tourer|shooting/.test(s))return'kombi';
+  if(/suv|crossover|atto|tang|seal u|q[4-8]|id[. -]?[45]|enyaq|ariya|ix/.test(s))return'suv';
+  if(/limo|sedan|saloon|seal|han|a[468]|id[. -]?7|model [3s]/.test(s))return'limo';return'klein';};
+ const vehicleGlyph=v=>{const kind=vehicleKind(v), paths={
+  klein:'M8 34 11 24c2-5 7-8 15-9l15-2 10-10h26c7 0 11 3 15 10l15 3c7 2 9 7 9 18Z',
+  limo:'M7 34 10 25c2-5 7-8 15-9l18-2L56 4h26c7 0 12 3 17 10l17 3c7 2 9 7 9 17Z',
+  kombi:'M7 34 10 24c2-5 7-8 15-9l16-2L50 4h43c7 0 11 4 15 11l9 2c7 2 9 7 9 17Z',
+  suv:'M7 35 9 20c1-6 7-10 15-11l16-2 11-7h45c7 0 12 5 15 15l10 3c7 2 9 7 9 17Z',
+  van:'M7 35 9 12C10 5 15 1 23 1h67c8 0 13 4 17 13l11 5c6 2 8 7 8 16Z'};
+  return'<svg viewBox="0 0 134 46" role="img" aria-label="'+escapeHtml(kind)+'"><path d="'+paths[kind]+'" fill="#4F7CFF"/><circle cx="31" cy="35" r="9" fill="#0B1020"/><circle cx="31" cy="35" r="5" fill="#9CA8C2"/><circle cx="104" cy="35" r="9" fill="#0B1020"/><circle cx="104" cy="35" r="5" fill="#9CA8C2"/></svg>';};
+ const brandLabel=v=>escapeHtml(v.brand||([v.title,v.model].join(' ').match(/\b(BYD|Audi|VW|Volkswagen|Tesla|BMW|Mercedes|Skoda|Renault|Kia|Hyundai|Volvo|Cupra|Porsche)\b/i)||[])[0]||'EV');
+ const kindLabel=k=>__T({klein:'Kompakt',limo:'Limousine',kombi:'Kombi',suv:'SUV',van:'Van'}[k]||'Kompakt');
  let busy=false,timer=null,last=null;
  const schedule=()=>{clearTimeout(timer);timer=setTimeout(refresh,document.hidden?45000:(last&&last.loadpoints&&last.loadpoints.some(x=>x.charging)?7000:15000));};
  async function refresh(){
@@ -2275,7 +2313,7 @@ ENERGY_PANEL = r'''<style>
     (typeof site.green_share_home==='number'?card('Grünstromanteil',(site.green_share_home*100).toFixed(0)+' %','aktueller Hausverbrauch'):'');
    const vehicles=d.profiles||d.vehicles||[];
    const selected=localStorage.getItem('evc_selected_vehicle')||'';
-   const vehicleCards=vehicles.map(v=>'<button type="button" class="vehicle-select '+(selected===v.id?'active':'')+'" data-vehicle="'+escapeHtml(v.id)+'">🚘 '+escapeHtml(v.title)+' · '+(typeof v.soc==='number'?escapeHtml(v.soc)+' %':'–')+'</button>').join('');
+   const vehicleCards=vehicles.map(v=>{const kind=vehicleKind(v);return'<button type="button" class="vehicle-select '+(selected===v.id?'active':'')+'" data-vehicle="'+escapeHtml(v.id)+'"><span class="vehicle-art">'+vehicleGlyph(v)+'</span><span class="vehicle-copy"><strong>'+escapeHtml(v.title)+'</strong><small>'+brandLabel(v)+' · '+escapeHtml(kindLabel(kind))+'</small></span><span class="vehicle-soc">'+(typeof v.soc==='number'?escapeHtml(Math.round(v.soc))+' %':'–')+'</span></button>';}).join('');
    const chosen=vehicles.find(v=>v.id===selected)||vehicles[0];
    const details=chosen?card('Fahrzeug · '+escapeHtml(chosen.title),
     typeof chosen.soc==='number'?escapeHtml(chosen.soc)+' %':'–',
@@ -2413,6 +2451,7 @@ class H(BaseHTTPRequestHandler):
                     _f.append(_c)
                 d["chargers"] = sorted(_f, key=lambda x: x["km"])
             d["photo"] = _CFG.get("photo") or ""
+            d["model"] = _CFG.get("model") or "Elektrofahrzeug"
             d["reifen"] = _reifen_urteil(_STATE)
             d["features"] = _CFG.get("features") or {}
             # Kein eigenes Foto -> welche Silhouette passt zum Modell?

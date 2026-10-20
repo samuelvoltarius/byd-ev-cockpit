@@ -33,9 +33,13 @@ class ProfileTests(unittest.TestCase):
         self.assertFalse(data[1]["capabilities"]["remote_commands"])
 
     def test_unconfigured_evcc_vehicles_are_included(self):
-        data = combine_profiles([], [{"id": "vw-id4", "title": "VW ID.4", "soc": 55}])
+        data = combine_profiles([], [{"id": "vw-id4", "title": "VW ID.4", "soc": 55,
+                                     "brand": "Volkswagen", "model": "ID.4", "icon": "suv"}])
         self.assertEqual(data[0]["id"], "vw-id4")
         self.assertEqual(data[0]["soc"], 55)
+        self.assertEqual(data[0]["brand"], "Volkswagen")
+        self.assertEqual(data[0]["model"], "ID.4")
+        self.assertEqual(data[0]["icon"], "suv")
 
     def test_feature_metadata_alone_is_not_telemetry(self):
         saved = [{"id": "byd", "title": "BYD", "brand": "BYD",

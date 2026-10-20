@@ -6,7 +6,8 @@ class VehicleRegistryTests(unittest.TestCase):
     def test_multiple_brands_and_loadpoints(self):
         state = {
             "vehicles": {
-                "audi": {"title": "Audi Q4", "capacity": 77},
+                "audi": {"title": "Audi Q4", "capacity": 77,
+                          "manufacturer": "Audi", "model": "Q4 e-tron", "icon": "suv"},
                 "vw": {"title": "VW ID.4", "capacity": 77},
                 "byd": {"title": "BYD Dolphin"},
             },
@@ -20,6 +21,9 @@ class VehicleRegistryTests(unittest.TestCase):
         vehicles = {v["id"]: v for v in normalize_vehicles(state)}
         self.assertEqual(len(vehicles), 3)
         self.assertEqual(vehicles["audi"]["soc"], 62)
+        self.assertEqual(vehicles["audi"]["brand"], "Audi")
+        self.assertEqual(vehicles["audi"]["model"], "Q4 e-tron")
+        self.assertEqual(vehicles["audi"]["icon"], "suv")
         self.assertEqual(vehicles["vw"]["loadpoint"], "Carport")
         self.assertIsNone(vehicles["byd"]["loadpoint"])
 

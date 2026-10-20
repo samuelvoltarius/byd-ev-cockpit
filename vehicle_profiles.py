@@ -96,8 +96,10 @@ def combine_profiles(saved, evcc_vehicles, legacy_byd=None):
         else:
             live = by_id.get(profile["external_id"] or profile["id"], {})
             details = {k: live.get(k) for k in ("soc", "range_km", "charging",
-                                               "connected", "loadpoint", "charge_power_w")}
+                                               "connected", "loadpoint", "charge_power_w",
+                                               "icon", "model")}
             capabilities = {"telemetry": bool(live), "remote_commands": False}
-        result.append({**profile, **details, "capabilities": capabilities,
+        brand = profile.get("brand") or live.get("brand", "")
+        result.append({**profile, **details, "brand": brand, "capabilities": capabilities,
                        "online": bool(live)})
     return result
