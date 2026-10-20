@@ -91,6 +91,22 @@ Vehicle profiles are stored in `~/.evcockpit/vehicles.json`. The local
 `POST /vehicles/profiles` API accepts `{"profiles": [...]}`; credentials are discarded
 and never stored in these profiles.
 
+## BYD community route planner (optional)
+
+Members of the [BYD community map](https://byd.serveone.at) get a personal route-planner link
+(`byd.serveone.at/ev/#z=…`). Pasted into the setup wizard:
+
+- **Charge level to the planner:** the planner then knows your car's starting charge level. Only the latest
+  value is sent, no location, and only while the car is awake.
+- **Report trips** (separate tick): after each trip without charging, distance, duration, charge level
+  before/after and outside temperature go to the planner — **no places, no time of day**. It learns your
+  car's real consumption from that.
+- The cockpit shows a **"Plan a route"** button. The link key stays on your computer and is never part of the page.
+
+**Map:** by default the cockpit shows the same map as the planner and the Panoptes app (served by the community
+server, byd.serveone.at); until that server delivers it completely, OpenStreetMap. Untick "Community map style"
+for OpenStreetMap always. The map libraries (MapLibre, PMTiles) ship in the package, no CDN.
+
 ## Two cars
 
 Start a second instance with its own config folder and port:

@@ -92,6 +92,22 @@ Fahrzeugprofile werden unter `~/.evcockpit/vehicles.json` gespeichert. Die lokal
 `POST /vehicles/profiles` erwartet `{"profiles": [...]}`; Zugangsdaten werden aus den
 Profilen entfernt und niemals dort gespeichert.
 
+## Routenplaner der BYD-Community (optional)
+
+Mitglieder der [BYD-Community-Karte](https://byd.serveone.at) bekommen einen persönlichen Link zum
+Routenplaner (`byd.serveone.at/ev/#z=…`). Im Assistenten eingefügt, passiert Folgendes:
+
+- **Ladestand an den Planer:** Der Planer kennt dann den Start-Ladestand deines Autos. Gesendet wird nur der
+  letzte Wert, kein Ort, nur wenn das Auto wach ist.
+- **Fahrten melden** (eigenes Häkchen): Nach jeder Fahrt ohne Laden gehen Kilometer, Dauer, Ladestand
+  vorher/nachher und Außentemperatur an den Planer — **keine Orte, keine Uhrzeit**. Daraus lernt er den echten
+  Verbrauch deines Autos.
+- Im Cockpit erscheint der Knopf **„Route planen"**. Der Link-Schlüssel bleibt auf deinem Rechner und steht nie in der Seite.
+
+**Karte:** Das Cockpit zeigt standardmäßig dieselbe Karte wie Planer und Panoptes-App (vom Server der Community,
+byd.serveone.at); solange der Server sie nicht vollständig liefert, OpenStreetMap. Ohne Häkchen „Karte im
+Community-Look": immer OpenStreetMap. Die Kartenbibliotheken (MapLibre, PMTiles) liegen im Paket, kein CDN.
+
 ## Zwei Autos
 
 Zweite Instanz mit eigenem Konfig-Ordner und Port starten:
