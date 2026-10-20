@@ -397,11 +397,105 @@ def _dist_km(la1, lo1, la2, lo2):
     return 6371.0 * 2 * asin(sqrt(a))
 
 
+def _charger_rows(data, lat, lon):
+    """Normalise OpenGlance/Overpass and legacy Copilot charger responses."""
+    elements = data.get("elements") if isinstance(data, dict) else None
+    if isinstance(elements, list):
+        rows = []
+        for e in elements:
+            t = e.get("tags", {}) or {}
+            la, lo = e.get("lat"), e.get("lon")
+            try:
+                la, lo = float(la), float(lo)
+            except (TypeError, ValueError):
+                continue
+            socks, powers = [], []
+            for key, value in t.items():
+                if key.startswith("socket:") and key.count(":") == 1 and str(value).lower() not in ("no", "0"):
+                    socks.append(key.split(":", 1)[1].replace("_", " "))
+                if key.endswith(":output") or key in ("charging_station:output", "maxpower"):
+                    try:
+                        powers.append(float(str(value).lower().replace("kw", "").strip()))
+                    except ValueError:
+                        pass
+            try:
+                price = float(t.get("x:price_eur_kwh")) if t.get("x:price_eur_kwh") else None
+            except (TypeError, ValueError):
+                price = None
+            rows.append({
+                "name": str(t.get("name") or t.get("operator") or "Ladestation")[:80],
+                "operator": str(t.get("operator") or "")[:60],
+                "km": round(_dist_km(lat, lon, la, lo), 1),
+                "sockets": ", ".join(sorted(set(socks))[:4]),
+                "kw": max(powers) if powers else None,
+                "n": str(t.get("capacity") or "")[:12],
+                "eur_kwh": price if price and 0.1 <= price <= 3 else None,
+                "source": str(t.get("x:source") or "OpenStreetMap")[:40],
+                "lat": la, "lon": lo,
+            })
+        return rows
+    if isinstance(data, list):
+        rows = []
+        for item in data:
+            try:
+                la, lo = float(item.get("lat")), float(item.get("lon"))
+            except (AttributeError, TypeError, ValueError):
+                continue
+            sockets = item.get("stecker") or item.get("sockets") or []
+            if isinstance(sockets, list):
+                sockets = ", ".join(str(x).replace("_", " ") for x in sockets[:4])
+            ct = item.get("ct_kwh")
+            rows.append({
+                "name": str(item.get("name") or "Ladestation")[:80],
+                "operator": str(item.get("operator") or "")[:60],
+                "km": round(_dist_km(lat, lon, la, lo), 1),
+                "sockets": str(sockets)[:100], "kw": item.get("kw"),
+                "n": str(item.get("punkte") or item.get("n") or "")[:12],
+                "eur_kwh": (float(ct) / 100) if isinstance(ct, (int, float)) and ct > 0 else None,
+                "source": str(item.get("quelle") or "Eigener Server")[:40],
+                "lat": la, "lon": lo,
+            })
+        return rows
+    return None
+
+
+def _fetch_chargers_server(lat, lon, radius_m, base_url, token=""):
+    """Read the OpenGlance `/chargers` endpoint (or the older Copilot endpoint)."""
+    import urllib.request
+    base = str(base_url or "").strip().rstrip("/")
+    if not base.startswith(("https://", "http://")) or len(base) > 300:
+        return None
+    endpoint = base if base.endswith(("/chargers", "/api/chargers")) else base + "/chargers"
+    query = urllib.parse.urlencode({"lat": f"{lat:.6f}", "lon": f"{lon:.6f}",
+                                    "radius": int(radius_m)})
+    headers = {"Accept": "application/json", "User-Agent": "EV-Cockpit/%s" % VERSION}
+    if token:
+        headers["Authorization"] = "Bearer " + token
+        headers["X-Copilot-Token"] = token
+    try:
+        req = urllib.request.Request(endpoint + "?" + query, headers=headers)
+        with urllib.request.urlopen(req, timeout=20) as response:
+            raw = response.read(2_000_001)
+        if len(raw) > 2_000_000:
+            return None
+        return _charger_rows(json.loads(raw.decode("utf-8")), lat, lon)
+    except Exception:
+        return None
+
+
 def _fetch_chargers(lat, lon, radius_m=10000):
     """Ladesaeulen aus OpenStreetMap (Overpass). Kein Schluessel, keine Anmeldung.
     BEWUSST OHNE PREISE: es gibt keine verlaessliche freie Preisquelle — falsche Preise
     waeren schlimmer als gar keine. Daten sind Community-gepflegt, also ohne Gewaehr."""
     import urllib.request
+    own_url = _CFG.get("charger_url") or os.environ.get("EVCOCKPIT_CHARGERS_URL", "")
+    if own_url:
+        own = _fetch_chargers_server(lat, lon, radius_m, own_url,
+                                     _CFG.get("charger_token") or os.environ.get("EVCOCKPIT_CHARGERS_TOKEN", ""))
+        if own is not None:
+            _STATE["charger_source"] = "Eigener OpenGlance-Server · E-Control / Bundesnetzagentur"
+            own.sort(key=lambda x: x["km"])
+            return own[:8]
     q = ('[out:json][timeout:25];node["amenity"="charging_station"](around:%d,%f,%f);out body 40;'
          % (radius_m, lat, lon))
     # Overpass ist ein freier Gemeinschaftsdienst und antwortet unter Last auch mal mit 504.
@@ -419,6 +513,7 @@ def _fetch_chargers(lat, lon, radius_m=10000):
             continue
     if not d:
         return []
+    _STATE["charger_source"] = "OpenStreetMap · öffentliche Ausweichquelle"
     # OSM nutzt amenity=charging_station AUCH fuer E-Bike-Ladepunkte — in der Praxis ist das
     # fast die Haelfte der Treffer. Ohne Filter zeigen wir einem Autofahrer Fahrradsaeulen.
     AUTO_STECKER = ("type2", "type2_combo", "type2_cable", "ccs", "chademo", "type1",
@@ -474,10 +569,9 @@ def _charger_loop():
                 alt = time.time() - (_STATE.get("_chg_ts") or 0) > 43200
                 if weit or alt:
                     c = _fetch_chargers(la, lo)
-                    if c:
-                        _STATE["chargers"] = c
-                        _STATE["_chg_ts"] = time.time()
-                        letzte = (la, lo)
+                    _STATE["chargers"] = c
+                    _STATE["_chg_ts"] = time.time()
+                    letzte = (la, lo)
         except Exception:
             pass                       # Ladesaeulen sind nie wichtig genug fuer eine Fehlermeldung
         # Noch nichts gefunden (z.B. Overpass ueberlastet)? Bald nochmal statt 10 min stumm.
@@ -1169,8 +1263,15 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
    <input type=checkbox id=chargers>
    <div><div class=h>🔌 Ladesäulen in der Nähe anzeigen</div>
     <small>Zeigt öffentliche Ladestationen am Standort deines Autos mit Entfernung und Steckertyp.
-    Quelle: OpenStreetMap; ohne Konto und ohne Preisangaben.</small></div>
+    Nutzt deinen OpenGlance-Server, wenn du ihn unten einträgst; sonst OpenStreetMap.</small></div>
   </div>
+  <details style="margin:0 0 14px 46px">
+   <summary style="cursor:pointer;color:var(--mut);font-size:13px">Eigener OpenGlance-Server</summary>
+   <label>Serveradresse</label>
+   <input id=chargerurl placeholder="https://dein-server.ts.net:8464">
+   <label>Token <small style="text-transform:none;letter-spacing:0">(meist leer; Tailscale meldet dich automatisch an)</small></label>
+   <input id=chargertoken type=password placeholder="optional">
+  </details>
 
   <div class=chk>
    <input type=checkbox id=lan>
@@ -1312,6 +1413,8 @@ function vorfuellen(){
  document.getElementById('upd').checked=!!VOR.update_check;
  document.getElementById('price').checked=!!VOR.show_price;
  document.getElementById('chargers').checked=!!VOR.show_chargers;
+ document.getElementById('chargerurl').value=VOR.charger_url||'';
+ if(VOR.has_charger_token) document.getElementById('chargertoken').placeholder='••••••• (gespeichert — leer lassen zum Behalten)';
  if(VOR.pv){document.getElementById('pv').checked=true;
   document.getElementById('pvrow').style.display='block';
   document.getElementById('pvurl').value=VOR.pv_url||'';
@@ -1440,6 +1543,8 @@ async function save(){const m=document.getElementById('smsg');
  b.show_price=document.getElementById('price').checked;
  b.poll_min=parseInt(document.getElementById('poll').value,10);
  b.show_chargers=document.getElementById('chargers').checked;
+ b.charger_url=document.getElementById('chargerurl').value.trim();
+ b.charger_token=document.getElementById('chargertoken').value.trim();
  b.pv=document.getElementById('pv').checked;
  b.pv_url=document.getElementById('pvurl').value.trim();
  b.pv_token=document.getElementById('pvtoken').value.trim();
@@ -1723,8 +1828,7 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
   <div class=sect>LADESÄULEN IN DER NÄHE</div>
   <div class=tile style="padding:6px 4px"><div id=chglist></div></div>
   <div style="color:var(--mut);font-size:11.5px;margin:8px 2px 0">
-   Daten: © OpenStreetMap-Mitwirkende (ODbL) · von Freiwilligen gepflegt, ohne Gewähr ·
-   <b>bewusst ohne Preisangaben</b>
+   Quelle: <b id=chgsrc>OpenStreetMap</b> · Angaben ohne Gewähr
   </div>
  </div>
 
@@ -1788,9 +1892,9 @@ function zeichneKarte(s){
   MAP._k=key; MK_CHG.forEach(m=>MAP.removeLayer(m)); MK_CHG=[];
   const ic2=L.divIcon({className:'',html:'<div class=mk-chg>⚡</div>',iconSize:[18,18],iconAnchor:[9,9]});
   (s.chargers||[]).forEach(c=>{
-   const d=[c.operator,c.sockets,(c.kw?c.kw+' kW':'')].filter(Boolean).join(' · ');
+   const d=[c.operator,c.sockets,(c.kw?c.kw+' kW':''),(c.eur_kwh?'€ '+Number(c.eur_kwh).toFixed(2).replace('.',',')+'/kWh':'')].filter(Boolean).join(' · ');
    MK_CHG.push(L.marker([c.lat,c.lon],{icon:ic2}).addTo(MAP)
-    .bindPopup('<b>'+c.name+'</b>'+(d?'<br>'+d:'')+'<br>'+c.km+__T(' km entfernt')));
+    .bindPopup('<b>'+esc(c.name)+'</b>'+(d?'<br>'+esc(d):'')+'<br>'+c.km+__T(' km entfernt')));
   });
   if(MK_CHG.length){MAP.fitBounds(L.featureGroup(MK_CHG.concat([MK_CAR])).getBounds().pad(0.15));}
  }
@@ -1944,13 +2048,14 @@ async function load(){
  // Ladesaeulen
  if(s.chargers&&s.chargers.length){
   document.getElementById('chgbox').style.display='block';
+  document.getElementById('chgsrc').textContent=s.charger_source||'OpenStreetMap';
   const k=JSON.stringify(s.chargers), box=document.getElementById('chglist');
   if(box.dataset.k!==k){box.dataset.k=k;
    box.innerHTML=s.chargers.map(c=>{
-    const d=[c.operator,c.sockets,(c.kw?c.kw+' kW':''),(c.n?c.n+'x':'')].filter(Boolean).join(' · ');
+    const d=[c.operator,c.sockets,(c.kw?c.kw+' kW':''),(c.n?c.n+'x':''),(c.eur_kwh?'€ '+Number(c.eur_kwh).toFixed(2).replace('.',',')+'/kWh':'')].filter(Boolean).join(' · ');
     return '<div class=chg><div><div class=nm>'+
       '<a href="https://www.openstreetmap.org/?mlat='+c.lat+'&mlon='+c.lon+'#map=17/'+c.lat+'/'+c.lon+'" target="_blank" rel="noopener">'+
-      c.name+'</a></div>'+(d?'<div class=sub>'+d+'</div>':'')+'</div><div class=km>'+c.km+' km</div></div>';
+      esc(c.name)+'</a></div>'+(d?'<div class=sub>'+esc(d)+'</div>':'')+'</div><div class=km>'+c.km+' km</div></div>';
    }).join('');}
  }
  // Waechter
@@ -2425,10 +2530,11 @@ class H(BaseHTTPRequestHandler):
         # nachreichen kann, ohne alles neu zu tippen. Passwort wird NICHT ausgeliefert.
         vor = {k: _CFG.get(k) for k in ("username", "country_code", "time_zone", "vin", "model",
                                         "battery_kwh", "tyre_target", "lan", "count_optin", "show_price",
-                                        "poll_min", "sentry", "car_adb", "show_chargers", "update_check", "features",
+                                        "poll_min", "sentry", "car_adb", "show_chargers", "charger_url", "update_check", "features",
                                         "ha", "ha_host", "ha_port", "ha_user",
                                         "pv", "pv_url", "pv_entity")}
         vor["has_pw"] = bool(_CFG.get("password"))
+        vor["has_charger_token"] = bool(_CFG.get("charger_token"))
         vor["has_photo"] = PHOTO_FILE.exists()
         vor["vin_known"] = _CFG.get("vin") or ""
         html = (WIZARD.replace("__COUNTRIES__", opts).replace("__TZ__", tzs)
@@ -2630,6 +2736,8 @@ class H(BaseHTTPRequestHandler):
                     c["ha_pass"] = _CFG["ha_pass"]
                 if not c.get("pv_token") and _CFG.get("pv_token"):
                     c["pv_token"] = _CFG["pv_token"]
+                if not c.get("charger_token") and _CFG.get("charger_token"):
+                    c["charger_token"] = _CFG["charger_token"]
                 # Foto als Datei ablegen (nicht in die config.json quetschen)
                 pd = c.pop("photo_data", "") or ""
                 if pd.startswith("data:image"):
