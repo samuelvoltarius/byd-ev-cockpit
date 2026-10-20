@@ -37,6 +37,14 @@ class TestSperre(unittest.TestCase):
         self.assertFalse(self.ok(power_level="kaputt", vehicle_state=None))
 
 
+class TestBefehlsliste(unittest.TestCase):
+    def test_aufsperren_nie(self):
+        from sicherheit import ERLAUBTE_BEFEHLE, NIE
+        self.assertIn("unlock", NIE)
+        self.assertNotIn("unlock", ERLAUBTE_BEFEHLE)
+        self.assertIn("find", ERLAUBTE_BEFEHLE)     # Hupe/Licht geht durch dieselbe Sperre wie alle anderen
+
+
 class TestStillerBeweis(unittest.TestCase):
     def test_letzte_regulaere_abfrage(self):
         from sicherheit import aus_letzter_abfrage

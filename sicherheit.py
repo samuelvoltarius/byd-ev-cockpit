@@ -13,6 +13,14 @@ Fernsitzung. Deshalb gilt fuer JEDEN Cloud-Befehl (Klima, Batterieheizung, Sitze
 
 FRISCH_S = 180
 
+# Gleiche Regeln wie Alfreds Bridge (befehl_gate.py, 21.10.2026): nur bei LIVE bestaetigtem "aus", hoechstens
+# 180 s alt, gilt fuer ALLE Befehle (auch Batterie, Hupe/Licht), Aufsperren NIE. Der power_level von Panoptes kommt
+# per HTTP direkt aus dem Fahrzeug-SDK (collectTelemetry, ~2 s Cache), nicht aus einem gespeicherten MQTT-Wert.
+ERLAUBTE_BEFEHLE = ("heat", "cool", "off", "batt_on", "batt_off", "find", "lock",
+                    "seat_off", "seat_lo", "seat_hi", "vent_off", "vent_lo", "vent_hi")
+NIE = ("unlock",)
+assert not set(ERLAUBTE_BEFEHLE) & set(NIE)
+
 GRUND_AN = "das Auto ist eingeschaltet"
 GRUND_FAEHRT = "das Auto fährt oder ist nicht in P"
 GRUND_UNBEKANNT = "ob das Auto aus ist, lässt sich gerade nicht sicher feststellen"

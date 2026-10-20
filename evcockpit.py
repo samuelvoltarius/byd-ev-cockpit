@@ -348,7 +348,7 @@ def _auth_failure(error):
                                      "invalid credential", "login failed"))
 
 
-from sicherheit import befehl_erlaubt, aus_letzter_abfrage
+from sicherheit import befehl_erlaubt, aus_letzter_abfrage, ERLAUBTE_BEFEHLE, NIE
 from live_saeulen import Live
 
 _LIVE = Live()
@@ -3519,8 +3519,7 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json")
         elif u.path == "/cmd":
             a = (urllib.parse.parse_qs(u.query).get("a") or [""])[0]
-            if a in ("heat", "cool", "off", "batt_on", "batt_off", "find", "lock",
-                     "seat_off", "seat_lo", "seat_hi", "vent_off", "vent_lo", "vent_hi"):
+            if a in ERLAUBTE_BEFEHLE and a not in NIE:     # Aufsperren gibt es nie (Alfred, 21.10.)
                 _run_cmd(a)
                 self._send(json.dumps({"ok": True}), "application/json")
             else:
