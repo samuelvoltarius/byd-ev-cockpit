@@ -92,6 +92,14 @@ Fahrzeugprofile werden unter `~/.evcockpit/vehicles.json` gespeichert. Die lokal
 `POST /vehicles/profiles` erwartet `{"profiles": [...]}`; Zugangsdaten werden aus den
 Profilen entfernt und niemals dort gespeichert.
 
+## Daten direkt von Panoptes im Auto (optional)
+
+Läuft die Panoptes-App (vormals SurfMate) im Auto, holt das Cockpit Ladestand, Kilometer, Standort,
+Gang, Schloss und Außentemperatur direkt von dort (Heimnetz oder Tailscale, Port 8180) — jede Minute,
+ohne die BYD-Cloud zu belasten. Im Assistenten Adresse und Kopplungs-Code aus der App eintragen;
+„Verbindung prüfen" zeigt sofort, ob es klappt. Ist das Auto aus oder nicht erreichbar, fragt das Cockpit
+wie bisher die BYD-Cloud. **Steuern (Klima, Schloss, Laden) läuft weiterhin über die BYD-Cloud.**
+
 ## Routenplaner der BYD-Community (optional)
 
 Mitglieder der [BYD-Community-Karte](https://byd.serveone.at) bekommen einen persönlichen Link zum

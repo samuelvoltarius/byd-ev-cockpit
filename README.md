@@ -91,6 +91,14 @@ Vehicle profiles are stored in `~/.evcockpit/vehicles.json`. The local
 `POST /vehicles/profiles` API accepts `{"profiles": [...]}`; credentials are discarded
 and never stored in these profiles.
 
+## Data directly from Panoptes in the car (optional)
+
+If the Panoptes app (formerly SurfMate) runs in the car, the cockpit reads charge level, mileage, location,
+gear, lock state and outside temperature directly from it (home network or Tailscale, port 8180) — every
+minute, without loading the BYD cloud. Enter the car address and the pairing code from the app in the
+wizard; "Test connection" shows right away whether it works. If the car is off or unreachable, the cockpit
+asks the BYD cloud as before. **Controls (climate, lock, charging) still go through the BYD cloud.**
+
 ## BYD community route planner (optional)
 
 Members of the [BYD community map](https://byd.serveone.at) get a personal route-planner link
