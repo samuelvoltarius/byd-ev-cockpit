@@ -3,9 +3,10 @@
 Was passiert (nur mit Haekchen im Assistenten und dem persoenlichen Planer-Link):
   - Ladestand melden: der Planer fuellt damit den Start-Ladestand vor. Gespeichert wird dort
     nur der letzte Wert, kein Verlauf, kein Ort.
-  - Fahrten melden (eigenes Haekchen): nach einer Fahrt ohne Laden gehen Kilometer, Dauer,
-    Ladestand vorher/nachher und Aussentemperatur an den Planer - KEINE Koordinaten, keine
-    Uhrzeit. Daraus lernt der Planer den echten Verbrauch deines Autos.
+  - Fahrten auswerten (eigenes Haekchen): Fahrten bleiben auf DIESEM Rechner. Fuer jede Fahrt
+    fragt das Cockpit beim Planer nur den Modellwert ab (dort wird nichts gespeichert), rechnet
+    daraus selbst den Korrekturfaktor und schickt nur diesen Faktor (Vorgabe: kein Fahrtenbuch
+    auf dem Server).
 Der Schluessel aus dem Link bleibt auf diesem Rechner und geht nur als Kopfzeile an den Planer.
 """
 import json
@@ -138,12 +139,29 @@ class Fahrtenschreiber:
         return aus
 
 
-class Bruecke:
-    """Haelt den Zustand fuer Cockpit-Thread und Anzeige."""
-    SOC_TAKT_S = 900
+SCHRUMPF_K = 4.0
+FAKTOR_MIN, FAKTOR_MAX = 0.70, 1.40
 
-    def __init__(self, anfrage=_anfrage, uhr=time.time):
+
+def faktor_aus(verhaeltnisse):
+    """Median der Verhaeltnisse gemessen/Modell, bei wenigen Fahrten zu 1.0 hin gezogen (wie im Planer)."""
+    if not verhaeltnisse:
+        return 1.0
+    v = sorted(verhaeltnisse)
+    n = len(v)
+    med = v[n // 2] if n % 2 else (v[n // 2 - 1] + v[n // 2]) / 2.0
+    return max(FAKTOR_MIN, min(FAKTOR_MAX, 1.0 + (med - 1.0) * (n / (n + SCHRUMPF_K))))
+
+
+class Bruecke:
+    """Haelt den Zustand fuer Cockpit-Thread und Anzeige. `speicher` = (laden, speichern) fuer die
+    lokalen Verhaeltnisse je Profil (bleiben auf diesem Rechner)."""
+    SOC_TAKT_S = 900
+    MAX_JE_PROFIL = 200
+
+    def __init__(self, anfrage=_anfrage, uhr=time.time, speicher=None):
         self.anfrage, self.uhr = anfrage, uhr
+        self.laden, self.speichern = speicher or ((lambda: {}), (lambda d: None))
         self.schreiber = Fahrtenschreiber()
         self.soc_gesendet = None
         self.soc_t = 0.0
@@ -167,13 +185,32 @@ class Bruecke:
         fahrt = self.schreiber.neu(jetzt, st.get("odometer"), soc, st.get("charging") == "ON",
                                    st.get("temp_out"))
         if fahrt and cfg.get("planer_fahrten") and cfg.get("planer_fahrzeug"):
-            fahrt["fahrzeug"] = cfg["planer_fahrzeug"]
-            fahrt["quelle"] = "ev-cockpit"          # Planer erkennt so dieselbe Fahrt aus Panoptes
-            code, d = self.anfrage("fahrt", token, fahrt)
-            if code == 200 and d.get("ok"):
-                self.status["fahrten"] += 1
-                self.status["fahrt_letzte"] = {"km": fahrt["km"], "kwh_100km": d.get("verbrauch_kwh_100km"),
-                                               "t": jetzt}
-            else:
-                # Der Planer prueft streng (Tempo, Verbrauch); eine abgelehnte Fahrt ist kein Fehler
-                self.status["fehler"] = "Fahrt nicht uebernommen: %s" % (d.get("fehler") or code)
+            self._fahrt_auswerten(token, cfg["planer_fahrzeug"], fahrt, jetzt)
+
+    def _fahrt_auswerten(self, token, profil, fahrt, jetzt):
+        # 1. Modellwert holen (der Planer speichert nichts)
+        code, m = self.anfrage("modell-verbrauch", token, dict(fahrt, fahrzeug=profil))
+        if code != 200 or not m.get("ok"):
+            self.status["fehler"] = "Fahrt nicht ausgewertet: %s" % (m.get("fehler") or code)
+            return
+        kwh = (m.get("akku_kwh") or 0) * (fahrt["soc_start"] - fahrt["soc_ende"]) / 100.0
+        verh = kwh / m["modell_kwh"] if m.get("modell_kwh") else 0
+        if not (0.4 <= verh <= 2.5):
+            self.status["fehler"] = "Fahrt unplausibel (Faktor %.2f) - nicht gezaehlt" % verh
+            return
+        # 2. lokal merken (nur Verhaeltnisse, keine Fahrtdaten) und Faktor rechnen
+        alle = self.laden() or {}
+        liste = (alle.get(profil) or [])[-(self.MAX_JE_PROFIL - 1):] + [round(verh, 4)]
+        alle[profil] = liste
+        self.speichern(alle)
+        f = faktor_aus(liste)
+        # 3. nur den fertigen Faktor senden
+        code, d = self.anfrage("mein-faktor", token, {"fahrzeug": profil, "faktor": round(f, 3),
+                                                       "fahrten": len(liste), "quelle": "ev-cockpit"})
+        if code == 200 and d.get("ok"):
+            self.status["fahrten"] = len(liste)
+            self.status["fahrt_letzte"] = {"km": fahrt["km"], "kwh_100km": round(kwh / fahrt["km"] * 100, 1),
+                                           "faktor": round(f, 3), "t": jetzt}
+            self.status["fehler"] = ""
+        else:
+            self.status["fehler"] = "Faktor nicht uebernommen: %s" % (d.get("fehler") or code)
