@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.5"
+VERSION = "1.5.1"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -2274,7 +2274,11 @@ function basiskarte(m){
 // frei = normal, belegt = rot, ausser Betrieb = grau, Status unbekannt = grau mit "?". Alle Planer-Stationen
 // im Radius; OSM-Saeulen nur je Station (120 m) ausgeblendet. Daten holt der lokale Cockpit-Server beim Planer.
 function liveSaeulen(m){
- const g=GL_KARTE.getMaplibreMap();let basis=null,warte=null;
+ const g=GL_KARTE.getMaplibreMap();let basis=null,warte=null,osmBild=null;
+ // v2.1: solange die Live-Ebene sichtbar ist (ab Zoom 11), zeigen OSM-Saeulen ohne Planer-Station "?",
+ // darunter wieder ihr normales Symbol (Referenz: Planer /ev/ osmSymbol()).
+ const osmSymbol=()=>{if(osmBild===null||!g.hasImage('charge-unknown'))return;
+  g.setLayoutProperty('chargers','icon-image',g.getZoom()>=11?['case',['==',['get','dc'],1],'charge-dc-unknown','charge-unknown']:osmBild);};
  async function laden(){
   if(!g.getSource('live')||m.getZoom()<11) return;
   const c=m.getCenter();
@@ -2282,9 +2286,6 @@ function liveSaeulen(m){
     body:JSON.stringify({lat:c.lat,lon:c.lng})});if(!r.ok)return;const d=await r.json();
    g.getSource('live').setData({type:'FeatureCollection',features:d.features||[]});
    g.setFilter('chargers',d.osm_maske?['all',basis,['!',['within',d.osm_maske]]]:basis);
-   // Grau = Status unbekannt (Alfred): solange Live laeuft, zeigen die uebrigen OSM-Saeulen das "?"
-   if(g.hasImage('charge-unknown')) g.setLayoutProperty('chargers','icon-image',
-     ['case',['==',['get','dc'],1],'charge-dc-unknown','charge-unknown']);
    const qs=(d.quellen||[]).map(q=>q.quelle).join(', ');
    if(qs!==(window.LIVE_QUELLEN||'')){if(window.LIVE_QUELLEN)m.attributionControl.removeAttribution('Belegung: '+esc(window.LIVE_QUELLEN));
     if(qs)m.attributionControl.addAttribution('Belegung: '+esc(qs));window.LIVE_QUELLEN=qs;}
@@ -2293,6 +2294,7 @@ function liveSaeulen(m){
  const start=()=>{
   if(g.getSource('live')||!g.getLayer('chargers')) return;
   basis=g.getFilter('chargers')||['==',['get','t'],'charger'];
+  osmBild=g.getLayoutProperty('chargers','icon-image')||'charge';
   const bild=(z,dc)=>{const n=(dc?'charge-dc':'charge')+({belegt:'-busy',aus:'-off',unbekannt:'-unknown'}[z]||'');
    return g.hasImage(n)?n:(dc?'charge-dc':'charge');};
   g.addSource('live',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
@@ -2309,7 +2311,8 @@ function liveSaeulen(m){
    'text-offset':[0,1.5],'text-anchor':'top','text-optional':true},
    paint:{'text-color':['match',['get','zustand'],'belegt','#FF5A4E',['aus','unbekannt'],'#8FA6B0','#B5F23D'],
     'text-halo-color':'#071a2b','text-halo-width':1.4}},g.getLayer('signals')?'signals':undefined);
-  laden();
+  laden();osmSymbol();
+  g.on('zoomend',osmSymbol);
   m.on('moveend',()=>{clearTimeout(warte);warte=setTimeout(laden,600);});
   setInterval(laden,120000);
  };

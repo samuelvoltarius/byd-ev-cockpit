@@ -143,6 +143,12 @@ class TestBruecke(unittest.TestCase):
         self.b.nach_abfrage(self.cfg, {"online": "ON", "soc": 50})
         self.assertEqual(self.calls[0][2], {"soc": 50.0, "quelle": "ev-cockpit", "auto": "evc-1a2b3c4d"})
 
+    def test_soc_mit_anzeigename(self):
+        self.b.nach_abfrage(dict(self.cfg, model="BYD Dolphin Surf (Comfort, 43,2 kWh) mit sehr langem Namen"),
+                            {"online": "ON", "soc": 50})
+        self.assertEqual(self.calls[0][2]["auto_name"], "BYD Dolphin Surf (Comfort, 43,")   # max. 30 Zeichen
+        self.assertNotIn("vin", self.calls[0][2])
+
     def test_mit_panoptes_meldet_das_cockpit_nichts(self):
         cfg = dict(self.cfg, panoptes=True, panoptes_url="http://auto:8180", panoptes_code="123456")
         self.b.nach_abfrage(cfg, {"online": "ON", "soc": 50})

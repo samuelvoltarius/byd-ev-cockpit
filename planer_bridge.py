@@ -198,6 +198,9 @@ class Bruecke:
             daten = {"soc": float(soc), "quelle": "ev-cockpit"}
             if auto:
                 daten["auto"] = auto
+            name = str(cfg.get("model") or "").strip()[:30]
+            if name:
+                daten["auto_name"] = name          # Anzeigename im Planer ("Meine Autos"), nie VIN
             code, d = self.anfrage("mein-soc", token, daten)
             if code == 200:
                 self.soc_gesendet, self.soc_t = float(soc), jetzt
