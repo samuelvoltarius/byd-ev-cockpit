@@ -579,7 +579,10 @@ def _charger_loop():
 
 
 # ---------------------------------------------------------------- Waechter-Kamera (optional, Bastler)
-SENT_GLOB = "/storage/*/Overdrive/surveillance"      # Glob ueber alle Sticks -> Stick-Wechsel egal
+# Glob ueber alle Sticks -> Stick-Wechsel egal. SurfMate (Nachfolger) und Overdrive:
+# ls -t sortiert die Treffer beider Ordner gemeinsam, die neueste Aufnahme gewinnt.
+SENT_GLOB = " ".join(d + "/event_*.jpg" for d in (
+    "/storage/*/SurfMate/surveillance", "/storage/*/Overdrive/surveillance"))
 
 
 def _adb(args, timeout=30):
@@ -608,7 +611,7 @@ def _local_capabilities():
 
 
 def _sentry_loop():
-    """Holt die neueste Auslöse-Aufnahme des Overdrive-Wächters per adb vom USB-Stick im Auto.
+    """Holt die neueste Auslöse-Aufnahme des SurfMate- bzw. Overdrive-Wächters per adb vom USB-Stick im Auto.
     NUR aktiv, wenn im Assistenten angehakt UND eine adb-Adresse hinterlegt ist.
     Braucht: adb im System, kabelloses adb am Auto, Overdrive + USB-Stick. Das haben wenige."""
     import shutil, subprocess
@@ -627,7 +630,7 @@ def _sentry_loop():
                 subprocess.run(["adb", "connect", _CFG["car_adb"]], capture_output=True, timeout=15)
             except Exception:
                 pass
-            r = _adb(["shell", "ls -t %s/event_*.jpg 2>/dev/null | head -1" % SENT_GLOB], timeout=20)
+            r = _adb(["shell", "ls -t %s 2>/dev/null | head -1" % SENT_GLOB], timeout=20)
             ev = r.stdout.decode(errors="ignore").strip()
             if not ev.endswith(".jpg"):
                 _STATE["sentry_err"] = ("Auto per adb nicht erreichbar oder keine Aufnahmen gefunden "
