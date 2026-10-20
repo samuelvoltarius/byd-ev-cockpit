@@ -3167,6 +3167,10 @@ class H(BaseHTTPRequestHandler):
                     c["install_id"] = _CFG.get("install_id") or uuid.uuid4().hex[:16]
                 else:
                     c.pop("install_id", None)      # Haekchen weg -> ID weg
+                # Planer-Kennung des Autos bleibt dieselbe, sonst saehe der Planer nach jedem Speichern
+                # ein "neues" Auto. Nur bei anderem Fahrzeug (VIN) eine neue.
+                if _CFG.get("planer_auto") and c.get("vin") == _CFG.get("vin"):
+                    c["planer_auto"] = _CFG["planer_auto"]
                 c.pop("auth_blocked", None)       # bewusstes Speichern erlaubt genau einen neuen Versuch
                 save_cfg(c)
                 load_cfg()
