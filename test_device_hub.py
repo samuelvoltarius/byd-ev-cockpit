@@ -3,6 +3,13 @@ from unittest.mock import patch
 import device_hub
 
 
+class FakeResponse:
+    status = 200
+    def __enter__(self): return self
+    def __exit__(self, *args): return False
+    def read(self, size): return b'{"version":"1.2.3","loadpoints":[],"config":"private"}'
+
+
 class DiscoveryTests(unittest.TestCase):
     def test_lan_validation(self):
         self.assertEqual(device_hub.lan_address("192.168.0.5"), "192.168.0.5")
@@ -20,6 +27,13 @@ class DiscoveryTests(unittest.TestCase):
         probe.side_effect = lambda ip: {"ip": ip, "online": ip.endswith(".1")}
         results = device_hub.discover("192.168.1.0/30")
         self.assertEqual([x["ip"] for x in results], ["192.168.1.1"])
+
+    @patch("device_hub.open_lan_url", return_value=FakeResponse())
+    def test_evcc_probe_is_minimized(self, open_url):
+        result = device_hub.probe("192.168.1.20")
+        self.assertEqual(result["vendor"], "evcc")
+        self.assertEqual(result["model"], "1.2.3")
+        self.assertNotIn("data", result)
 
 
 if __name__ == "__main__":

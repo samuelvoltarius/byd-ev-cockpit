@@ -26,8 +26,9 @@ jemand, dem du vertraust) kann nachlesen, dass das Programm
 
 - deine Zugangsdaten **nur lokal** speichert (`~/.evcockpit/` auf deinem Rechner),
 - **nichts** an den Autor oder irgendeine Webseite sendet,
-- nur mit **zwei** Gegenstellen redet: der **BYD-Cloud** (dein Auto) und — nur wenn du es
-  einschaltest — **deinem eigenen Home Assistant**.
+- nur mit ausdrücklich eingerichteten Gegenstellen redet: der **BYD-Cloud** für die
+  native BYD-Ansicht sowie optional deinem **Home Assistant**, **evcc** und lokalen
+  Geräten im privaten Netz.
 
 Es gibt genau **eine** freiwillige, standardmäßig **abgeschaltete** Ausnahme: einen
 anonymen Zähl-Ping (nur „jemand hat es installiert" + Modell, **keine** IP, **kein**
@@ -70,6 +71,27 @@ selbst auf (MQTT-Discovery) — mit allen Werten und Schaltern. Braucht einen MQ
 (bei HA meist das Mosquitto-Add-on). Wer eine PV-Anlage in HA hat, kann seine
 Solar-Leistung neben Ladestand und Strompreis anzeigen lassen — **nur lesend**.
 
+## Wallboxen, PV-Anlagen und weitere Fahrzeuge (optional)
+
+Das Cockpit liest die herstellerneutrale lokale API von [evcc](https://evcc.io/). Damit
+funktionieren alle in evcc eingerichteten Wallboxen, Netz-/PV-/Batteriezähler und
+Fahrzeuge unabhängig vom Hersteller — zum Beispiel go-e, BYD, VW oder Audi. Das Cockpit
+sendet über diese Verbindung keine Lade- oder Fahrzeugbefehle.
+
+Geräte ohne fertigen evcc-Adapter können in evcc als **benutzerdefiniertes Gerät** über
+lokales HTTP, MQTT oder Modbus beschrieben werden. Das ist auch der saubere Weg für
+Tuya-basierte Hardware: Sie benötigt eine dokumentierte lokale Schnittstelle oder eine
+lokale Bridge wie Home Assistant/MQTT. Eine reine proprietäre Hersteller-Cloud kann nicht
+sicher und wahrheitsgemäß als „universell unterstützt“ bezeichnet werden.
+
+Im Cockpit die private IPv4-Adresse des evcc-Servers und dessen Port (normalerweise 7070)
+eintragen. Aus Sicherheitsgründen werden nur RFC-1918-Adressen (`10/8`, `172.16/12`,
+`192.168/16`) akzeptiert und HTTP-Weiterleitungen nicht verfolgt.
+
+Fahrzeugprofile werden unter `~/.evcockpit/vehicles.json` gespeichert. Die lokale API
+`POST /vehicles/profiles` erwartet `{"profiles": [...]}`; Zugangsdaten werden aus den
+Profilen entfernt und niemals dort gespeichert.
+
 ## Zwei Autos
 
 Zweite Instanz mit eigenem Konfig-Ordner und Port starten:
@@ -96,7 +118,8 @@ EVCOCKPIT_CFGDIR=~/.evcockpit-zweitwagen EVCOCKPIT_PORT=8100 ./start.sh
 
 ## Grenzen — ehrlich
 
-- **Getestet an einem einzigen Auto.** Andere BYD-Modelle: ungetestet. Rückmeldungen
+- Die native Fahrzeugsteuerung ist **an einem einzigen BYD getestet**. Andere Fahrzeuge
+  werden über evcc nur lesend angezeigt; verfügbare Daten hängen vom jeweiligen Adapter ab. Rückmeldungen
   ([Issues](../../issues)) sehr willkommen.
 - Der Dolphin Surf hat **keinen Innenraum-Temperaturfühler** — deshalb keine Innentemp
   und kein Thermostat. Klima wird über eine Zieltemperatur geschaltet, nicht geregelt.

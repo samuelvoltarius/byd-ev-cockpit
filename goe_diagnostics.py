@@ -6,11 +6,10 @@ snapshot for comparing charger behaviour with an independent grid meter.
 """
 from __future__ import annotations
 
-import ipaddress
 import json
-import urllib.request
 from dataclasses import dataclass
 from typing import Any
+from network_safety import open_lan_url, private_ipv4
 
 
 @dataclass(frozen=True)
@@ -23,10 +22,7 @@ class GoESnapshot:
 
 def _safe_host(host: str) -> str:
     """Accept LAN IP addresses only; never proxy arbitrary URLs."""
-    ip = ipaddress.ip_address(host.strip())
-    if not ip.is_private or ip.is_loopback or ip.is_link_local:
-        raise ValueError("go-e IP must be a private LAN address")
-    return str(ip)
+    return private_ipv4(host, "go-e IP")
 
 
 def fetch_goe_snapshot(host: str, timeout: float = 3.0) -> GoESnapshot:
@@ -40,7 +36,7 @@ def fetch_goe_snapshot(host: str, timeout: float = 3.0) -> GoESnapshot:
     if not 0 < timeout <= 10:
         raise ValueError("timeout must be between 0 and 10 seconds")
     url = f"http://{host}/api/status?filter=car,nrg,pha"
-    with urllib.request.urlopen(url, timeout=timeout) as response:
+    with open_lan_url(url, timeout=timeout) as response:
         if response.status != 200:
             raise ValueError(f"go-e returned HTTP {response.status}")
         data = response.read(65537)

@@ -7,7 +7,11 @@ class FakeResponse:
     status = 200
     def __enter__(self): return self
     def __exit__(self, *args): return False
-    def read(self, size): return b'{"result":{"gridPower":-2500,"pvPower":5000,"loadpoints":[{"chargePower":2300}]}}'
+    def read(self, size):
+        return (b'{"grid":{"power":-2500},"pvPower":5000,'
+                b'"battery":{"power":-800,"soc":72},"homePower":1700,'
+                b'"loadpoints":[{"title":"Garage","chargePower":2300,'
+                b'"password":"must-not-leak"}],"config":"/private/evcc.yaml"}')
 
 
 class EvccBackendTests(unittest.TestCase):
@@ -17,12 +21,16 @@ class EvccBackendTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate_evcc_address(host)
 
-    @patch("evcc_backend.urllib.request.urlopen", return_value=FakeResponse())
-    def test_state(self, urlopen):
+    @patch("evcc_backend.open_lan_url", return_value=FakeResponse())
+    def test_state(self, open_url):
         data = get_evcc_state("192.168.1.8")
         self.assertEqual(data["site"]["grid_w"], -2500)
+        self.assertEqual(data["site"]["battery_w"], -800)
+        self.assertEqual(data["site"]["battery_soc"], 72)
         self.assertEqual(len(data["loadpoints"]), 1)
-        self.assertEqual(urlopen.call_args.args[0], "http://192.168.1.8:7070/api/state")
+        self.assertNotIn("raw", data)
+        self.assertNotIn("password", data["loadpoints"][0])
+        self.assertEqual(open_url.call_args.args[0], "http://192.168.1.8:7070/api/state")
 
 
 if __name__ == "__main__":

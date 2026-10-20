@@ -25,11 +25,24 @@ class ProfileTests(unittest.TestCase):
             {"id": "mybyd", "title": "BYD", "brand": "BYD", "source": "byd", "external_id": ""},
             {"id": "audi", "title": "Audi", "brand": "Audi", "source": "evcc", "external_id": "audi"},
         ]
-        data = combine_profiles(saved, [{"id": "audi", "soc": 61}], {"soc": 75, "charging": "OFF"})
+        data = combine_profiles(saved, [{"id": "audi", "soc": 61}],
+                                {"soc": 75, "charging": "OFF", "_features": {"climate": True}})
         self.assertEqual(data[0]["soc"], 75)
         self.assertTrue(data[0]["capabilities"]["remote_commands"])
         self.assertEqual(data[1]["soc"], 61)
         self.assertFalse(data[1]["capabilities"]["remote_commands"])
+
+    def test_unconfigured_evcc_vehicles_are_included(self):
+        data = combine_profiles([], [{"id": "vw-id4", "title": "VW ID.4", "soc": 55}])
+        self.assertEqual(data[0]["id"], "vw-id4")
+        self.assertEqual(data[0]["soc"], 55)
+
+    def test_feature_metadata_alone_is_not_telemetry(self):
+        saved = [{"id": "byd", "title": "BYD", "brand": "BYD",
+                  "source": "byd", "external_id": ""}]
+        data = combine_profiles(saved, [], {"_features": {"climate": True}})
+        self.assertFalse(data[0]["capabilities"]["telemetry"])
+        self.assertTrue(data[0]["capabilities"]["remote_commands"])
 
 
 if __name__ == "__main__":

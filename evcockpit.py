@@ -2151,7 +2151,7 @@ ENERGY_PANEL = r'''<section id="energy-panel" style="margin:22px auto;max-width:
    const d=await response.json();if(!response.ok)throw Error(d.error||'API error');
    const site=d.site||{};
    el('evcc-values').innerHTML=card('☀️ PV',kw(site.pv_w))+card('⚡ Netz (+ Bezug / − Einspeisung)',kw(site.grid_w))+card('🔋 Speicher',kw(site.battery_w))+card('🏠 Haus',kw(site.home_w));
-   const vehicles=d.vehicles||[];
+   const vehicles=d.profiles||d.vehicles||[];
    const selected=localStorage.getItem('evc_selected_vehicle')||'';
    const vehicleCards=vehicles.map(v=>'<button type="button" data-vehicle="'+escapeHtml(v.id)+'" style="text-align:left;background:#192d44;border:1px solid '+(selected===v.id?'#4dd8ce':'#34506c')+';color:#eaf2ff;border-radius:12px;padding:14px;cursor:pointer">🚘 '+escapeHtml(v.title)+' · '+(typeof v.soc==='number'?escapeHtml(v.soc)+' %':'–')+'</button>').join('');
    const chosen=vehicles.find(v=>v.id===selected)||vehicles[0];
@@ -2194,6 +2194,7 @@ class H(BaseHTTPRequestHandler):
         b = body.encode("utf-8") if isinstance(body, str) else body
         self.send_response(code)
         self.send_header("Content-Type", ctype)
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(b)))
         self.end_headers()
         self.wfile.write(b)
@@ -2253,7 +2254,8 @@ class H(BaseHTTPRequestHandler):
                 if q.get("host"):
                     from evcc_backend import get_evcc_state
                     external = get_evcc_state(q["host"][0], int(q.get("port", ["7070"])[0]))["vehicles"]
-                self._send(json.dumps({"vehicles": combine_profiles(saved, external, _STATE)}), "application/json")
+                legacy = {**_STATE, "_features": _CFG.get("features") or {}}
+                self._send(json.dumps({"vehicles": combine_profiles(saved, external, legacy)}), "application/json")
             except Exception as e:
                 self._send(json.dumps({"error": str(e)[:160]}), "application/json", 400)
         elif p == "/energy/state":
@@ -2261,6 +2263,13 @@ class H(BaseHTTPRequestHandler):
                 from evcc_backend import get_evcc_state
                 q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
                 result = get_evcc_state(q["host"][0], int(q.get("port", ["7070"])[0]))
+                from vehicle_profiles import read_profiles, combine_profiles
+                saved = read_profiles(CFG_DIR / "vehicles.json")
+                if _CFG.get("vin") and not any(x["source"] == "byd" for x in saved):
+                    saved.insert(0, {"id": "legacy_byd", "title": _CFG.get("model") or "BYD",
+                                     "brand": "BYD", "source": "byd", "external_id": ""})
+                legacy = {**_STATE, "_features": _CFG.get("features") or {}}
+                result["profiles"] = combine_profiles(saved, result["vehicles"], legacy)
                 self._send(json.dumps(result), "application/json")
             except Exception as e:
                 self._send(json.dumps({"error": str(e)[:160]}), "application/json", 400)
@@ -2294,7 +2303,12 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):
         u = urllib.parse.urlparse(self.path)
-        ln = int(self.headers.get("Content-Length") or 0)
+        try:
+            ln = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            return self._send(json.dumps({"error": "Invalid Content-Length"}), "application/json", 400)
+        if ln < 0 or ln > 2 * 1024 * 1024:
+            return self._send(json.dumps({"error": "Request body too large"}), "application/json", 413)
         raw = self.rfile.read(ln).decode("utf-8") if ln else "{}"
         if u.path == "/energy/discover":
             try:
@@ -2302,6 +2316,14 @@ class H(BaseHTTPRequestHandler):
                 found = discover(json.loads(raw)["cidr"])
                 self._send(json.dumps({"found": [{k: v for k, v in item.items() if k != "data"} for item in found]}), "application/json")
             except Exception as e:
+                self._send(json.dumps({"error": str(e)[:160]}), "application/json", 400)
+        elif u.path == "/vehicles/profiles":
+            try:
+                from vehicle_profiles import write_profiles
+                payload = json.loads(raw)
+                profiles = write_profiles(CFG_DIR / "vehicles.json", payload["profiles"])
+                self._send(json.dumps({"ok": True, "profiles": profiles}), "application/json")
+            except (KeyError, ValueError, TypeError, json.JSONDecodeError) as e:
                 self._send(json.dumps({"error": str(e)[:160]}), "application/json", 400)
         elif u.path == "/detect":
             try:

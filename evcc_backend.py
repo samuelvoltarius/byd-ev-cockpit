@@ -5,18 +5,42 @@ No dependency on evcc is required when this adapter is unused.
 """
 from __future__ import annotations
 
-import ipaddress
 import json
-import urllib.request
+from network_safety import open_lan_url, private_ipv4
 
 
 def validate_evcc_address(host: str, port: int = 7070) -> str:
-    ip = ipaddress.ip_address(host.strip())
-    if ip.version != 4 or not ip.is_private or ip.is_loopback or ip.is_link_local:
-        raise ValueError("Use a private IPv4 address for your evcc instance")
+    ip = private_ipv4(host, "evcc host")
     if not isinstance(port, int) or not 1 <= port <= 65535:
         raise ValueError("Invalid evcc port")
     return f"http://{ip}:{port}"
+
+
+def _number(value):
+    return value if isinstance(value, (int, float)) and not isinstance(value, bool) else None
+
+
+def _nested_power(state, current_key, legacy_key):
+    current = state.get(current_key)
+    if isinstance(current, dict):
+        value = _number(current.get("power"))
+        if value is not None:
+            return value
+    return _number(state.get(legacy_key))
+
+
+def normalize_loadpoints(state):
+    """Expose only stable, display-relevant fields from evcc loadpoints."""
+    points = state.get("loadpoints") or []
+    if not isinstance(points, list):
+        return []
+    allowed = (
+        "name", "title", "vehicleName", "vehicleTitle", "vehicleSoc",
+        "vehicleRange", "connected", "charging", "chargePower", "mode",
+        "phasesActive", "sessionSolarPercentage",
+    )
+    return [{key: point.get(key) for key in allowed if key in point}
+            for point in points if isinstance(point, dict)]
 
 
 def get_evcc_state(host: str, port: int = 7070, timeout: float = 3.0) -> dict:
@@ -26,7 +50,7 @@ def get_evcc_state(host: str, port: int = 7070, timeout: float = 3.0) -> dict:
     Missing values remain null rather than being guessed.
     """
     base = validate_evcc_address(host, port)
-    with urllib.request.urlopen(base + "/api/state", timeout=timeout) as response:
+    with open_lan_url(base + "/api/state", timeout=timeout) as response:
         if response.status != 200:
             raise ValueError(f"evcc HTTP {response.status}")
         raw = response.read(262145)
@@ -35,7 +59,7 @@ def get_evcc_state(host: str, port: int = 7070, timeout: float = 3.0) -> dict:
     data = json.loads(raw)
     if not isinstance(data, dict):
         raise ValueError("Invalid evcc state")
-    # evcc versions expose state as an object; retain raw state for future adapters.
+    # evcc has used both a wrapped and an unwrapped state response.
     state = data.get("result", data)
     if not isinstance(state, dict):
         raise ValueError("Invalid evcc result")
@@ -44,11 +68,13 @@ def get_evcc_state(host: str, port: int = 7070, timeout: float = 3.0) -> dict:
         "backend": "evcc",
         "vehicles": normalize_vehicles(state),
         "site": {
-            "grid_w": state.get("gridPower"),
-            "pv_w": state.get("pvPower"),
-            "battery_w": state.get("batteryPower"),
-            "home_w": state.get("homePower"),
+            "grid_w": _nested_power(state, "grid", "gridPower"),
+            "pv_w": _number(state.get("pvPower")) if _number(state.get("pvPower")) is not None
+                    else _nested_power(state, "pv", "pvPower"),
+            "battery_w": _nested_power(state, "battery", "batteryPower"),
+            "battery_soc": _number(state.get("battery", {}).get("soc"))
+                           if isinstance(state.get("battery"), dict) else None,
+            "home_w": _number(state.get("homePower")),
         },
-        "loadpoints": state.get("loadpoints", []),
-        "raw": state,
+        "loadpoints": normalize_loadpoints(state),
     }

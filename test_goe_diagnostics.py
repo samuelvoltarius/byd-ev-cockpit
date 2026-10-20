@@ -19,13 +19,13 @@ class GoEDiagnosticsTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 _safe_host(address)
 
-    @patch("goe_diagnostics.urllib.request.urlopen", return_value=Response())
-    def test_snapshot(self, urlopen):
+    @patch("goe_diagnostics.open_lan_url", return_value=Response())
+    def test_snapshot(self, open_url):
         snap = fetch_goe_snapshot("192.168.1.20")
         self.assertEqual(snap.charging_state, 2)
         self.assertEqual(snap.total_power_w, 3500)
         self.assertEqual(snap.phases_raw, 7)
-        self.assertIn("/api/status?filter=car,nrg,pha", urlopen.call_args.args[0])
+        self.assertIn("/api/status?filter=car,nrg,pha", open_url.call_args.args[0])
 
 
 if __name__ == "__main__":

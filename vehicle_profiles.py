@@ -73,14 +73,26 @@ def combine_profiles(saved, evcc_vehicles, legacy_byd=None):
         if not key:
             continue
         by_id[key] = item
+    profiles = list(saved)
+    referenced = {p["external_id"] or p["id"] for p in profiles if p["source"] == "evcc"}
+    for external in by_id.values():
+        key = str(external["id"])
+        if key not in referenced:
+            profiles.append({"id": key, "title": str(external.get("title") or key),
+                             "brand": "", "source": "evcc", "external_id": key})
+
     result = []
-    for profile in saved:
+    for profile in profiles:
         source = profile["source"]
         if source == "byd":
             live = legacy_byd or {}
             details = {"soc": live.get("soc"), "range_km": live.get("real_range_km"),
                        "charging": live.get("charging") == "ON"}
-            capabilities = {"telemetry": True, "remote_commands": True}
+            features = live.get("_features") if isinstance(live.get("_features"), dict) else {}
+            has_telemetry = any(live.get(key) is not None
+                                for key in ("soc", "real_range_km", "charging", "odometer"))
+            capabilities = {"telemetry": has_telemetry,
+                            "remote_commands": any(bool(value) for value in features.values())}
         else:
             live = by_id.get(profile["external_id"] or profile["id"], {})
             details = {k: live.get(k) for k in ("soc", "range_km", "charging",
