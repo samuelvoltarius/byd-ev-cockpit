@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.4.1"
+VERSION = "1.5"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -266,6 +266,12 @@ async def _poll_once(byd, cache):
     st["real_range_km"] = round(kwh * (_s / 100.0) / _c * 100) if (_c and _s) else cache.get("real_range_km")
     st["charge_power"] = g("power_battery")
     st["gear"] = {1: "P", 2: "R", 3: "N", 4: "D"}.get(ev(getattr(rt, "power_gear", None)), cache.get("gear"))
+    # Fuer die Sperre der Fernbefehle (sicherheit.py): Zuendungszustand und Tempo aus DIESER ohnehin
+    # laufenden Abfrage merken - nie aus dem Cache, damit kein alter Wert als Beweis dient.
+    _vs = ev(getattr(rt, "vehicle_state", None))
+    st["vehicle_state"] = _vs if isinstance(_vs, int) else None
+    st["speed"] = g("speed")
+    st["_zustand_t"] = time.time()
 
     _hvraw = hv.raw if hv is not None else {}
     tout = g("temp_out_car")
@@ -342,7 +348,7 @@ def _auth_failure(error):
                                      "invalid credential", "login failed"))
 
 
-from sicherheit import befehl_erlaubt
+from sicherheit import befehl_erlaubt, aus_letzter_abfrage
 from live_saeulen import Live
 
 _LIVE = Live()
@@ -1004,8 +1010,13 @@ def _frischer_zustand():
                         "gear": st.get("gear"), "speed": st.get("speed")}
         except Exception:
             pass
+    # Stiller Beweis: die letzte REGULAERE Cloud-Abfrage, wenn sie frisch genug ist (kein Zusatzauftrag).
+    z = aus_letzter_abfrage(_STATE, time.time())
+    if z:
+        return z
     if _CFG.get("auth_blocked") or not _cloud_an():
         return None                    # kein (gueltiger) Cloud-Zugang -> Zustand unbekannt -> gesperrt
+    # Sonst einmal frisch fragen - nur direkt vor einem Befehl, der das Auto ohnehin anspricht.
     try:
         from pybyd import BydClient
 
@@ -2259,40 +2270,44 @@ function basiskarte(m){
  }).catch(()=>osm());
 }
 
-// Live-Belegung (Ebene 'chargers-live', Vertrag mit Planer und Karten-Sitzung 21.10.2026):
-// frei = normal, belegt = rot, ausser Betrieb = grau. Daten holt der lokale Cockpit-Server beim Planer.
+// Live-Belegung (Ebene 'chargers-live', Vertrag v2 mit Planer und Karten-Sitzung 21.10.2026):
+// frei = normal, belegt = rot, ausser Betrieb = grau, Status unbekannt = grau mit "?". Alle Planer-Stationen
+// im Radius; OSM-Saeulen nur je Station (120 m) ausgeblendet. Daten holt der lokale Cockpit-Server beim Planer.
 function liveSaeulen(m){
  const g=GL_KARTE.getMaplibreMap();let basis=null,warte=null;
- const kreis=(lat,lon,km)=>{const p=[];for(let i=0;i<=48;i++){const w=i/48*2*Math.PI;
-  p.push([lon+km/(111.32*Math.cos(lat*Math.PI/180))*Math.cos(w),lat+km/110.57*Math.sin(w)]);}
-  return {type:'Polygon',coordinates:[p]};};
  async function laden(){
-  if(!g.getSource('live')||m.getZoom()<12) return;
+  if(!g.getSource('live')||m.getZoom()<11) return;
   const c=m.getCenter();
   try{const r=await fetch('/live/umkreis',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({lat:c.lat,lon:c.lng})});if(!r.ok)return;const d=await r.json();
    g.getSource('live').setData({type:'FeatureCollection',features:d.features||[]});
-   g.setFilter('chargers',(d.features&&d.features.length&&d.abdeckung_km>0&&d.mitte)
-    ?['all',basis,['!',['within',kreis(d.mitte[0],d.mitte[1],d.abdeckung_km)]]]:basis);
+   g.setFilter('chargers',d.osm_maske?['all',basis,['!',['within',d.osm_maske]]]:basis);
+   // Grau = Status unbekannt (Alfred): solange Live laeuft, zeigen die uebrigen OSM-Saeulen das "?"
+   if(g.hasImage('charge-unknown')) g.setLayoutProperty('chargers','icon-image',
+     ['case',['==',['get','dc'],1],'charge-dc-unknown','charge-unknown']);
+   const qs=(d.quellen||[]).map(q=>q.quelle).join(', ');
+   if(qs!==(window.LIVE_QUELLEN||'')){if(window.LIVE_QUELLEN)m.attributionControl.removeAttribution('Belegung: '+esc(window.LIVE_QUELLEN));
+    if(qs)m.attributionControl.addAttribution('Belegung: '+esc(qs));window.LIVE_QUELLEN=qs;}
   }catch(e){}
  }
  const start=()=>{
   if(g.getSource('live')||!g.getLayer('chargers')) return;
   basis=g.getFilter('chargers')||['==',['get','t'],'charger'];
+  const bild=(z,dc)=>{const n=(dc?'charge-dc':'charge')+({belegt:'-busy',aus:'-off',unbekannt:'-unknown'}[z]||'');
+   return g.hasImage(n)?n:(dc?'charge-dc':'charge');};
   g.addSource('live',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
   g.addLayer({id:'chargers-live',type:'symbol',source:'live',minzoom:11,layout:{
    'icon-image':['match',['get','zustand'],
-    'belegt',['case',['==',['get','dc'],1],'charge-dc-busy','charge-busy'],
-    'aus',['case',['==',['get','dc'],1],g.hasImage('charge-dc-off')?'charge-dc-off':'charge-dc',
-                                        g.hasImage('charge-off')?'charge-off':'charge'],
+    'belegt',['case',['==',['get','dc'],1],bild('belegt',1),bild('belegt',0)],
+    'aus',['case',['==',['get','dc'],1],bild('aus',1),bild('aus',0)],
+    'unbekannt',['case',['==',['get','dc'],1],bild('unbekannt',1),bild('unbekannt',0)],
     ['case',['==',['get','dc'],1],'charge-dc','charge']],
    'icon-size':['interpolate',['linear'],['zoom'],11,0.55,15,0.9],
    'symbol-sort-key':['-',0,['+',['*',['get','dc'],1000],['get','kw']]],
    'icon-allow-overlap':['step',['zoom'],false,15,true],
    'text-field':['step',['zoom'],'',15,['get','lbl']],'text-font':['Noto Sans Medium'],'text-size':11,
    'text-offset':[0,1.5],'text-anchor':'top','text-optional':true},
-   paint:{'icon-opacity':['match',['get','zustand'],'aus',0.45,1],
-    'text-color':['match',['get','zustand'],'belegt','#FF5A4E','aus','#8FA3AB','#B5F23D'],
+   paint:{'text-color':['match',['get','zustand'],'belegt','#FF5A4E',['aus','unbekannt'],'#8FA6B0','#B5F23D'],
     'text-halo-color':'#071a2b','text-halo-width':1.4}},g.getLayer('signals')?'signals':undefined);
   laden();
   m.on('moveend',()=>{clearTimeout(warte);warte=setTimeout(laden,600);});
@@ -2307,7 +2322,8 @@ function klickSaeule(e){
  const g=GL_KARTE.getMaplibreMap(), p=g.project([e.latlng.lng,e.latlng.lat]);
  const live=g.getLayer('chargers-live')?g.queryRenderedFeatures([[p.x-9,p.y-9],[p.x+9,p.y+9]],{layers:['chargers-live']})[0]:null;
  if(live){const q=live.properties||{};L.popup().setLatLng([e.latlng.lat,e.latlng.lng])
-  .setContent('<b>'+esc(q.name||'Ladestation')+'</b><br>'+esc(q.lbl||'')+'<br><small>Live · E-Control</small>').openOn(MAP);return;}
+  .setContent('<b>'+esc(q.name||'Ladestation')+'</b><br>'+esc(q.lbl||'')+
+   (q.zustand!=='unbekannt'&&q.quelle?'<br><small>Live · '+esc(q.quelle)+'</small>':'')).openOn(MAP);return;}
  let f=g.queryRenderedFeatures([[p.x-9,p.y-9],[p.x+9,p.y+9]],{layers:['chargers']})[0];
  if(!f){let d0=24*24;g.queryRenderedFeatures({layers:['chargers']}).forEach(x=>{const q=g.project(x.geometry.coordinates),
    d=(q.x-p.x)**2+(q.y-p.y)**2;if(d<d0){d0=d;f=x;}});}
@@ -3121,13 +3137,13 @@ class H(BaseHTTPRequestHandler):
             # Live-Belegung fuer die Community-Karte: nur mit Haekchen "Ladesaeulen" und Community-Karte.
             # Der Planer bekommt nur den auf ~5 km gerundeten Kartenmittelpunkt, per POST (kein Log).
             if not _CFG.get("show_chargers") or _CFG.get("karte") == "osm":
-                return self._send(json.dumps({"abdeckung_km": 0, "features": []}), "application/json")
+                return self._send(json.dumps({"features": [], "osm_maske": None, "quellen": []}), "application/json")
             try:
                 b = json.loads(raw)
                 d = _LIVE.abfrage(float(b["lat"]), float(b["lon"]))
                 self._send(json.dumps(d), "application/json")
             except Exception:
-                self._send(json.dumps({"abdeckung_km": 0, "features": []}), "application/json")
+                self._send(json.dumps({"features": [], "osm_maske": None, "quellen": []}), "application/json")
         elif u.path == "/energy/discover":
             try:
                 from device_hub import automatic_lan_network, discover

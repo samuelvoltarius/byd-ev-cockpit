@@ -37,5 +37,19 @@ class TestSperre(unittest.TestCase):
         self.assertFalse(self.ok(power_level="kaputt", vehicle_state=None))
 
 
+class TestStillerBeweis(unittest.TestCase):
+    def test_letzte_regulaere_abfrage(self):
+        from sicherheit import aus_letzter_abfrage
+        st = {"quelle": "BYD-Cloud", "vehicle_state": 0, "_zustand_t": T, "gear": "P", "speed": 0}
+        z = aus_letzter_abfrage(st, T + 60)
+        self.assertEqual(z, {"t": T, "vehicle_state": 0, "gear": "P", "speed": 0})
+        self.assertTrue(befehl_erlaubt(z, T + 60)[0])
+        self.assertIsNone(aus_letzter_abfrage(st, T + FRISCH_S + 1))                 # zu alt -> frisch fragen
+        self.assertIsNone(aus_letzter_abfrage(dict(st, vehicle_state=-1), T))         # UNKNOWN
+        self.assertIsNone(aus_letzter_abfrage(dict(st, vehicle_state=None), T))
+        self.assertIsNone(aus_letzter_abfrage(dict(st, quelle="Home Assistant"), T))  # nur Cloud-Werte
+        self.assertFalse(befehl_erlaubt(aus_letzter_abfrage(dict(st, vehicle_state=2), T), T)[0])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

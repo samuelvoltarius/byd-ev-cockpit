@@ -41,3 +41,12 @@ def befehl_erlaubt(z, jetzt):
     if vs is not None and vs >= 0:
         return (True, "") if vs == 0 else (False, GRUND_AN)
     return False, GRUND_UNBEKANNT
+
+
+def aus_letzter_abfrage(state, jetzt):
+    """Stiller Beweis aus der letzten REGULAEREN Cloud-Abfrage (kein Zusatzauftrag ans Auto):
+    nur wenn sie von der BYD-Cloud kam, einen gueltigen vehicle_state hat und frisch ist. Sonst None."""
+    vs, t = state.get("vehicle_state"), _zahl(state.get("_zustand_t"))
+    if state.get("quelle") != "BYD-Cloud" or not isinstance(vs, int) or vs < 0 or t is None or jetzt - t > FRISCH_S:
+        return None
+    return {"t": t, "vehicle_state": vs, "gear": state.get("gear"), "speed": state.get("speed")}
