@@ -2076,9 +2076,27 @@ function basiskarte(m){
     // Quellenangaben einmal und ohne Doppelungen (der Stil nennt OSM je Quelle)
     Object.values(stil.sources||{}).forEach(q=>{delete q.attribution;});
     m.attributionControl.setPrefix(false);
-    L.maplibreGL({style:stil}).addTo(m);
-    m.attributionControl.addAttribution('© OpenStreetMap-Mitwirkende · Protomaps · Höhen: Mapterhorn');});
+    window.GL_KARTE=L.maplibreGL({style:stil}).addTo(m);
+    m.attributionControl.addAttribution('© OpenStreetMap-Mitwirkende · Protomaps · Höhen: Mapterhorn');
+    // Ladesaeulen zeigt dann die Karte selbst (Ebene 'chargers', wie Planer und Panoptes);
+    // die eigenen Infos (Preis, Entfernung) haengen per Klick daran.
+    window.OSM_SAEULEN=(stil.layers||[]).some(l=>l.id==='chargers');
+    if(window.OSM_SAEULEN){MK_CHG.forEach(x=>m.removeLayer(x));m.on('click',klickSaeule);}});
  }).catch(()=>osm());
+}
+
+// Klick auf ein Saeulensymbol der Karte: eigene Infos der naechsten Saeule (<120 m), sonst OSM-Angaben
+function klickSaeule(e){
+ if(!window.OSM_SAEULEN||!window.GL_KARTE) return;
+ const g=GL_KARTE.getMaplibreMap(), p=g.project([e.latlng.lng,e.latlng.lat]);
+ let f=g.queryRenderedFeatures([[p.x-9,p.y-9],[p.x+9,p.y+9]],{layers:['chargers']})[0];
+ if(!f){let d0=24*24;g.queryRenderedFeatures({layers:['chargers']}).forEach(x=>{const q=g.project(x.geometry.coordinates),
+   d=(q.x-p.x)**2+(q.y-p.y)**2;if(d<d0){d0=d;f=x;}});}
+ if(!f) return;
+ const c=f.geometry.coordinates,pos=[c[1],c[0]],pr=f.properties||{};
+ let best=null,ab=1e9;MK_CHG.forEach(mk=>{const d=MAP.distance(pos,mk.getLatLng());if(d<ab){ab=d;best=mk;}});
+ const html=(best&&ab<120)?best.getPopup().getContent():'<b>'+esc(pr.op||'Ladestation')+'</b>'+(pr.lbl?'<br>'+esc(pr.lbl):'');
+ L.popup().setLatLng(pos).setContent(html).openOn(MAP);
 }
 
 // --- Leaflet-Karte: dein Auto + die Ladesaeulen auf EINER Karte ---
@@ -2095,12 +2113,14 @@ function zeichneKarte(s){
  else{MK_CAR.setLatLng(pos);}
  const key=JSON.stringify((s.chargers||[]).map(c=>c.lat+','+c.lon));
  if(MAP._k!==key){
-  MAP._k=key; MK_CHG.forEach(m=>MAP.removeLayer(m)); MK_CHG=[];
+  MAP._k=key; MK_CHG.forEach(m=>{if(MAP.hasLayer(m))MAP.removeLayer(m);}); MK_CHG=[];
   const ic2=L.divIcon({className:'',html:'<div class=mk-chg>⚡</div>',iconSize:[18,18],iconAnchor:[9,9]});
   (s.chargers||[]).forEach(c=>{
    const d=[c.operator,c.sockets,(c.kw?c.kw+' kW':''),(c.eur_kwh?'€ '+Number(c.eur_kwh).toFixed(2).replace('.',',')+'/kWh':'')].filter(Boolean).join(' · ');
-   MK_CHG.push(L.marker([c.lat,c.lon],{icon:ic2}).addTo(MAP)
-    .bindPopup('<b>'+esc(c.name)+'</b>'+(d?'<br>'+esc(d):'')+'<br>'+c.km+__T(' km entfernt')));
+   const mk=L.marker([c.lat,c.lon],{icon:ic2})
+    .bindPopup('<b>'+esc(c.name)+'</b>'+(d?'<br>'+esc(d):'')+'<br>'+c.km+__T(' km entfernt'));
+   if(!window.OSM_SAEULEN) mk.addTo(MAP);       // sonst zeigt die Karte die Saeulen selbst
+   MK_CHG.push(mk);
   });
   if(MK_CHG.length){MAP.fitBounds(L.featureGroup(MK_CHG.concat([MK_CAR])).getBounds().pad(0.15));}
  }
