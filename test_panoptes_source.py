@@ -35,6 +35,11 @@ class TestUmrechnung(unittest.TestCase):
                          (63.5, 18342.0, "P", "OFF", "ON"))
         self.assertEqual((st["latitude"], st["longitude"]), (47.8, 13.0))
 
+    def test_zuendung_fuer_die_befehlssperre(self):
+        self.assertEqual(ps.aus_telemetrie({"soc": 50, "power_level": 2, "speed": 0})["power_level"], 2)
+        self.assertEqual(ps.aus_telemetrie({"soc": 50, "power_level": "0"})["power_level"], 0)
+        self.assertNotIn("power_level", ps.aus_telemetrie({"soc": 50}))
+
     def test_uebersicht(self):
         st = ps.aus_uebersicht(SUMMARY, GPS, FZ)
         self.assertEqual((st["soc"], st["range_km"], st["temp_out"], st["gear"], st["locked"], st["odometer"]),

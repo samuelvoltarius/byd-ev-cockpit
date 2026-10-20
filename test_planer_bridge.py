@@ -1,4 +1,5 @@
 """Tests der Planer-Anbindung (kein Netz)."""
+import json
 import unittest
 
 import planer_bridge as pb
@@ -74,10 +75,17 @@ class TestBruecke(unittest.TestCase):
 
         def anfrage(pfad, token, daten=None):
             self.calls.append((pfad, token, daten))
-            return 200, {"ok": True, "verbrauch_kwh_100km": 17.0}
-        self.b = pb.Bruecke(anfrage=anfrage, uhr=lambda: self.t[0])
+            if pfad == "modell-verbrauch":
+                return 200, {"ok": True, "modell_kwh": 7.5, "akku_kwh": 43.2}
+            return 200, {"ok": True}
+        self.lokal = {}
+
+        def speichern(d):
+            self.lokal = json.loads(json.dumps(d))
+        self.b = pb.Bruecke(anfrage=anfrage, uhr=lambda: self.t[0],
+                            speicher=(lambda: json.loads(json.dumps(self.lokal)), speichern))
         self.cfg = {"planer": True, "planer_token": TOK, "planer_fahrten": True,
-                    "planer_fahrzeug": "BYD Dolphin Surf Comfort"}
+                    "planer_fahrzeug": "BYD Dolphin Surf Comfort", "planer_auto": "evc-1a2b3c4d"}
 
     def test_ohne_haekchen_nichts(self):
         self.b.nach_abfrage({"planer": False, "planer_token": TOK}, {"online": "ON", "soc": 50})
@@ -101,21 +109,47 @@ class TestBruecke(unittest.TestCase):
         self.b.nach_abfrage(self.cfg, {"online": "OFF", "soc": 50, "odometer": 1000})
         self.assertEqual([c for c in self.calls if c[0] == "mein-soc"], [])
 
-    def test_fahrt_wird_mit_profil_gemeldet(self):
+    def fahre_eine_fahrt(self, cfg=None):
+        cfg = cfg or self.cfg
         km, soc = 1000.0, 80.0
         for _ in range(3):
-            self.b.nach_abfrage(self.cfg, {"online": "OFF", "soc": soc, "odometer": km}); self.t[0] += 300
+            self.b.nach_abfrage(cfg, {"online": "OFF", "soc": soc, "odometer": km}); self.t[0] += 300
         while km < 1050:
             km += 3; soc -= 0.4
-            self.b.nach_abfrage(self.cfg, {"online": "ON", "soc": round(soc), "odometer": km, "temp_out": 12})
+            self.b.nach_abfrage(cfg, {"online": "ON", "soc": round(soc), "odometer": km, "temp_out": 12})
             self.t[0] += 90
         for _ in range(3):
-            self.b.nach_abfrage(self.cfg, {"online": "ON", "soc": round(soc), "odometer": km}); self.t[0] += 300
-        fahrten = [c[2] for c in self.calls if c[0] == "fahrt"]
-        self.assertEqual(len(fahrten), 1)
-        self.assertEqual(fahrten[0]["fahrzeug"], "BYD Dolphin Surf Comfort")
-        self.assertNotIn("lat", fahrten[0])
+            self.b.nach_abfrage(cfg, {"online": "ON", "soc": round(soc), "odometer": km}); self.t[0] += 300
+
+    def test_fahrt_bleibt_lokal_nur_faktor_geht_raus(self):
+        self.fahre_eine_fahrt()
+        pfade = [c[0] for c in self.calls]
+        self.assertNotIn("fahrt", pfade)                    # 410 seit 21.10. - nie mehr senden
+        frage = [c[2] for c in self.calls if c[0] == "modell-verbrauch"]
+        self.assertEqual(len(frage), 1)
+        self.assertEqual(frage[0]["fahrzeug"], "BYD Dolphin Surf Comfort")
+        for k in ("soc_start", "soc_ende", "lat", "lon"):
+            self.assertNotIn(k, frage[0])                   # nur km/dauer/temp
+        faktor = [c[2] for c in self.calls if c[0] == "mein-faktor"]
+        self.assertEqual(len(faktor), 1)
+        self.assertEqual(faktor[0]["fahrten"], 1)
+        self.assertEqual(faktor[0]["quelle"], "ev-cockpit")
+        self.assertEqual(faktor[0]["auto"], "evc-1a2b3c4d")
+        self.assertTrue(pb.FAKTOR_MIN <= faktor[0]["faktor"] <= pb.FAKTOR_MAX)
+        self.assertEqual(len(self.lokal["BYD Dolphin Surf Comfort"]), 1)   # Verhaeltnis bleibt lokal
         self.assertEqual(self.b.status["fahrten"], 1)
+
+    def test_soc_traegt_auto_kennung(self):
+        self.b.nach_abfrage(self.cfg, {"online": "ON", "soc": 50})
+        self.assertEqual(self.calls[0][2], {"soc": 50.0, "quelle": "ev-cockpit", "auto": "evc-1a2b3c4d"})
+
+    def test_mit_panoptes_meldet_das_cockpit_nichts(self):
+        cfg = dict(self.cfg, panoptes=True, panoptes_url="http://auto:8180", panoptes_code="123456")
+        self.b.nach_abfrage(cfg, {"online": "ON", "soc": 50})
+        self.fahre_eine_fahrt(cfg)
+        self.assertEqual(self.calls, [])
+        self.assertTrue(self.b.status["panoptes"])
+
 
     def test_fahrten_ohne_eigenes_haekchen_nicht(self):
         cfg = dict(self.cfg, planer_fahrten=False)
@@ -123,7 +157,21 @@ class TestBruecke(unittest.TestCase):
         for i in range(30):
             self.b.nach_abfrage(cfg, {"online": "ON", "soc": 80 - i // 3, "odometer": km}); km += 3 if 2 < i < 25 else 0
             self.t[0] += 120
-        self.assertEqual([c for c in self.calls if c[0] == "fahrt"], [])
+        self.assertEqual([c for c in self.calls if c[0] in ("fahrt", "modell-verbrauch", "mein-faktor")], [])
+
+
+class TestFaktor(unittest.TestCase):
+    def test_schrumpfung_und_grenzen(self):
+        self.assertEqual(pb.faktor_aus([]), 1.0)
+        self.assertAlmostEqual(pb.faktor_aus([1.2]), 1.0 + 0.2 * 1 / 5)
+        self.assertAlmostEqual(pb.faktor_aus([1.1, 1.3]), 1.0 + 0.2 * 2 / 6)
+        self.assertEqual(pb.faktor_aus([2.5] * 100), pb.FAKTOR_MAX)
+        self.assertEqual(pb.faktor_aus([0.4] * 100), pb.FAKTOR_MIN)
+
+    def test_kennung_zufaellig_ohne_vin(self):
+        a, b = pb.neue_auto_kennung(), pb.neue_auto_kennung()
+        self.assertNotEqual(a, b)
+        self.assertRegex(a, r"^evc-[0-9a-f]{8}$")
 
 
 if __name__ == "__main__":

@@ -99,6 +99,10 @@ minute, without loading the BYD cloud. Enter the car address and the pairing cod
 wizard; "Test connection" shows right away whether it works. If the car is off or unreachable, the cockpit
 asks the BYD cloud as before. **Controls (climate, lock, charging) still go through the BYD cloud.**
 
+**Remote commands only when the car is switched off:** before every command the cockpit freshly checks
+(via Panoptes or the BYD cloud) that the car is off. If it is on, not in P, or its state is unclear, the
+command is not sent. Reason: a cloud command can switch off a car that is running.
+
 ## BYD community route planner (optional)
 
 Members of the [BYD community map](https://byd.serveone.at) get a personal route-planner link
@@ -106,9 +110,11 @@ Members of the [BYD community map](https://byd.serveone.at) get a personal route
 
 - **Charge level to the planner:** the planner then knows your car's starting charge level. Only the latest
   value is sent, no location, and only while the car is awake.
-- **Report trips** (separate tick): after each trip without charging, distance, duration, charge level
-  before/after and outside temperature go to the planner — **no places, no time of day**. It learns your
-  car's real consumption from that.
+- **Learn real consumption** (separate tick): your trips stay on your computer. After each trip without
+  charging the cockpit only asks the planner for its model value (distance, duration, outside temperature;
+  nothing is stored there), computes your correction factor and sends **only that single number**.
+- If **Panoptes is paired in the car**, Panoptes reports charge level and factor itself and the cockpit
+  sends nothing (one source per car). Every report carries a random vehicle id, never the VIN.
 - The cockpit shows a **"Plan a route"** button. The link key stays on your computer and is never part of the page.
 
 **Map:** by default the cockpit shows the same map as the planner and the Panoptes app (served by the community

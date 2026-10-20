@@ -68,6 +68,10 @@ def aus_telemetrie(t):
         st["latitude"], st["longitude"] = _zahl(t["lat"]), _zahl(t["lon"])
     if t.get("gear"):
         st["gear"] = str(t["gear"]).upper()[:1]
+    if _zahl(t.get("power_level")) is not None:       # Zuendung: 0 aus, 2 an (Sperre fuer Cloud-Befehle)
+        st["power_level"] = int(_zahl(t["power_level"]))
+    if _zahl(t.get("speed")) is not None:
+        st["speed"] = _zahl(t["speed"])
     if t.get("is_charging") is not None:
         st["charging"] = _an(t["is_charging"])
     dl = t.get("door_lock")

@@ -7,10 +7,14 @@ Was passiert (nur mit Haekchen im Assistenten und dem persoenlichen Planer-Link)
     fragt das Cockpit beim Planer nur den Modellwert ab (dort wird nichts gespeichert), rechnet
     daraus selbst den Korrekturfaktor und schickt nur diesen Faktor (Vorgabe: kein Fahrtenbuch
     auf dem Server).
+Ist Panoptes im Auto gekoppelt, meldet NUR Panoptes Ladestand und Faktor (je Auto eine Quelle,
+sonst flackert der Ladestand bzw. Fahrten zaehlen doppelt). Das Cockpit liest dann nur.
+Jede Meldung traegt die kurze Zufalls-Kennung `auto` (nie die VIN).
 Der Schluessel aus dem Link bleibt auf diesem Rechner und geht nur als Kopfzeile an den Planer.
 """
 import json
 import re
+import secrets
 import time
 import urllib.error
 import urllib.request
@@ -24,6 +28,16 @@ def token_aus_link(text):
     """Persoenlicher Link (…/ev/#z=<32 hex>) oder nackter Schluessel -> Schluessel bzw. ''."""
     m = _TOKEN.search((text or "").strip().lower())
     return m.group(1) if m else ""
+
+
+def neue_auto_kennung():
+    """Kurze Zufalls-Kennung je Fahrzeug fuer das Planer-Feld `auto` (nie VIN oder VIN-Hash)."""
+    return "evc-" + secrets.token_hex(4)
+
+
+def panoptes_meldet(cfg):
+    """True, wenn Panoptes im Auto gekoppelt ist - dann meldet Panoptes selbst an den Planer."""
+    return bool(cfg.get("panoptes") and cfg.get("panoptes_url") and cfg.get("panoptes_code"))
 
 
 def oeffnen_url(token):
@@ -171,12 +185,20 @@ class Bruecke:
         token = cfg.get("planer_token") or ""
         if not (cfg.get("planer") and token):
             return
+        if panoptes_meldet(cfg):
+            self.status["panoptes"] = True      # Panoptes meldet selbst - hier nur lesen
+            return
+        self.status["panoptes"] = False
+        auto = cfg.get("planer_auto") or ""
         jetzt = self.uhr()
         soc = st.get("soc")
         if st.get("online") == "ON" and soc is not None and (
                 self.soc_gesendet is None or abs(float(soc) - self.soc_gesendet) >= 1
                 or jetzt - self.soc_t >= self.SOC_TAKT_S):
-            code, d = self.anfrage("mein-soc", token, {"soc": float(soc), "quelle": "ev-cockpit"})
+            daten = {"soc": float(soc), "quelle": "ev-cockpit"}
+            if auto:
+                daten["auto"] = auto
+            code, d = self.anfrage("mein-soc", token, daten)
             if code == 200:
                 self.soc_gesendet, self.soc_t = float(soc), jetzt
                 self.status.update({"soc": float(soc), "soc_t": jetzt, "fehler": ""})
@@ -185,11 +207,13 @@ class Bruecke:
         fahrt = self.schreiber.neu(jetzt, st.get("odometer"), soc, st.get("charging") == "ON",
                                    st.get("temp_out"))
         if fahrt and cfg.get("planer_fahrten") and cfg.get("planer_fahrzeug"):
-            self._fahrt_auswerten(token, cfg["planer_fahrzeug"], fahrt, jetzt)
+            self._fahrt_auswerten(token, cfg["planer_fahrzeug"], fahrt, jetzt, auto)
 
-    def _fahrt_auswerten(self, token, profil, fahrt, jetzt):
-        # 1. Modellwert holen (der Planer speichert nichts)
-        code, m = self.anfrage("modell-verbrauch", token, dict(fahrt, fahrzeug=profil))
+    def _fahrt_auswerten(self, token, profil, fahrt, jetzt, auto=""):
+        # 1. Modellwert holen (der Planer speichert nichts). Nur was das Modell braucht -
+        #    der Ladestand vorher/nachher bleibt hier.
+        frage = {k: fahrt[k] for k in ("km", "dauer_min", "temp_c") if k in fahrt}
+        code, m = self.anfrage("modell-verbrauch", token, dict(frage, fahrzeug=profil))
         if code != 200 or not m.get("ok"):
             self.status["fehler"] = "Fahrt nicht ausgewertet: %s" % (m.get("fehler") or code)
             return
@@ -205,8 +229,10 @@ class Bruecke:
         self.speichern(alle)
         f = faktor_aus(liste)
         # 3. nur den fertigen Faktor senden
-        code, d = self.anfrage("mein-faktor", token, {"fahrzeug": profil, "faktor": round(f, 3),
-                                                       "fahrten": len(liste), "quelle": "ev-cockpit"})
+        daten = {"fahrzeug": profil, "faktor": round(f, 3), "fahrten": len(liste), "quelle": "ev-cockpit"}
+        if auto:
+            daten["auto"] = auto
+        code, d = self.anfrage("mein-faktor", token, daten)
         if code == 200 and d.get("ok"):
             self.status["fahrten"] = len(liste)
             self.status["fahrt_letzte"] = {"km": fahrt["km"], "kwh_100km": round(kwh / fahrt["km"] * 100, 1),

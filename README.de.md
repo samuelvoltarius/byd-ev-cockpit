@@ -100,6 +100,10 @@ ohne die BYD-Cloud zu belasten. Im Assistenten Adresse und Kopplungs-Code aus de
 „Verbindung prüfen" zeigt sofort, ob es klappt. Ist das Auto aus oder nicht erreichbar, fragt das Cockpit
 wie bisher die BYD-Cloud. **Steuern (Klima, Schloss, Laden) läuft weiterhin über die BYD-Cloud.**
 
+**Fernbefehle nur bei ausgeschaltetem Auto:** Vor jedem Befehl fragt das Cockpit frisch nach, ob das Auto aus ist
+(über Panoptes bzw. die BYD-Cloud). Ist es an, steht nicht in P oder ist der Zustand unklar, wird der Befehl
+nicht gesendet. Grund: Ein Cloud-Befehl kann ein eingeschaltetes Auto komplett abschalten.
+
 ## Routenplaner der BYD-Community (optional)
 
 Mitglieder der [BYD-Community-Karte](https://byd.serveone.at) bekommen einen persönlichen Link zum
@@ -107,9 +111,11 @@ Routenplaner (`byd.serveone.at/ev/#z=…`). Im Assistenten eingefügt, passiert 
 
 - **Ladestand an den Planer:** Der Planer kennt dann den Start-Ladestand deines Autos. Gesendet wird nur der
   letzte Wert, kein Ort, nur wenn das Auto wach ist.
-- **Fahrten melden** (eigenes Häkchen): Nach jeder Fahrt ohne Laden gehen Kilometer, Dauer, Ladestand
-  vorher/nachher und Außentemperatur an den Planer — **keine Orte, keine Uhrzeit**. Daraus lernt er den echten
-  Verbrauch deines Autos.
+- **Echten Verbrauch lernen** (eigenes Häkchen): Deine Fahrten bleiben auf deinem Rechner. Nach jeder Fahrt
+  ohne Laden fragt das Cockpit beim Planer nur den Modellwert ab (Kilometer, Dauer, Außentemperatur; dort wird
+  nichts gespeichert), rechnet daraus deinen Korrekturfaktor und schickt **nur diese eine Zahl**.
+- Ist **Panoptes im Auto gekoppelt**, meldet Panoptes Ladestand und Faktor selbst; das Cockpit schickt dann
+  nichts (je Auto nur eine Quelle). Jede Meldung trägt eine zufällige Fahrzeug-Kennung, nie die VIN.
 - Im Cockpit erscheint der Knopf **„Route planen"**. Der Link-Schlüssel bleibt auf deinem Rechner und steht nie in der Seite.
 
 **Karte:** Das Cockpit zeigt standardmäßig dieselbe Karte wie Planer und Panoptes-App (vom Server der Community,
