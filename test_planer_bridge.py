@@ -166,6 +166,35 @@ class TestBruecke(unittest.TestCase):
         self.assertEqual([c for c in self.calls if c[0] in ("fahrt", "modell-verbrauch", "mein-faktor")], [])
 
 
+class TestRoute(unittest.TestCase):
+    PLAN = {"titel": "Salzburg → Wien", "km": 302.7, "minuten": 161, "soc_ankunft": 18, "erstellt": "2026-10-21T08:00:00Z",
+            "schon_abgeholt": True, "stopps": [{"name": "A"}, {"name": "B"}], "geometrie": [[47.8, 13.0]] * 50}
+
+    def test_route_mit_status(self):
+        calls = []
+
+        def anfrage(pfad, token, daten=None):
+            calls.append(pfad)
+            if pfad.startswith("meine-route"):
+                return 200, {"ok": True, "plan": dict(self.PLAN, status={"status": "navigation", "stopp": 1})}
+            return 404, {}
+        r = pb.route_kurz(TOK, "evc-1a2b3c4d", anfrage=anfrage)
+        self.assertEqual(calls, ["meine-route?auto=evc-1a2b3c4d"])
+        self.assertEqual(r, {"titel": "Salzburg → Wien", "km": 302.7, "minuten": 161, "stopps": 2, "soc_ankunft": 18,
+                             "erstellt": "2026-10-21T08:00:00Z", "abgeholt": True, "status": "Navigation läuft", "stopp": 1})
+        self.assertNotIn("geometrie", r)                 # nur das Noetige fuer die Startseite
+
+    def test_status_extra_abfragen_und_keine_route(self):
+        def anfrage(pfad, token, daten=None):
+            if pfad.startswith("meine-route"):
+                return 200, {"ok": True, "plan": self.PLAN}
+            return 200, {"ok": True, "status": {"status": "angenommen", "stopp": 0}}
+        self.assertEqual(pb.route_kurz(TOK, anfrage=anfrage)["status"], "im Auto angekommen")
+        self.assertIsNone(pb.route_kurz(TOK, anfrage=lambda p, t, d=None: (200, {"ok": True, "plan": None})))
+        with self.assertRaises(RuntimeError):
+            pb.route_kurz(TOK, anfrage=lambda p, t, d=None: (401, {}))
+
+
 class TestFaktor(unittest.TestCase):
     def test_schrumpfung_und_grenzen(self):
         self.assertEqual(pb.faktor_aus([]), 1.0)

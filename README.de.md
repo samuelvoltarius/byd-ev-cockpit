@@ -134,7 +134,11 @@ Routenplaner (`byd.serveone.at/ev/#z=…`). Im Assistenten eingefügt, passiert 
   nichts gespeichert), rechnet daraus deinen Korrekturfaktor und schickt **nur diese eine Zahl**.
 - Ist **Panoptes im Auto gekoppelt**, meldet Panoptes Ladestand und Faktor selbst; das Cockpit schickt dann
   nichts (je Auto nur eine Quelle). Jede Meldung trägt eine zufällige Fahrzeug-Kennung, nie die VIN.
-- Im Cockpit erscheint der Knopf **„Route planen"**. Der Link-Schlüssel bleibt auf deinem Rechner und steht nie in der Seite.
+- Im Cockpit erscheint der Knopf **„Route planen"**: Er öffnet direkt im Cockpit denselben Planer wie
+  `byd.serveone.at/ev/` mit deinem Login. Routen, Fahrzeuge und „An Auto senden“ sind dieselben wie dort.
+  Auf der Startseite steht die bereitliegende Route (Strecke, Ladestopps, Ankunft) und die **Rückmeldung aus
+  dem Auto** („im Auto angekommen“, „Navigation läuft“). Ins Auto kommt die Route über Panoptes; ohne
+  Panoptes über den Handy-Link des Planers. Der Link-Schlüssel bleibt auf deinem Rechner und steht nie in der Seite.
 
 **Karte:** Das Cockpit zeigt standardmäßig dieselbe Karte wie Planer und Panoptes-App (vom Server der Community,
 byd.serveone.at); solange der Server sie nicht vollständig liefert, OpenStreetMap. Ohne Häkchen „Karte im

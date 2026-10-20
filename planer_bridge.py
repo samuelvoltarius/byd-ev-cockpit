@@ -17,6 +17,7 @@ import re
 import secrets
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 BASIS = "https://byd.serveone.at/ev/"
@@ -243,3 +244,27 @@ class Bruecke:
             self.status["fehler"] = ""
         else:
             self.status["fehler"] = "Faktor nicht uebernommen: %s" % (d.get("fehler") or code)
+
+
+STATUS_TEXT = {"angenommen": "im Auto angekommen", "navigation": "Navigation läuft", "abgelehnt": "im Auto abgelehnt"}
+
+
+def route_kurz(token, auto="", anfrage=_anfrage):
+    """Bereitliegende Route + Rueckmeldung aus dem Auto, fuer die Cockpit-Startseite (liest nur).
+    -> None (keine Route) oder {titel, km, minuten, stopps, soc_ankunft, erstellt, abgeholt, status, stopp}"""
+    q = "?auto=" + urllib.parse.quote(auto) if auto else ""
+    code, d = anfrage("meine-route" + q, token)
+    if code != 200:
+        raise RuntimeError("Planer antwortet %s" % code)
+    plan = d.get("plan")
+    if not plan:
+        return None
+    st = plan.get("status") or {}
+    if not st:
+        c2, s2 = anfrage("auto-status" + q, token)
+        st = (s2.get("status") or {}) if c2 == 200 else {}
+    stopps = plan.get("stopps") or []
+    return {"titel": plan.get("titel") or "", "km": plan.get("km"), "minuten": plan.get("minuten"),
+            "stopps": len(stopps), "soc_ankunft": plan.get("soc_ankunft"), "erstellt": plan.get("erstellt"),
+            "abgeholt": bool(plan.get("schon_abgeholt")),
+            "status": STATUS_TEXT.get(st.get("status"), ""), "stopp": st.get("stopp")}

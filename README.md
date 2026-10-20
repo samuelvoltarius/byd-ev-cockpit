@@ -133,7 +133,11 @@ Members of the [BYD community map](https://byd.serveone.at) get a personal route
   nothing is stored there), computes your correction factor and sends **only that single number**.
 - If **Panoptes is paired in the car**, Panoptes reports charge level and factor itself and the cockpit
   sends nothing (one source per car). Every report carries a random vehicle id, never the VIN.
-- The cockpit shows a **"Plan a route"** button. The link key stays on your computer and is never part of the page.
+- The cockpit shows a **"Plan a route"** button: it opens the same planner as `byd.serveone.at/ev/` with your
+  login right inside the cockpit. Routes, vehicles and "Send to car" are the same as there. The start page shows
+  the route that is ready (distance, charging stops, arrival) and the **feedback from the car** ("arrived in the
+  car", "navigation running"). The route reaches the car via Panoptes; without Panoptes via the planner's phone
+  link. The link key stays on your computer and is never part of the page.
 
 **Map:** by default the cockpit shows the same map as the planner and the Panoptes app (served by the community
 server, byd.serveone.at); until that server delivers it completely, OpenStreetMap. Untick "Community map style"
