@@ -64,6 +64,19 @@ Then open <http://127.0.0.1:8099> in your browser.
 
 ---
 
+## Where does the data come from? You choose
+
+Right in the second step of the wizard, the cockpit asks where to get your car's values from:
+
+- **BYD account:** via the BYD cloud, with a separate second account (see above). Easiest for most people.
+- **Home Assistant:** your car is already there, e.g. via a BYD integration or Panoptes. Enter the address and an
+  access token and press "Find my car". The cockpit suggests charge level, range, odometer, charging and location
+  itself; you only confirm. It only reads, and then **never** additionally asks the BYD cloud (two pollers on one
+  account disturb each other, error 6024).
+- **Panoptes in the car:** directly from the Panoptes app on the infotainment system (see below).
+
+With Home Assistant or Panoptes a BYD account is only **optional**, for remote commands such as pre-conditioning.
+
 ## Home Assistant (optional)
 
 Enable it under "Extras" in the wizard. Your car then appears in Home Assistant on its own

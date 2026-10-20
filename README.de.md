@@ -64,9 +64,22 @@ Danach im Browser: <http://127.0.0.1:8099>
 
 ---
 
+## Woher kommen die Daten? Du wählst
+
+Gleich im zweiten Schritt des Assistenten fragt das Cockpit, woher es die Werte deines Autos holen soll:
+
+- **BYD-Konto:** über die BYD-Cloud, mit einem eigenen zweiten Konto (siehe oben). Für die meisten am einfachsten.
+- **Home Assistant:** Dein Auto ist dort schon drin, z. B. über eine BYD-Integration oder Panoptes. Adresse und
+  Zugriffs-Token eintragen, „Mein Auto suchen“ drücken. Das Cockpit schlägt Ladestand, Reichweite, Kilometerstand,
+  Laden und Standort selbst vor, du bestätigst nur. Es liest nur und fragt dann **nie** zusätzlich die BYD-Cloud ab
+  (zwei Abfrager auf einem Konto stören sich, Fehler 6024).
+- **Panoptes im Auto:** direkt von der Panoptes-App auf dem Infotainment (siehe unten).
+
+Ein BYD-Konto ist bei Home Assistant und Panoptes nur noch **optional**, für Fernbefehle wie Vorklimatisieren.
+
 ## Home Assistant (optional)
 
-Im Assistenten unter „Extras" aktivierbar. Das Auto taucht dann in Home Assistant von
+Zusätzlich (unter „Extras"): Werte und Schalter an Home Assistant senden. Das Auto taucht dann in Home Assistant von
 selbst auf (MQTT-Discovery) — mit allen Werten und Schaltern. Braucht einen MQTT-Broker
 (bei HA meist das Mosquitto-Add-on). Wer eine PV-Anlage in HA hat, kann seine
 Solar-Leistung neben Ladestand und Strompreis anzeigen lassen — **nur lesend**.
