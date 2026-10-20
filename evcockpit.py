@@ -774,6 +774,22 @@ def _run_cmd(action):
 # ---------------------------------------------------------------- Impressum / Haftung
 # ---- Sprachschicht (DE Master, EN additiv). Siehe project_byd_copilot memory. ----
 _I18N = json.loads(r'''{"BYD ist beschäftigt. Läuft deine BYD-App mit DEMSELBEN Account? Bitte einen zweiten Account als Zusatznutzer verwenden.": "BYD is busy. Is your BYD app running with the SAME account? Please use a second account as an additional user.", "Login abgelehnt — E-Mail, Passwort oder Land stimmen nicht (⚙︎ → neu einrichten).": "Login rejected — email, password or country are wrong (⚙︎ → set up again).", "BYD liefert für diese VIN gerade keine Daten (oft nur kurz — es versucht's weiter).": "BYD isn't returning any data for this VIN right now (often only briefly — it keeps trying).", "pybyd fehlt — bitte einmal installieren: pip install pybyd (%s)": "pybyd is missing — please install it once: pip install pybyd (%s)", "adb ist auf diesem Rechner nicht installiert — ohne adb kann die Wächter-Kamera nicht ausgelesen werden.": "adb is not installed on this computer — without adb the guardian camera can't be read out.", "Auto per adb nicht erreichbar oder keine Aufnahmen gefunden (Adresse richtig? Auto wach? Stick drin?)": "Car not reachable via adb or no recordings found (address correct? car awake? stick plugged in?)", "🔥 Heizen": "🔥 Heat", "❄️ Kühlen": "❄️ Cool", "⏹️ Klima aus": "⏹️ Climate off", "🔋 Batterie vorheizen": "🔋 Preheat battery", "🔋 Batterie-Heizung aus": "🔋 Battery heating off", "🔍 Auto finden": "🔍 Find car", "🔒 Zusperren": "🔒 Lock", "💺 Sitzheizung aus": "💺 Seat heating off", "💺 Sitzheizung Stufe 1": "💺 Seat heating level 1", "💺 Sitzheizung Stufe 2": "💺 Seat heating level 2", "💨 Belüftung aus": "💨 Ventilation off", "💨 Belüftung Stufe 1": "💨 Ventilation level 1", "💨 Belüftung Stufe 2": "💨 Ventilation level 2", "Befehl": "Command", "wird gesendet …": "is being sent …", "angekommen — das Auto braucht ein paar Sekunden": "arrived — the car needs a few seconds", "BYD hat den Befehl nicht bestätigt. Kurz warten und nochmal — wenn es öfter passiert, bitte melden (das ist nicht normal).": "BYD didn't confirm the command. Wait a moment and try again — if it happens more often, please report it (that's not normal).", "BYD ist beschäftigt — läuft deine BYD-App mit DEMSELBEN Account? Dafür der Zweit-Account.": "BYD is busy — is your BYD app running with the SAME account? That's what the second account is for.", "Deutlich zu wenig Druck (%.0f kPa statt %.0f) — bitte bald prüfen.": "Significantly too little pressure (%.0f kPa instead of %.0f) — please check soon.", "Etwas wenig Druck (%.0f kPa statt %.0f) — beim nächsten Tanken nachfüllen.": "A little low on pressure (%.0f kPa instead of %.0f) — top it up at your next stop.", "Reichlich viel Druck (%.0f kPa statt %.0f).": "Quite a lot of pressure (%.0f kPa instead of %.0f).", "Druck passt (%.0f–%.0f kPa).": "Pressure is fine (%.0f–%.0f kPa).", "Sensor meldet '%s' — liefert dein HA gerade Werte?": "Sensor reports '%s' — is your HA delivering values right now?", "Token abgelehnt — in HA neu erzeugen (Profil → Sicherheit).": "Token rejected — regenerate it in HA (Profile → Security).", "Sensor nicht gefunden — im Assistenten neu auswählen.": "Sensor not found — select it again in the wizard.", "Kilometerstand": "Odometer", "Ladezustand": "Charge level", "Echte Reichweite": "Real range", "Reichweite (BYD)": "Range (BYD)", "Verbrauch Schnitt": "Average consumption", "Ladeleistung": "Charging power", "Außentemperatur": "Outside temperature", "Reifen VL": "Tyre FL", "Reifen VR": "Tyre FR", "Reifen HL": "Tyre RL", "Reifen HR": "Tyre RR", "Gang": "Gear", "Verriegelt": "Locked", "Lädt": "Charging", "Angesteckt": "Plugged in", "Türen offen": "Doors open", "Fenster offen": "Windows open", "Klima läuft": "Climate running", "Batterie heizt": "Battery heating", "Standort": "Location", "Broker weist ab (Code %s) — Benutzer/Passwort?": "Broker refuses (code %s) — username/password?", "Keine Fahrzeuge gefunden — stimmen Login/Land?": "No vehicles found — are login/country correct?", "Login abgelehnt — E-Mail/Passwort/Land prüfen": "Login rejected — check email/password/country", "Token abgelehnt — stimmt er? (HA: Profil → Sicherheit → Token erstellen)": "Token rejected — is it correct? (HA: Profile → Security → Create token)", "Kein Kontakt zu Home Assistant — Adresse richtig? (z.B. http://192.168.0.10:8123)": "No contact with Home Assistant — is the address correct? (e.g. http://192.168.0.10:8123)", "Keine Verbindung — Adresse/Port richtig? Läuft der Broker (Mosquitto-Add-on)?": "No connection — are address/port correct? Is the broker running (Mosquitto add-on)?", "Broker weist ab — Benutzer/Passwort prüfen.": "Broker refuses — check username/password.", "VIN fehlt": "VIN missing", "EV-Cockpit laeuft:": "EV-Cockpit is running:", "Tablet/Handy im WLAN:": "Tablet/phone on Wi-Fi:", "Alle Daten bleiben auf DIESEM Rechner.": "All data stays on THIS computer.", "-> Der Browser oeffnet sich, der Assistent fuehrt dich durch.": "-> The browser opens, the wizard guides you through it.", "Beenden: dieses Fenster schliessen (oder Strg+C)": "To quit: close this window (or Ctrl+C)", "EV-Cockpit — Über & Rechtliches": "EV-Cockpit — About & Legal", "← zurück zum Cockpit": "← back to the cockpit", "Was das ist": "What this is", "Ein": "A", "freies Werkzeug für die BYD-Community": "free tool for the BYD community", ". Es zeigt dir die Daten deines eigenen Autos auf deinem eigenen Rechner — ohne Umweg über fremde Server. Gebaut aus Freude an der Sache und im Sinne des Rechts auf Reparatur. Kostenlos, für niemanden ein Geschäft.": ". It shows you your own car's data on your own computer — without a detour via someone else's servers. Built out of love for the thing and in the spirit of the right to repair. Free, a business for no one.", "Impressum": "Legal notice", "Salzburg, Österreich": "Salzburg, Austria", "E-Mail:": "Email:", "Vollständiges Impressum:": "Full legal notice:", "⚠️ Haftungsausschluss — bitte lesen": "⚠️ Disclaimer — please read", "Keine Verbindung zu BYD.": "No connection to BYD.", "Dies ist": "This is", "kein offizielles Produkt": "not an official product", "der BYD Auto Co. Ltd. und steht in keinerlei Verbindung zu BYD. „BYD\" ist eine Marke ihrer jeweiligen Inhaber und wird hier nur genannt, um die Kompatibilität zu beschreiben.": "of BYD Auto Co. Ltd. and has no connection to BYD whatsoever. \"BYD\" is a trademark of its respective owners and is named here only to describe compatibility.", "Nutzung auf eigene Gefahr.": "Use at your own risk.", "Diese Software wird kostenlos und": "This software is provided free of charge and", "ohne jede Gewähr": "without any warranty", "bereitgestellt — ohne Zusicherung von Funktion, Richtigkeit oder Verfügbarkeit. Sie": "— with no assurance of function, accuracy or availability. It", "steuert ein echtes Fahrzeug": "controls a real vehicle", "(z.B. die Klimaanlage). Für Schäden jeder Art, Datenverlust oder Folgen aus der Nutzung wird": "(e.g. the air conditioning).", "keine Haftung": "No liability", "übernommen, soweit gesetzlich zulässig.": "is accepted for damage of any kind, data loss or consequences of use, as far as legally permissible.", "BYDs Nutzungsbedingungen.": "BYD's terms of use.", "Der Zugriff auf die BYD-Cloud über eine fremde Anwendung kann den Nutzungsbedingungen von BYD widersprechen. Im ungünstigsten Fall kann BYD einen Account einschränken oder sperren.": "Accessing the BYD cloud through a third-party application may conflict with BYD's terms of use. In the worst case, BYD can restrict or block an account.", "Das entscheidest du selbst und trägst es selbst.": "You decide that yourself and carry it yourself.", "Zweiter Account.": "Second account.", "Die BYD-Cloud erlaubt pro Account nur eine aktive Sitzung. Nutze einen zweiten Account als Zusatznutzer — sonst stört dieses Werkzeug deine eigene BYD-App.": "The BYD cloud allows only one active session per account. Use a second account as an additional user — otherwise this tool disturbs your own BYD app.", "🔒 Datenschutz": "🔒 Privacy", "Deine Daten bleiben auf diesem Rechner.": "Your data stays on this computer.", "Zugangsdaten und Fahrzeugdaten werden ausschließlich lokal gespeichert (": "Access credentials and vehicle data are stored exclusively locally (", "). Die einzige Gegenstelle im Normalbetrieb ist die": "). The only remote endpoint in normal operation is the", "BYD-Cloud selbst": "BYD cloud itself", "— also der Dienst, dessen Daten du abrufst.": "— that is, the service whose data you're retrieving.", "Zwei freiwillige Ausnahmen": "Two voluntary exceptions", ", beide": ", both", "standardmäßig aus": "off by default", "und im Assistenten anhakbar:": "and checkable in the wizard:", "Strompreis": "Electricity price", "— dein Rechner fragt aWATTar bzw. energy-charts.info nach den Börsenpreisen deines Landes. Übertragen wird dabei nur die Anfrage selbst (die Gegenstelle sieht deine IP, wie bei jedem Webseitenbesuch) —": "— your computer asks aWATTar or energy-charts.info for your country's exchange prices. Only the request itself is transmitted (the remote endpoint sees your IP, as with any website visit) —", "keine Fahrzeugdaten": "no vehicle data", "Nutzungszählung": "Usage counting", "Nur wenn du sie im Assistenten aktiv anhakst, sendet das Programm einmal am Tag genau das hier:": "Only if you actively check it in the wizard does the program send exactly this once a day:", "{ \"id\": \"zufällige Installations-ID\", \"version\": \"__VERSION__\", \"model\": \"dein Automodell\" }": "{ \"id\": \"random installation ID\", \"version\": \"__VERSION__\", \"model\": \"your car model\" }", "Kein Name, keine E-Mail, keine VIN, kein Standort, keine Fahrdaten. Die ID ist eine Zufallszahl ohne Personenbezug. Häkchen jederzeit im Assistenten abschaltbar.": "No name, no email, no VIN, no location, no driving data. The ID is a random number with no personal reference. The checkbox can be switched off in the wizard at any time.", "Quelloffen": "Open source", "Du sollst uns nicht glauben müssen —": "You shouldn't have to take our word for it —", "schau nach": "check for yourself", ". Der gesamte Quelltext liegt offen; die Datei, die du gestartet hast, ist lesbarer Python-Code.": ". The entire source code is open; the file you started is readable Python code.", "EV-Cockpit — Einrichtung": "EV-Cockpit — Setup", "EV-Cockpit einrichten": "Set up EV-Cockpit", "Dein Auto, dein Rechner, deine Daten.": "Your car, your computer, your data.", "Wichtig": "Important", "BYD-Zugang": "BYD access", "Dein Auto": "Your car", "Aussehen": "Appearance", "⚠️ Bitte lies das hier — es ist der wichtigste Punkt": "⚠️ Please read this — it's the most important point", "Die BYD-Cloud erlaubt pro Konto nur": "The BYD cloud allows only", "eine": "one", "aktive Verbindung. Wenn du hier": "active connection per account. If you enter", "dasselbe Konto": "the same account", "einträgst wie in deiner BYD-App am Handy,": "here as in your BYD app on your phone,", "stören sich beide gegenseitig": "the two interfere with each other", "— mal spinnt das Cockpit, mal die App (Fehler 6024).": "— sometimes the cockpit acts up, sometimes the app (error 6024).", "So machst du es richtig:": "Here's how to do it right:", "In der BYD-App ein": "In the BYD app, create a", "zweites Konto": "second account", "anlegen (andere E-Mail-Adresse)": "(a different email address)", "Dieses zweite Konto im Auto als": "Grant this second account access in the car as an", "„Zusatznutzer\"": "\"additional user\"", "freigeben": "", "Hier gleich das": "Enter the", "zweite": "second", "Konto eintragen — nicht dein Haupt-Konto": "account here — not your main account", "Dann laufen App und Cockpit friedlich nebeneinander.": "Then the app and cockpit run peacefully side by side.", "Zugangsdaten und Fahrzeugdaten werden nur lokal gespeichert. Dieses Programm sendet": "Access credentials and vehicle data are stored only locally. This program sends", "nichts": "nothing", "an den Entwickler — es spricht nur mit der BYD-Cloud selbst. Nachlesbar: die Datei": "to the developer — it talks only to the BYD cloud itself. You can check: the file", "ist normaler, lesbarer Text.": "is normal, readable text.", "Verstanden — ich verwende ein zweites BYD-Konto": "Understood — I'm using a second BYD account", "Oder: mir ist bewusst, dass es sonst mit meiner BYD-App kollidieren kann.": "Or: I'm aware that it can otherwise collide with my BYD app.", "Weiter →": "Next →", "E-Mail deines BYD-Kontos": "Email of your BYD account", "(das zweite!)": "(the second one!)", "Passwort": "Password", "Steuer-PIN (6-stellig — dieselbe wie in der BYD-App)": "Control PIN (6 digits — the same as in the BYD app)", "z.B. 123456": "e.g. 123456", "Land": "Country", "Zeitzone": "Time zone", "🔍 Meine Fahrzeuge abrufen": "🔍 Fetch my vehicles", "Beim Abrufen meldet sich dein Rechner einmal bei BYD an — so wie deine Handy-App auch. Klappt es nicht, stimmt meistens das": "When fetching, your computer logs in to BYD once — just like your phone app does. If it doesn't work, it's usually the", "nicht.": "that's wrong.", "← Zurück": "← Back", "Dein Fahrzeug": "Your vehicle", "— erst Fahrzeuge abrufen —": "— fetch vehicles first —", "Modell (setzt die Akkugröße)": "Model (sets the battery size)", "Akku nutzbar in kWh —": "Usable battery in kWh —", "bitte prüfen": "please check", "Reifendruck-Sollwert (kPa, optional)": "Tyre pressure target (kPa, optional)", "z.B. 250": "e.g. 250", "🔎 Was kann mein Auto?": "🔎 What can my car do?", "Dein Auto hat uns gesagt, was es kann.": "Your car told us what it can do.", "Hak an, was du im Cockpit haben willst": "Check what you want in the cockpit", "— den Rest siehst du gar nicht erst.": "— you won't even see the rest.", "Ausgegraute Zeilen kann dein Auto nicht — die liegen nicht an uns.": "Greyed-out rows are things your car can't do — that's not on us.", "Aufsperren bieten wir bewusst nicht an": "We deliberately don't offer unlocking", ", auch wenn dein Auto es könnte: Ein Knopf im Browser, der dein Auto öffnet, wäre ein Einbruchswerkzeug für jeden, der an deinen Rechner kommt. Zusperren ist dagegen harmlos.": ", even if your car could do it: a button in the browser that opens your car would be a burglary tool for anyone who gets to your computer. Locking, on the other hand, is harmless.", "Der": "The", "Reifendruck-Sollwert": "tyre pressure target", "steht bei dir im": "is in your", "Türrahmen der Fahrertür": "driver's door frame", "(oft in bar: 2,5 bar = 250 kPa). Trägst du ihn ein, warnt dich das Cockpit bei zu wenig Druck. Lässt du das Feld leer, zeigt es den Druck nur an —": "(often in bar: 2.5 bar = 250 kPa). If you enter it, the cockpit warns you when pressure is too low. If you leave the field empty, it only shows the pressure —", "ich rate den Wert bewusst nicht": "I deliberately don't guess the value", ", er hängt an deiner Reifengröße und Beladung.": ", it depends on your tyre size and load.", "Diese Zahl braucht nur die": "This number is only needed for the", "ehrliche Reichweiten-Rechnung": "honest range calculation", ". Steht in deinen Fahrzeugpapieren oder im Prospekt. Stimmt sie nicht genau, ist das halb so wild — die Reichweite wird dann nur etwas ungenauer.": ". It's in your vehicle documents or the brochure. If it's not exactly right, no big deal — the range just gets a bit less accurate.", "Foto deines Autos (optional)": "Photo of your car (optional)", "Am schönsten ist ein Foto von": "A photo of", "deinem eigenen": "your own", "Auto — freigestellt vor hellem Hintergrund wirkt es am besten. Bleibt natürlich auch nur auf diesem Rechner. Kannst du auch später noch nachreichen.": "car looks nicest — cut out against a light background works best. It stays on this computer too, of course. You can also add it later.", "Wie oft soll beim Auto nachgefragt werden?": "How often should the car be polled?", "alle 2 Minuten — sehr frisch, viele Abfragen": "every 2 minutes — very fresh, many requests", "alle 5 Minuten — empfohlen": "every 5 minutes — recommended", "alle 10 Minuten — sparsam": "every 10 minutes — economical", "alle 15 Minuten": "every 15 minutes", "alle 30 Minuten — sehr sparsam": "every 30 minutes — very economical", "🔔 Bescheid geben, wenn das Laden fertig ist": "🔔 Notify me when charging is finished", "Im Cockpit gibt es oben rechts eine": "In the cockpit there's a", "Glocke": "bell", "— einmal draufklicken, dann meldet dir dein Browser, wenn das Auto fertig geladen hat (und wenn es plötzlich offen ist).": "at the top right — click it once, then your browser notifies you when the car has finished charging (and when it's suddenly open).", "Nichts zu konfigurieren:": "Nothing to configure:", "Die Meldung entsteht": "The notification is created", "in deinem Browser": "in your browser", "— kein Telegram, kein Konto, es verlässt nichts deinen Rechner.": "— no Telegram, no account, nothing leaves your computer.", "Ehrliche Grenze:": "Honest limitation:", "Es meldet nur, solange die Cockpit-Seite offen ist (ein Hintergrund-Tab reicht). Browser zu = keine Meldung.": "It only notifies while the cockpit page is open (a background tab is enough). Browser closed = no notification.", "Gilt, solange das Auto": "Applies as long as the car is", "aktiv": "active", "ist. Steht es länger, fragt das Cockpit nur alle 15 Minuten — das schont die 12V-Batterie. Während der Fahrt fragt es automatisch öfter.": ". If it stands for longer, the cockpit only polls every 15 minutes — that spares the 12V battery. While driving it automatically polls more often.", "Fürs Vorklimatisieren spielt das keine Rolle": "For preconditioning this doesn't matter", "— das geht jederzeit, auch beim geparkten Auto.": "— that works anytime, even with the car parked.", "Alles hier ist freiwillig.": "Everything here is optional.", "Lass ruhig alles aus — das Cockpit funktioniert komplett ohne. Du kannst jederzeit zurückkommen und etwas dazuschalten.": "Feel free to leave everything off — the cockpit works completely without it. You can come back anytime and switch something on.", "💶 Strompreis anzeigen — „wann ist Laden am billigsten?\"": "💶 Show electricity price — \"when is charging cheapest?\"", "Zeigt den": "Shows your country's", "Börsen-Strompreis": "exchange electricity price", "deines Landes als Stundenbalken mit der günstigsten Stunde. Quelle: aWATTar (AT/DE) bzw. energy-charts.info (Fraunhofer ISE), kostenlos, ohne Konto.": "as hourly bars with the cheapest hour. Source: aWATTar (AT/DE) or energy-charts.info (Fraunhofer ISE), free, no account.", "Ehrlich:": "Honestly:", "Das ist der": "This is the", "Börsenpreis": "exchange price", "nicht": "not", "was auf deiner Rechnung steht (Netz, Steuern, Aufschläge fehlen). Nur mit einem": "what's on your bill (grid fees, taxes, surcharges are missing). Only with an", "Börsentarif": "exchange tariff", "(Tibber, aWATTar, smartENERGY) ist das dein echter Verlauf. Bei Fixtarif bloß interessant.": "(Tibber, aWATTar, smartENERGY) is this your real curve. With a fixed tariff it's just interesting.", "Dein Rechner fragt dann diese Preisseite ab (die sieht deine IP, wie bei jedem Webseitenbesuch) —": "Your computer then queries this price page (which sees your IP, as with any website visit) —", "🔌 Ladesäulen in der Nähe anzeigen": "🔌 Show charging stations nearby", "Öffentliche Ladestationen rund um den": "Public charging stations around your", "aktuellen Standort deines Autos": "car's current location", "— Betreiber, Entfernung, Steckertyp. Quelle:": "— operator, distance, connector type. Source:", ", kein Konto.": ", no account.", "Ehrlich: keine Preise.": "Honestly: no prices.", "Es gibt keine verlässliche freie Quelle für aktuelle Ladepreise — falsche Preise wären schlimmer als gar keine. Auch die Standorte pflegen Freiwillige: meist gut, aber ohne Gewähr. E-Bike-Ladepunkte filtern wir raus.": "There's no reliable free source for current charging prices — wrong prices would be worse than none. The locations are also maintained by volunteers: usually good, but without guarantee. We filter out e-bike charging points.", "📱 Auch auf Tablet/Handy im Heimnetz öffnen": "📱 Also open on tablet/phone in the home network", "Ohne Haken ist das Cockpit": "Without the checkmark, the cockpit is reachable", "nur auf diesem Rechner": "only on this computer", "erreichbar — die sicherste Einstellung. Mit Haken erreichst du es auch vom Küchen-Tablet im eigenen WLAN; die Adresse zeigt dir das Cockpit dann unten an. Nur im eigenen, vertrauenswürdigen Netz aktivieren: das Cockpit kann die Klimaanlage deines Autos steuern.": "— the safest setting. With the checkmark you can also reach it from the kitchen tablet on your own Wi-Fi; the cockpit then shows you the address below. Only enable it on your own, trusted network: the cockpit can control your car's air conditioning.", "🏠 Ans Home Assistant senden": "🏠 Send to Home Assistant", "Du nutzt": "Using", "? Dann schickt das Cockpit dein Auto dorthin — es taucht": "? Then the cockpit sends your car there — it", "von selbst auf": "shows up on its own", ", mit allen Werten und den Klima-Knöpfen. Kein YAML, nichts konfigurieren. Praktisch, wenn du dort schon deine PV-Anlage oder Wallbox hast: dann siehst du alles auf einem Bild.": ", with all values and the climate buttons. No YAML, nothing to configure. Handy if you already have your PV system or wallbox there: then you see everything in one picture.", "Voraussetzung:": "Requirement:", "ein MQTT-Broker (bei HA meist das": "an MQTT broker (with HA usually the", "-Add-on, einmal installieren).": "add-on, install it once).", "Tipp:": "Tip:", "Am besten läuft dieses Programm dann auf dem Gerät, auf dem auch HA läuft (Raspberry, NAS, Mini-PC) — dann hat HA rund um die Uhr Daten. Dafür gibt es das Linux-Paket und eine Autostart-Anleitung in der LIESMICH.": "It's best to run this program on the device that also runs HA (Raspberry, NAS, mini PC) — then HA has data around the clock. There's a Linux package and an autostart guide for that in the README.", "MQTT-Broker (Adresse)": "MQTT broker (address)", "z.B. 192.168.0.10": "e.g. 192.168.0.10", "Benutzer (falls nötig)": "User (if needed)", "leer lassen wenn keiner": "leave empty if none", "leer lassen wenn keins": "leave empty if none", "🔌 Verbindung testen": "🔌 Test connection", "☀️ PV-Leistung aus Home Assistant holen": "☀️ Get PV power from Home Assistant", "Du hast eine": "You have a", "PV-Anlage": "PV system", "und sie ist in Home Assistant eingebunden? Dann zeigt das Cockpit deine": "and it's integrated into Home Assistant? Then the cockpit shows your", "aktuelle Solar-Leistung": "current solar power", "direkt neben Ladestand und Strompreis — du siehst auf einen Blick, ob du gerade": "right next to the charge level and electricity price — you see at a glance whether you're charging", "mit eigener Sonne": "with your own sun", "lädst oder teuer aus dem Netz.": "right now or expensively from the grid.", "Warum das so gut geht:": "Why this works so well:", "Wir reden nicht mit deinem Wechselrichter —": "We don't talk to your inverter —", "Home Assistant hat das schon erledigt": "Home Assistant has already done that", ". Egal ob Fronius, SMA, Huawei, SolarEdge oder Kostal: in HA ist es einfach ein Sensor mit einem Wert in Watt. Den holen wir uns, sonst nichts.": ". Whether Fronius, SMA, Huawei, SolarEdge or Kostal: in HA it's simply a sensor with a value in watts. That's what we fetch, nothing else.", "Wir zeigen, was": "We show what", "dein HA": "your HA", "sagt. Stimmt der Wert dort nicht, stimmt er hier auch nicht. Es wird": "says. If the value is wrong there, it's wrong here too. It's", "nur gelesen": "read only", "— wir schreiben nie etwas in dein HA.": "— we never write anything to your HA.", "Adresse deines Home Assistant": "Address of your Home Assistant", "z.B. http://192.168.0.10:8123": "e.g. http://192.168.0.10:8123", "Zugriffs-Token": "Access token", "(in HA: unten links auf deinen Namen → Sicherheit → ganz unten „Long-Lived Access Token\" → Token erstellen)": "(in HA: bottom left on your name → Security → at the very bottom \"Long-Lived Access Token\" → create token)", "den langen Text hier einfügen": "paste the long text here", "🔍 Meine Sensoren laden": "🔍 Load my sensors", "Welcher Sensor ist deine PV-Leistung?": "Which sensor is your PV power?", "Meist heißt er „PV Leistung\", „Solar Power\" o.ä. Nimm den, der die": "It's usually called \"PV Leistung\", \"Solar Power\" or similar. Take the one that shows the", "aktuelle Erzeugung in Watt": "current generation in watts", "zeigt.": ".", "🎥 Wächter-Kamera einbinden": "🎥 Integrate guardian camera", "— nur für Bastler": "— for tinkerers only", "Zeigt die letzte": "Shows the latest", "Auslöse-Aufnahme": "triggered recording", "der 360°-Kameras.": "from the 360° cameras.", "Braucht alles davon:": "Needs all of this:", "auf diesem Rechner (ist": "on this computer (is", "im Paket dabei),": "included in the package),", "kabelloses adb am Auto": "wireless adb on the car", "freigeschaltet,": "enabled,", "Overdrive-App": "Overdrive app", "USB-Stick": "USB stick", "im Auto.": "in the car.", "Sagt dir das nichts?": "Doesn't ring a bell?", "Haken weglassen": "Leave the checkmark off", "— alles andere geht trotzdem.": "— everything else still works.", "adb-Adresse des Autos (z.B. 192.168.0.50:5555)": "adb address of the car (e.g. 192.168.0.50:5555)", "🔔 Auf neue Versionen hinweisen": "🔔 Notify about new versions", "Das Cockpit schaut dann": "The cockpit then checks", "einmal am Tag": "once a day", "nach, ob es eine neuere Version gibt, und zeigt dir oben einen kleinen Hinweis. Nützlich für Fehlerbehebungen — du musst sonst selbst mitbekommen, wenn etwas repariert wurde.": "whether there's a newer version and shows you a small note at the top. Useful for bug fixes — otherwise you'd have to notice yourself when something was repaired.", "Wie das ohne Datenabfluss geht:": "How this works without data leaving:", "Dein Rechner lädt nur eine kleine Textdatei mit der neuesten Versionsnummer und": "Your computer only downloads a small text file with the latest version number and", "vergleicht sie selbst": "compares it itself", ". Der Server erfährt dabei": ". The server doesn't even", "nicht einmal, welche Version du hast": "learn which version you have", "— es wird nichts über dich gesendet, kein Ident, kein Modell, keine Fahrzeugdaten.": "— nothing about you is sent, no ident, no model, no vehicle data.", "Beim Abholen sieht der Server – wie bei jedem Webseitenbesuch – deine IP. Wir schreiben sie nirgends auf. Ohne Haken passiert gar nichts.": "When fetching, the server sees – as with any website visit – your IP. We don't record it anywhere. Without the checkmark, nothing happens at all.", "📊 Anonym mitzählen, dass ich das Tool nutze": "📊 Anonymously count that I use the tool", "Damit der Entwickler sieht, ob sich die Arbeit lohnt.": "So the developer can see whether the work is worth it.", "Einmal am Tag wird genau das gesendet — und sonst nichts:": "Once a day exactly this is sent — and nothing else:", "{ \"id\": \"zufällige Nummer\", \"version\": \"1.0\", \"model\": \"dein Modell\" }": "{ \"id\": \"random number\", \"version\": \"1.0\", \"model\": \"your model\" }", "Kein Name, keine E-Mail, keine VIN, kein Standort, keine Fahrdaten. Ohne Haken sendet das Programm": "No name, no email, no VIN, no location, no driving data. Without the checkmark, the program sends", "gar nichts": "nothing at all", "an den Entwickler.": "to the developer.", "✅ Fertig — Cockpit starten": "✅ Done — start cockpit", "ABMELDEN": "LOG OUT", "Löscht deine BYD-Zugangsdaten, die gespeicherten Fahrzeugdaten und dein Foto": "Deletes your BYD access credentials, the stored vehicle data and your photo", "von diesem Rechner": "from this computer", ". Dein BYD-Konto selbst bleibt unangetastet.": ". Your BYD account itself remains untouched.", "🚪 Abmelden & Daten löschen": "🚪 Log out & delete data", "Impressum · Haftungsausschluss · Datenschutz": "Legal notice · Disclaimer · Privacy", "Bevor es losgeht": "Before we start", "Ein Punkt ist wirklich wichtig — bitte kurz lesen.": "One point is really important — please read it briefly.", "Dein BYD-Zugang": "Your BYD access", "Damit holt dein Rechner die Daten direkt von BYD.": "With this, your computer fetches the data directly from BYD.", "Welches Fahrzeug, und wie groß ist der Akku?": "Which vehicle, and how big is the battery?", "Dein Cockpit": "Your cockpit", "Ein Foto und wie oft nachgefragt wird.": "A photo and how often it's polled.", "Alles freiwillig — lass ruhig alles aus.": "All optional — feel free to leave everything off.", "⚠️ Bitte zuerst „Meine Fahrzeuge abrufen\" drücken.": "⚠️ Please press \"Fetch my vehicles\" first.", "ℹ️ Deine Auswahl ist gespeichert. Erneut abfragen, um sie zu ändern.": "ℹ️ Your selection is saved. Query again to change it.", "(gespeichert)": "(saved)", "••••••• (gespeichert — leer lassen zum Behalten)": "••••••• (saved — leave empty to keep)", "Aktuelles Foto — neues wählen zum Ersetzen": "Current photo — choose a new one to replace it", "ℹ️ Deine Einstellungen sind vorausgefüllt. Ändere, was du willst, und speichere.": "ℹ️ Your settings are pre-filled. Change what you want and save.", "Wirklich abmelden? Zugangsdaten, Fahrzeugdaten und Foto werden von diesem Rechner gelöscht.": "Really log out? Access credentials, vehicle data and photo will be deleted from this computer.", "⏳ Lösche …": "⏳ Deleting …", "✅ Abgemeldet. Alles gelöscht.": "✅ Logged out. Everything deleted.", "⚠️ Bitte zuerst in Schritt 2 die Fahrzeuge abrufen.": "⚠️ Please fetch the vehicles in step 2 first.", "⏳ Frage dein Auto …": "⏳ Asking your car …", "Dein Auto kann das nicht.": "Your car can't do that.", "✅ Dein Auto kann": "✅ Your car can", "von": "of", "Dingen.": "things.", "⚠️ Bitte Adresse und Token eintragen.": "⚠️ Please enter address and token.", "⏳ Frage dein Home Assistant …": "⏳ Asking your Home Assistant …", "Leistungs-Sensoren gefunden — wähl deinen PV-Sensor aus.": "power sensors found — choose your PV sensor.", "⚠️ Bitte zuerst die Broker-Adresse eintragen.": "⚠️ Please enter the broker address first.", "⏳ Verbinde …": "⏳ Connecting …", "✅ Broker erreicht — dein Auto erscheint gleich in Home Assistant.": "✅ Broker reached — your car will appear in Home Assistant shortly.", "⏳ Melde mich bei BYD an …": "⏳ Logging in to BYD …", "Fahrzeug(e) gefunden — weiter unten mit Weiter": "vehicle(s) found — continue below with Next", "⚠️ Fehler:": "⚠️ Error:", "⚠️ Bitte erst Fahrzeuge abrufen und eins auswählen": "⚠️ Please fetch vehicles first and select one", "⏳ Speichere …": "⏳ Saving …", "✅ Gespeichert — Cockpit startet …": "✅ Saved — cockpit is starting …", "Für den Tablet-Zugriff das Programm einmal neu starten.": "For tablet access, restart the program once.", "ist da.": "is here.", "Ansehen →": "View →", "Benachrichtigen, wenn das Laden fertig ist": "Notify when charging is finished", "AKKU": "BATTERY", "REICHWEITE (ECHT)": "RANGE (REAL)", "BYD sagt:": "BYD says:", "Kein Foto hinterlegt": "No photo set", "⚙︎ → Foto-URL": "⚙︎ → Photo URL", "KILOMETERSTAND": "ODOMETER", "AUSSEN": "OUTSIDE", "VERBRAUCH Ø": "CONSUMPTION Ø", "REIFEN": "TYRES", "DEINE PV-ANLAGE": "YOUR PV SYSTEM", "ERZEUGT GERADE": "GENERATING NOW", "Quelle: dein Home Assistant": "Source: your Home Assistant", "KLIMA": "CLIMATE", "🔥  Heizen": "🔥  Heat", "❄  Kühlen": "❄  Cool", "◼  Aus": "◼  Off", "🔋  Batterie vorheizen": "🔋  Preheat battery", "🔍  Auto finden": "🔍  Find car", "🔒  Zusperren": "🔒  Lock", "SITZE (FAHRER + BEIFAHRER)": "SEATS (DRIVER + PASSENGER)", "💺  Aus": "💺  Off", "💺  Stufe 1": "💺  Level 1", "💺  Stufe 2": "💺  Level 2", "💨  Belüftung aus": "💨  Ventilation off", "💨  Stufe 1": "💨  Level 1", "💨  Stufe 2": "💨  Level 2", "Heizen zielt auf 26 °C, Kühlen auf 19 °C.": "Heating targets 26 °C, cooling 19 °C.", "Batterie vorheizen": "Preheating the battery", "hilft im Winter vor dem Schnellladen — eine warme Batterie lädt deutlich schneller. Das geht auch bei geparktem Auto.": "helps in winter before fast charging — a warm battery charges much faster. This also works with the car parked.", "LADEN": "CHARGING", "LEISTUNG": "POWER", "FERTIG IN": "DONE IN", "laut Auto": "per the car", "STROM GERADE": "ELECTRICITY NOW", "Börse, ohne Netz & Steuern": "Exchange, without grid & taxes", "Türen": "Doors", "Fenster": "Windows", "STROMPREIS (BÖRSE)": "ELECTRICITY PRICE (EXCHANGE)", "JETZT": "NOW", "GÜNSTIGSTE STUNDE": "CHEAPEST HOUR", "um": "at", "Uhr": "", "TEUERSTE": "MOST EXPENSIVE", "Börsenpreis ohne Netz & Steuern — dein Rechnungspreis nur bei einem Börsentarif.": "Exchange price without grid & taxes — your bill price only with an exchange tariff.", "Quelle:": "Source:", "WÄCHTER-KAMERA": "GUARDIAN CAMERA", "LETZTE AUFNAHME": "LAST RECORDING", "Wächter-Aufnahme": "Guardian recording", "LADESÄULEN IN DER NÄHE": "CHARGING STATIONS NEARBY", "Daten: © OpenStreetMap-Mitwirkende (ODbL) · von Freiwilligen gepflegt, ohne Gewähr ·": "Data: © OpenStreetMap contributors (ODbL) · maintained by volunteers, without guarantee ·", "bewusst ohne Preisangaben": "deliberately without price information", "STANDORT": "LOCATION", "🔵 dein Auto · 🟢 Ladesäulen (anklickbar) — Karte © OpenStreetMap-Mitwirkende": "🔵 your car · 🟢 charging stations (clickable) — map © OpenStreetMap contributors", "📱 Auf Tablet/Handy im selben WLAN erreichbar unter": "📱 Reachable on tablet/phone on the same Wi-Fi at", "📷 Eigenes Foto deines Autos einsetzen": "📷 Use your own car's photo", "km entfernt": "km away", "Meldet, wenn das Laden fertig ist (nur solange diese Seite offen ist)": "Notifies when charging is finished (only while this page is open)", "Dein Browser kann keine Benachrichtigungen.": "Your browser can't do notifications.", "Benachrichtigungen an": "Notifications on", "Du bekommst Bescheid, wenn das Laden fertig ist.": "You'll be notified when charging is finished.", "Dein Browser hat Benachrichtigungen für diese Seite blockiert. Du kannst das im Schloss-Symbol neben der Adresse wieder erlauben.": "Your browser has blocked notifications for this page. You can allow it again via the lock icon next to the address.", "🔌 Laden beendet": "🔌 Charging finished", "Dein Auto ist bei": "Your car is at", "% — Kabel kann raus.": "% — you can unplug the cable.", "🔓 Auto ist offen": "🔓 Car is open", "Es war eben noch verriegelt.": "It was locked just a moment ago.", "SCHLÄFT": "SLEEPING", "Ja": "Yes", "Nein": "No", "zu": "closed", "OFFEN": "OPEN", "angesteckt, lädt nicht": "plugged in, not charging", "lädt": "charging", "Schnellladen": "Fast charging", "Wallbox-Tempo": "Wallbox speed", "langsam (Steckdose?)": "slow (household socket?)", "Uhr:": "h:", "⏳ Sende …": "⏳ Sending …", "⚠️ Dienst weg": "⚠️ Service gone", "Auto wirklich zusperren?": "Really lock the car?", "Projekt & Kontakt": "Project & contact", "Freies, nicht-kommerzielles Community-Projekt, quelloffen auf GitHub:": "Free, non-commercial community project, open source on GitHub:", "Fragen oder Fehler? Bitte als Issue melden:": "Questions or bugs? Please report as an issue:", "— Nur wenn du sie im Assistenten aktiv anhakst, sendet das Programm einmal am Tag genau das hier:": "— Only if you actively check it in the wizard does the program send exactly this once a day:", "zufällige Installations-ID": "random installation ID", "dein Automodell": "your car model"}''')
+_I18N.update({
+    "Übersicht": "Overview", "Klima": "Climate", "Laden": "Charging", "Energie": "Energy",
+    "Preise": "Prices", "Standort": "Location", "KLIMA & KOMFORT": "CLIMATE & COMFORT",
+    "Jetzt aktualisieren": "Refresh now", "noch nicht aktualisiert": "not updated yet",
+    "Energie & Ladepunkte": "Energy & charge points", "Im LAN suchen": "Search LAN",
+    "⚡ Energie & Ladepunkte": "⚡ Energy & charge points",
+    "Ein lesender Überblick für Wallboxen, PV, Speicher und Fahrzeuge via evcc.":
+        "A read-only overview of chargers, solar, batteries and vehicles via evcc.",
+    "Optional – noch nicht verbunden": "Optional — not connected yet",
+    "evcc IP-Adresse": "evcc IP address", "evcc Port": "evcc port",
+    "Verbinden": "Connect", "NICHT VERBUNDEN": "NOT CONNECTED",
+    "VERBUNDEN": "CONNECTED", "FEHLER": "ERROR", "gerade eben": "just now", "vor": "ago",
+    "FAHRZEUGE & LADEPUNKTE": "VEHICLES & CHARGE POINTS", "PV-Erzeugung": "Solar production",
+    "Netz": "Grid", "Speicher": "Battery", "Hausverbrauch": "Home consumption",
+    "Netzpreis": "Grid tariff", "Grünstromanteil": "Green energy share",
+})
 I18N_HEAD = ("<script>window.__TR__=" + json.dumps(_I18N, ensure_ascii=False, separators=(',',':')) + ";"
     "window.__LANG__=(function(){try{var s=localStorage.getItem('evc_lang');if(s==='de'||s==='en')return s;}catch(e){}"
     "return (navigator.language||'de').toLowerCase().indexOf('de')===0?'de':'en';})();"
@@ -1494,22 +1510,59 @@ a.cfg{color:var(--mut);font-size:12px;text-decoration:none}
 .glocke{cursor:pointer;font-size:14px;user-select:none;opacity:.55;transition:.15s}
 .glocke:hover{opacity:1}.glocke.an{opacity:1}
 @media(max-width:640px){.hero{grid-template-columns:1fr}.car{min-height:170px}.car img{max-height:180px}}
+/* Industrial ops refresh: shared local design tokens, flat surfaces, fast controls. */
+:root{color-scheme:dark;--bg:#0B1020;--surface:#121A2B;--soft:#1B2438;--border:#2B3752;
+ --txt:#F5F7FB;--mut:#9CA8C2;--blue:#4F7CFF;--cyan:#14B8A6;--line:#2B3752;
+ --ok:#22C55E;--warn:#F59E0B;--danger:#EF4444;--fast:160ms;--ease:cubic-bezier(.22,1,.36,1)}
+html{scroll-behavior:smooth}body{background:radial-gradient(900px 500px at 50% -220px,rgba(79,124,255,.22),transparent 70%),var(--bg);
+ font:15px/1.5 Inter,"Segoe UI Variable",Segoe UI,sans-serif;padding:24px}
+button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid rgba(79,124,255,.45);outline-offset:3px}
+.wrap{max-width:1160px}.top{gap:18px;margin-bottom:14px;padding:4px 2px}.brand{color:var(--txt);letter-spacing:2.5px;font-size:15px}
+.brand b{color:var(--cyan)}.brand-sub{color:var(--mut);font-size:11px;letter-spacing:.04em;margin-top:2px}
+.on{gap:9px;flex-wrap:wrap;justify-content:flex-end}.dot{background:var(--ok);box-shadow:0 0 0 5px rgba(34,197,94,.12)}
+.dot.off{background:#64748B}.fresh{font-variant-numeric:tabular-nums}
+.iconbtn{min-width:40px;height:40px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--txt);cursor:pointer;
+ transition:background var(--fast),border-color var(--fast),transform var(--fast)}
+.iconbtn:hover{background:var(--soft);border-color:#405078}.iconbtn:active{transform:scale(.96)}
+.quicknav{position:sticky;top:10px;z-index:800;display:flex;gap:5px;overflow-x:auto;padding:6px;margin:0 0 18px;
+ background:rgba(18,26,43,.96);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(11,16,32,.25)}
+.quicknav a{color:var(--mut);text-decoration:none;padding:9px 13px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap;
+ transition:color var(--fast),background var(--fast)}.quicknav a:hover{color:var(--txt);background:var(--soft)}
+.hero{grid-template-columns:300px minmax(0,1fr);gap:28px;margin:4px 0 22px;padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:20px}
+.ring .pct{font-weight:700;letter-spacing:-.05em}.ring .pct small,.range b small{font-weight:500}.range b{font-weight:700}
+.car img,.car svg{filter:drop-shadow(0 22px 34px rgba(11,16,32,.55))}
+.sect{letter-spacing:1.8px;font-weight:800;margin:26px 4px 9px;scroll-margin-top:84px}
+.tile{background:var(--surface);border-color:var(--border);border-radius:14px;padding:17px 18px;backdrop-filter:none;transition:border-color var(--fast),transform var(--fast)}
+.tile:hover{border-color:#405078}.tile .k{font-size:10px;letter-spacing:1.6px;font-weight:800}.tile .v{font-size:26px;font-weight:700;letter-spacing:-.025em}
+.tile .v small{font-weight:500}.pill{min-width:120px;border-color:var(--border);border-radius:14px;padding:15px;font-size:14px;font-weight:700;background:var(--surface);
+ transition:background var(--fast),border-color var(--fast),color var(--fast),transform var(--fast)}
+.pill:hover{background:var(--soft);border-color:#405078;color:var(--txt)}.pill.busy{opacity:.55;pointer-events:none}
+.chip{border-color:var(--border);border-radius:999px;padding:8px 13px;font-size:12px;font-weight:650;background:var(--surface)}
+.bars{height:118px;background:var(--surface);border-color:var(--border);border-radius:14px}.map{border-color:var(--border);border-radius:20px;height:380px}
+.err{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.45);border-radius:14px;color:#FCA5A5}
+@media(max-width:760px){body{padding:14px}.hero{grid-template-columns:1fr;padding:18px}.grid[style]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .top{align-items:flex-start}.brand-sub{display:none}}
+@media(max-width:460px){.grid[style]{grid-template-columns:1fr!important}.on #onl,.fresh{display:none}.hero{padding:14px}.quicknav{top:6px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
 </style></head><body><div class=wrap>
  <div id=updbar style="display:none;background:linear-gradient(90deg,rgba(58,160,255,.16),rgba(55,230,255,.10));
   border:1px solid rgba(90,180,255,.45);border-radius:14px;padding:11px 15px;margin-bottom:14px;font-size:13.5px">
   🔔 <b>Version <span id=updver></span> ist da.</b> <span id=updwas style="color:var(--mut)"></span>
   <a id=updlink href="#" target="_blank" rel="noopener" style="color:var(--blue);margin-left:6px">Ansehen →</a>
  </div>
- <div class=top><div class=brand>EV · COCKPIT</div>
-  <div class=on><span id=dot class=dot></span><span id=onl>—</span>
+ <div class=top><div><div class=brand>EV <b>•</b> COCKPIT</div><div class=brand-sub>LOCAL MOBILITY CONTROL</div></div>
+  <div class=on><span id=dot class=dot></span><span id=onl>—</span><span id=fresh class=fresh>noch nicht aktualisiert</span>
+   <button class=iconbtn id=refreshbtn onclick="manualRefresh()" title="Jetzt aktualisieren" aria-label="Jetzt aktualisieren">↻</button>
    &nbsp;<span id=glocke class=glocke onclick="glockeUm()" title="Benachrichtigen, wenn das Laden fertig ist">🔕</span>
    &nbsp;<a class=cfg href="/setup">⚙︎</a></div></div>
+ <nav class=quicknav aria-label="Schnellnavigation"><a href="#overview">Übersicht</a><a href="#climate">Klima</a>
+  <a href="#charging">Laden</a><a href="#energy-panel">Energie</a><a href="#prices">Preise</a><a href="#location">Standort</a></nav>
  <div class=err id=err></div>
- <div class=hero>
+ <div class=hero id=overview>
   <div>
    <div class=ring><svg class=ring width=250 height=250 viewBox="0 0 250 250">
     <circle cx=125 cy=125 r=112 fill=none stroke="#16243f" stroke-width=14/>
-    <circle id=arc cx=125 cy=125 r=112 fill=none stroke="url(#g)" stroke-width=14 stroke-linecap=round stroke-dasharray=703 stroke-dashoffset=703/>
+    <circle id=arc cx=125 cy=125 r=112 fill=none stroke="#4F7CFF" stroke-width=14 stroke-linecap=round stroke-dasharray=703 stroke-dashoffset=703/>
     <defs><linearGradient id=g x1=0 y1=0 x2=1 y2=1><stop offset=0% stop-color="#3aa0ff"/><stop offset=100% stop-color="#37e6ff"/></linearGradient></defs>
    </svg><div class=val><div class=pct><span id=soc>–</span><small>%</small></div><div class=lbl>AKKU</div></div></div>
    <div class=range><b><span id=range>–</span><small> km</small></b><div class=lbl>REICHWEITE (ECHT)</div>
@@ -1538,7 +1591,7 @@ a.cfg{color:var(--mut);font-size:12px;text-decoration:none}
   </div>
  </div>
 
- <div class=sect>KLIMA</div>
+ <div class=sect id=climate>KLIMA &amp; KOMFORT</div>
  <div class=klima>
   <div class="pill heat" onclick="cmd('heat')">🔥&nbsp; Heizen</div>
   <div class="pill cool" onclick="cmd('cool')">❄&nbsp; Kühlen</div>
@@ -1570,7 +1623,7 @@ a.cfg{color:var(--mut);font-size:12px;text-decoration:none}
  </div>
 
  <div id=ladebox style="display:none">
-  <div class=sect>LADEN</div>
+  <div class=sect id=charging>LADEN</div>
   <div class=grid style="grid-template-columns:repeat(3,1fr)">
    <div class=tile><div class=k>LEISTUNG</div><div class=v><span id=l_kw>–</span><small> kW</small></div>
     <div style="color:var(--mut);font-size:11px;margin-top:2px" id=l_art>–</div></div>
@@ -1593,7 +1646,7 @@ a.cfg{color:var(--mut);font-size:12px;text-decoration:none}
  </div>
 
  <div id=pricebox style="display:none">
-  <div class=sect>STROMPREIS (BÖRSE)</div>
+  <div class=sect id=prices>STROMPREIS (BÖRSE)</div>
   <div class=grid style="grid-template-columns:repeat(3,1fr)">
    <div class=tile><div class=k>JETZT</div><div class=v><span id=p_now>–</span><small> ct/kWh</small></div></div>
    <div class=tile><div class=k>GÜNSTIGSTE STUNDE</div><div class=v><span id=p_cheap>–</span><small> ct</small></div>
@@ -1629,7 +1682,7 @@ a.cfg{color:var(--mut);font-size:12px;text-decoration:none}
   </div>
  </div>
 
- <div class=sect>STANDORT</div>
+ <div class=sect id=location>STANDORT</div>
  <div class=map><div id=lmap></div></div>
  <div style="color:var(--mut);font-size:11.5px;margin:8px 2px 0">
   🔵 dein Auto · 🟢 Ladesäulen (anklickbar) — Karte © OpenStreetMap-Mitwirkende
@@ -1681,6 +1734,18 @@ function zeichneKarte(s){
 
 // --- Benachrichtigungen: entstehen im Browser, verlassen den Rechner NICHT ---
 let LETZTER = {};                       // vorheriger Zustand, um Wechsel zu erkennen
+let LOAD_BUSY=false, POLL_TIMER=null, LAST_STATE=null, LAST_OK=0, LAST_LATENCY=0;
+function freshness(){
+ const e=document.getElementById('fresh');if(!e)return;
+ if(!LAST_OK){e.textContent=__T('noch nicht aktualisiert');return;}
+ const age=Math.max(0,Math.round((Date.now()-LAST_OK)/1000));
+ e.textContent=(age<2?__T('gerade eben'):(window.__LANG__==='en'?age+' s ago':'vor '+age+' s'))+' · '+LAST_LATENCY+' ms';
+}
+function schedulePoll(){
+ clearTimeout(POLL_TIMER);
+ const delay=document.hidden?60000:(LAST_STATE&&LAST_STATE.charging==='ON'?4000:(LAST_STATE&&LAST_STATE.online==='ON'?8000:20000));
+ POLL_TIMER=setTimeout(load,delay);
+}
 function melden(titel, text){
  try{ if(window.Notification && Notification.permission==='granted'){
    new Notification(titel, {body:text, icon:'/photo', tag:'evcockpit'});
@@ -1720,8 +1785,14 @@ function meldeWenn(s){
    melden('🔓 Auto ist offen', 'Es war eben noch verriegelt.');
  }
 }
-async function load(){try{
- const s=await (await fetch('/data')).json();
+async function load(){
+ if(LOAD_BUSY)return;LOAD_BUSY=true;
+ const refresh=document.getElementById('refreshbtn');if(refresh){refresh.disabled=true;refresh.textContent='…';}
+ const started=performance.now();
+ try{
+ const response=await fetch('/data',{cache:'no-store'});
+ if(!response.ok)throw Error('HTTP '+response.status);
+ const s=await response.json();LAST_STATE=s;LAST_OK=Date.now();LAST_LATENCY=Math.round(performance.now()-started);freshness();
  document.getElementById('dot').className='dot'+(s.online==='ON'?'':' off');
  document.getElementById('onl').textContent=s.online==='ON'?'ONLINE':'SCHLÄFT';
  const e=document.getElementById('err');
@@ -1848,16 +1919,29 @@ async function load(){try{
  }
  zeichneKarte(s);
  meldeWenn(s);
-}catch(e){}}
+}catch(ex){
+ const e=document.getElementById('err');e.style.display='block';e.textContent='⚠️ Aktualisierung fehlgeschlagen: '+ex.message;
+}finally{
+ LOAD_BUSY=false;if(refresh){refresh.disabled=false;refresh.textContent='↻';}schedulePoll();
+}}
+function manualRefresh(){clearTimeout(POLL_TIMER);load();}
 function zusperren(){
  if(confirm('Auto wirklich zusperren?')) cmd('lock');}
 function battUm(){ // an/aus je nach aktuellem Zustand des Autos
  const an=document.querySelector('.pill.batt').classList.contains('on');
  cmd(an?'batt_off':'batt_on');}
-async function cmd(a){var m=document.getElementById('msg');m.dataset.hold=1;m.textContent='⏳ Sende …';
- try{await fetch('/cmd?a='+a,{method:'POST'});}catch(e){m.textContent='⚠️ Dienst weg';}
- setTimeout(()=>{m.dataset.hold='';load();},3000);}
-glockeMalen(); load(); setInterval(load,8000);
+async function cmd(a){
+ const m=document.getElementById('msg');m.dataset.hold=1;m.textContent='⏳ Sende …';
+ const controls=[...document.querySelectorAll('.pill')];controls.forEach(e=>e.classList.add('busy'));
+ try{
+  const response=await fetch('/cmd?a='+encodeURIComponent(a),{method:'POST'});
+  const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Befehl abgelehnt');
+  m.textContent='✓ Befehl angenommen · Fahrzeugstatus wird aktualisiert';
+ }catch(ex){m.textContent='⚠️ '+ex.message;}
+ finally{controls.forEach(e=>e.classList.remove('busy'));}
+ setTimeout(()=>{m.dataset.hold='';manualRefresh();},2200);}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)manualRefresh();else schedulePoll();});
+setInterval(freshness,5000);glockeMalen();load();
 </script></body></html>"""
 
 
@@ -2124,52 +2208,95 @@ def _ha_test(cfg):
 
 # ---------------------------------------------------------------- Webserver
 
-ENERGY_PANEL = r'''<section id="energy-panel" style="margin:22px auto;max-width:1100px;padding:20px;border:1px solid #34506c;border-radius:18px;background:#101e30;color:#eaf2ff;font:15px system-ui">
-<h2 style="margin:0 0 8px">⚡ Energie &amp; Ladepunkte</h2>
-<p style="color:#a8bed5">PV, Netz, Speicher und mehrere Ladepunkte – direkt in deinem Cockpit. evcc steuert; das Cockpit zeigt nur an.</p>
-<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="evcc-host" placeholder="evcc-IP (z. B. 192.168.1.20)" style="padding:10px;border-radius:8px;background:#1b3047;color:white;border:1px solid #456">
-<input id="evcc-port" type="number" value="7070" style="width:90px;padding:10px;background:#1b3047;color:white;border:1px solid #456;border-radius:8px">
-<button id="evcc-connect" style="padding:10px;border-radius:8px;cursor:pointer">Verbinden</button>
-<button id="evcc-discover" style="padding:10px;border-radius:8px;cursor:pointer">Geräte suchen</button></div>
-<div id="evcc-message" style="margin:12px 0;color:#a8bed5">Optional – noch nicht verbunden</div>
-<div id="evcc-values" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px"></div>
-<h3>Ladepunkte / Fahrzeuge</h3><div id="evcc-points" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px"></div>
-<div id="evcc-discovery" style="margin-top:12px"></div>
+def _same_origin_request(headers):
+    """Reject browser cross-origin POSTs while keeping local CLI clients usable."""
+    fetch_site = (headers.get("Sec-Fetch-Site") or "").lower()
+    if fetch_site and fetch_site not in ("same-origin", "none"):
+        return False
+    origin = headers.get("Origin")
+    if not origin:
+        return True
+    try:
+        parsed = urllib.parse.urlsplit(origin)
+    except ValueError:
+        return False
+    return parsed.scheme in ("http", "https") and parsed.netloc.lower() == (headers.get("Host") or "").lower()
+
+ENERGY_PANEL = r'''<style>
+.energy-shell{margin:28px auto;max-width:1160px;padding:22px;background:#121A2B;border:1px solid #2B3752;border-radius:20px;color:#F5F7FB;
+ font:15px/1.5 Inter,"Segoe UI Variable",Segoe UI,sans-serif;scroll-margin-top:84px}
+.energy-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}.energy-head h2{margin:0;font-size:22px}
+.energy-head p{margin:5px 0 0;color:#9CA8C2}.energy-form{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 10px}
+.energy-form input,.energy-form button{min-height:42px;padding:10px 12px;border-radius:10px;border:1px solid #2B3752;background:#1B2438;color:#F5F7FB}
+.energy-form input{min-width:210px}.energy-form input[type=number]{min-width:90px;width:100px}.energy-form button{cursor:pointer;font-weight:700}
+.energy-form button.primary{background:#4F7CFF;border-color:#4F7CFF}.energy-form button:hover{border-color:#4F7CFF}
+.energy-message{margin:10px 0 14px;color:#9CA8C2;font-size:12px}.energy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}
+.energy-card{background:#1B2438;border:1px solid #2B3752;border-radius:14px;padding:14px;min-width:0}.energy-card .ek{color:#9CA8C2;font-size:10px;
+ letter-spacing:1.2px;text-transform:uppercase;font-weight:800}.energy-card .ev{font-size:22px;font-weight:750;margin-top:5px;overflow-wrap:anywhere}
+.energy-card .es{color:#9CA8C2;font-size:12px;margin-top:5px}.vehicle-select{width:100%;text-align:left;background:#1B2438;border:1px solid #2B3752;
+ color:#F5F7FB;border-radius:12px;padding:13px;cursor:pointer;font-weight:700}.vehicle-select.active{border-color:#14B8A6;box-shadow:inset 3px 0 #14B8A6}
+.energy-sub{margin:22px 0 9px;font-size:11px;letter-spacing:1.5px;color:#9CA8C2}.energy-discovery{margin-top:12px;color:#9CA8C2;font-size:12px}
+@media(max-width:600px){.energy-shell{margin:20px 14px;padding:16px}.energy-form input{width:100%}.energy-form button{flex:1}}
+</style><section id="energy-panel" class="energy-shell">
+<div class="energy-head"><div><h2>⚡ Energie &amp; Ladepunkte</h2>
+<p>Ein lesender Überblick für Wallboxen, PV, Speicher und Fahrzeuge via evcc.</p></div><span id="evcc-health" class="chip">NICHT VERBUNDEN</span></div>
+<div class="energy-form"><input id="evcc-host" inputmode="decimal" placeholder="evcc-IP · 192.168.1.20" aria-label="evcc IP-Adresse">
+<input id="evcc-port" type="number" value="7070" min="1" max="65535" aria-label="evcc Port">
+<button id="evcc-connect" class="primary">Verbinden</button><button id="evcc-discover">Im LAN suchen</button></div>
+<div id="evcc-message" class="energy-message">Optional – noch nicht verbunden</div>
+<div id="evcc-values" class="energy-grid"></div>
+<h3 class="energy-sub">FAHRZEUGE &amp; LADEPUNKTE</h3><div id="evcc-points" class="energy-grid"></div>
+<div id="evcc-discovery" class="energy-discovery"></div>
 </section>
 <script>
 (function(){
  const el=id=>document.getElementById(id), h=el('evcc-host'),p=el('evcc-port');
  h.value=localStorage.getItem('evc_evcc_host')||'';
  p.value=localStorage.getItem('evc_evcc_port')||'7070';
- const card=(name,value)=>'<div style="background:#192d44;border-radius:12px;padding:14px"><div style="color:#a8bed5">'+name+'</div><strong style="font-size:23px">'+value+'</strong></div>';
- const kw=v=>typeof v==='number'?(v/1000).toLocaleString('de-DE',{maximumFractionDigits:2})+' kW':'–';
+ const card=(name,value,sub='')=>'<div class="energy-card"><div class="ek">'+escapeHtml(__T(name))+'</div><div class="ev">'+value+'</div>'+(sub?'<div class="es">'+sub+'</div>':'')+'</div>';
+ const kw=v=>typeof v==='number'&&Number.isFinite(v)?(v/1000).toLocaleString('de-DE',{maximumFractionDigits:2})+' kW':'–';
  const escapeHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ let busy=false,timer=null,last=null;
+ const schedule=()=>{clearTimeout(timer);timer=setTimeout(refresh,document.hidden?45000:(last&&last.loadpoints&&last.loadpoints.some(x=>x.charging)?7000:15000));};
  async function refresh(){
-  if(!h.value)return;
+  if(!h.value||busy)return;busy=true;el('evcc-connect').disabled=true;
   try{
-   const response=await fetch('/energy/state?host='+encodeURIComponent(h.value)+'&port='+encodeURIComponent(p.value));
-   const d=await response.json();if(!response.ok)throw Error(d.error||'API error');
+   const started=performance.now();
+   const response=await fetch('/energy/state?host='+encodeURIComponent(h.value)+'&port='+encodeURIComponent(p.value),{cache:'no-store'});
+   const d=await response.json();if(!response.ok)throw Error(d.error||'API error');last=d;
    const site=d.site||{};
-   el('evcc-values').innerHTML=card('☀️ PV',kw(site.pv_w))+card('⚡ Netz (+ Bezug / − Einspeisung)',kw(site.grid_w))+card('🔋 Speicher',kw(site.battery_w))+card('🏠 Haus',kw(site.home_w));
+   const gridSub=typeof site.grid_w==='number'?(site.grid_w>30?'Netzbezug':site.grid_w < -30?'Einspeisung':'nahezu ausgeglichen'):'kein Messwert';
+   const batterySub=typeof site.battery_w==='number'?(site.battery_w>30?'entlädt':site.battery_w < -30?'lädt':'bereit'):'kein Messwert';
+   el('evcc-values').innerHTML=card('PV-Erzeugung',kw(site.pv_w),'aktuelle Leistung')+
+    card('Netz',kw(site.grid_w),gridSub)+card('Speicher',kw(site.battery_w),batterySub+(typeof site.battery_soc==='number'?' · '+site.battery_soc.toFixed(0)+' %':''))+
+    card('Hausverbrauch',kw(site.home_w),'ohne Ladepunkte')+
+    (typeof site.tariff_grid==='number'?card('Netzpreis',(site.tariff_grid*100).toLocaleString('de-DE',{maximumFractionDigits:2})+' ct/kWh',
+     typeof site.tariff_feed_in==='number'?'Einspeisung '+(site.tariff_feed_in*100).toLocaleString('de-DE',{maximumFractionDigits:2})+' ct/kWh':'aktueller Tarif'):'')+
+    (typeof site.green_share_home==='number'?card('Grünstromanteil',(site.green_share_home*100).toFixed(0)+' %','aktueller Hausverbrauch'):'');
    const vehicles=d.profiles||d.vehicles||[];
    const selected=localStorage.getItem('evc_selected_vehicle')||'';
-   const vehicleCards=vehicles.map(v=>'<button type="button" data-vehicle="'+escapeHtml(v.id)+'" style="text-align:left;background:#192d44;border:1px solid '+(selected===v.id?'#4dd8ce':'#34506c')+';color:#eaf2ff;border-radius:12px;padding:14px;cursor:pointer">🚘 '+escapeHtml(v.title)+' · '+(typeof v.soc==='number'?escapeHtml(v.soc)+' %':'–')+'</button>').join('');
+   const vehicleCards=vehicles.map(v=>'<button type="button" class="vehicle-select '+(selected===v.id?'active':'')+'" data-vehicle="'+escapeHtml(v.id)+'">🚘 '+escapeHtml(v.title)+' · '+(typeof v.soc==='number'?escapeHtml(v.soc)+' %':'–')+'</button>').join('');
    const chosen=vehicles.find(v=>v.id===selected)||vehicles[0];
-   const details=chosen?card('Fahrzeugdetails · '+escapeHtml(chosen.title),
-    'Akku: '+(typeof chosen.soc==='number'?escapeHtml(chosen.soc)+' %':'–')+
-    ' · Reichweite: '+(typeof chosen.range_km==='number'?escapeHtml(chosen.range_km)+' km':'–')+
-    ' · Ladepunkt: '+escapeHtml(chosen.loadpoint||'nicht zugeordnet')+
-    ' · Ladeleistung: '+kw(chosen.charge_power_w)+
-    ' · Status: '+(chosen.charging?'Lädt':chosen.connected?'Angeschlossen':'Nicht angeschlossen')+
-    ' · Fahrzeugsteuerung: über Herstellerintegration (hier nur Anzeige)'):'';
+   const details=chosen?card('Fahrzeug · '+escapeHtml(chosen.title),
+    typeof chosen.soc==='number'?escapeHtml(chosen.soc)+' %':'–',
+    (typeof chosen.range_km==='number'?escapeHtml(chosen.range_km)+' km · ':'')+
+    escapeHtml(chosen.loadpoint||'kein Ladepunkt')+' · '+kw(chosen.charge_power_w)+' · '+
+    (chosen.charging?'lädt':chosen.connected?'angeschlossen':'nicht angeschlossen')):'';
 
-   const points=(d.loadpoints||[]).map((x,i)=>card('🔌 '+escapeHtml(x.title||x.name||'Ladepunkt '+(i+1)),kw(x.chargePower))).join('');
+   const points=(d.loadpoints||[]).map((x,i)=>card('Ladepunkt · '+escapeHtml(x.title||x.name||i+1),kw(x.chargePower),
+    (x.charging?'lädt':x.connected?'Fahrzeug verbunden':'frei')+(x.mode?' · Modus '+escapeHtml(x.mode):'')+
+    (typeof x.phasesActive==='number'?' · '+x.phasesActive+' Phase(n)':'')+
+    (typeof x.sessionSolarPercentage==='number'?' · '+x.sessionSolarPercentage.toFixed(0)+' % Solar':'')+
+    (typeof x.chargedEnergy==='number'?' · '+(x.chargedEnergy/1000).toFixed(1)+' kWh':'')+
+    (typeof x.effectiveLimitSoc==='number'?' · Ziel '+x.effectiveLimitSoc+' %':''))).join('');
    el('evcc-points').innerHTML=vehicleCards+details+points||'Noch keine Fahrzeuge oder Ladepunkte in evcc konfiguriert';
    el('evcc-points').querySelectorAll('[data-vehicle]').forEach(button=>button.addEventListener('click',()=>{
     localStorage.setItem('evc_selected_vehicle',button.getAttribute('data-vehicle'));refresh();
    }));
-   el('evcc-message').textContent='evcc verbunden · '+new Date().toLocaleTimeString();
-  }catch(e){el('evcc-message').textContent='evcc: '+e.message;}
+   el('evcc-message').textContent='Aktuell · '+new Date().toLocaleTimeString()+' · '+Math.round(performance.now()-started)+' ms · nur lesend';
+   el('evcc-health').textContent='VERBUNDEN';el('evcc-health').style.color='#22C55E';
+  }catch(e){el('evcc-message').textContent='evcc: '+e.message;el('evcc-health').textContent='FEHLER';el('evcc-health').style.color='#EF4444';}
+  finally{busy=false;el('evcc-connect').disabled=false;schedule();}
  }
  el('evcc-connect').onclick=()=>{localStorage.setItem('evc_evcc_host',h.value);localStorage.setItem('evc_evcc_port',p.value);refresh();};
  el('evcc-discover').onclick=async()=>{
@@ -2181,7 +2308,7 @@ ENERGY_PANEL = r'''<section id="energy-panel" style="margin:22px auto;max-width:
    el('evcc-discovery').textContent=(d.found||[]).map(x=>x.vendor+' – '+x.ip).join(' | ')||'Keine unterstützten Geräte gefunden';
   }catch(e){el('evcc-discovery').textContent=e.message;}
  };
- setInterval(refresh,15000);if(h.value)refresh();
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();else schedule();});if(h.value)refresh();
 })();
 </script>'''
 
@@ -2303,6 +2430,8 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):
         u = urllib.parse.urlparse(self.path)
+        if not _same_origin_request(self.headers):
+            return self._send(json.dumps({"error": "Cross-origin request blocked"}), "application/json", 403)
         try:
             ln = int(self.headers.get("Content-Length") or 0)
         except ValueError:

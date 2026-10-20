@@ -9,7 +9,7 @@ class FakeResponse:
     def __exit__(self, *args): return False
     def read(self, size):
         return (b'{"grid":{"power":-2500},"pvPower":5000,'
-                b'"battery":{"power":-800,"soc":72},"homePower":1700,'
+                b'"battery":{"power":-800,"soc":72},"homePower":1700,"tariffGrid":0.31,'
                 b'"loadpoints":[{"title":"Garage","chargePower":2300,'
                 b'"password":"must-not-leak"}],"config":"/private/evcc.yaml"}')
 
@@ -27,6 +27,7 @@ class EvccBackendTests(unittest.TestCase):
         self.assertEqual(data["site"]["grid_w"], -2500)
         self.assertEqual(data["site"]["battery_w"], -800)
         self.assertEqual(data["site"]["battery_soc"], 72)
+        self.assertEqual(data["site"]["tariff_grid"], 0.31)
         self.assertEqual(len(data["loadpoints"]), 1)
         self.assertNotIn("raw", data)
         self.assertNotIn("password", data["loadpoints"][0])

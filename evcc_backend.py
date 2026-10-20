@@ -37,7 +37,8 @@ def normalize_loadpoints(state):
     allowed = (
         "name", "title", "vehicleName", "vehicleTitle", "vehicleSoc",
         "vehicleRange", "connected", "charging", "chargePower", "mode",
-        "phasesActive", "sessionSolarPercentage",
+        "phasesActive", "sessionSolarPercentage", "chargedEnergy",
+        "chargeDuration", "effectiveLimitSoc", "vehicleOdometer",
     )
     return [{key: point.get(key) for key in allowed if key in point}
             for point in points if isinstance(point, dict)]
@@ -68,6 +69,7 @@ def get_evcc_state(host: str, port: int = 7070, timeout: float = 3.0) -> dict:
         "backend": "evcc",
         "vehicles": normalize_vehicles(state),
         "site": {
+            "title": str(state.get("siteTitle") or ""),
             "grid_w": _nested_power(state, "grid", "gridPower"),
             "pv_w": _number(state.get("pvPower")) if _number(state.get("pvPower")) is not None
                     else _nested_power(state, "pv", "pvPower"),
@@ -75,6 +77,9 @@ def get_evcc_state(host: str, port: int = 7070, timeout: float = 3.0) -> dict:
             "battery_soc": _number(state.get("battery", {}).get("soc"))
                            if isinstance(state.get("battery"), dict) else None,
             "home_w": _number(state.get("homePower")),
+            "tariff_grid": _number(state.get("tariffGrid")),
+            "tariff_feed_in": _number(state.get("tariffFeedIn")),
+            "green_share_home": _number(state.get("greenShareHome")),
         },
         "loadpoints": normalize_loadpoints(state),
     }
