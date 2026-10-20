@@ -342,6 +342,9 @@ def _auth_failure(error):
 
 
 from sicherheit import befehl_erlaubt
+from live_saeulen import Live
+
+_LIVE = Live()
 
 _PANOPTES = {"key": None, "obj": None}
 
@@ -2139,14 +2142,59 @@ function basiskarte(m){
     // Ladesaeulen zeigt dann die Karte selbst (Ebene 'chargers', wie Planer und Panoptes);
     // die eigenen Infos (Preis, Entfernung) haengen per Klick daran.
     window.OSM_SAEULEN=(stil.layers||[]).some(l=>l.id==='chargers');
-    if(window.OSM_SAEULEN){MK_CHG.forEach(x=>m.removeLayer(x));m.on('click',klickSaeule);}});
+    if(window.OSM_SAEULEN){MK_CHG.forEach(x=>m.removeLayer(x));m.on('click',klickSaeule);liveSaeulen(m);}});
  }).catch(()=>osm());
+}
+
+// Live-Belegung (Ebene 'chargers-live', Vertrag mit Planer und Karten-Sitzung 21.10.2026):
+// frei = normal, belegt = rot, ausser Betrieb = grau. Daten holt der lokale Cockpit-Server beim Planer.
+function liveSaeulen(m){
+ const g=GL_KARTE.getMaplibreMap();let basis=null,warte=null;
+ const kreis=(lat,lon,km)=>{const p=[];for(let i=0;i<=48;i++){const w=i/48*2*Math.PI;
+  p.push([lon+km/(111.32*Math.cos(lat*Math.PI/180))*Math.cos(w),lat+km/110.57*Math.sin(w)]);}
+  return {type:'Polygon',coordinates:[p]};};
+ async function laden(){
+  if(!g.getSource('live')||m.getZoom()<12) return;
+  const c=m.getCenter();
+  try{const r=await fetch('/live/umkreis',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({lat:c.lat,lon:c.lng})});if(!r.ok)return;const d=await r.json();
+   g.getSource('live').setData({type:'FeatureCollection',features:d.features||[]});
+   g.setFilter('chargers',(d.features&&d.features.length&&d.abdeckung_km>0&&d.mitte)
+    ?['all',basis,['!',['within',kreis(d.mitte[0],d.mitte[1],d.abdeckung_km)]]]:basis);
+  }catch(e){}
+ }
+ const start=()=>{
+  if(g.getSource('live')||!g.getLayer('chargers')) return;
+  basis=g.getFilter('chargers')||['==',['get','t'],'charger'];
+  g.addSource('live',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+  g.addLayer({id:'chargers-live',type:'symbol',source:'live',minzoom:11,layout:{
+   'icon-image':['match',['get','zustand'],
+    'belegt',['case',['==',['get','dc'],1],'charge-dc-busy','charge-busy'],
+    'aus',['case',['==',['get','dc'],1],g.hasImage('charge-dc-off')?'charge-dc-off':'charge-dc',
+                                        g.hasImage('charge-off')?'charge-off':'charge'],
+    ['case',['==',['get','dc'],1],'charge-dc','charge']],
+   'icon-size':['interpolate',['linear'],['zoom'],11,0.55,15,0.9],
+   'symbol-sort-key':['-',0,['+',['*',['get','dc'],1000],['get','kw']]],
+   'icon-allow-overlap':['step',['zoom'],false,15,true],
+   'text-field':['step',['zoom'],'',15,['get','lbl']],'text-font':['Noto Sans Medium'],'text-size':11,
+   'text-offset':[0,1.5],'text-anchor':'top','text-optional':true},
+   paint:{'icon-opacity':['match',['get','zustand'],'aus',0.45,1],
+    'text-color':['match',['get','zustand'],'belegt','#FF5A4E','aus','#8FA3AB','#B5F23D'],
+    'text-halo-color':'#071a2b','text-halo-width':1.4}},g.getLayer('signals')?'signals':undefined);
+  laden();
+  m.on('moveend',()=>{clearTimeout(warte);warte=setTimeout(laden,600);});
+  setInterval(laden,120000);
+ };
+ if(g.isStyleLoaded&&g.isStyleLoaded()) start(); else g.once('load',start);
 }
 
 // Klick auf ein Saeulensymbol der Karte: eigene Infos der naechsten Saeule (<120 m), sonst OSM-Angaben
 function klickSaeule(e){
  if(!window.OSM_SAEULEN||!window.GL_KARTE) return;
  const g=GL_KARTE.getMaplibreMap(), p=g.project([e.latlng.lng,e.latlng.lat]);
+ const live=g.getLayer('chargers-live')?g.queryRenderedFeatures([[p.x-9,p.y-9],[p.x+9,p.y+9]],{layers:['chargers-live']})[0]:null;
+ if(live){const q=live.properties||{};L.popup().setLatLng([e.latlng.lat,e.latlng.lng])
+  .setContent('<b>'+esc(q.name||'Ladestation')+'</b><br>'+esc(q.lbl||'')+'<br><small>Live · E-Control</small>').openOn(MAP);return;}
  let f=g.queryRenderedFeatures([[p.x-9,p.y-9],[p.x+9,p.y+9]],{layers:['chargers']})[0];
  if(!f){let d0=24*24;g.queryRenderedFeatures({layers:['chargers']}).forEach(x=>{const q=g.project(x.geometry.coordinates),
    d=(q.x-p.x)**2+(q.y-p.y)**2;if(d<d0){d0=d;f=x;}});}
@@ -2954,7 +3002,18 @@ class H(BaseHTTPRequestHandler):
         if ln < 0 or ln > 2 * 1024 * 1024:
             return self._send(json.dumps({"error": "Request body too large"}), "application/json", 413)
         raw = self.rfile.read(ln).decode("utf-8") if ln else "{}"
-        if u.path == "/energy/discover":
+        if u.path == "/live/umkreis":
+            # Live-Belegung fuer die Community-Karte: nur mit Haekchen "Ladesaeulen" und Community-Karte.
+            # Der Planer bekommt nur den auf ~5 km gerundeten Kartenmittelpunkt, per POST (kein Log).
+            if not _CFG.get("show_chargers") or _CFG.get("karte") == "osm":
+                return self._send(json.dumps({"abdeckung_km": 0, "features": []}), "application/json")
+            try:
+                b = json.loads(raw)
+                d = _LIVE.abfrage(float(b["lat"]), float(b["lon"]))
+                self._send(json.dumps(d), "application/json")
+            except Exception:
+                self._send(json.dumps({"abdeckung_km": 0, "features": []}), "application/json")
+        elif u.path == "/energy/discover":
             try:
                 from device_hub import automatic_lan_network, discover
                 payload = json.loads(raw)
