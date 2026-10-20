@@ -11,6 +11,7 @@ Der Schluessel aus dem Link bleibt auf diesem Rechner und geht nur als Kopfzeile
 import json
 import re
 import time
+import urllib.error
 import urllib.request
 
 BASIS = "https://byd.serveone.at/ev/"
