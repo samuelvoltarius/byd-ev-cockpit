@@ -65,7 +65,8 @@ def fuer_karte(antwort):
             lbl = "%s/%s frei%s" % (st.get("frei") or 0, st.get("ladepunkte") or "?", kw_txt)
         alter = st.get("live_alter_s")
         if z != "unbekannt" and isinstance(alter, (int, float)) and alter > ALT_S:
-            lbl += " · Stand vor %d min" % round(alter / 60.0)
+            # Vertrag v2 Punkt 8: > 5 min "vor x min", > 2 h "vor x h" (DE-Status kann Stunden alt sein)
+            lbl += (" · Stand vor %d h" % round(alter / 3600.0)) if alter > 7200 else (" · Stand vor %d min" % round(alter / 60.0))
         props = {"dc": 1 if kw >= 50 else 0, "zustand": z, "kw": kw, "lbl": lbl,
                  "name": (st.get("name") or "")[:60], "quelle": st.get("live_quelle") or ""}
         pm = st.get("preis_meine")
@@ -78,7 +79,8 @@ def fuer_karte(antwort):
                       "properties": props})
     maske = ({"type": "MultiPolygon",
               "coordinates": [_achteck(*f["geometry"]["coordinates"]) for f in feats]} if feats else None)
-    quellen = [{"land": q.get("land"), "quelle": q.get("quelle"), "url": q.get("url")}
+    # Pflicht-Quellenangabe (Land, Quelle, Lizenz) - CC BY 4.0 (z. B. EnBW) verlangt Namensnennung
+    quellen = [{"land": q.get("land"), "quelle": q.get("quelle"), "lizenz": q.get("lizenz") or "", "url": q.get("url")}
                for q in (antwort.get("live_quellen") or []) if isinstance(q, dict) and q.get("quelle")]
     return {"features": feats, "osm_maske": maske, "quellen": quellen}
 

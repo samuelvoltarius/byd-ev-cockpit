@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.6"
+VERSION = "1.6.1"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -2342,7 +2342,7 @@ function liveSaeulen(m){
     body:JSON.stringify({lat:c.lat,lon:c.lng})});if(!r.ok)return;const d=await r.json();
    g.getSource('live').setData({type:'FeatureCollection',features:d.features||[]});
    g.setFilter('chargers',d.osm_maske?['all',basis,['!',['within',d.osm_maske]]]:basis);
-   const qs=(d.quellen||[]).map(q=>q.quelle).join(', ');
+   const qs=(d.quellen||[]).map(q=>(q.land?q.land+': ':'')+q.quelle+(q.lizenz?' ('+q.lizenz+')':'')).join(' · ');
    if(qs!==(window.LIVE_QUELLEN||'')){if(window.LIVE_QUELLEN)m.attributionControl.removeAttribution('Belegung: '+esc(window.LIVE_QUELLEN));
     if(qs)m.attributionControl.addAttribution('Belegung: '+esc(qs));window.LIVE_QUELLEN=qs;}
   }catch(e){}

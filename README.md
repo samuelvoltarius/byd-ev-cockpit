@@ -151,7 +151,7 @@ Members of the [BYD community map](https://byd.serveone.at) get a personal route
 **Map:** by default the cockpit shows the same map as the planner and the Panoptes app (served by the community
 server, byd.serveone.at); until that server delivers it completely, OpenStreetMap. Untick "Community map style"
 for OpenStreetMap always. The map libraries (MapLibre, PMTiles) ship in the package, no CDN.
-With "Chargers" ticked, the community map shows **live occupancy** (currently Austria and Switzerland, via the planner): free
+With "Chargers" ticked, the community map shows **live occupancy** (currently Austria, Switzerland and Germany, via the planner; source and licence are shown at the bottom of the map): free
 normal, occupied **red**, out of order grey, status unknown grey with "?" (source shown at the bottom of the map). Only the map centre rounded to ~5 km is sent to the planner by POST
 (no access log), at most every 2 minutes per area.
 

@@ -153,7 +153,7 @@ Routenplaner (`byd.serveone.at/ev/#z=…`). Im Assistenten eingefügt, passiert 
 **Karte:** Das Cockpit zeigt standardmäßig dieselbe Karte wie Planer und Panoptes-App (vom Server der Community,
 byd.serveone.at); solange der Server sie nicht vollständig liefert, OpenStreetMap. Ohne Häkchen „Karte im
 Community-Look": immer OpenStreetMap. Die Kartenbibliotheken (MapLibre, PMTiles) liegen im Paket, kein CDN.
-Mit Häkchen „Ladesäulen" zeigt die Community-Karte die **Live-Belegung** (derzeit Österreich und Schweiz, über den Planer):
+Mit Häkchen „Ladesäulen" zeigt die Community-Karte die **Live-Belegung** (derzeit Österreich, Schweiz und Deutschland, über den Planer; Quelle und Lizenz stehen unten in der Karte):
 frei normal, belegt **rot**, außer Betrieb grau, Status unbekannt grau mit „?“ (Quelle steht unten in der Karte). Dafür geht nur der auf ~5 km gerundete Kartenmittelpunkt per POST
 an den Planer (kein Zugriffslog), höchstens alle 2 Minuten je Gebiet.
 

@@ -30,7 +30,14 @@ class TestKarte(unittest.TestCase):
         self.assertEqual((p["Kaputt"]["zustand"], p["Kaputt"]["lbl"]), ("aus", "außer Betrieb"))
         self.assertEqual((p["Ohne Status"]["zustand"], p["Ohne Status"]["dc"]), ("unbekannt", 1))
         self.assertEqual(p["Ohne Status"]["lbl"], "Status unbekannt · 50 kW")
-        self.assertEqual(d["quellen"], [{"land": "AT", "quelle": "E-Control (AT)", "url": "https://e-control.at"}])
+        self.assertEqual(d["quellen"], [{"land": "AT", "quelle": "E-Control (AT)", "lizenz": "x", "url": "https://e-control.at"}])
+
+    def test_alter_in_stunden_und_lizenz_de(self):
+        st = dict(ANTWORT["stationen"][1], live_alter_s=4 * 3600)
+        d = ls.fuer_karte({"stationen": [st], "live_quellen": [
+            {"land": "DE", "quelle": "MobiData BW", "lizenz": "je Quelle: CC BY 4.0 (EnBW AG), CC0", "url": "https://mobidata-bw.de"}]})
+        self.assertTrue(d["features"][0]["properties"]["lbl"].endswith("· Stand vor 4 h"))
+        self.assertIn("CC BY 4.0 (EnBW AG)", d["quellen"][0]["lizenz"])        # Pflicht-Namensnennung
 
     def test_osm_maske_je_station_120m(self):
         d = ls.fuer_karte(ANTWORT)
