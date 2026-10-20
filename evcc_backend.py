@@ -88,6 +88,10 @@ def get_evcc_state(host: str, port: int = 7070, timeout: float = 3.0) -> dict:
     }
 
 
+# Fester Code-Schalter (Koordination, 21.10.2026): Steuern bleibt AUS, bis es an einer echten Wallbox bzw.
+# einem echten evcc in der Praxis getestet ist. Keine Nutzer-Einstellung. Lesen (Status, Leistung) bleibt an.
+STEUERN_FREIGEGEBEN = False
+
 MODES = ("off", "now", "minpv", "pv")
 # Aktuelles evcc kennt off/smart/now; pv und minpv sind dort Aliase und werden als "smart" zurueckgemeldet.
 # Aeltere evcc-Versionen kennen nur off/now/minpv/pv. Gesendet wird deshalb pv/minpv (geht ueberall),
@@ -101,6 +105,8 @@ def set_loadpoint(host: str, port: int, lp: int, mode=None, limit_soc=None, time
 
     Returns {"ok": bool, "mode", "limit_soc"} with the values evcc reports AFTER the change.
     """
+    if not STEUERN_FREIGEGEBEN:
+        raise PermissionError("Wallbox steuern kommt nach dem Praxistest")
     base = validate_evcc_address(host, port)
     if not isinstance(lp, int) or isinstance(lp, bool) or not 1 <= lp <= 20:
         raise ValueError("Invalid loadpoint")

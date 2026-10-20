@@ -50,8 +50,11 @@ class EvccSteuernTests(unittest.TestCase):
             return Ok()
         self.patcher = patch("evcc_backend.open_lan_url", side_effect=fake_open)
         self.patcher.start()
+        self.frei = patch("evcc_backend.STEUERN_FREIGEGEBEN", True)   # Logik testen, als waere freigegeben
+        self.frei.start()
 
     def tearDown(self):
+        self.frei.stop()
         self.patcher.stop()
 
     def lies(self, mode="pv", limit=80):
@@ -98,6 +101,24 @@ class EvccSteuernTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             set_loadpoint("8.8.8.8", 7070, 1, mode="pv", read_state=self.lies())
         self.assertEqual(self.calls, [])           # nichts wurde gesendet
+
+
+class EvccSteuernAbgeschaltetTests(unittest.TestCase):
+    """1.6: Steuern fest aus (Code-Schalter). Beweis: es geht KEIN Schreibaufruf an evcc raus."""
+
+    def test_kein_schreibaufruf(self):
+        import evcc_backend
+        self.assertFalse(evcc_backend.STEUERN_FREIGEGEBEN)
+        with patch("evcc_backend.open_lan_url") as offen:
+            for kw in ({"mode": "pv"}, {"mode": "now"}, {"mode": "off"}, {"limit_soc": 80}):
+                with self.assertRaises(PermissionError):
+                    evcc_backend.set_loadpoint("192.168.1.8", 7070, 1, read_state=lambda h, p: {}, **kw)
+            offen.assert_not_called()
+
+    @patch("evcc_backend.open_lan_url", return_value=FakeResponse())
+    def test_lesen_bleibt_an(self, offen):
+        self.assertEqual(get_evcc_state("192.168.1.8")["site"]["grid_w"], -2500)
+        self.assertEqual(offen.call_args.kwargs.get("method", "GET"), "GET")
 
 
 if __name__ == "__main__":
