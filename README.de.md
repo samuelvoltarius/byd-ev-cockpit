@@ -88,8 +88,13 @@ Solar-Leistung neben Ladestand und Strompreis anzeigen lassen — **nur lesend**
 
 Das Cockpit liest die herstellerneutrale lokale API von [evcc](https://evcc.io/). Damit
 funktionieren alle in evcc eingerichteten Wallboxen, Netz-/PV-/Batteriezähler und
-Fahrzeuge unabhängig vom Hersteller — zum Beispiel go-e, BYD, VW oder Audi. Das Cockpit
-sendet über diese Verbindung keine Lade- oder Fahrzeugbefehle.
+Fahrzeuge unabhängig vom Hersteller — zum Beispiel go-e, BYD, VW oder Audi.
+
+**Steuern (nur wenn du es willst):** Standardmäßig liest das Cockpit nur. Je Ladepunkt kannst du
+„Steuern erlauben“ antippen. Dann darf das Cockpit über evcc genau zwei Dinge ändern: den
+**Lademodus** (Aus / Sofort / Min+PV / PV) und den **Ziel-Ladestand**. Nach jeder Änderung liest es bei
+evcc nach und zeigt, ob sie übernommen wurde. Alles andere (Phasen, Stromstärke, Schutz) regelt evcc
+selbst. go-e und Shelly werden direkt nur gelesen, nie geschaltet.
 
 Geräte ohne fertigen evcc-Adapter können in evcc als **benutzerdefiniertes Gerät** über
 lokales HTTP, MQTT oder Modbus beschrieben werden. Das ist auch der saubere Weg für
@@ -167,6 +172,8 @@ EVCOCKPIT_CFGDIR=~/.evcockpit-zweitwagen EVCOCKPIT_PORT=8100 ./start.sh
 - Die native Fahrzeugsteuerung ist **an einem einzigen BYD getestet**. Andere Fahrzeuge
   werden über evcc nur lesend angezeigt; verfügbare Daten hängen vom jeweiligen Adapter ab. Rückmeldungen
   ([Issues](../../issues)) sehr willkommen.
+- Das Steuern von Ladepunkten über evcc (Modus, Ziel-Ladestand) ist bisher nur gegen ein nachgebautes evcc
+  getestet, noch nicht an einer echten Wallbox.
 - Der Dolphin Surf hat **keinen Innenraum-Temperaturfühler** — deshalb keine Innentemp
   und kein Thermostat. Klima wird über eine Zieltemperatur geschaltet, nicht geregelt.
 - **Aufsperren gibt es bewusst nicht.** Ein Knopf im Browser, der dein Auto öffnet, wäre

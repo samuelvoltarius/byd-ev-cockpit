@@ -88,8 +88,13 @@ of charge and electricity price — **read-only**.
 
 The cockpit reads the vendor-neutral local API provided by [evcc](https://evcc.io/).
 This makes every charger, grid/solar/battery meter and vehicle configured in evcc
-available independent of brand—for example go-e, BYD, VW or Audi. The cockpit does not
-send charging or vehicle commands through this connection.
+available independent of brand—for example go-e, BYD, VW or Audi.
+
+**Control (only if you want it):** by default the cockpit only reads. Per charge point you can tap
+"Allow control". The cockpit may then change exactly two things via evcc: the **charge mode**
+(off / now / min+PV / PV) and the **charge limit**. After every change it reads back from evcc and shows
+whether it was applied. Everything else (phases, current, protection) stays with evcc. go-e and Shelly
+are only ever read directly, never switched.
 
 Hardware without a built-in evcc adapter can be configured as a **user-defined device**
 using local HTTP, MQTT or Modbus. This is also the honest route for Tuya-based devices:
@@ -166,6 +171,8 @@ EVCOCKPIT_CFGDIR=~/.evcockpit-second EVCOCKPIT_PORT=8100 ./start.sh
 - Native vehicle control is **tested on a single BYD**. Other vehicles are displayed
   read-only through evcc; available data depends on the corresponding adapter. Feedback ([issues](../../issues))
   very welcome.
+- Controlling charge points via evcc (mode, charge limit) has so far only been tested against a simulated
+  evcc, not yet on a real charger.
 - The Dolphin Surf has **no cabin temperature sensor** — so no inside temperature and no
   thermostat. Climate is switched to a target temperature, not regulated.
 - **There is deliberately no unlock button.** A button in a browser that opens your car
