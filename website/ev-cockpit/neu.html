@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang=de>
+<head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>EV-Cockpit — was ist neu?</title>
+<meta name=robots content="noindex">
+<style>
+:root{--blue:#3aa0ff;--cyan:#37e6ff;--txt:#eef4fb;--mut:#8ea3bd;--line:rgba(120,165,235,.18)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1000px 700px at 50% -8%,#12213f,#0a1120 55%,#05080f);
+ color:var(--txt);font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:30px 20px 70px}
+.w{max-width:720px;margin:0 auto}
+.back{color:var(--mut);text-decoration:none;font-size:14px}
+h1{font-weight:300;font-size:30px;margin:14px 0 6px}
+.lead{color:var(--mut);margin-bottom:26px}
+.ver{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+ border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-bottom:16px}
+.verhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.verhead h2{margin:0;font-size:19px;font-weight:500;color:#7cc4ff}
+.datum{color:var(--mut);font-size:13px}
+.titel{margin:.3em 0 1em;font-size:15px}
+ul{margin:0;padding-left:20px}
+li{margin-bottom:.75em}
+li b{color:var(--txt)}
+.note{background:rgba(255,176,32,.09);border:1px solid rgba(255,176,32,.35);border-radius:12px;
+ padding:12px 14px;margin-top:14px;font-size:14px;line-height:1.55}
+.dl{text-align:center;margin:26px 0 10px}
+.dl a{display:inline-block;padding:13px 24px;border-radius:26px;background:linear-gradient(90deg,#3aa0ff,#37e6ff);
+ color:#04101f;font-weight:700;text-decoration:none;margin:4px}
+.dl a.sec{background:rgba(255,255,255,.07);color:var(--txt);border:1px solid var(--line);font-weight:600}
+footer{text-align:center;color:var(--mut);font-size:13px;margin-top:24px;line-height:1.7}
+footer a{color:var(--mut)}
+</style>
+</head>
+<body>
+<div class=w>
+  <a class=back href="/ev-cockpit/">← zurück zum EV-Cockpit</a>
+  <h1>Was ist neu?</h1>
+  <p class=lead>Alle Änderungen am EV-Cockpit — das Neueste zuerst.</p>
+
+    <section class="ver">
+      <div class="verhead"><h2>Version 1.5</h2><span class="datum">21.10.2026</span></div>
+      <p class="titel">Du wählst, woher die Daten kommen — und mehr Sicherheit</p>
+      <ul>
+        <li><b>🏠 Datenquelle frei wählbar</b> — BYD-Konto, <b>Home Assistant</b> oder <b>Panoptes im Auto</b>. Bei Home Assistant drückst du „Mein Auto suchen“, das Cockpit schlägt Ladestand, Reichweite, Kilometerstand und Standort selbst vor. Ein BYD-Konto brauchst du dann nur noch für Fernbefehle.</li>
+        <li><b>🛡️ Fernbefehle nur bei ausgeschaltetem Auto</b> — Vor jedem Befehl prüft das Cockpit, ob das Auto aus ist. Ist es an oder unklar, wird nichts gesendet. Grund: Ein Befehl über die BYD-Cloud kann ein laufendes Auto abschalten.</li>
+        <li><b>🔴 Live-Belegung der Ladesäulen</b> — In Österreich und der Schweiz zeigt die Karte, welche Säulen frei, belegt oder außer Betrieb sind. Säulen ohne Live-Status bekommen ein „?“.</li>
+        <li><b>🗺️ Planer: Fahrten bleiben bei dir</b> — Das Cockpit schickt keine Fahrten mehr an den Ladeplaner, sondern rechnet deinen Verbrauch selbst und sendet nur eine einzige Zahl (deinen Korrekturfaktor). Mit Panoptes im Auto meldet nur Panoptes, damit nichts doppelt zählt.</li>
+        <li><b>🐧 Linux/Raspberry: Start repariert</b> — In 1.4 hatte <code>start.sh</code> Windows-Zeilenenden und startete auf Linux nicht. Behoben. Wenn es bei dir nicht ging: bitte mit 1.5 nochmal.</li>
+      </ul>
+      <div class="note">⚠️ <b>Ehrlich:</b> Ob die BYD-Cloud bei jedem Modell sauber meldet, dass das Auto aus ist, wissen wir noch nicht. Kommt bei dir bei ausgeschaltetem Auto „nicht gesendet“, bitte als Issue melden. Mit Panoptes im Auto ist es sicher erkannt.</div>
+    </section>
+
+    <section class="ver">
+      <div class="verhead"><h2>Version 1.4</h2><span class="datum">21.10.2026</span></div>
+      <p class="titel">Routenplaner, Panoptes und ein neuer Look</p>
+      <ul>
+        <li><b>🗺️ Routenplaner der BYD-Community</b> — Mit deinem persönlichen Planer-Link (für Mitglieder der BYD-Karte) kennt der Planer den Ladestand deines Autos. Auf Wunsch meldet das Cockpit Fahrten ohne Laden (Kilometer, Dauer, Ladestand, Temperatur — <b>keine Orte, keine Uhrzeit</b>), damit der Planer den echten Verbrauch lernt. Neuer Knopf „Route planen“.</li>
+        <li><b>📡 Daten direkt von Panoptes im Auto</b> — Läuft die Panoptes-App im Auto, kommen Ladestand, Kilometer und Standort direkt von dort, jede Minute. Ist das Auto aus, fragt das Cockpit wie bisher die BYD-Cloud. Steuern läuft weiter über die BYD-Cloud.</li>
+        <li><b>🎨 Neuer Look und Community-Karte</b> — Farben und Schriften wie in der Panoptes-App, dazu dieselbe Karte wie im Planer, mit Ladesäulen direkt auf der Karte und <b>ohne Blitzer</b>. Kartenbibliotheken und Schriften liegen im Paket, nichts kommt von fremden Servern.</li>
+        <li><b>⚡ Energie & Ladepunkte, mehrere Fahrzeuge</b> — Seit 1.3 außerdem: Anbindung an evcc, go-e-Diagnose, mehrere Fahrzeuge, überarbeitete Oberfläche, einfachere Einrichtung.</li>
+      </ul>
+      <div class="note">⚠️ <b>Viel Neues auf einmal:</b> Getestet, aber noch nicht lange im Alltag. Etwas hakt? <b>Bitte als Issue auf GitHub melden.</b></div>
+    </section>
+
+    <section class="ver">
+      <div class="verhead"><h2>Version 1.3</h2><span class="datum">16.07.2026</span></div>
+      <p class="titel">Die ganze App spricht jetzt auch Englisch</p>
+      <ul>
+        <li><b>🌐 Zweisprachig — Deutsch und Englisch</b> — Die komplette Oberfläche — Assistent, Cockpit, alle Hinweise — gibt es jetzt auch auf Englisch. Sie richtet sich <b>automatisch nach deiner Browsersprache</b>; unten in der Ecke sitzt ein <b>🌐-Umschalter</b>, der deine Wahl merkt. Am Deutschen ändert sich nichts.</li>
+        <li><b>💻 Über-Seite verweist auf GitHub</b> — Statt einer E-Mail-Adresse steht dort jetzt der Link zum offenen Quelltext und zu den Issues — Kontakt und Fehlermeldungen laufen über GitHub.</li>
+      </ul>
+      <div class="note">⚠️ <b>Englisch ungeprüft in freier Wildbahn:</b> Übersetzt und Wort für Wort auf Vollständigkeit getestet, aber noch von niemandem im Alltag benutzt. Klingt etwas holprig oder fehlt eine Stelle? <b>Bitte als Issue melden</b> — dann bessern wir nach.</div>
+    </section>
+
+    <section class="ver">
+      <div class="verhead"><h2>Version 1.2</h2><span class="datum">15.07.2026</span></div>
+      <p class="titel">Endlich sieht man auch was beim Laden</p>
+      <ul>
+        <li><b>🔌 Lade-Ansicht</b> — Steckst du an, erscheint sie: <b>Ladeleistung, Restzeit</b> und — wenn du den Strompreis angehakt hast — was der Strom gerade kostet. Statt nur „2,3 kW“ steht dabei, was das heißt: <i>langsam (Steckdose?)</i>, <i>Wallbox-Tempo</i> oder <i>Schnellladen</i>. Kabel raus, Ansicht weg.</li>
+        <li><b>🐧 Linux, macOS und Raspberry Pi starten jetzt überhaupt</b> — Peinlicher Fehler unsererseits: Das Paket wollte die BYD-Bibliothek ins System installieren. Aktuelle Systeme (Debian 12, Ubuntu 24.04, <b>Raspberry Pi OS</b>, Fedora, Homebrew) verbieten das aus gutem Grund — <b>der Start ist dort schlicht gescheitert</b>. Jetzt legt das Paket seine Umgebung im eigenen Ordner an und lässt dein System in Ruhe. Wenn du es vorher vergeblich probiert hast: <b>bitte nochmal</b>, es lag an uns.</li>
+      </ul>
+      <div class="note">⚠️ <b>Korrektur zu Version 1.1:</b> Dort stand, Vorklimatisieren und Batterie-Vorheizen bräuchten ein „waches“ Auto. <b>Das war falsch</b> — beides geht jederzeit, auch beim geparkten Auto. Die Fehlermeldung der BYD-Bibliothek („vehicle may be asleep“) ist ein Standardtext, keine Diagnose; wir hatten sie für eine Erklärung gehalten. Klappt ein Befehl nicht: kurz warten, nochmal — und wenn es öfter passiert, <b>bitte melden</b>.</div>
+    </section>
+
+    <section class="ver">
+      <div class="verhead"><h2>Version 1.1</h2><span class="datum">15.07.2026</span></div>
+      <p class="titel">Das Auto sagt jetzt selbst, was es kann</p>
+      <ul>
+        <li><b>🔎 Fähigkeits-Abfrage im Assistenten</b> — Der Assistent fragt dein Auto, was es kann — und du hakst an, was du im Cockpit haben willst. Was dein Auto nicht kann, ist ausgegraut. Keine Knöpfe mehr, die ins Leere laufen.</li>
+        <li><b>🔍 Auto finden</b> — Hupe und Blinken — der Knopf fürs Parkhaus. Hat vorher schlicht gefehlt.</li>
+        <li><b>💺 Sitzheizung und -belüftung</b> — Fahrer und Beifahrer, Aus / Stufe 1 / Stufe 2. Nur wenn dein Auto es kann.</li>
+        <li><b>🔋 Batterie vorheizen</b> — Im Winter vor dem Schnellladen — eine warme Batterie lädt deutlich schneller.</li>
+        <li><b>🛞 Reifendruck-Warnung</b> — Trägst du deinen Sollwert ein (steht im Türrahmen), warnt dich das Cockpit bei zu wenig Druck. Ohne Sollwert sagen wir nichts — geraten wird hier nicht.</li>
+        <li><b>🔒 Zusperren</b> — Falls du es mal vergessen hast, mit Rückfrage. <b>Aufsperren gibt es bewusst nicht</b> — ein Knopf, der dein Auto öffnet, wäre ein Einbruchswerkzeug für jeden, der an deinen Rechner kommt.</li>
+        <li><b>🔔 Bescheid, wenn das Laden fertig ist</b> — Glocke oben rechts anklicken. Die Meldung entsteht in deinem Browser — kein Konto, kein fremder Dienst. Meldet nur, solange die Seite offen ist.</li>
+        <li><b>🏠 Ans Home Assistant senden</b> — Dein Auto taucht dort von selbst auf, mit allen Werten und Knöpfen. Braucht einen MQTT-Broker (bei HA meist das Mosquitto-Add-on).</li>
+        <li><b>☀️ PV-Leistung aus Home Assistant holen</b> — Hast du eine PV-Anlage in HA? Dann steht deine Solar-Leistung neben Ladestand und Strompreis. Egal welcher Wechselrichter — Home Assistant hat die Arbeit schon gemacht.</li>
+        <li><b>🗺️ Ladesäulen auf der Karte</b> — Dein Auto und die Ladesäulen auf einer Karte, anklickbar. E-Bike-Ladepunkte filtern wir raus. Bewusst ohne Preise — dazu gibt es keine verlässliche freie Quelle.</li>
+        <li><b>💶 Strompreis</b> — Der Börsenpreis deines Landes als Stundenbalken, inklusive morgen, mit der günstigsten Stunde.</li>
+        <li><b>🔕 Update-Hinweis</b> — Auf Wunsch (Häkchen, standardmäßig aus). Dein Rechner lädt dafür nur eine Textdatei und vergleicht selbst — der Server erfährt nicht einmal, welche Version du hast.</li>
+      </ul>
+      <div class="note">⚠️ <b>Ungetestet auf fremden Autos.</b> Alles hier wurde an genau einem Fahrzeug gebaut und geprüft — einem Dolphin Surf. Wenn bei dir etwas nicht geht: <b>bitte melden</b>, das hilft allen.</div>
+      <div class="note">⚠️ <b>Wenn ein Befehl mal nicht ankommt:</b> kurz warten und nochmal drücken — nicht hektisch mehrfach hintereinander, das mag die BYD-Cloud nicht. Passiert es öfter, ist das <b>nicht</b> normal: bitte melden. Vorklimatisieren und Batterie-Vorheizen funktionieren auch beim geparkten Auto — dafür ist die Fernsteuerung da.</div>
+    </section>
+
+    <section class="ver">
+      <div class="verhead"><h2>Version 1.0</h2><span class="datum">15.07.2026</span></div>
+      <p class="titel">Erste Veröffentlichung</p>
+      <ul>
+        <li><b>🧭 Assistent in fünf Schritten</b> — Login, Fahrzeug anklicken, Modell, Foto, Extras — fertig.</li>
+        <li><b>🔋 Ladestand und ehrliche Reichweite</b> — Aus deinem tatsächlichen Verbrauch gerechnet, daneben BYDs eigene Zahl.</li>
+        <li><b>🌡️ Vorklimatisieren</b> — Heizen, Kühlen, Aus.</li>
+        <li><b>📍 Standort, Kilometerstand, Reifendruck, Verbrauch</b></li>
+      </ul>
+
+    </section>
+
+  <div class=dl>
+    <a href="/ev-cockpit/ev-cockpit-windows.zip">⬇ Windows (19 MB)</a>
+    <a class=sec href="/ev-cockpit/ev-cockpit-linux-mac.zip">🐧 Linux / macOS</a>
+  </div>
+  <footer>
+    Schon installiert? Neues Paket entpacken und drüberschreiben — <b>deine Einstellungen bleiben</b>
+    (die liegen in deinem Benutzerordner, nicht im Programm).<br>
+    <a href="/ev-cockpit/">EV-Cockpit</a> · <a href="/impressum">Impressum</a>
+  </footer>
+</div>
+</body>
+</html>

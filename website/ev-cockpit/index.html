@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dein BYD immer im Blick — die einfache Anleitung</title>
+<meta name="description" content="Ladezustand, Reichweite, Standort und Vorheizen deines BYD sehen und steuern — mit der App, die du schon hast. Und für alle, die mehr wollen, ein eigenes Dashboard. Schritt für Schritt.">
+<style>
+  :root{
+    --bg:#0b0f14;--card:#131a22;--card2:#182029;--line:#243040;
+    --txt:#e7edf3;--mut:#93a2b3;--grn:#28d17c;--grn2:#1aa862;--blue:#38bdf8;--amber:#ffb020;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font:17px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--grn);text-decoration:none}a:hover{text-decoration:underline}
+  .wrap{max-width:900px;margin:0 auto;padding:26px 20px 90px}
+  .top{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:10px}
+  .top a{color:var(--mut);font-weight:600}
+  header{text-align:center;padding:26px 0 6px}
+  .eyebrow{color:var(--grn);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
+  h1{font-size:clamp(30px,6vw,48px);line-height:1.12;margin:.3em 0 .25em}
+  .grad{background:linear-gradient(90deg,var(--grn),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--mut);font-size:19px;max-width:620px;margin:0 auto}
+  .part{margin:44px 0 0}
+  .part-head{display:flex;align-items:baseline;gap:12px;margin:0 0 4px}
+  .part-head .n{font-size:15px;font-weight:800;color:#04110a;background:var(--grn);
+    width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto}
+  h2{font-size:26px;margin:0}
+  .part>p.lead{color:var(--mut);margin:.4em 0 1.2em;font-size:17px}
+  .badge{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:3px 12px;margin-left:6px}
+  .badge.easy{background:#10241a;color:#5be3a3;border:1px solid #1c4a33}
+  .badge.more{background:#101d2b;color:#7cccff;border:1px solid #1d3b56}
+  .badge.geek{background:#221a10;color:#ffcf85;border:1px solid #4a3a1c}
+
+  .step{display:grid;grid-template-columns:120px 1fr;gap:20px;align-items:center;
+    background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:14px 0}
+  .step .art{width:120px}
+  .step h3{margin:0 0 4px;font-size:19px}
+  .step p{margin:0;color:var(--mut);font-size:15.5px}
+  @media(max-width:560px){.step{grid-template-columns:1fr;text-align:center}.step .art{margin:0 auto}}
+
+  /* Screenshot-Platzhalter */
+  .shot{border:2px dashed #33465a;border-radius:14px;background:
+     repeating-linear-gradient(45deg,#0e151d,#0e151d 12px,#111a23 12px,#111a23 24px);
+    aspect-ratio:9/16;display:grid;place-items:center;text-align:center;color:#6b8199;
+    padding:14px;font-size:13px}
+  .shot .cam{font-size:26px;opacity:.8;margin-bottom:6px}
+  .shotrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:8px 0 4px}
+  .shotwide{aspect-ratio:16/10}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:16px 0}
+  .note{background:#10241a;border:1px solid #1c4a33;border-radius:12px;padding:13px 16px;color:#bfe6d2;font-size:15px;margin:14px 0}
+  .note.warn{background:#221a10;border-color:#4a3a1c;color:#ffdca8}
+  .btn{display:inline-flex;align-items:center;gap:9px;background:var(--grn);color:#04110a;
+    font-weight:700;padding:12px 20px;border-radius:12px;font-size:16px}
+  .btn:hover{background:var(--grn2);text-decoration:none}
+  .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
+  .btn.ghost:hover{background:var(--card2)}
+  .btns{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0}
+  .pill{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:999px;
+    padding:3px 11px;font-size:12.5px;color:var(--mut);margin:2px 4px 2px 0}
+  table{width:100%;border-collapse:collapse;margin:8px 0;font-size:15px}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:var(--card2)}
+  td .no{color:#ff6b6b;font-weight:700}td .yes{color:var(--amber);font-weight:700}
+  code{background:#0c1218;border:1px solid var(--line);border-radius:6px;padding:1px 6px;
+    font:13px ui-monospace,Menlo,monospace;color:#d6e2ee}
+  .foot{color:var(--mut);font-size:13px;text-align:center;margin-top:40px;border-top:1px solid var(--line);padding-top:18px}
+  hr.sep{border:0;border-top:1px solid var(--line);margin:40px 0}
+
+    .wizshots{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:14px}
+    .wizshots figure{margin:0}
+    .wizshots figure.breit{grid-column:1/-1}
+    .wizshots img{width:100%;height:auto;border-radius:12px;border:1px solid rgba(120,165,235,.18);
+      display:block;background:#0a1120}
+    .wizshots figcaption{color:#9fb3c8;font-size:.88em;margin-top:8px;line-height:1.5}
+    .wizshots figcaption b{color:#eef4fb}
+    @media(max-width:720px){.wizshots{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a href="/">← BYD&nbsp;EU Community</a>
+    <a href="/guide">Right-to-Repair Guides</a>
+  </div>
+
+  <header>
+    <div class="eyebrow">Für die Community · ohne Vorwissen · Teil von Panoptes</div>
+    <h1>Dein BYD <span class="grad">immer im Blick</span></h1>
+    <p class="sub">Ladezustand, Reichweite, Standort und Vorheizen — sehen und steuern.
+    Ganz einfach mit der App, die du schon hast. Und für alle, die mehr wollen: ein eigenes Dashboard.</p>
+  </header>
+
+  <div class="card" style="margin-top:22px">
+    <b>Welcher Weg passt zu dir?</b>
+    <ul>
+      <li><b>Nur schauen und vorheizen, ohne etwas zu installieren:</b> deine BYD-App reicht. Siehe Teil&nbsp;1.</li>
+      <li><b>Mehr sehen, am eigenen PC, Tablet oder Raspberry:</b> das <b>EV-Cockpit</b> (Teil&nbsp;2). Es holt die Daten
+          wahlweise aus der BYD-Cloud, aus deinem Home Assistant oder von Panoptes im Auto.</li>
+      <li><b>Panoptes läuft schon auf deinem Infotainment?</b> Dann ist die Panoptes-Oberfläche dein Cockpit. Das
+          EV-Cockpit brauchst du nur zusätzlich, wenn du am PC deine Wallbox und PV dazu sehen willst.</li>
+      <li><b>Route mit Ladestopps planen:</b> der <a href="/ev/" style="color:#3aa0ff">Ladeplaner</a> der Community,
+          öffentlich und ohne Anmeldung. Mitglieder der BYD-Karte planen mit eigenem Auto und schicken die Route ins Auto.</li>
+    </ul>
+  </div>
+
+  <!-- TEIL 1: DIE APP -->
+  <section class="part">
+    <div class="part-head"><span class="n">1</span><h2>Deine BYD-App<span class="badge easy">sofort · nichts installieren</span></h2></div>
+    <p class="lead">Beim Autokauf wurde die <b>BYD-App</b> auf deinem Handy eingerichtet. Damit kannst du
+    das Wichtigste sofort — ohne PC, ohne Technik. Falls du sie nicht mehr hast: im App&nbsp;Store
+    bzw. Google&nbsp;Play nach <b>„BYD"</b> suchen, installieren, mit deinen Zugangsdaten anmelden.</p>
+
+    <div class="step">
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 120 150" width="120" height="150">
+          <rect x="30" y="6" width="60" height="120" rx="12" fill="#0e151d" stroke="#33465a" stroke-width="2"/>
+          <rect x="37" y="16" width="46" height="86" rx="6" fill="#0b1017"/>
+          <circle cx="60" cy="52" r="20" fill="none" stroke="#28d17c" stroke-width="5"/>
+          <path d="M60 32 a20 20 0 0 1 17 30" fill="none" stroke="#1c2733" stroke-width="5"/>
+          <text x="60" y="57" fill="#e7edf3" font-size="13" font-weight="700" text-anchor="middle">72%</text>
+          <rect x="42" y="108" width="36" height="8" rx="4" fill="#28d17c"/>
+        </svg>
+      </div>
+      <div><h3>🔋 Laden &amp; Reichweite sehen</h3>
+      <p>Öffne die App — auf der Startseite siehst du sofort Akkustand in Prozent, die Reichweite
+      und ob gerade geladen wird. Beim Laden zeigt sie dir auch die Restzeit.</p></div>
+    </div>
+
+    <div class="step">
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 120 150" width="120" height="150">
+          <rect x="30" y="6" width="60" height="120" rx="12" fill="#0e151d" stroke="#33465a" stroke-width="2"/>
+          <rect x="37" y="16" width="46" height="86" rx="6" fill="#0b1017"/>
+          <path d="M60 30 q16 0 16 18 q0 16 -16 30 q-16 -14 -16 -30 q0 -18 16 -18z" fill="none" stroke="#38bdf8" stroke-width="4"/>
+          <circle cx="60" cy="48" r="6" fill="#38bdf8"/>
+        </svg>
+      </div>
+      <div><h3>📍 Wo steht mein Auto?</h3>
+      <p>Die App zeigt den letzten Standort auf einer Karte — praktisch auf großen Parkplätzen
+      oder wenn wer anders gefahren ist.</p></div>
+    </div>
+
+    <div class="step">
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 120 150" width="120" height="150">
+          <rect x="30" y="6" width="60" height="120" rx="12" fill="#0e151d" stroke="#33465a" stroke-width="2"/>
+          <rect x="37" y="16" width="46" height="86" rx="6" fill="#0b1017"/>
+          <path d="M52 70 q8 -34 16 0" fill="none" stroke="#ffb020" stroke-width="4"/>
+          <path d="M48 66 q12 -40 24 0" fill="none" stroke="#ffb020" stroke-width="3" opacity=".6"/>
+          <rect x="46" y="70 " width="28" height="18" rx="4" fill="#ffb020" opacity=".25" stroke="#ffb020"/>
+        </svg>
+      </div>
+      <div><h3>🌡️ Vorheizen / Vorklimatisieren</h3>
+      <p>Im Winter vorwärmen, im Sommer vorkühlen — aus der App, bevor du einsteigst.
+      Auch abschließen/aufsperren und Hupe/Licht zum Wiederfinden gehen hier.</p></div>
+    </div>
+
+    <div class="note">✅ <b>Das reicht für die meisten.</b> Kein PC, keine Installation — die App kann
+    schon alles Wichtige. Der Rest unten ist nur für alle, die es größer wollen.</div>
+  </section>
+
+
+  <hr class="sep">
+
+  <!-- TEIL 2: EV-COCKPIT (lokales Programm) -->
+  <section class="part">
+    <div class="part-head"><span class="n">2</span><h2>Dein Auto am eigenen Bildschirm<span class="badge easy">runterladen · Doppelklick</span></h2></div>
+    <p class="lead">Du willst mehr sehen als die App zeigt — aber kein Technik-Projekt starten?
+    Dann nimm das <b>EV-Cockpit</b>: <b>ein einziges Programm</b>, das auf <b>deinem eigenen Rechner</b>
+    läuft. Runterladen, entpacken, <b>Doppelklick</b> — der Browser geht von selbst auf und ein
+    Assistent fragt dich alles Nötige. <b>Nichts zu installieren, keine Vorkenntnisse.</b> Hast du schon einen
+    Home Assistant oder Panoptes im Auto, kann das Cockpit die Daten auch von dort holen.</p>
+
+    <div class="card">
+      <b>Ein Assistent führt dich durch — in 5 Schritten:</b>
+      <ol>
+        <li><b>Der wichtige Hinweis</b> (zweites BYD-Konto — dazu unten mehr)</li>
+        <li><b>Woher die Daten kommen</b> — du wählst: <b>BYD-Konto</b> (am einfachsten), <b>Home Assistant</b>
+            („Mein Auto suchen“ findet die passenden Werte selbst) oder <b>Panoptes im Auto</b>. Mit BYD-Konto holt es
+            deine Fahrzeuge, du klickst deins an (kein Fahrgestellnummer-Abtippen).</li>
+        <li><b>Dein Modell</b> — setzt automatisch die Akkugröße</li>
+        <li><b>Ein Foto deines Autos</b> und wie oft nachgefragt werden soll</li>
+        <li><b>Extras</b> — alles freiwillig, kannst du auch weglassen</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <b>Was du dann siehst:</b>
+      <ul>
+        <li><b>Ladestand &amp; ehrliche Reichweite</b> — aus deinem <i>tatsächlichen</i> Verbrauch
+            gerechnet, daneben BYDs eigene Zahl. Du siehst den Unterschied.</li>
+        <li><b>Vorklimatisieren</b> — Heizen oder Kühlen per Knopf. <small>Aus Sicherheitsgründen nur, wenn das Auto
+            <b>ausgeschaltet</b> ist: Das Cockpit prüft das vor jedem Befehl und sendet sonst nichts.</small></li>
+        <li><b>Auf einen Blick:</b> verriegelt, Türen, Fenster, angesteckt, lädt, Gang</li>
+        <li><b>Kilometerstand, Außentemperatur, Verbrauch, Reifendruck</b></li>
+        <li><b>Standort</b> auf der Karte</li>
+        <li>Ein <b>Foto deines eigenen Autos</b> als Hingucker</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <b>Dazuschaltbar (alles freiwillig, alles abschaltbar):</b>
+      <ul>
+        <li><b>💶 Strompreis</b> — „wann ist Laden am billigsten?" Der Börsenpreis deines Landes als
+            Stundenbalken, inklusive morgen, mit der günstigsten Stunde.
+            <br><small><b>Ehrlich:</b> Das ist der <b>Börsenpreis</b>, nicht deine Rechnung (Netz und
+            Steuern fehlen). Nur mit einem Börsentarif (Tibber, aWATTar, smartENERGY) ist das dein
+            echter Verlauf — bei Fixtarif bloß interessant.</small></li>
+        <li><b>🔌 Ladesäulen in der Nähe</b> — rund um den Standort deines Autos, auf der Karte der Community.
+            In <b>Österreich und der Schweiz</b> mit <b>Live-Belegung</b>: frei, <b style="color:#FF5A4E">belegt</b>, außer Betrieb
+            oder „Status unbekannt“.
+            <br><small><b>Ehrlich:</b> Live-Daten gibt es nur, wo die Länder sie offen anbieten (AT: E-Control, CH: BFE).
+            Preise siehst du im <a href="/ev/" style="color:#3aa0ff">Ladeplaner</a>.</small></li>
+        <li><b>🗺️ Route planen</b> — für Mitglieder der BYD-Karte: Der Ladeplaner kennt dann deinen Ladestand und lernt
+            deinen echten Verbrauch. <small>Deine Fahrten bleiben auf deinem Rechner, an den Planer geht nur eine einzige
+            Zahl (dein Korrekturfaktor).</small></li>
+        <li><b>📱 Aufs Tablet holen</b> — ein Häkchen, dann geht es auch am Küchen-Tablet im eigenen WLAN</li>
+        <li><b>🎥 Wächter-Kamera</b> <small>(nur für Bastler)</small> — die letzte Auslöse-Aufnahme der
+            360°-Kameras.
+            <br><small>Braucht <b>adb</b> am Rechner, <b>kabelloses adb am Auto</b>, die Panoptes-App
+            und einen USB-Stick. Sagt dir das nichts: einfach weglassen, alles andere läuft trotzdem.</small></li>
+      </ul>
+    </div>
+
+
+    <div class="card">
+      <b>So sieht die Einrichtung aus</b>
+      <p style="margin:.5em 0 1em;color:#9fb3c8">Fünf Schritte, dann läuft es. Klick auf ein Bild zum Vergrößern.</p>
+      <div class="wizshots">
+        <figure><a href="bilder/schritt1.jpg" target="_blank" rel="noopener">
+          <img src="bilder/schritt1.jpg" alt="Schritt 1: der wichtige Hinweis zum zweiten BYD-Konto" loading="lazy" width="820" height="901"></a>
+          <figcaption><b>1 · Wichtig</b> — der eine Punkt, den du wissen musst: zweites BYD-Konto</figcaption></figure>
+        <figure><a href="bilder/schritt2.jpg" target="_blank" rel="noopener">
+          <img src="bilder/schritt2.jpg" alt="Schritt 2: Datenquelle wählen — BYD-Konto, Home Assistant oder Panoptes" loading="lazy" width="820" height="1250"></a>
+          <figcaption><b>2 · Datenquelle</b> — BYD-Konto, Home Assistant oder Panoptes</figcaption></figure>
+        <figure><a href="bilder/schritt3.jpg" target="_blank" rel="noopener">
+          <img src="bilder/schritt3.jpg" alt="Schritt 3: Fahrzeug und Modell auswählen" loading="lazy" width="820" height="688"></a>
+          <figcaption><b>3 · Dein Auto</b> — anklicken statt Fahrgestellnummer abtippen</figcaption></figure>
+        <figure><a href="bilder/schritt4.jpg" target="_blank" rel="noopener">
+          <img src="bilder/schritt4.jpg" alt="Schritt 4: Foto hochladen und Abfrage-Takt wählen" loading="lazy" width="820" height="671"></a>
+          <figcaption><b>4 · Aussehen</b> — Foto deines Autos, wie oft nachgefragt wird</figcaption></figure>
+        <figure class="breit"><a href="bilder/schritt5.jpg" target="_blank" rel="noopener">
+          <img src="bilder/schritt5.jpg" alt="Schritt 5: Extras – Strompreis, Ladesäulen, Tablet, Home Assistant, Wächter" loading="lazy" width="820" height="1696"></a>
+          <figcaption><b>5 · Extras</b> — alles freiwillig: Strompreis, Ladesäulen, Tablet-Zugriff,
+          Home&nbsp;Assistant, Wächter-Kamera. Lass ruhig alles aus.</figcaption></figure>
+      </div>
+      <p style="margin:1em 0 0;color:#9fb3c8;font-size:.92em">
+        Echte Aufnahmen aus dem Programm — die Eingaben darin sind erfundene Musterdaten.
+      </p>
+    </div>
+    <div class="card">
+      <div class="btns">
+        <a class="btn" href="ev-cockpit-windows.zip">⬇ Windows (19&nbsp;MB, portabel)</a>
+        <a class="btn ghost" href="ev-cockpit-linux-mac.zip">🐧 Linux / macOS / Raspberry</a>
+        <a class="btn ghost" href="https://github.com/samuelvoltarius/byd-ev-cockpit" target="_blank" rel="noopener">💻 Quelltext auf GitHub</a>
+      </div>
+      <p style="margin:.7em 0 0;color:#9fb3c8;font-size:.92em">
+        <b>Version 1.5</b> — <a href="neu.html" style="color:#3aa0ff">was ist neu?</a>
+      </p>
+      <p style="margin:.7em 0 0;color:#9fb3c8;font-size:.92em">
+        🌐 <b>Deutsch oder Englisch</b> — die App richtet sich nach deiner Browsersprache, umschaltbar in der Ecke.<br>🔒 <b>Muss man dem trauen?</b> Das Tool fragt nach deinem BYD-Login — darum liegt der
+        <a href="https://github.com/samuelvoltarius/byd-ev-cockpit" target="_blank" rel="noopener" style="color:#3aa0ff">komplette Quelltext offen auf GitHub</a>.
+        Jeder kann nachlesen, dass deine Daten deinen Rechner nicht verlassen. Fehler oder Fragen?
+        <a href="https://github.com/samuelvoltarius/byd-ev-cockpit/issues" target="_blank" rel="noopener" style="color:#3aa0ff">Als Issue melden.</a>
+      </p>
+      <p style="margin:.7em 0 0"><b>Windows:</b> ZIP entpacken → Doppelklick auf <code>Start.bat</code>. Python ist
+      im Paket schon dabei — du installierst <b>nichts</b>. Beim ersten Start meldet sich eventuell
+      Windows („Der Computer wurde geschützt"): auf <b>„Weitere Informationen"</b> → <b>„Trotzdem
+      ausführen"</b>. Das kommt, weil eine Signatur mehrere hundert Euro im Jahr kostet — bei einem
+      kostenlosen Werkzeug zahlt das niemand. In der beiliegenden <code>LIESMICH.txt</code> steht alles nochmal
+      in Ruhe erklärt.</p>
+    </div>
+
+    <div class="note">⚠️ <b>Wichtig: bitte einen zweiten BYD-Account anlegen.</b> Die BYD-Cloud erlaubt pro
+    Account nur <b>eine</b> aktive Sitzung. Nimmst du denselben Account wie in deiner Handy-App, stören
+    sich beide gegenseitig. Leg in der BYD-App einen zweiten Account an (andere E-Mail) und gib ihn im
+    Auto als <b>„Zusatznutzer"</b> frei — dann läuft beides friedlich nebeneinander.</div>
+
+    <div class="note">🔒 <b>Deine Daten bleiben bei dir.</b> Das Programm läuft auf deinem Rechner und
+    speichert alles dort. Es sendet <b>nichts</b> an uns. Es spricht nur mit den Gegenstellen, die du selbst
+    einrichtest: der BYD-Cloud, deinem Home Assistant oder Panoptes im Auto, deiner Wallbox im Heimnetz und, wenn du
+    willst, dem Ladeplaner der Community. Du musst uns nicht glauben:
+    <code>evcockpit.py</code> im Paket ist ganz normaler, lesbarer Text — mach ihn auf und schau nach.</div>
+
+    <div class="note">📱 <b>Auch am Tablet?</b> Im Assistenten gibt es dafür ein Häkchen. Ohne Haken ist
+    das Cockpit nur auf deinem eigenen Rechner erreichbar — die sicherste Einstellung.</div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- TEIL 3: ECHTES DASHBOARD -->
+  <section class="part">
+    <div class="part-head"><span class="n">3</span><h2>Deine echte Anlage anbinden<span class="badge more">echte Werte, keine Simulation</span></h2></div>
+    <p class="lead">Du hast eine <b>echte PV-Anlage</b>, einen <b>echten Stromtarif</b>, vielleicht
+    Speicher und Wallbox? Dann bring alles auf <b>einen Bildschirm</b> — mit deinen <b>echten
+    Live-Zahlen</b>, nicht geschätzt. Die gratis Zentrale dafür heißt <b>„Home Assistant"</b>.
+    Sie <b>simuliert nichts</b> — sie liest deine tatsächlichen Geräte aus.</p>
+
+
+    <div class="card">
+      <b>So sieht dein Auto dann in Home Assistant aus</b>
+      <figure style="margin:12px 0 0">
+        <a href="bilder/ha_auto.jpg" target="_blank" rel="noopener">
+          <img src="bilder/ha_auto.jpg" alt="BYD in Home Assistant: Ladezustand, Reichweite, Klima-Steuerung, Status"
+               loading="lazy" width="824" height="362"
+               style="width:100%;height:auto;border-radius:12px;border:1px solid rgba(120,165,235,.18);display:block"></a>
+        <figcaption style="color:#9fb3c8;font-size:.88em;margin-top:8px;line-height:1.5">
+          Echtes Dashboard: Ladezustand, Reichweite, Kilometerstand, Klima-Steuerung, Status &amp; Schnellaktionen.
+          <b>Das Auto kommt aus dem EV-Cockpit</b> (Häkchen „Ans Home Assistant senden") — die PV-Anlage,
+          die Wallbox und der Strompreis kommen von deinen eigenen Geräten daneben.
+        </figcaption>
+      </figure>
+    </div>
+    <div class="card">
+      <h3 style="margin:0 0 10px">Du verbindest einmal deine eigene Marke — dann kommen echte Zahlen</h3>
+      <table>
+        <tr><th>Was du hast</th><th>Wird echt angebunden (Beispiele)</th></tr>
+        <tr><td>🔆 <b>Wechselrichter / PV</b></td><td>Fronius, SMA, Huawei, SolarEdge, Kostal, Goodwe, Victron, Sungrow …</td></tr>
+        <tr><td>💶 <b>Dynamischer Tarif</b></td><td>Tibber, aWATTar, EPEX, Nordpool, Octopus — zeigt deinen echten Preis</td></tr>
+        <tr><td>🔋 <b>Heimspeicher</b></td><td>meist über denselben Wechselrichter — echter Ladestand</td></tr>
+        <tr><td>🔌 <b>Wallbox</b></td><td>go-e, Easee, KEBA, Wallbox, openWB, Tesla Wall Connector …</td></tr>
+        <tr><td>🚗 <b>Auto</b></td><td>dein BYD-App-Login (dieselben Daten wie in der App)</td></tr>
+      </table>
+      <p style="color:var(--mut);font-size:15px;margin-top:12px">Jede Verbindung ist ein fertiger
+      Baustein zum Anklicken — du wählst deine Marke, loggst dich <b>mit deinem eigenen Konto</b>
+      ein, fertig. Danach zeigt das Dashboard deine <b>echte</b> Produktion, deinen Verbrauch, den
+      Speicher-Ladestand und den aktuellen Tarifpreis — live.</p>
+      <div class="btns">
+        <a class="btn" href="einrichten.html">🧭 Geführte Marken-Einrichtung</a>
+        <a class="btn ghost" href="view.html?f=DAU_KLICK_ANLEITUNG.md">🖱 Klick-Anleitung (Überblick)</a>
+      </div>
+      <p style="color:var(--mut);font-size:14px;margin-top:8px">Wähle dein Gerät (Wallbox, PV, Tarif …)
+      und deine Marke (Tuya, EGO, go-e, Fronius, Tibber …) → du bekommst genau die Schritte für
+      <b>deinen</b> Login. Deine Daten bleiben bei dir.</p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 6px">Was du brauchst</h3>
+      <ul style="margin:.2em 0;padding-left:20px;color:var(--mut)">
+        <li>Ein kleines <b>„Home Assistant Green"</b>-Kästchen (~90–130 €, einmalig) — Stecker rein.</li>
+        <li>Die <b>Zugangsdaten deiner eigenen Geräte</b> (PV-Portal, Tarif-App, BYD-App).</li>
+        <li>Ca. 1–2 Stunden für den ersten Aufbau.</li>
+      </ul>
+    </div>
+
+    <div class="note warn">⚠️ <b>Ehrlich:</b> Diesen einen Verbindungs-Schritt muss jeder für seine
+    eigene Anlage selbst machen — <b>deine</b> Geräte, <b>dein</b> Login. Das kann dir niemand
+    komplett abnehmen (außer jemand würde alle Passwörter zentral speichern — davon raten wir ab).
+    Dafür läuft es danach dauerhaft mit <b>echten</b> Werten. Wer nur den Akkustand sehen will,
+    bleibt bei der App (Teil&nbsp;1).</div>
+  </section>
+
+  <hr class="sep">
+
+
+  <hr class="sep">
+
+  <!-- ZUSATZ: PV durchrechnen -->
+  <section class="part">
+    <div class="part-head"><span class="n">☀</span><h2>Noch keine PV-Anlage?<span class="badge more">erst mal durchrechnen</span></h2></div>
+    <p class="lead">Bevor du 10.000&nbsp;€ ausgibst: <b>rechne durch, ob es sich für dich lohnt.</b> Home Assistant
+    kann das — mit deinem <b>echten Stromverbrauch</b>, dem <b>echten Börsenpreis</b> und deinen <b>echten
+    Fahrkilometern</b>. Nur die Anlage selbst wird angenommen (z.B. 5&nbsp;kWp + 10&nbsp;kWh Speicher).</p>
+
+    <div class="card">
+      <figure style="margin:0">
+        <a href="bilder/pv_rechnung.jpg" target="_blank" rel="noopener">
+          <img src="bilder/pv_rechnung.jpg" alt="Durchgerechnete PV-Simulation: Amortisation, Ersparnis, Börsenpreis"
+               loading="lazy" width="1100" height="769"
+               style="width:100%;height:auto;border-radius:12px;border:1px solid rgba(120,165,235,.18);display:block"></a>
+        <figcaption style="color:#9fb3c8;font-size:.88em;margin-top:8px;line-height:1.5">
+          <b>Achtung — das ist eine Rechnung, keine Messung.</b> Die PV-Anlage in diesem Beispiel existiert nicht:
+          erzeugte Leistung und Speicher werden aus Wetterdaten und einer angenommenen Anlagengröße simuliert.
+          <b>Echt</b> sind Börsenpreis, Stromverbrauch und die gefahrenen Kilometer.
+        </figcaption>
+      </figure>
+    </div>
+
+    <div class="card">
+      <b>Was so eine Durchrechnung beantwortet:</b>
+      <ul>
+        <li><b>Wann ist sie abbezahlt?</b> Hochrechnung aus den tatsächlich geloggten Tagen — je länger sie läuft
+            (vor allem über den Winter), desto ehrlicher wird die Zahl.</li>
+        <li><b>Was spare ich pro 100&nbsp;km?</b> Benzin gegen eigenen Sonnenstrom, mit deinen echten Fahrten.</li>
+        <li><b>Lohnt sich ein Speicher?</b> Oder verkauf ich lieber zum Börsenpreis?</li>
+        <li><b>Wann lädt das Auto am günstigsten?</b> Überschuss, Nachtstrom oder Börsentief.</li>
+      </ul>
+    </div>
+
+    <div class="note">⚠️ <b>Eine Simulation ist kein Angebot.</b> Sie zeigt eine Größenordnung, keine Zusage —
+    echte Zahlen hängen an Dach, Ausrichtung, Verschattung, Tarif und Förderung. Wer schon eine Anlage hat,
+    braucht das nicht: <b>dann liest Home Assistant deine echten Werte</b> (siehe oben).</div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- TEIL 4: BASTLER -->
+  <section class="part">
+    <div class="part-head"><span class="n">4</span><h2>Für Bastler &amp; Technik-Fans<span class="badge geek">offen &amp; kostenlos</span></h2></div>
+    <p class="lead">Alles ist offen: der komplette Quelltext des EV-Cockpits liegt auf GitHub (MIT-Lizenz).
+    Linux, macOS und Raspberry Pi starten mit einem Befehl, eigene Ideen sind willkommen.</p>
+    <div class="dl">
+      <a class="btn" href="https://github.com/samuelvoltarius/byd-ev-cockpit" target="_blank" rel="noopener">💻 Quelltext auf GitHub</a>
+      <a class="btn ghost" href="https://github.com/samuelvoltarius/byd-ev-cockpit/issues" target="_blank" rel="noopener">🐞 Fehler melden</a>
+    </div>
+    <div class="note">ℹ️ Das frühere „Komplettpaket“ zum Nachbauen (Juli 2026) gibt es nicht mehr. Alles, was es konnte,
+    steckt heute im EV-Cockpit (Teil&nbsp;2) und, direkt im Auto, in Panoptes.</div>
+  </section>
