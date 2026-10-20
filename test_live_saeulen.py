@@ -52,6 +52,26 @@ class TestKarte(unittest.TestCase):
         self.assertEqual(ls.runde(47.8123, 13.0471), (47.8, 13.05))
 
 
+class TestKarten(unittest.TestCase):
+    def test_preis_eigene_karte(self):
+        st = dict(ANTWORT["stationen"][0], preis_meine={"tarif_id": 4, "karte": "Fastned Gold", "preis_kwh": 0.395},
+                  karte_hinweis="Preis deiner Karte für diesen Betreiber (laut Preisblatt)")
+        p = ls.fuer_karte({"stationen": [st]})["features"][0]["properties"]
+        self.assertEqual(p["preis"], "Fastned Gold: 0,40 €/kWh")
+        self.assertIn("Preisblatt", p["hinweis"])
+        self.assertNotIn("preis", ls.fuer_karte(ANTWORT)["features"][0]["properties"])
+
+    def test_karten_ids_gehen_mit_und_eigener_zwischenspeicher(self):
+        calls = []
+        live = ls.Live(post=lambda d: calls.append(d) or ANTWORT, uhr=lambda: 0.0)
+        live.abfrage(47.8, 13.05)
+        live.abfrage(47.8, 13.05, karten=[7, 4])
+        live.abfrage(47.8, 13.05, karten=[4, 7])           # gleiche Karten -> aus dem Zwischenspeicher
+        self.assertEqual(len(calls), 2)
+        self.assertNotIn("karten", calls[0])
+        self.assertEqual(calls[1]["karten"], [4, 7])
+
+
 class TestTakt(unittest.TestCase):
     def test_je_zelle_hoechstens_alle_2_min(self):
         calls, t = [], [0.0]

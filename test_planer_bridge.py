@@ -195,6 +195,32 @@ class TestRoute(unittest.TestCase):
             pb.route_kurz(TOK, anfrage=lambda p, t, d=None: (401, {}))
 
 
+class TestLadekarten(unittest.TestCase):
+    def test_tarife_sortiert(self):
+        d = {"tarife": [{"id": 1, "name": "Direktzahlung", "ist_adhoc": 1, "msp": "Ad-hoc"},
+                        {"id": 6, "name": "Pass", "ist_adhoc": 0, "msp": "Chargemap"},
+                        {"id": 2, "name": "Base", "ist_adhoc": 0, "msp": "Elli"}]}
+        t = pb.tarife(anfrage=lambda p, tok, dat=None: (200, d))
+        self.assertEqual([x["id"] for x in t], [6, 2, 1])          # Ad-hoc ans Ende
+
+    def test_noch_nicht_live(self):
+        self.assertIsNone(pb.meine_karten(TOK, anfrage=lambda p, t, d=None: (404, {})))
+        with self.assertRaises(RuntimeError):
+            pb.setze_karten(TOK, [4], anfrage=lambda p, t, d=None: (404, {}))
+
+    def test_setzen_und_zuruecklesen(self):
+        gespeichert = []
+
+        def anfrage(pfad, token, daten=None):
+            if daten is not None:
+                gespeichert[:] = [i for i in daten["karten"] if i != 99]      # Planer laesst Unbekanntes fallen
+                return 200, {"ok": True}
+            return 200, {"ok": True, "karten": [{"tarif_id": i, "msp": "x"} for i in gespeichert]}
+        self.assertEqual(pb.setze_karten(TOK, [4, "7", 4, 99, True, -1, "x"], anfrage=anfrage), [4, 7])
+        with self.assertRaises(ValueError):
+            pb.setze_karten(TOK, list(range(1, 32)), anfrage=anfrage)
+
+
 class TestFaktor(unittest.TestCase):
     def test_schrumpfung_und_grenzen(self):
         self.assertEqual(pb.faktor_aus([]), 1.0)

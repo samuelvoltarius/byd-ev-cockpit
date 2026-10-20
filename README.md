@@ -138,6 +138,9 @@ Members of the [BYD community map](https://byd.serveone.at) get a personal route
   the route that is ready (distance, charging stops, arrival) and the **feedback from the car** ("arrived in the
   car", "navigation running"). The route reaches the car via Panoptes; without Panoptes via the planner's phone
   link. The link key stays on your computer and is never part of the page.
+- **💳 My charging cards:** under "Route planner" you tick which charging cards you have. The list is stored by
+  the planner (only which cards, no charging sessions) and applies on `/ev/` too. Chargers on the map then show
+  your card's price, and the planner prefers matching charging stops.
 
 **Map:** by default the cockpit shows the same map as the planner and the Panoptes app (served by the community
 server, byd.serveone.at); until that server delivers it completely, OpenStreetMap. Untick "Community map style"

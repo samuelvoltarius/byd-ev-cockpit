@@ -139,6 +139,9 @@ Routenplaner (`byd.serveone.at/ev/#z=…`). Im Assistenten eingefügt, passiert 
   Auf der Startseite steht die bereitliegende Route (Strecke, Ladestopps, Ankunft) und die **Rückmeldung aus
   dem Auto** („im Auto angekommen“, „Navigation läuft“). Ins Auto kommt die Route über Panoptes; ohne
   Panoptes über den Handy-Link des Planers. Der Link-Schlüssel bleibt auf deinem Rechner und steht nie in der Seite.
+- **💳 Meine Ladekarten:** Unter „Routenplaner“ hakst du an, welche Ladekarten du hast. Die Liste liegt beim
+  Planer (nur welche Karten, keine Ladevorgänge) und gilt genauso auf `/ev/`. Die Säulen auf der Karte zeigen dann
+  den Preis deiner Karte, der Planer bevorzugt passende Ladestopps.
 
 **Karte:** Das Cockpit zeigt standardmäßig dieselbe Karte wie Planer und Panoptes-App (vom Server der Community,
 byd.serveone.at); solange der Server sie nicht vollständig liefert, OpenStreetMap. Ohne Häkchen „Karte im

@@ -268,3 +268,51 @@ def route_kurz(token, auto="", anfrage=_anfrage):
             "stopps": len(stopps), "soc_ankunft": plan.get("soc_ankunft"), "erstellt": plan.get("erstellt"),
             "abgeholt": bool(plan.get("schon_abgeholt")),
             "status": STATUS_TEXT.get(st.get("status"), ""), "stopp": st.get("stopp")}
+
+
+# ---- Meine Ladekarten (Vertrag API_FUER_SURFMATE.md 3d). Gespeichert wird beim Planer nur, WELCHE Karten
+# jemand hat - keine Ladevorgaenge. Die Liste ist dieselbe wie auf /ev/ mit Login (und spaeter in Panoptes).
+MAX_KARTEN = 30
+
+
+def tarife(anfrage=_anfrage):
+    """Oeffentliche Tarifliste des Planers: [{id, msp, name, ist_adhoc}], nach Anbieter sortiert."""
+    code, d = anfrage("tarife", "")
+    if code != 200:
+        raise RuntimeError("Planer antwortet %s" % code)
+    liste = d.get("tarife") if isinstance(d, dict) else d
+    aus = [{"id": int(t["id"]), "msp": str(t.get("msp") or ""), "name": str(t.get("name") or ""),
+            "ist_adhoc": bool(t.get("ist_adhoc"))} for t in (liste or []) if isinstance(t, dict) and "id" in t]
+    return sorted(aus, key=lambda t: (t["ist_adhoc"], t["msp"].lower(), t["name"].lower()))
+
+
+def meine_karten(token, anfrage=_anfrage):
+    """-> Liste der Tarif-IDs des Mitglieds, oder None, solange der Planer das noch nicht kann (404)."""
+    code, d = anfrage("meine-karten", token)
+    if code == 404:
+        return None
+    if code != 200:
+        raise RuntimeError("Planer antwortet %s" % code)
+    return [int(k["tarif_id"]) for k in (d.get("karten") or []) if isinstance(k, dict) and "tarif_id" in k]
+
+
+def setze_karten(token, ids, anfrage=_anfrage):
+    """Ersetzt die Kartenliste beim Planer; liest sie danach zurueck (Planer laesst unbekannte IDs still fallen)."""
+    sauber = []
+    for i in ids or []:
+        if isinstance(i, bool):
+            continue
+        try:
+            i = int(i)
+        except (TypeError, ValueError):
+            continue
+        if i > 0 and i not in sauber:
+            sauber.append(i)
+    if len(sauber) > MAX_KARTEN:
+        raise ValueError("Höchstens %d Ladekarten" % MAX_KARTEN)
+    code, d = anfrage("meine-karten", token, {"karten": sauber})
+    if code == 404:
+        raise RuntimeError("Der Planer kann Ladekarten noch nicht speichern")
+    if code != 200:
+        raise RuntimeError(d.get("fehler") or ("Planer antwortet %s" % code))
+    return meine_karten(token, anfrage=anfrage)

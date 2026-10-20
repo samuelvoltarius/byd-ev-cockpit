@@ -66,10 +66,16 @@ def fuer_karte(antwort):
         alter = st.get("live_alter_s")
         if z != "unbekannt" and isinstance(alter, (int, float)) and alter > ALT_S:
             lbl += " · Stand vor %d min" % round(alter / 60.0)
+        props = {"dc": 1 if kw >= 50 else 0, "zustand": z, "kw": kw, "lbl": lbl,
+                 "name": (st.get("name") or "")[:60], "quelle": st.get("live_quelle") or ""}
+        pm = st.get("preis_meine")
+        if isinstance(pm, dict) and pm.get("preis_kwh") is not None:      # Preis der eigenen Ladekarte
+            props["preis"] = "%s: %s €/kWh" % (str(pm.get("karte") or "Deine Karte")[:40],
+                                              ("%.2f" % float(pm["preis_kwh"])).replace(".", ","))
+        if st.get("karte_hinweis"):
+            props["hinweis"] = str(st["karte_hinweis"])[:120]
         feats.append({"type": "Feature", "geometry": {"type": "Point", "coordinates": [st["lon"], st["lat"]]},
-                      "properties": {"dc": 1 if kw >= 50 else 0, "zustand": z, "kw": kw, "lbl": lbl,
-                                     "name": (st.get("name") or "")[:60],
-                                     "quelle": st.get("live_quelle") or ""}})
+                      "properties": props})
     maske = ({"type": "MultiPolygon",
               "coordinates": [_achteck(*f["geometry"]["coordinates"]) for f in feats]} if feats else None)
     quellen = [{"land": q.get("land"), "quelle": q.get("quelle"), "url": q.get("url")}
@@ -91,12 +97,16 @@ class Live:
         self.post, self.uhr = post, uhr
         self.cache = {}
 
-    def abfrage(self, lat, lon):
+    def abfrage(self, lat, lon, karten=()):
         la, lo = runde(lat, lon)
-        k, jetzt = (la, lo), self.uhr()
+        karten = tuple(sorted(int(i) for i in karten or ()))
+        k, jetzt = (la, lo, karten), self.uhr()
         if k in self.cache and jetzt - self.cache[k][0] < TAKT_S:
             return self.cache[k][1]
-        d = fuer_karte(self.post({"lat": la, "lon": lo, "radius": RADIUS_KM, "kwh": 20, "limit": 200}))
+        frage = {"lat": la, "lon": lo, "radius": RADIUS_KM, "kwh": 20, "limit": 200}
+        if karten:
+            frage["karten"] = list(karten)     # nur Tarif-IDs, damit der Planer den Preis der eigenen Karte rechnet
+        d = fuer_karte(self.post(frage))
         self.cache = {k: v for k, v in self.cache.items() if jetzt - v[0] < TAKT_S}
         self.cache[k] = (jetzt, d)
         return d
