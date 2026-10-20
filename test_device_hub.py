@@ -22,6 +22,12 @@ class DiscoveryTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 device_hub.discover(subnet)
 
+    def test_automatic_network_needs_no_cidr_knowledge(self):
+        self.assertEqual(device_hub.automatic_lan_network("192.168.50.23"),
+                         "192.168.50.0/24")
+        with self.assertRaises(ValueError):
+            device_hub.automatic_lan_network("8.8.8.8")
+
     @patch("device_hub.probe")
     def test_discover(self, probe):
         probe.side_effect = lambda ip: {"ip": ip, "online": ip.endswith(".1")}
@@ -32,6 +38,7 @@ class DiscoveryTests(unittest.TestCase):
     def test_evcc_probe_is_minimized(self, open_url):
         result = device_hub.probe("192.168.1.20")
         self.assertEqual(result["vendor"], "evcc")
+        self.assertEqual(result["port"], 7070)
         self.assertEqual(result["model"], "1.2.3")
         self.assertNotIn("data", result)
 

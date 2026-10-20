@@ -317,6 +317,9 @@ async def _poll_once(byd, cache):
 def _friendly(e):
     """BYD-Fehler in Klartext uebersetzen — der Nutzer soll wissen, was zu tun ist."""
     m = str(e)
+    if "3002" in m:
+        return ("BYD hat E-Mail oder Passwort abgelehnt (Fehler 3002). "
+                "Automatische Versuche wurden gestoppt — bitte das separate Cockpit-Konto prüfen.")
     if "6024" in m or "1008" in m or "nicht abgeschlossen" in m:
         return ("BYD ist beschäftigt. Läuft deine BYD-App mit DEMSELBEN Account? "
                 "Bitte einen zweiten Account als Zusatznutzer verwenden.")
@@ -325,6 +328,13 @@ def _friendly(e):
     if "not supported" in m or "1001" in m:
         return "BYD liefert für diese VIN gerade keine Daten (oft nur kurz — es versucht's weiter)."
     return m[:150]
+
+
+def _auth_failure(error):
+    message = str(error).lower()
+    return "3002" in message or any(word in message for word in
+                                    ("wrong password", "falsche e-mail", "falsches passwort",
+                                     "invalid credential", "login failed"))
 
 
 def _poller():
@@ -343,6 +353,12 @@ def _poller():
             if not _CFG.get("vin"):
                 time.sleep(3)
                 continue
+            if _STATE.get("_auth_blocked") or _CFG.get("auth_blocked"):
+                _STATE["_auth_blocked"] = True
+                _STATE["_err"] = ("BYD-Anmeldung pausiert. Bitte in den Einstellungen das separate "
+                                  "Cockpit-Konto korrigieren und einmal bewusst speichern.")
+                time.sleep(30)
+                continue
             if time.time() < _HOLD_UNTIL:    # Befehl laeuft -> nicht pollen (sonst 6024-Kollision)
                 time.sleep(4)
                 continue
@@ -360,6 +376,10 @@ def _poller():
                 _ha_publish(st)          # tut nichts ohne Haekchen
             except Exception as e:
                 _STATE["_err"] = _friendly(e)
+                if _auth_failure(e):
+                    _STATE["_auth_blocked"] = True
+                    _CFG["auth_blocked"] = True
+                    save_cfg(_CFG)
             drv = online and str((st or {}).get("gear", "")).upper() in ("D", "R")
             # Takt aus dem Assistenten (Minuten). Schlafendes Auto immer 15 min -> schont die 12V.
             wach = max(60, int(_CFG.get("poll_min") or 5) * 60)
@@ -472,6 +492,25 @@ def _adb(args, timeout=30):
     import subprocess
     return subprocess.run(["adb", "-s", _CFG.get("car_adb", "")] + args,
                           capture_output=True, timeout=timeout)
+
+
+def _local_capabilities():
+    """Detect optional local helpers without changing or connecting anything."""
+    import shutil
+    import subprocess
+    adb_path = shutil.which("adb")
+    devices = []
+    if adb_path:
+        try:
+            result = subprocess.run([adb_path, "devices"], capture_output=True, text=True,
+                                    timeout=5, check=False)
+            for line in result.stdout.splitlines()[1:]:
+                parts = line.split()
+                if len(parts) >= 2 and parts[1] == "device" and ":" in parts[0]:
+                    devices.append(parts[0][:80])
+        except (OSError, subprocess.SubprocessError):
+            pass
+    return {"adb_installed": bool(adb_path), "adb_devices": devices[:4]}
 
 
 def _sentry_loop():
@@ -795,6 +834,11 @@ _I18N.update({
     "Kompakt": "Compact", "Limousine": "Sedan", "Kombi": "Estate", "SUV": "SUV", "Van": "Van",
     "Fahrzeugformen sind neutrale Illustrationen, keine Herstellerlogos oder exakten Modellabbildungen.":
         "Vehicle shapes are neutral illustrations, not manufacturer logos or exact model images.",
+    "Geräte automatisch finden": "Find devices automatically", "Kein IP-Wissen nötig": "No IP knowledge needed",
+    "Manuell verbinden (Experten)": "Connect manually (experts)", "Suche im Heimnetz …": "Searching your home network …",
+    "Eigenes Autofoto hinzufügen": "Add your own car photo", "Foto wird vorbereitet …": "Preparing photo …",
+    "Foto gespeichert": "Photo saved", "Solar wird automatisch angezeigt, sobald evcc oder Home Assistant Werte liefert.":
+        "Solar appears automatically as soon as evcc or Home Assistant provides data.",
 })
 I18N_HEAD = ("<script>window.__TR__=" + json.dumps(_I18N, ensure_ascii=False, separators=(',',':')) + ";"
     "window.__LANG__=(function(){try{var s=localStorage.getItem('evc_lang');if(s==='de'||s==='en')return s;}catch(e){}"
@@ -1015,7 +1059,9 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
 <!-- ============ 2: BYD-ZUGANG ============ -->
 <div class=pan data-p=2>
  <div class=card>
-  <label>E-Mail deines BYD-Kontos <span style="color:#ffb020">(das zweite!)</span></label>
+  <div class=ok style="margin:0 0 16px"><b>Hier gehört nur das separate Cockpit-Konto hinein.</b><br>
+   Dein Hauptkonto bleibt ausschließlich in der BYD-App und wird hier bewusst nicht gespeichert.</div>
+  <label>E-Mail des separaten Cockpit-Kontos</label>
   <input id=username placeholder="name@beispiel.at" autocomplete=off>
   <label>Passwort</label>
   <input id=password type=password placeholder="Passwort" autocomplete=off>
@@ -1025,11 +1071,11 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
    <div><label>Land</label><select id=country>__COUNTRIES__</select></div>
    <div><label>Zeitzone</label><select id=tz>__TZ__</select></div>
   </div>
-  <div style="margin-top:16px"><button class=sec onclick="detect()">🔍 Meine Fahrzeuge abrufen</button></div>
+  <div style="margin-top:16px"><button class=sec id=detectbtn onclick="detect()">🔍 Verbindung einmal prüfen</button></div>
   <div class=msg id=dmsg></div>
  </div>
- <small>Beim Abrufen meldet sich dein Rechner einmal bei BYD an — so wie deine Handy-App auch.
- Klappt es nicht, stimmt meistens das <b>Land</b> nicht.</small>
+ <small>Der Knopf führt genau einen Anmeldeversuch aus. Bei falschem Passwort werden weitere Versuche
+ automatisch gestoppt, damit BYD das Konto nicht sperrt.</small>
  <div class=nav><button class=sec onclick="go(1)">← Zurück</button>
   <button id=n2 disabled onclick="go(3)">Weiter →</button></div>
 </div>
@@ -1045,7 +1091,7 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
    <div><label>Akku nutzbar in kWh — <b>bitte prüfen</b></label><input id=kwh value="43.2"></div>
    <div><label>Reifendruck-Sollwert (kPa, optional)</label><input id=tyretarget placeholder="z.B. 250"></div>
   </div>
-  <div style="margin-top:18px"><button class=sec onclick="capsLaden()">🔎 Was kann mein Auto?</button></div>
+  <div style="margin-top:18px"><button class=sec id=capsbtn onclick="capsLaden()">🔎 Fahrzeugfunktionen laden</button></div>
   <div class=msg id=capsmsg></div>
   <div id=capsbox style="display:none;margin-top:6px">
    <small style="display:block;margin-bottom:8px">Dein Auto hat uns gesagt, was es kann.
@@ -1115,46 +1161,32 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
   <div class=chk>
    <input type=checkbox id=price>
    <div><div class=h>💶 Strompreis anzeigen — „wann ist Laden am billigsten?"</div>
-    <small>Zeigt den <b>Börsen-Strompreis</b> deines Landes als Stundenbalken mit der günstigsten
-    Stunde. Quelle: aWATTar (AT/DE) bzw. energy-charts.info (Fraunhofer ISE), kostenlos, ohne Konto.<br>
-    <b>Ehrlich:</b> Das ist der <b>Börsenpreis</b>, <b>nicht</b> was auf deiner Rechnung steht (Netz,
-    Steuern, Aufschläge fehlen). Nur mit einem <b>Börsentarif</b> (Tibber, aWATTar, smartENERGY) ist
-    das dein echter Verlauf. Bei Fixtarif bloß interessant.<br>
-    Dein Rechner fragt dann diese Preisseite ab (die sieht deine IP, wie bei jedem Webseitenbesuch)
-    — <b>keine Fahrzeugdaten</b>.</small></div>
+    <small>Zeigt den Börsenpreis und die günstigste Stunde. Netzgebühren und Steuern sind nicht
+    enthalten. Quelle: aWATTar bzw. energy-charts.info; es werden keine Fahrzeugdaten gesendet.</small></div>
   </div>
 
   <div class=chk>
    <input type=checkbox id=chargers>
    <div><div class=h>🔌 Ladesäulen in der Nähe anzeigen</div>
-    <small>Öffentliche Ladestationen rund um den <b>aktuellen Standort deines Autos</b> — Betreiber,
-    Entfernung, Steckertyp. Quelle: <b>OpenStreetMap</b>, kein Konto.<br>
-    <b>Ehrlich: keine Preise.</b> Es gibt keine verlässliche freie Quelle für aktuelle Ladepreise —
-    falsche Preise wären schlimmer als gar keine. Auch die Standorte pflegen Freiwillige: meist gut,
-    aber ohne Gewähr. E-Bike-Ladepunkte filtern wir raus.</small></div>
+    <small>Zeigt öffentliche Ladestationen am Standort deines Autos mit Entfernung und Steckertyp.
+    Quelle: OpenStreetMap; ohne Konto und ohne Preisangaben.</small></div>
   </div>
 
   <div class=chk>
    <input type=checkbox id=lan>
    <div><div class=h>📱 Auch auf Tablet/Handy im Heimnetz öffnen</div>
-    <small>Ohne Haken ist das Cockpit <b>nur auf diesem Rechner</b> erreichbar — die sicherste
-    Einstellung. Mit Haken erreichst du es auch vom Küchen-Tablet im eigenen WLAN; die Adresse zeigt
-    dir das Cockpit dann unten an. Nur im eigenen, vertrauenswürdigen Netz aktivieren: das Cockpit
-    kann die Klimaanlage deines Autos steuern.</small></div>
+    <small>Erlaubt den Zugriff von Geräten in deinem eigenen WLAN. Nur in einem vertrauenswürdigen
+    Heimnetz einschalten, weil das Cockpit Fahrzeugfunktionen steuern kann.</small></div>
   </div>
 
   <div class=chk>
    <input type=checkbox id=ha onchange="document.getElementById('harow').style.display=this.checked?'block':'none'">
-   <div><div class=h>🏠 Ans Home Assistant senden</div>
-    <small>Du nutzt <b>Home Assistant</b>? Dann schickt das Cockpit dein Auto dorthin — es taucht
-    <b>von selbst auf</b>, mit allen Werten und den Klima-Knöpfen. Kein YAML, nichts konfigurieren.
-    Praktisch, wenn du dort schon deine PV-Anlage oder Wallbox hast: dann siehst du alles auf einem Bild.<br>
-    <b>Voraussetzung:</b> ein MQTT-Broker (bei HA meist das <b>Mosquitto</b>-Add-on, einmal installieren).<br>
-    <b>Tipp:</b> Am besten läuft dieses Programm dann auf dem Gerät, auf dem auch HA läuft
-    (Raspberry, NAS, Mini-PC) — dann hat HA rund um die Uhr Daten. Dafür gibt es das
-    Linux-Paket und eine Autostart-Anleitung in der LIESMICH.</small></div>
+   <div><div class=h>🏠 Mit Home Assistant verbinden</div>
+    <small>Sendet Fahrzeugdaten und Bedienelemente an Home Assistant. Solarwerte kann das Cockpit
+    auch von dort lesen. Für das Senden wird ein MQTT-Broker wie Mosquitto benötigt.</small></div>
   </div>
   <div id=harow style="display:none;margin-top:8px">
+   <div style="margin-bottom:10px"><button class=sec type=button onclick="haAuto()">⌕ Home Assistant automatisch finden</button></div>
    <div class=row>
     <div><label>MQTT-Broker (Adresse)</label><input id=hahost placeholder="z.B. 192.168.0.10"></div>
     <div><label>Port</label><input id=haport value="1883"></div>
@@ -1170,14 +1202,8 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
   <div class=chk>
    <input type=checkbox id=pv onchange="document.getElementById('pvrow').style.display=this.checked?'block':'none'">
    <div><div class=h>☀️ PV-Leistung aus Home Assistant holen</div>
-    <small>Du hast eine <b>PV-Anlage</b> und sie ist in Home Assistant eingebunden? Dann zeigt das
-    Cockpit deine <b>aktuelle Solar-Leistung</b> direkt neben Ladestand und Strompreis — du siehst
-    auf einen Blick, ob du gerade <b>mit eigener Sonne</b> lädst oder teuer aus dem Netz.<br>
-    <b>Warum das so gut geht:</b> Wir reden nicht mit deinem Wechselrichter — <b>Home Assistant hat
-    das schon erledigt</b>. Egal ob Fronius, SMA, Huawei, SolarEdge oder Kostal: in HA ist es einfach
-    ein Sensor mit einem Wert in Watt. Den holen wir uns, sonst nichts.<br>
-    <b>Ehrlich:</b> Wir zeigen, was <b>dein HA</b> sagt. Stimmt der Wert dort nicht, stimmt er hier
-    auch nicht. Es wird <b>nur gelesen</b> — wir schreiben nie etwas in dein HA.</small></div>
+    <small>Zeigt die aktuelle Solarleistung aus einem Home-Assistant-Sensor – unabhängig vom
+    Hersteller deiner PV-Anlage. Der Sensor wird nur gelesen.</small></div>
   </div>
   <div id=pvrow style="display:none;margin-top:8px">
    <label>Adresse deines Home Assistant</label>
@@ -1196,11 +1222,10 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
 
   <div class=chk>
    <input type=checkbox id=sentry onchange="document.getElementById('adbrow').style.display=this.checked?'block':'none'">
-   <div><div class=h>🎥 Wächter-Kamera einbinden <small style="display:inline;color:#ffb020">— nur für Bastler</small></div>
-    <small>Zeigt die letzte <b>Auslöse-Aufnahme</b> der 360°-Kameras. <b>Braucht alles davon:</b>
-    <b>adb</b> auf diesem Rechner (ist <b>nicht</b> im Paket dabei), <b>kabelloses adb am Auto</b>
-    freigeschaltet, <b>Overdrive-App</b> + <b>USB-Stick</b> im Auto.<br>
-    Sagt dir das nichts? <b>Haken weglassen</b> — alles andere geht trotzdem.</small></div>
+   <div><div class=h>🎥 Wächter-Kamera (optional)</div>
+    <small>Das Cockpit prüft selbst, ob <b>adb</b> und ein verbundenes Auto gefunden werden.
+    Overdrive-App, USB-Stick und kabelloses ADB müssen im Auto bereits eingerichtet sein.</small>
+    <div class=msg id=adbstatus>Prüfe Voraussetzungen …</div></div>
   </div>
   <div id=adbrow style="display:none;margin-top:8px">
    <label>adb-Adresse des Autos (z.B. 192.168.0.50:5555)</label>
@@ -1210,25 +1235,15 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
   <div class=chk>
    <input type=checkbox id=upd>
    <div><div class=h>🔔 Auf neue Versionen hinweisen</div>
-    <small>Das Cockpit schaut dann <b>einmal am Tag</b> nach, ob es eine neuere Version gibt, und zeigt
-    dir oben einen kleinen Hinweis. Nützlich für Fehlerbehebungen — du musst sonst selbst mitbekommen,
-    wenn etwas repariert wurde.<br>
-    <b>Wie das ohne Datenabfluss geht:</b> Dein Rechner lädt nur eine kleine Textdatei mit der neuesten
-    Versionsnummer und <b>vergleicht sie selbst</b>. Der Server erfährt dabei <b>nicht einmal, welche
-    Version du hast</b> — es wird nichts über dich gesendet, kein Ident, kein Modell, keine Fahrzeugdaten.<br>
-    <b>Ehrlich:</b> Beim Abholen sieht der Server – wie bei jedem Webseitenbesuch – deine IP. Wir schreiben
-    sie nirgends auf. Ohne Haken passiert gar nichts.</small></div>
+    <small>Prüft einmal täglich die aktuelle Versionsnummer. Es werden dabei keine Fahrzeugdaten
+    oder Kennungen gesendet.</small></div>
   </div>
 
   <div class=chk>
    <input type=checkbox id=count>
    <div><div class=h>📊 Anonym mitzählen, dass ich das Tool nutze</div>
-    <small>Damit der Entwickler sieht, ob sich die Arbeit lohnt. <b>Einmal am Tag wird genau das
-    gesendet — und sonst nichts:</b>
-    <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:9px;margin:7px 0;font-family:ui-monospace,monospace;font-size:12px;color:#cfe6ff">
-    { "id": "zufällige Nummer", "version": "1.0", "model": "dein Modell" }</div>
-    Kein Name, keine E-Mail, keine VIN, kein Standort, keine Fahrdaten. Ohne Haken sendet das
-    Programm <b>gar nichts</b> an den Entwickler.</small></div>
+    <small>Sendet einmal täglich eine zufällige Installations-ID, Version und Modell. Niemals Name,
+    E-Mail, VIN, Standort oder Fahrdaten. Ohne Haken wird nichts gesendet.</small></div>
   </div>
  </div>
 
@@ -1336,7 +1351,7 @@ async function capsLaden(){
  try{
   const b=body(); b.vin=vin;
   const r=await (await fetch('/caps',{method:'POST',body:JSON.stringify(b)})).json();
-  if(!r.ok){m.textContent='⚠️ '+r.error;return;}
+  if(!r.ok){m.textContent='⚠️ '+r.error;if(r.auth_blocked)document.getElementById('capsbtn').disabled=true;return;}
   CAPS=r.features;
   const box=document.getElementById('capslist');
   box.innerHTML=r.features.map(f=>
@@ -1367,6 +1382,21 @@ async function pvLaden(){const m=document.getElementById('pvmsg');
   document.getElementById('pvpick').style.display='block';
   m.textContent='✅ '+r.entities.length+__T(' Leistungs-Sensoren gefunden — wähl deinen PV-Sensor aus.');
  }catch(e){m.textContent='⚠️ '+e}}
+async function haAuto(){const m=document.getElementById('hamsg');m.textContent='⌛ Suche Home Assistant im Heimnetz …';
+ try{const r=await fetch('/energy/discover',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  const d=await r.json();if(!r.ok)throw Error(d.error||'Suche fehlgeschlagen');
+  const ha=(d.found||[]).find(x=>x.vendor==='Home Assistant');
+  if(!ha){m.textContent='Kein Home Assistant automatisch gefunden. Die Adresse kann unten weiterhin manuell eingetragen werden.';return;}
+  document.getElementById('hahost').value=ha.ip;document.getElementById('pvurl').value='http://'+ha.ip+':'+(ha.port||8123);
+  document.getElementById('pv').checked=true;document.getElementById('pvrow').style.display='block';
+  m.textContent='✓ Home Assistant gefunden · Für Fahrzeugdaten MQTT prüfen, für Solar nur noch den Zugriffstoken eintragen.';
+ }catch(e){m.textContent='⚠️ '+e.message;}}
+async function localCapabilities(){const status=document.getElementById('adbstatus'),check=document.getElementById('sentry');
+ try{const d=await (await fetch('/local/capabilities')).json();
+  if(!d.adb_installed){check.checked=false;check.disabled=true;document.getElementById('adbrow').style.display='none';status.textContent='Nicht verfügbar: adb ist auf diesem PC nicht installiert.';return;}
+  if(d.adb_devices&&d.adb_devices.length===1){if(!document.getElementById('caradb').value)document.getElementById('caradb').value=d.adb_devices[0];status.textContent='✓ adb und ein verbundenes Auto wurden gefunden.';}
+  else{status.textContent='adb ist installiert. Das Auto wurde noch nicht eindeutig gefunden; die Adresse kann unten eingetragen werden.';}
+ }catch(e){status.textContent='Die Voraussetzungen konnten nicht automatisch geprüft werden.';}}
 async function haTest(){const m=document.getElementById('hamsg');
  const h=document.getElementById('hahost').value.trim();
  if(!h){m.textContent='⚠️ Bitte zuerst die Broker-Adresse eintragen.';return;}
@@ -1378,13 +1408,14 @@ async function haTest(){const m=document.getElementById('hamsg');
   m.textContent=r.ok?'✅ Broker erreicht — dein Auto erscheint gleich in Home Assistant.':'⚠️ '+r.error;
  }catch(e){m.textContent='⚠️ '+e}}
 async function detect(){const m=document.getElementById('dmsg');m.textContent='⏳ Melde mich bei BYD an …';
+ const button=document.getElementById('detectbtn');button.disabled=true;
  try{const r=await (await fetch('/detect',{method:'POST',body:JSON.stringify(body())})).json();
-  if(!r.ok){m.textContent='⚠️ '+r.error;return;}
+  if(!r.ok){m.textContent='⚠️ '+r.error;if(!r.auth_blocked)button.disabled=false;return;}
   const s=document.getElementById('vin');s.innerHTML='';
   r.vehicles.forEach(v=>{const o=document.createElement('option');o.value=v.vin;o.textContent=(v.name?v.name+' — ':'')+v.vin;s.appendChild(o);});
   m.textContent='✅ '+r.vehicles.length+__T(' Fahrzeug(e) gefunden — weiter unten mit Weiter');
-  document.getElementById('n2').disabled=false;
- }catch(e){m.textContent='⚠️ Fehler: '+e}}
+  document.getElementById('n2').disabled=false;button.disabled=false;
+ }catch(e){m.textContent='⚠️ Fehler: '+e;button.disabled=false;}}
 let PHOTO='';
 function pickphoto(inp){const f=inp.files[0];if(!f)return;
  const r=new FileReader();
@@ -1427,7 +1458,7 @@ async function save(){const m=document.getElementById('smsg');
                             :'✅ Gespeichert — Cockpit startet …';
    setTimeout(()=>location.href='/',b.lan?3200:1600);}
   else m.textContent='⚠️ '+r.error;}catch(e){m.textContent='⚠️ '+e}}
-setkwh(); vorfuellen();
+setkwh(); vorfuellen(); localCapabilities();
 </script></body></html>"""
 
 
@@ -1457,9 +1488,9 @@ svg.ring{transform:rotate(-90deg)}
 .car img{max-width:100%;max-height:250px;filter:drop-shadow(0 24px 40px rgba(58,160,255,.35))}
 .car svg{max-width:100%;max-height:210px;filter:drop-shadow(0 22px 38px rgba(58,160,255,.4))}
 .car .hint{margin-top:12px;text-align:center}
-.car .hint a{color:var(--mut);font-size:12px;text-decoration:none;border:1px solid var(--line);
+.car .hint a,.car .hint button{color:var(--mut);font-size:12px;text-decoration:none;border:1px solid var(--line);background:transparent;cursor:pointer;
  border-radius:20px;padding:7px 14px;display:inline-block;transition:.15s}
-.car .hint a:hover{color:var(--txt);border-color:rgba(120,165,235,.4);background:rgba(255,255,255,.04)}
+.car .hint a:hover,.car .hint button:hover{color:var(--txt);border-color:rgba(120,165,235,.4);background:rgba(255,255,255,.04)}
 .car .wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%}
 .car .ph{color:var(--mut);font-size:13px;text-align:center;opacity:.6}
 .sect{color:var(--mut);letter-spacing:2px;font-size:11px;font-weight:700;margin:18px 4px 8px}
@@ -1584,6 +1615,7 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
   </div>
   <div class=car id=car><div class=ph>Kein Foto hinterlegt<br><small>⚙︎ → Foto-URL</small></div></div>
  </div>
+ <input id=car-photo-input type=file accept="image/*" hidden onchange="uploadCarPhoto(this)">
 
  <div class="grid overview-kpis" aria-label="Fahrzeugübersicht" style="grid-template-columns:repeat(4,1fr)">
   <div class=tile><div class=k>KILOMETERSTAND</div><div class=v><span id=odo>–</span><small> km</small></div></div>
@@ -1720,6 +1752,21 @@ van:'<svg viewBox="0 0 330 145" xmlns="http://www.w3.org/2000/svg"><g transform=
 const C=703;
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function nv(x){return (x==null||x==='')?'–':x}
+function chooseCarPhoto(){document.getElementById('car-photo-input').click();}
+function uploadCarPhoto(input){
+ const file=input.files&&input.files[0];if(!file)return;
+ const msg=document.getElementById('msg');msg.dataset.hold=1;msg.textContent=__T('Foto wird vorbereitet …');
+ const image=new Image(), reader=new FileReader();
+ reader.onload=()=>{image.onload=async()=>{
+  const max=1600,scale=Math.min(1,max/Math.max(image.naturalWidth,image.naturalHeight));
+  const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+  canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
+  try{const response=await fetch('/photo/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({photo:canvas.toDataURL('image/jpeg',.86)})});
+   const data=await response.json();if(!response.ok||!data.ok)throw Error(data.error||'Foto konnte nicht gespeichert werden');
+   msg.textContent='✓ '+__T('Foto gespeichert');const car=document.getElementById('car');car.dataset.p='';manualRefresh();
+  }catch(ex){msg.textContent='⚠️ '+ex.message;}finally{input.value='';setTimeout(()=>{msg.dataset.hold='';},3000);}
+ };image.onerror=()=>{msg.textContent='⚠️ Bilddatei konnte nicht gelesen werden';};image.src=reader.result;};reader.readAsDataURL(file);
+}
 function yn(id,cond,ja,nein,warn){var e=document.getElementById(id);if(!e)return;
  e.textContent=cond?ja:nein;e.className=warn?(cond?'warnc':'okc'):(cond?'okc':'no');}
 
@@ -1849,7 +1896,7 @@ async function load(){
   const caption='<div class=vehicle-caption><strong>'+model+'</strong><span>'+__T('Rechtlich neutrale Silhouette')+'</span></div>';
   if(s.photo){car.innerHTML='<div class=wrap><img src="'+esc(s.photo)+'" alt="'+model+'">'+caption+'</div>';}
   else{car.innerHTML='<div class=wrap>'+(SIL[s.silhouette]||SIL.klein)+caption+
-   '<div class=hint><a href="/setup">📷 '+__T('Eigenes Foto verwenden')+'</a></div></div>';}}
+   '<div class=hint><button type=button onclick="chooseCarPhoto()">📷 '+__T('Eigenes Autofoto hinzufügen')+'</button></div></div>';}}
  if(s.lan_url){document.getElementById('lanhint').style.display='block';
   document.getElementById('lanurl').textContent=s.lan_url;}
  // Lade-Ansicht: nur wenn das Kabel dran ist
@@ -2249,6 +2296,9 @@ ENERGY_PANEL = r'''<style>
 .energy-form input,.energy-form button{min-height:42px;padding:10px 12px;border-radius:10px;border:1px solid #2B3752;background:#1B2438;color:#F5F7FB}
 .energy-form input{min-width:210px}.energy-form input[type=number]{min-width:90px;width:100px}.energy-form button{cursor:pointer;font-weight:700}
 .energy-form button.primary{background:#4F7CFF;border-color:#4F7CFF}.energy-form button:hover{border-color:#4F7CFF}
+.energy-auto{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 8px}.energy-auto button{min-height:48px;padding:0 18px;border:0;border-radius:12px;background:#4F7CFF;color:white;font-weight:800;cursor:pointer}
+.energy-auto button:disabled{opacity:.6;cursor:wait}.energy-auto span{color:#9CA8C2;font-size:12px}.energy-advanced{margin:10px 0;color:#9CA8C2;font-size:12px}
+.energy-advanced summary{cursor:pointer;width:max-content}.energy-placeholder{grid-column:1/-1;padding:20px;border:1px dashed #2B3752;border-radius:14px;color:#9CA8C2;background:#0F1728}
 .energy-message{margin:10px 0 14px;color:#9CA8C2;font-size:12px}.energy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}
 .energy-card{background:#1B2438;border:1px solid #2B3752;border-radius:14px;padding:14px;min-width:0}.energy-card .ek{color:#9CA8C2;font-size:10px;
  letter-spacing:1.2px;text-transform:uppercase;font-weight:800}.energy-card .ev{font-size:22px;font-weight:750;margin-top:5px;overflow-wrap:anywhere}
@@ -2263,11 +2313,12 @@ ENERGY_PANEL = r'''<style>
 </style><section id="energy-panel" class="energy-shell">
 <div class="energy-head"><div><h2>⚡ Energie &amp; Ladepunkte</h2>
 <p>Ein lesender Überblick für Wallboxen, PV, Speicher und Fahrzeuge via evcc.</p></div><span id="evcc-health" class="chip">NICHT VERBUNDEN</span></div>
-<div class="energy-form"><input id="evcc-host" inputmode="decimal" placeholder="evcc-IP · 192.168.1.20" aria-label="evcc IP-Adresse">
+<div class="energy-auto"><button id="evcc-discover">⌕ &nbsp;Geräte automatisch finden</button><span>Kein IP-Wissen nötig</span></div>
+<details class="energy-advanced"><summary>Manuell verbinden (Experten)</summary><div class="energy-form"><input id="evcc-host" inputmode="decimal" placeholder="evcc-IP · 192.168.1.20" aria-label="evcc IP-Adresse">
 <input id="evcc-port" type="number" value="7070" min="1" max="65535" aria-label="evcc Port">
-<button id="evcc-connect" class="primary">Verbinden</button><button id="evcc-discover">Im LAN suchen</button></div>
+<button id="evcc-connect" class="primary">Verbinden</button></div></details>
 <div id="evcc-message" class="energy-message">Optional – noch nicht verbunden</div>
-<div id="evcc-values" class="energy-grid"></div>
+<div id="evcc-values" class="energy-grid"><div class="energy-placeholder">☀️ Solar wird automatisch angezeigt, sobald evcc oder Home Assistant Werte liefert.</div></div>
 <h3 class="energy-sub">FAHRZEUGE &amp; LADEPUNKTE</h3><div id="evcc-points" class="energy-grid"></div>
 <div class="vehicle-legal">Fahrzeugformen sind neutrale Illustrationen, keine Herstellerlogos oder exakten Modellabbildungen.</div>
 <div id="evcc-discovery" class="energy-discovery"></div>
@@ -2338,13 +2389,15 @@ ENERGY_PANEL = r'''<style>
  }
  el('evcc-connect').onclick=()=>{localStorage.setItem('evc_evcc_host',h.value);localStorage.setItem('evc_evcc_port',p.value);refresh();};
  el('evcc-discover').onclick=async()=>{
-  const cidr=prompt('Privates LAN-Netz eingeben (z. B. 192.168.1.0/24). Nur mit Berechtigung scannen:');
-  if(!cidr)return;el('evcc-discovery').textContent='Suche läuft …';
+  const button=el('evcc-discover');button.disabled=true;button.textContent='⌛ '+__T('Suche im Heimnetz …');el('evcc-discovery').textContent='Das dauert normalerweise nur wenige Sekunden.';
   try{
-   const r=await fetch('/energy/discover',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cidr})});
+   const r=await fetch('/energy/discover',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
    const d=await r.json();if(!r.ok)throw Error(d.error||'Fehler');
-   el('evcc-discovery').textContent=(d.found||[]).map(x=>x.vendor+' – '+x.ip).join(' | ')||'Keine unterstützten Geräte gefunden';
-  }catch(e){el('evcc-discovery').textContent=e.message;}
+   const devices=d.found||[],evcc=devices.find(x=>String(x.vendor).toLowerCase()==='evcc');
+   if(evcc){h.value=evcc.ip;p.value=evcc.port||7070;localStorage.setItem('evc_evcc_host',h.value);localStorage.setItem('evc_evcc_port',p.value);el('evcc-discovery').textContent='✓ Energiezentrale gefunden und verbunden';refresh();}
+   else{el('evcc-discovery').textContent=devices.length?('✓ Gefunden: '+devices.map(x=>x.vendor).join(', ')+' · Für die gemeinsame Energieanzeige bitte evcc verwenden.'):'Keine unterstützte Energiezentrale gefunden. Solar kann alternativ in den Einstellungen über Home Assistant verbunden werden.';}
+  }catch(e){el('evcc-discovery').textContent='Automatische Suche nicht möglich: '+e.message;}
+  finally{button.disabled=false;button.textContent='⌕  '+__T('Geräte automatisch finden');}
  };
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();else schedule();});if(h.value)refresh();
 })();
@@ -2397,6 +2450,8 @@ class H(BaseHTTPRequestHandler):
                 self._send(b"", "text/plain", 404)
         elif p == "/about":
             self._send(_i18n(ABOUT.replace("__VERSION__", VERSION)))
+        elif p == "/local/capabilities":
+            self._send(json.dumps(_local_capabilities()), "application/json")
         elif p == "/sentry.jpg":
             try:
                 self._send((CFG_DIR / "sentry.jpg").read_bytes(), "image/jpeg")
@@ -2480,11 +2535,31 @@ class H(BaseHTTPRequestHandler):
         raw = self.rfile.read(ln).decode("utf-8") if ln else "{}"
         if u.path == "/energy/discover":
             try:
-                from device_hub import discover
-                found = discover(json.loads(raw)["cidr"])
+                from device_hub import automatic_lan_network, discover
+                payload = json.loads(raw)
+                network = payload.get("cidr") or automatic_lan_network()
+                found = discover(network)
                 self._send(json.dumps({"found": [{k: v for k, v in item.items() if k != "data"} for item in found]}), "application/json")
             except Exception as e:
                 self._send(json.dumps({"error": str(e)[:160]}), "application/json", 400)
+        elif u.path == "/photo/upload":
+            try:
+                import base64
+                photo = json.loads(raw).get("photo", "")
+                if not photo.startswith("data:image/jpeg;base64,"):
+                    raise ValueError("Bitte eine normale Bilddatei auswählen")
+                content = base64.b64decode(photo.split(",", 1)[1], validate=True)
+                if not 100 <= len(content) <= 1_500_000 or not content.startswith(b"\xff\xd8\xff"):
+                    raise ValueError("Das Foto ist ungültig oder zu groß")
+                CFG_DIR.mkdir(parents=True, exist_ok=True)
+                tmp = PHOTO_FILE.with_suffix(".tmp")
+                tmp.write_bytes(content)
+                os.replace(tmp, PHOTO_FILE)
+                _CFG["photo"] = "/photo"
+                save_cfg(_CFG)
+                self._send(json.dumps({"ok": True}), "application/json")
+            except (ValueError, TypeError, json.JSONDecodeError) as e:
+                self._send(json.dumps({"ok": False, "error": str(e)[:140]}), "application/json", 400)
         elif u.path == "/vehicles/profiles":
             try:
                 from vehicle_profiles import write_profiles
@@ -2502,10 +2577,11 @@ class H(BaseHTTPRequestHandler):
                 else:
                     self._send(json.dumps({"ok": True, "vehicles": vs}), "application/json")
             except Exception as e:
-                m = str(e)
-                if "password" in m.lower() or "auth" in m.lower() or "login" in m.lower():
-                    m = "Login abgelehnt — E-Mail/Passwort/Land prüfen"
-                self._send(json.dumps({"ok": False, "error": m[:160]}), "application/json")
+                blocked = _auth_failure(e)
+                if blocked:
+                    _STATE["_auth_blocked"] = True
+                self._send(json.dumps({"ok": False, "error": _friendly(e),
+                                       "auth_blocked": blocked}), "application/json")
         elif u.path == "/pv_entities":
             try:
                 c = json.loads(raw)
@@ -2524,7 +2600,11 @@ class H(BaseHTTPRequestHandler):
                 lst = asyncio.run(_fetch_caps(c, c["vin"]))
                 self._send(json.dumps({"ok": True, "features": lst}), "application/json")
             except Exception as e:
-                self._send(json.dumps({"ok": False, "error": str(e)[:140]}), "application/json")
+                blocked = _auth_failure(e)
+                if blocked:
+                    _STATE["_auth_blocked"] = True
+                self._send(json.dumps({"ok": False, "error": _friendly(e),
+                                       "auth_blocked": blocked}), "application/json")
         elif u.path == "/ha_test":
             try:
                 _ha_test(json.loads(raw))
@@ -2564,6 +2644,7 @@ class H(BaseHTTPRequestHandler):
                     c["install_id"] = _CFG.get("install_id") or uuid.uuid4().hex[:16]
                 else:
                     c.pop("install_id", None)      # Haekchen weg -> ID weg
+                c.pop("auth_blocked", None)       # bewusstes Speichern erlaubt genau einen neuen Versuch
                 save_cfg(c)
                 load_cfg()
                 _STATE.clear()

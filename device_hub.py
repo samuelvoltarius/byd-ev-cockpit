@@ -9,6 +9,7 @@ from __future__ import annotations
 import concurrent.futures
 import json
 import os
+import socket
 import threading
 import urllib.error
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -26,18 +27,39 @@ def lan_address(value):
     return private_ipv4(value, "Device IP")
 
 
+def automatic_lan_network(address=None):
+    """Return a safe /24 around this computer's active private LAN address."""
+    if address is None:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # UDP connect selects the active interface without sending application data.
+            sock.connect(("192.0.2.1", 9))
+            address = sock.getsockname()[0]
+        finally:
+            sock.close()
+    address = private_ipv4(address, "Local network address")
+    return str(private_ipv4_network(f"{address}/24", max_addresses=256))
+
+
 def probe(ip, timeout=_TIMEOUT):
     ip = lan_address(ip)
-    for vendor, path in (
-        ("evcc", "/api/state"),
-        ("go-e", "/api/status?filter=car,pha,nrg"),
-        ("Shelly", "/rpc/Shelly.GetDeviceInfo"),
+    for vendor, port, path in (
+        ("Home Assistant", 8123, "/"),
+        ("evcc", 7070, "/api/state"),
+        ("evcc", 80, "/api/state"),
+        ("go-e", 80, "/api/status?filter=car,pha,nrg"),
+        ("Shelly", 80, "/rpc/Shelly.GetDeviceInfo"),
     ):
         try:
-            with open_lan_url(f"http://{ip}{path}", timeout=timeout) as response:
+            with open_lan_url(f"http://{ip}:{port}{path}", timeout=timeout) as response:
                 if response.status != 200:
                     continue
                 data = response.read(8193)
+            if vendor == "Home Assistant":
+                if b"Home Assistant" in data[:8192] or b"home-assistant" in data[:8192].lower():
+                    return {"ip": ip, "port": port, "vendor": vendor,
+                            "model": "local server", "online": True}
+                continue
             if len(data) > 8192:
                 continue
             payload = json.loads(data)
@@ -47,13 +69,13 @@ def probe(ip, timeout=_TIMEOUT):
                 state = payload.get("result", payload)
                 if not isinstance(state, dict) or not ({"loadpoints", "vehicles"} & state.keys()):
                     continue
-                return {"ip": ip, "vendor": vendor,
+                return {"ip": ip, "port": port, "vendor": vendor,
                         "model": str(state.get("version") or "energy backend"), "online": True}
             if vendor == "go-e" and not any(k in payload for k in ("car", "pha", "nrg")):
                 continue
             if vendor == "Shelly" and not ("model" in payload and "id" in payload):
                 continue
-            return {"ip": ip, "vendor": vendor, "model": str(payload.get("model", "")),
+            return {"ip": ip, "port": port, "vendor": vendor, "model": str(payload.get("model", "")),
                     "online": True}
         except (OSError, ValueError, json.JSONDecodeError, TimeoutError):
             continue
@@ -65,7 +87,7 @@ def discover(cidr):
     targets = [str(ip) for ip in network.hosts()]
     if len(targets) > MAX_TARGETS:
         raise ValueError("Too many hosts")
-    with concurrent.futures.ThreadPoolExecutor(max_workers=16) as pool:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=32) as pool:
         return [item for item in pool.map(probe, targets) if item["online"]]
 
 
@@ -77,17 +99,17 @@ button{cursor:pointer;background:#185b91}pre{white-space:pre-wrap;overflow-wrap:
 small{color:#9cb0c8}</style><h1>Geräte im lokalen Netzwerk</h1>
 <p>Herstellerübergreifende, schreibgeschützte Erkennung. Direkt: evcc, go-e und Shelly Gen2/3.
 Weitere Wallboxen, PV-Systeme und Fahrzeuge werden über evcc eingebunden.</p>
+<button onclick="run('scan')">Geräte automatisch finden</button>
+<details><summary>Experten: einzelne Adresse prüfen</summary>
 <label>IP-Adresse <input id="ip" placeholder="192.168.1.50"></label>
-<button onclick="run('add')">Gerät prüfen</button>
-<p><label>Netzbereich <input id="cidr" placeholder="192.168.1.0/24"></label>
-<button onclick="run('scan')">Netzwerk durchsuchen</button></p>
+<button onclick="run('add')">Gerät prüfen</button></details>
 <small>Nur das eigene/autorisiert verwaltete LAN scannen. Keine Steuerbefehle.
 Die Suche wird ausdrücklich erst nach Klick gestartet.</small><pre id="out">Noch keine Suche gestartet.</pre>
 <script>
 async function run(action){
  const out=document.getElementById('out');out.textContent='Suche läuft …';
  try{
-  const body=action==='add'?{ip:document.getElementById('ip').value}:{cidr:document.getElementById('cidr').value};
+  const body=action==='add'?{ip:document.getElementById('ip').value}:{};
   const r=await fetch('/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   const d=await r.json();out.textContent=JSON.stringify(d,null,2);
  }catch(e){out.textContent='Fehler: '+e.message}
@@ -125,7 +147,7 @@ class Handler(BaseHTTPRequestHandler):
                 result = probe(data["ip"], timeout=2.0)
                 found = [result] if result["online"] else []
             else:
-                found = discover(data["cidr"])
+                found = discover(data.get("cidr") or automatic_lan_network())
             with _LOCK:
                 for item in found:
                     _DEVICES[item["ip"]] = item
