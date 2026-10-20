@@ -64,6 +64,13 @@ Danach im Browser: <http://127.0.0.1:8099>
 
 ---
 
+## Dein Auto in 3D
+
+Statt einer Silhouette zeigt das Cockpit dein Modell in 3D: dieselben Modelle wie in Panoptes, in deiner Lackfarbe
+(Farbknöpfe unter dem Auto). Das Modell (~1 MB) lädt das Cockpit einmal vom Community-Server, prüft es per Prüfsumme
+und legt es auf deinem Rechner ab. Ein eigenes Foto hat Vorrang. Die Modelle stammen von Nazh Design (CC BY 4.0),
+Details unter „Über“.
+
 ## Woher kommen die Daten? Du wählst
 
 Gleich im zweiten Schritt des Assistenten fragt das Cockpit, woher es die Werte deines Autos holen soll:
