@@ -2061,7 +2061,7 @@ function basiskarte(m){
  const osm=()=>L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(m);
  if(!KARTEN_STIL){osm();return;}
  const lade=src=>new Promise((ok,f)=>{const x=document.createElement('script');x.src=src;x.onload=ok;x.onerror=f;document.head.appendChild(x);});
- fetch(KARTEN_STIL).then(r=>{if(!r.ok)throw new Error('Stil '+r.status);return r.json();}).then(stil=>{
+ fetch(KARTEN_STIL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('Stil '+r.status);return r.json();}).then(stil=>{
   // Blitzer/Kontrollen nie zeigen (CH Art. 98a SVG, Einschraenkungen DE/FR)
   stil.layers=(stil.layers||[]).filter(l=>!(/camera|blitz|enforcement|speed_?trap/i.test(l.id||'')||
    (l['source-layer']==='signals'&&/camera/.test(JSON.stringify(l.filter||'')))));
