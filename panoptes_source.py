@@ -20,6 +20,10 @@ class NichtAngemeldet(Exception):
     pass
 
 
+class KopplungAbgelaufen(NichtAngemeldet):
+    """Zugang abgelaufen und der (einmal verwendbare) Kopplungs-Code ist verbraucht -> in Panoptes neu koppeln."""
+
+
 def _http(url, daten=None, jwt="", timeout=TIMEOUT, methode=None):
     kopf = {"Accept": "application/json", "User-Agent": "ev-cockpit"}
     if daten is not None:
@@ -124,17 +128,31 @@ class Panoptes:
         self.code = (kopplungscode or "").strip()
         self.jwt = jwt or ""
         self.http, self.uhr = http, uhr
-        self.jwt_gespeichert = jwt_gespeichert or (lambda j: None)
+        self.jwt_gespeichert = jwt_gespeichert or (lambda j, code_verbraucht=False: None)
         self.odo_t = 0.0
+        self.code_verbraucht = False
+        self.letzter_fehler = ""
 
     def _anmelden(self):
+        """Kopplung (Vertrag EINSTELLUNGEN_SCHEMA v1.1): POST /auth/kopplung {"code"} -> JWT mit scope "kopplung".
+        Der Code ist einmal verwendbar und 10 min gueltig - danach zaehlt nur noch der JWT. Aeltere Panoptes ohne
+        /auth/kopplung (404): wie bisher /auth/token."""
         if not self.code:
-            raise NichtAngemeldet()
-        d = self.http(self.url + "/auth/token", {"token": self.code})
+            raise KopplungAbgelaufen()
+        try:
+            d = self.http(self.url + "/auth/kopplung", {"code": self.code})
+            einmal = True
+        except urllib.error.HTTPError as e:
+            if e.code != 404:
+                raise
+            d = self.http(self.url + "/auth/token", {"token": self.code})
+            einmal = False
         if not d.get("success") or not d.get("jwt"):
             raise NichtAngemeldet()
         self.jwt = d["jwt"]
-        self.jwt_gespeichert(self.jwt)
+        if einmal:
+            self.code, self.code_verbraucht = "", True       # verbraucht - nie wieder senden
+        self.jwt_gespeichert(self.jwt, code_verbraucht=einmal)
 
     def _get(self, pfad):
         if not self.jwt:
@@ -175,9 +193,13 @@ class Panoptes:
                 st = dict(aus_uebersicht(s, g, fz), **st)
             if "soc" not in st:
                 return None
+            self.letzter_fehler = ""
             st["online"] = "ON"
             st["_quelle"] = "Panoptes"
             return st
+        except KopplungAbgelaufen:
+            self.letzter_fehler = "kopplung_abgelaufen"
+            return None
         except Exception:
             return None
 

@@ -11,12 +11,21 @@ FZ = {"odometer": {"totalKm": 18342.4}}
 
 
 class Fake:
-    def __init__(self, antworten, gueltig="jwt-1"):
-        self.antworten, self.gueltig, self.aufrufe = antworten, gueltig, []
+    """kopplung=False: altes Panoptes (kennt /auth/kopplung nicht -> 404). True: neuer Einmal-Code (v1.1)."""
+    def __init__(self, antworten, gueltig="jwt-1", kopplung=False):
+        self.antworten, self.gueltig, self.aufrufe, self.kopplung = antworten, gueltig, [], kopplung
+        self.code_benutzt = False
 
-    def __call__(self, url, daten=None, jwt=""):
+    def __call__(self, url, daten=None, jwt="", methode=None):
         pfad = url.split(":8180", 1)[1]
         self.aufrufe.append((pfad, jwt))
+        if pfad == "/auth/kopplung":
+            if not self.kopplung:
+                import urllib.error
+                raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
+            ok = daten.get("code") == "byd-1-geheim" and not self.code_benutzt
+            self.code_benutzt = self.code_benutzt or ok
+            return {"success": ok, "jwt": self.gueltig if ok else None}
         if pfad == "/auth/token":
             return {"success": daten.get("token") == "byd-1-geheim", "jwt": self.gueltig}
         if jwt != self.gueltig:
@@ -70,9 +79,10 @@ class TestUmrechnung(unittest.TestCase):
 
 class TestPanoptes(unittest.TestCase):
     def neu(self, antworten, **kw):
-        f = Fake(antworten)
+        f = Fake(antworten, kopplung=kw.pop("kopplung", False))
         gespeichert = []
-        p = ps.Panoptes("http://100.1.2.3:8180", "byd-1-geheim", http=f, jwt_gespeichert=gespeichert.append, **kw)
+        p = ps.Panoptes("http://100.1.2.3:8180", "byd-1-geheim", http=f,
+                        jwt_gespeichert=lambda j, code_verbraucht=False: gespeichert.append(j), **kw)
         return p, f, gespeichert
 
     def test_telemetrie_reicht(self):
@@ -80,8 +90,21 @@ class TestPanoptes(unittest.TestCase):
         p, f, g = self.neu({"/api/mqtt/telemetry": tel})
         st = p.lies()
         self.assertEqual((st["soc"], st["online"], st["_quelle"]), (70.0, "ON", "Panoptes"))
-        self.assertEqual([a[0] for a in f.aufrufe], ["/auth/token", "/api/mqtt/telemetry"])
-        self.assertEqual(g, ["jwt-1"])                 # Token wird gemerkt
+        self.assertEqual([a[0] for a in f.aufrufe], ["/auth/kopplung", "/auth/token", "/api/mqtt/telemetry"])
+        self.assertEqual(g, ["jwt-1"])                 # Token wird gemerkt (altes Panoptes: Rueckfall /auth/token)
+
+    def test_neue_kopplung_einmal_code(self):
+        tel = {"success": True, "telemetry": {"soc": 70, "lat": 47.8, "lon": 13.0}}
+        p, f, g = self.neu({"/api/mqtt/telemetry": tel}, kopplung=True)
+        self.assertEqual(p.lies()["soc"], 70.0)
+        self.assertEqual([a[0] for a in f.aufrufe][:2], ["/auth/kopplung", "/api/mqtt/telemetry"])
+        self.assertTrue(p.code_verbraucht)
+        self.assertEqual(p.code, "")                   # Code nie wieder senden
+        # JWT laeuft ab -> kein stilles Neu-Anmelden mit verbrauchtem Code, sondern "neu koppeln"
+        f.gueltig = "jwt-2"
+        self.assertIsNone(p.lies())
+        self.assertEqual(p.letzter_fehler, "kopplung_abgelaufen")
+        self.assertNotIn("/auth/token", [a[0] for a in f.aufrufe])
 
     def test_ohne_mqtt_einzelendpunkte(self):
         p, f, _ = self.neu({"/api/mqtt/telemetry": {"success": False}, "/api/launcher/v1/summary": SUMMARY,

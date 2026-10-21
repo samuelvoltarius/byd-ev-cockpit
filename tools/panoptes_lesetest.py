@@ -1,7 +1,8 @@
 """Stufe 3: rein lesender Kopplungstest gegen Panoptes im Auto. Sendet KEINE Befehle (weder ans Auto noch an die Cloud).
 
 Aufruf:  python tools/panoptes_lesetest.py <datei>
-<datei>: zwei Zeilen - Adresse (z. B. http://100.x.y.z:8180) und Kopplungs-Code. Wird nur gelesen.
+<datei>: zwei Zeilen - Adresse (z. B. http://100.x.y.z:8180) und Kopplungs-Code aus "Geraet koppeln"
+(einmal verwendbar, 10 min gueltig). Wird nur gelesen.
 Ausgabe: nur Befunde. Nie Kopplungs-Code, Token oder genaue Position (nur "vorhanden").
 """
 import json
@@ -22,7 +23,8 @@ def main(pfad):
     t0 = time.time()
     try:
         p._anmelden()
-        erg["kopplung"] = "ok (Token erhalten)"
+        erg["kopplung"] = "ok (Token erhalten, %s)" % ("Einmal-Code verbraucht, /auth/kopplung" if p.code_verbraucht
+                                                       else "altes Panoptes, /auth/token")
     except Exception as e:
         erg["kopplung"] = "FEHLER %s" % type(e).__name__
         return erg

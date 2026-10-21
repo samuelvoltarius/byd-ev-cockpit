@@ -23,7 +23,11 @@ def wert(werte, key):
 
 
 def sichtbar(feld, werte, faehigkeiten=None):
+    """v1.1: Der Server liefert "sichtbar" je Feld fertig. Nur Abhaengigkeiten von einem anderen Feld (nurWenn key)
+    rechnet das Cockpit selbst nach, damit sich die Anzeige beim Umschalten sofort aendert."""
     nw = feld.get("nurWenn")
+    if "sichtbar" in feld and not (nw and "key" in nw):
+        return bool(feld["sichtbar"])
     if not nw:
         return True
     if "faehigkeit" in nw:

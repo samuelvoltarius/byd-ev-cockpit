@@ -33,6 +33,8 @@ class TestSichtbar(unittest.TestCase):
         self.assertTrue(es.sichtbar(f["surveillance.privateZones"], w2))
         self.assertFalse(es.sichtbar(f["cluster.x"], WERTE, {}))
         self.assertTrue(es.sichtbar(f["cluster.x"], WERTE, {"cluster": True}))
+        self.assertTrue(es.sichtbar(dict(f["cluster.x"], sichtbar=True), WERTE))          # v1.1: Server rechnet
+        self.assertFalse(es.sichtbar(dict(f["cluster.x"], sichtbar=False), WERTE, {"cluster": True}))
         self.assertFalse(es.bearbeitbar(f["remote.tailscale.enabled"]))     # Regel B
         self.assertFalse(es.bearbeitbar(f["surveillance.privateZones"]))    # geozone: erst nur anzeigen
 
