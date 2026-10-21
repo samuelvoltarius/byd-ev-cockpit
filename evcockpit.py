@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.9.6"
+VERSION = "1.9.7"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -1274,11 +1274,22 @@ I18N_BODY = r'''<script>
         Array.prototype.forEach.call(x.addedNodes,function(nd){swap(nd);});});});
       mo.observe(document.body,{childList:true,subtree:true});
     }
+    var SPR=[['de','Deutsch'],['en','English']];
     var b=document.createElement('button');
-    b.textContent=(LANG==='en')?'🌐 DE':'🌐 EN';
-    b.setAttribute('aria-label',LANG==='en'?'Auf Deutsch umschalten':'Switch to English');
+    b.textContent='🌐 '+LANG.toUpperCase();
+    b.setAttribute('aria-label',LANG==='en'?'Language: English. Change language':'Sprache: Deutsch. Sprache ändern');
+    b.setAttribute('aria-haspopup','true');
     b.style.cssText='position:fixed;right:12px;bottom:12px;z-index:9999;padding:7px 12px;border-radius:20px;border:1px solid rgba(160,230,240,.35);background:rgba(12,20,34,.85);color:#E8FBFD;font:600 13px system-ui,sans-serif;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)';
-    b.onclick=function(){try{localStorage.setItem('evc_lang',LANG==='en'?'de':'en');}catch(e){}location.reload();};
+    var m=document.createElement('div');
+    m.style.cssText='position:fixed;right:12px;bottom:52px;z-index:9999;display:none;padding:6px;border-radius:14px;border:1px solid rgba(160,230,240,.35);background:rgba(12,20,34,.96);font:600 13px system-ui,sans-serif';
+    SPR.forEach(function(x){var o=document.createElement('button');o.textContent=(x[0]===LANG?'✓ ':'   ')+x[1];
+      o.style.cssText='display:block;width:100%;text-align:left;padding:8px 14px;border:0;border-radius:10px;background:'+(x[0]===LANG?'rgba(95,214,230,.18)':'transparent')+';color:#E8FBFD;font:inherit;cursor:pointer;white-space:pre';
+      o.onclick=function(){if(x[0]===LANG){m.style.display='none';return;}
+        try{localStorage.setItem('evc_lang',x[0]);}catch(e){}location.reload();};
+      m.appendChild(o);});
+    b.onclick=function(e){e.stopPropagation();m.style.display=m.style.display==='none'?'block':'none';};
+    document.addEventListener('click',function(){m.style.display='none';});
+    document.body.appendChild(m);
     document.body.appendChild(b);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
@@ -1302,8 +1313,9 @@ LOOK_CSS = """<style>
 :root{--deep:#071a2b;--ocean:#0A2238;--aqua:#5FD6E6;--lime:#B5F23D;--lime-ink:#1d2a00;--coral:#FF8A6B;--amber:#FFC266;
  --ink:#EAF6F8;--ink-2:#A9C7CE;--ink-3:#6E8E97;--line:rgba(160,230,240,.14)}
 body{font-family:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important;
- background:radial-gradient(1200px 700px at 85% -10%,rgba(11,92,102,.55),transparent 60%),
+ background:radial-gradient(1200px 700px at 85% -10%,rgba(11,92,102,.55),transparent 60%) fixed,
   linear-gradient(160deg,var(--ocean),var(--deep) 70%) fixed!important}
+html{background:var(--deep)}
 h1,h2,h3,.sect,.big,.val,.v,.nav button,.kpi,.num{font-family:'Sora',system-ui,sans-serif}
 </style>"""
 
@@ -2327,7 +2339,7 @@ a.cfg{color:var(--mut);font-size:12px;text-decoration:none}
 :root{color-scheme:dark;--bg:#071a2b;--surface:#0A2238;--soft:#0f2c40;--border:#1d4152;
  --txt:#EAF6F8;--mut:#A9C7CE;--blue:#5FD6E6;--cyan:#43c9db;--line:#1d4152;
  --ok:#B5F23D;--warn:#FFC266;--danger:#FF8A6B;--fast:160ms;--ease:cubic-bezier(.22,1,.36,1)}
-html{scroll-behavior:smooth}body{background:radial-gradient(900px 500px at 50% -220px,rgba(95,214,230,.22),transparent 70%),var(--bg);
+html{scroll-behavior:smooth}body{background:radial-gradient(900px 500px at 50% -220px,rgba(95,214,230,.22),transparent 70%),var(--bg);background-attachment:fixed;
  font:15px/1.5 Inter,"Segoe UI Variable",Segoe UI,sans-serif;padding:24px}
 button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid rgba(95,214,230,.45);outline-offset:3px}
 .wrap{max-width:1160px}.top{gap:18px;margin-bottom:14px;padding:4px 2px}.brand{color:var(--txt);letter-spacing:2.5px;font-size:15px}
@@ -2539,6 +2551,7 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
  <div id=lanhint style="display:none;margin:16px 2px 0;color:var(--mut);font-size:13px;text-align:center">
   📱 Auf Tablet/Handy im selben WLAN erreichbar unter <b id=lanurl style="color:var(--blue)"></b>
  </div>
+ <!--ENERGIE-PANEL-->
  <div style="text-align:center;margin:18px 0 4px">
   <a href="/about" style="color:var(--mut);font-size:12px;text-decoration:none">Impressum · Haftungsausschluss · Datenschutz</a>
  </div>
@@ -3690,7 +3703,7 @@ class H(BaseHTTPRequestHandler):
             einw = {"fragen": _CFG.get("einwilligung_stand") != EINWILLIGUNG_STAND, "kartenquelle": _kartenquelle(),
                     "modell3d": _CFG.get("modell3d") is True}
             self._send(_i18n(COCKPIT.replace("__KARTENSTIL__", stil).replace("__EINWILLIGUNG__", json.dumps(einw))
-                             .replace("</body>", ENERGY_PANEL + "</body>")))
+                             .replace("<!--ENERGIE-PANEL-->", ENERGY_PANEL)))
 
     def do_POST(self):
         u = urllib.parse.urlparse(self.path)
