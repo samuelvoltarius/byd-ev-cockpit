@@ -2279,6 +2279,7 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
  </div>
 </div>
 <script src="/static/leaflet.js"></script>
+<script src="/static/panoptes-karte-1.0.0.js" integrity="sha384-Ilpbx/zNs2aeCliJNG2UPcl342QsoUvckXUhZaoOfiHCQVOBFkgGm2QrnL85Ans8"></script>
 <script>
 const SIL={
 klein:'<svg viewBox="0 0 320 130" xmlns="http://www.w3.org/2000/svg"><g transform="translate(16,14)"><path d="M 8,96 L 10,70 C 12,57 22,49 40,46 L 66,43 L 96,15 C 102,8 112,5 126,5 L 200,5 C 214,5 224,9 230,17 L 250,45 L 272,51 C 284,55 288,65 288,76 L 288,96 Z" fill="#5FD6E6"/><circle cx="60" cy="96" r="19" fill="#071a2b"/><circle cx="60" cy="96" r="12" fill="#5FD6E6"/><circle cx="240" cy="96" r="19" fill="#071a2b"/><circle cx="240" cy="96" r="12" fill="#5FD6E6"/></g></svg>',
@@ -2339,53 +2340,22 @@ function basiskarte(m){
  }).catch(()=>osm());
 }
 
-// Live-Belegung (Ebene 'chargers-live', Vertrag v2 mit Planer und Karten-Sitzung 21.10.2026):
-// frei = normal, belegt = rot, ausser Betrieb = grau, Status unbekannt = grau mit "?". Alle Planer-Stationen
-// im Radius; OSM-Saeulen nur je Station (120 m) ausgeblendet. Daten holt der lokale Cockpit-Server beim Planer.
+// Live-Belegung: gemeinsames Kartenmodul panoptes-karte 1.0.0 (gleich wie /ev/ und Panoptes; Vertrag
+// https://byd.serveone.at/tiles/lib/README.md). Die Anfrage laeuft ueber den lokalen Server (/live/umkreis),
+// der die eigenen Ladekarten anhaengt; die Pflicht-Quellenangabe (z. B. EnBW CC BY 4.0) steht in der Kartenfusszeile.
+let LIVE_ROH={};
 function liveSaeulen(m){
- const g=GL_KARTE.getMaplibreMap();let basis=null,warte=null,osmBild=null;
- // v2.1: solange die Live-Ebene sichtbar ist (ab Zoom 11), zeigen OSM-Saeulen ohne Planer-Station "?",
- // darunter wieder ihr normales Symbol (Referenz: Planer /ev/ osmSymbol()).
- const osmSymbol=()=>{if(osmBild===null||!g.hasImage('charge-unknown'))return;
-  g.setLayoutProperty('chargers','icon-image',g.getZoom()>=11?['case',['==',['get','dc'],1],'charge-dc-unknown','charge-unknown']:osmBild);};
- async function laden(){
-  if(!g.getSource('live')||m.getZoom()<11) return;
-  const c=m.getCenter();
-  try{const r=await fetch('/live/umkreis',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({lat:c.lat,lon:c.lng})});if(!r.ok)return;const d=await r.json();
-   g.getSource('live').setData({type:'FeatureCollection',features:d.features||[]});
-   g.setFilter('chargers',d.osm_maske?['all',basis,['!',['within',d.osm_maske]]]:basis);
-   const qs=(d.quellen||[]).map(q=>(q.land?q.land+': ':'')+q.quelle+(q.lizenz?' ('+q.lizenz+')':'')).join(' · ');
-   if(qs!==(window.LIVE_QUELLEN||'')){if(window.LIVE_QUELLEN)m.attributionControl.removeAttribution('Belegung: '+esc(window.LIVE_QUELLEN));
-    if(qs)m.attributionControl.addAttribution('Belegung: '+esc(qs));window.LIVE_QUELLEN=qs;}
-  }catch(e){}
- }
- const start=()=>{
-  if(g.getSource('live')||!g.getLayer('chargers')) return;
-  basis=g.getFilter('chargers')||['==',['get','t'],'charger'];
-  osmBild=g.getLayoutProperty('chargers','icon-image')||'charge';
-  const bild=(z,dc)=>{const n=(dc?'charge-dc':'charge')+({belegt:'-busy',aus:'-off',unbekannt:'-unknown'}[z]||'');
-   return g.hasImage(n)?n:(dc?'charge-dc':'charge');};
-  g.addSource('live',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
-  g.addLayer({id:'chargers-live',type:'symbol',source:'live',minzoom:11,layout:{
-   'icon-image':['match',['get','zustand'],
-    'belegt',['case',['==',['get','dc'],1],bild('belegt',1),bild('belegt',0)],
-    'aus',['case',['==',['get','dc'],1],bild('aus',1),bild('aus',0)],
-    'unbekannt',['case',['==',['get','dc'],1],bild('unbekannt',1),bild('unbekannt',0)],
-    ['case',['==',['get','dc'],1],'charge-dc','charge']],
-   'icon-size':['interpolate',['linear'],['zoom'],11,0.55,15,0.9],
-   'symbol-sort-key':['-',0,['+',['*',['get','dc'],1000],['get','kw']]],
-   'icon-allow-overlap':['step',['zoom'],false,15,true],
-   'text-field':['step',['zoom'],'',15,['get','lbl']],'text-font':['Noto Sans Medium'],'text-size':11,
-   'text-offset':[0,1.5],'text-anchor':'top','text-optional':true},
-   paint:{'text-color':['match',['get','zustand'],'belegt','#FF5A4E',['aus','unbekannt'],'#8FA6B0','#B5F23D'],
-    'text-halo-color':'#071a2b','text-halo-width':1.4}},g.getLayer('signals')?'signals':undefined);
-  laden();osmSymbol();
-  g.on('zoomend',osmSymbol);
-  m.on('moveend',()=>{clearTimeout(warte);warte=setTimeout(laden,600);});
-  setInterval(laden,120000);
- };
- if(g.isStyleLoaded&&g.isStyleLoaded()) start(); else g.once('load',start);
+ const PK=window.PanoptesKarte,g=GL_KARTE.getMaplibreMap();if(!PK)return;
+ const hol=(u,i)=>fetch(u,i).then(r=>{r.clone().json().then(d=>{LIVE_ROH={};(d.stationen||[]).forEach(x=>{if(x.id!=null)LIVE_ROH[x.id]=x;});}).catch(()=>{});return r;});
+ PK.liveEbene(g,{umkreisUrl:'/live/umkreis',fetch:hol,sprache:window.__LANG__==='en'?'en':'de',
+  quellen:t=>{if(t!==(window.LIVE_QUELLEN||'')){if(window.LIVE_QUELLEN)m.attributionControl.removeAttribution(esc(window.LIVE_QUELLEN));
+   if(t)m.attributionControl.addAttribution(esc(t));window.LIVE_QUELLEN=t;}}});
+ // v2.1: "?" fuer OSM-Saeulen nur, solange die Live-Ebene sichtbar ist (ab Zoom 11) - das Modul 1.0.0 setzt es
+ // dauerhaft; bis zur korrigierten Modulversion hier nachziehen (an die Karten-Sitzung gemeldet).
+ const osmSymbol=()=>{if(!g.getLayer('chargers')||!g.hasImage('charge-unknown'))return;
+  if(g.getZoom()<11)g.setLayoutProperty('chargers','icon-image',['case',['==',['get','dc'],1],'charge-dc','charge']);
+  else g.setLayoutProperty('chargers','icon-image',PK.OSM_UNBEKANNT_ICON);};
+ g.on('zoomend',osmSymbol);setTimeout(osmSymbol,1500);
 }
 
 // Routenplaner: eingebettet (gleiche Seite wie byd.serveone.at/ev/ mit Login) + Route/Rueckmeldung aus dem Auto
@@ -2475,10 +2445,12 @@ function klickSaeule(e){
  if(!window.OSM_SAEULEN||!window.GL_KARTE) return;
  const g=GL_KARTE.getMaplibreMap(), p=g.project([e.latlng.lng,e.latlng.lat]);
  const live=g.getLayer('chargers-live')?g.queryRenderedFeatures([[p.x-9,p.y-9],[p.x+9,p.y+9]],{layers:['chargers-live']})[0]:null;
- if(live){const q=live.properties||{};L.popup().setLatLng([e.latlng.lat,e.latlng.lng])
-  .setContent('<b>'+esc(q.name||'Ladestation')+'</b><br>'+esc(q.lbl||'')+(q.preis?'<br>💳 '+esc(q.preis):'')+
-   (q.hinweis?'<br><small>'+esc(q.hinweis)+'</small>':'')+
-   (q.zustand!=='unbekannt'&&q.quelle?'<br><small>Live · '+esc(q.quelle)+'</small>':'')).openOn(MAP);return;}
+ if(live){const q=live.properties||{},r=LIVE_ROH[q.id]||{},pm=r.preis_meine;
+  const preis=pm&&pm.preis_kwh!=null?(pm.karte||__T('Deine Karte'))+': '+Number(pm.preis_kwh).toFixed(2).replace('.',',')+' €/kWh':'';
+  L.popup().setLatLng([e.latlng.lat,e.latlng.lng])
+  .setContent('<b>'+esc(r.name||'Ladestation')+'</b><br>'+esc(q.lbl||'')+(preis?'<br>💳 '+esc(preis):'')+
+   (r.karte_hinweis?'<br><small>'+esc(r.karte_hinweis)+'</small>':'')+
+   (q.zustand!=='unbekannt'&&r.live_quelle?'<br><small>Live · '+esc(r.live_quelle)+'</small>':'')).openOn(MAP);return;}
  let f=g.queryRenderedFeatures([[p.x-9,p.y-9],[p.x+9,p.y+9]],{layers:['chargers']})[0];
  if(!f){let d0=24*24;g.queryRenderedFeatures({layers:['chargers']}).forEach(x=>{const q=g.project(x.geometry.coordinates),
    d=(q.x-p.x)**2+(q.y-p.y)**2;if(d<d0){d0=d;f=x;}});}
@@ -3229,7 +3201,7 @@ class H(BaseHTTPRequestHandler):
                 if ff.exists():
                     return self._send(ff.read_bytes(), "font/woff2")
             if f.exists() and name in ("leaflet.js", "leaflet.css", "maplibre-gl.js", "maplibre-gl.css",
-                                       "pmtiles.js", "leaflet-maplibre-gl.js"):
+                                       "pmtiles.js", "leaflet-maplibre-gl.js", "panoptes-karte-1.0.0.js"):
                 self._send(f.read_bytes(),
                            "text/css" if name.endswith(".css") else "application/javascript")
             else:
@@ -3441,14 +3413,14 @@ class H(BaseHTTPRequestHandler):
         elif u.path == "/live/umkreis":
             # Live-Belegung fuer die Community-Karte: nur mit Haekchen "Ladesaeulen" und Community-Karte.
             # Der Planer bekommt nur den auf ~5 km gerundeten Kartenmittelpunkt, per POST (kein Log).
+            leer = json.dumps({"stationen": [], "live_quellen": []})
             if not _CFG.get("show_chargers") or _CFG.get("karte") == "osm":
-                return self._send(json.dumps({"features": [], "osm_maske": None, "quellen": []}), "application/json")
+                return self._send(leer, "application/json")
             try:
-                b = json.loads(raw)
-                d = _LIVE.abfrage(float(b["lat"]), float(b["lon"]), karten=_CFG.get("planer_karten") or ())
+                d = _LIVE.abfrage(json.loads(raw), karten=_CFG.get("planer_karten") or ())
                 self._send(json.dumps(d), "application/json")
             except Exception:
-                self._send(json.dumps({"features": [], "osm_maske": None, "quellen": []}), "application/json")
+                self._send(leer, "application/json")
         elif u.path == "/energy/discover":
             try:
                 from device_hub import automatic_lan_network, discover

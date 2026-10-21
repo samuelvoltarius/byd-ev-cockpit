@@ -158,6 +158,27 @@ SCHRUMPF_K = 4.0
 FAKTOR_MIN, FAKTOR_MAX = 0.70, 1.40
 
 
+PLAUS_MIN, PLAUS_MAX = 0.4, 2.5
+
+
+def verhaeltnis_aus(fahrt):
+    """Gemessene Batterie-kWh / Modell-kWh, auf 4 Stellen - oder None (unvollstaendig, geladen, ausserhalb 0,4-2,5).
+    Gleiche Regel wie das gemeinsame Kartenmodul panoptes-karte (verhaeltnis), geprueft gegen dessen Pruefdaten.
+    fahrt: {modell_kwh, kwh} oder {modell_kwh, akku_kwh, soc_start, soc_ende}."""
+    try:
+        modell = float(fahrt.get("modell_kwh") or 0)
+        if modell <= 0:
+            return None
+        if fahrt.get("kwh") is not None:
+            kwh = float(fahrt["kwh"])
+        else:
+            kwh = float(fahrt["akku_kwh"]) * (float(fahrt["soc_start"]) - float(fahrt["soc_ende"])) / 100.0
+    except (TypeError, ValueError, KeyError):
+        return None
+    v = kwh / modell
+    return round(v, 4) if PLAUS_MIN <= v <= PLAUS_MAX else None
+
+
 def faktor_aus(verhaeltnisse):
     """Median der Verhaeltnisse gemessen/Modell, bei wenigen Fahrten zu 1.0 hin gezogen (wie im Planer)."""
     if not verhaeltnisse:
@@ -221,14 +242,15 @@ class Bruecke:
         if code != 200 or not m.get("ok"):
             self.status["fehler"] = "Fahrt nicht ausgewertet: %s" % (m.get("fehler") or code)
             return
-        kwh = (m.get("akku_kwh") or 0) * (fahrt["soc_start"] - fahrt["soc_ende"]) / 100.0
-        verh = kwh / m["modell_kwh"] if m.get("modell_kwh") else 0
-        if not (0.4 <= verh <= 2.5):
-            self.status["fehler"] = "Fahrt unplausibel (Faktor %.2f) - nicht gezaehlt" % verh
+        verh = verhaeltnis_aus({"modell_kwh": m.get("modell_kwh"), "akku_kwh": m.get("akku_kwh"),
+                                "soc_start": fahrt["soc_start"], "soc_ende": fahrt["soc_ende"]})
+        if verh is None:
+            self.status["fehler"] = "Fahrt unplausibel - nicht gezaehlt"
             return
+        kwh = (m.get("akku_kwh") or 0) * (fahrt["soc_start"] - fahrt["soc_ende"]) / 100.0
         # 2. lokal merken (nur Verhaeltnisse, keine Fahrtdaten) und Faktor rechnen
         alle = self.laden() or {}
-        liste = (alle.get(profil) or [])[-(self.MAX_JE_PROFIL - 1):] + [round(verh, 4)]
+        liste = (alle.get(profil) or [])[-(self.MAX_JE_PROFIL - 1):] + [verh]
         alle[profil] = liste
         self.speichern(alle)
         f = faktor_aus(liste)
