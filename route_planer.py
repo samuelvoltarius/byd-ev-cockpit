@@ -128,6 +128,40 @@ def _tarif(w, s):
             "preis_quelle": str(herkunft.get("text") or "")[:80], "preis_stufe": str(herkunft.get("stufe") or "")[:20]}
 
 
+def laden_lesen(pv):
+    """GET /api/laden (LADEN_VERTRAG A4, Panoptes >= 0.1.10). Aelteres Panoptes (404/403) -> None."""
+    try:
+        d = pv._get("/api/laden")
+    except urllib.error.HTTPError:
+        return None
+    if not isinstance(d, dict) or d.get("_status") or not d.get("ok"):
+        return None
+    return d
+
+
+def mit_laden(body, laden):
+    """Das fertige Stueck 'planer' aus dem Auto unveraendert in den Plan mischen (keine eigene Umrechnung).
+    soc_ziel_min bleibt das, was der Nutzer im Route-Reiter direkt vor dem Planen sieht. planer null -> wie bisher (Konto)."""
+    stueck = (laden or {}).get("planer")
+    if not isinstance(stueck, dict):
+        return body
+    b = dict(body)
+    for k, v in stueck.items():
+        if k != "soc_ziel_min":
+            b[k] = v
+    return b
+
+
+def laden_anzeige(laden):
+    """Was die Kachel 'Laden & Kosten' zeigt: Namen aus laden.karten[].anzeige und laden.netze[].anzeige."""
+    l = (laden or {}).get("laden") or {}
+    return {"quelle": (laden or {}).get("quelle") or "standard",
+            "karten": [str(k.get("anzeige") or "")[:80] for k in (l.get("karten") or []) if isinstance(k, dict)][:30],
+            "netze": [str(n.get("anzeige") or n.get("cpo") or "")[:80] for n in (l.get("netze") or []) if isinstance(n, dict)][:20],
+            "modus": l.get("netzeModus") or "bevorzugen", "nur_offen": bool(l.get("nurOffen")),
+            "ankunft": l.get("ankunftSocMin")}
+
+
 def _vorlieben(f):
     """Tatsaechlich angewandte Ladenetz-Vorlieben aus plan.filter (Vertrag §10); nichts gesetzt -> None."""
     netze = [str(x)[:60] for x in (f.get("bevorzugt") or [])][:20]

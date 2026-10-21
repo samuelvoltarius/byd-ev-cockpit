@@ -151,6 +151,38 @@ class TestRoute(unittest.TestCase):
         self.assertNotIn("lat", k["zwischenziele"][0])                      # nur was die Anzeige braucht
         self.assertIsNone(rp.kurz(PLAN)["fahrtplan"])
 
+    LADEN = {"ok": True, "version": 1, "quelle": "auto", "stand": "2026-10-22T08:00:00Z",
+             "laden": {"karten": [{"id": 4, "anzeige": "Fastned · Gold"}], "nurMeineKarten": False,
+                       "netze": [{"cpo": "Lidl", "anzeige": "Lidl"}], "netzeModus": "nur", "umwegMaxMin": 10, "nurOffen": True,
+                       "ankunftSocMin": 20},
+             "planer": {"karten": [4], "nur_meine_karten": 0, "soc_ziel_min": 20,
+                        "filter": {"bevorzugt": ["Lidl"], "netze_modus": "nur", "umweg_max_min": 10, "nur_offen": True, "ausschluss": []},
+                        "vorlieben_quelle": "auto"}}
+
+    def test_laden_stueck_unveraendert_im_plan(self):
+        b = rp.mit_laden({"start": [1, 2], "ziel": [3, 4], "soc_ziel_min": 15}, self.LADEN)
+        self.assertEqual(b["filter"], self.LADEN["planer"]["filter"])          # keine eigene Umrechnung
+        self.assertEqual((b["karten"], b["vorlieben_quelle"]), ([4], "auto"))
+        self.assertEqual(b["soc_ziel_min"], 15)                                # das Feld im Route-Reiter gilt
+
+    def test_ohne_planer_stueck_wie_bisher(self):
+        body = {"start": [1, 2], "ziel": [3, 4]}
+        self.assertEqual(rp.mit_laden(body, dict(self.LADEN, planer=None, quelle="standard")), body)
+        self.assertEqual(rp.mit_laden(body, {}), body)
+        self.assertNotIn("filter", rp.mit_laden(body, None))                   # kein leeres filter.bevorzugt
+
+    def test_laden_lesen_vor_0110(self):
+        import urllib.error
+
+        class Pv:
+            def _get(self, pfad):
+                raise urllib.error.HTTPError("u", 404, "nf", {}, None)
+        self.assertIsNone(rp.laden_lesen(Pv()))
+
+    def test_laden_anzeige(self):
+        a = rp.laden_anzeige(self.LADEN)
+        self.assertEqual((a["quelle"], a["karten"], a["netze"], a["modus"], a["ankunft"]), ("auto", ["Fastned · Gold"], ["Lidl"], "nur", 20))
+
 
 if __name__ == "__main__":
     unittest.main()
