@@ -72,8 +72,10 @@ def kurz(d):
     if d.get("fehler"):
         raise ValueError(str(d["fehler"])[:160])
     r = d.get("route") or {}
+    basis = (d.get("kosten") or {}).get("basis") or {}
+    wahl = {w.get("stopp"): w for w in (basis.get("wahl") or []) if isinstance(w, dict)}
     stopps = []
-    for s in d.get("stopps") or []:
+    for i, s in enumerate(d.get("stopps") or []):
         sa = s.get("saeule") or {}
         stopps.append({"name": sa.get("name") or sa.get("betreiber") or "Ladestopp",
                        "betreiber": sa.get("betreiber") or sa.get("cpo") or "",
@@ -82,15 +84,28 @@ def kurz(d):
                        "dauer_min": s.get("ladedauer_min"), "kwh": s.get("kwh"),
                        "preis": s.get("kosten_beste_option"), "eigene_karte": bool(s.get("mit_eigener_karte")),
                        "oeffnung": _oeffnung(s), "geschlossen": s.get("geoeffnet_bei_ankunft") is False,
-                       "bevorzugt": bool(s.get("bevorzugtes_netz"))})
-    kosten = ((d.get("kosten") or {}).get("basis") or {}).get("gesamt")
+                       "bevorzugt": bool(s.get("bevorzugtes_netz")), **_tarif(wahl.get(i), s)})
+    kosten = basis.get("gesamt")
     return {"km": r.get("km"), "minuten": r.get("minuten"), "geometrie": r.get("geometrie") or [],
             "soc_start": d.get("soc_start"), "soc_ankunft": d.get("soc_ankunft"), "stopps": stopps,
             "lade_min": round(sum(float(x["dauer_min"] or 0) for x in stopps)),
-            "kosten": kosten, "fahrzeug": (d.get("fahrzeug") or {}).get("name") or "",
+            "kosten": kosten, "kosten_text": str(basis.get("beschreibung") or "")[:80], "fahrzeug": (d.get("fahrzeug") or {}).get("name") or "",
             "modus": d.get("modus") or "", "warnungen": [str(w)[:200] for w in (d.get("warnungen") or [])][:6],
             "vorlieben": _vorlieben(d.get("filter") or {}),
             "meine_karten": d.get("meine_karten") or None}
+
+
+def _tarif(w, s):
+    """Mit welcher Karte zu welchem Preis, und woher der Preis stammt (Planer: kosten.basis.wahl bzw. zahlungsarten)."""
+    z = None
+    if w:
+        z = next((x for x in s.get("zahlungsarten") or [] if x.get("tarif_id") == w.get("tarif_id")), None)
+    z = z or next(iter(s.get("zahlungsarten") or []), None) or {}
+    karte = (w or {}).get("gewaehlt") or " ".join(x for x in (z.get("msp"), z.get("tarif")) if x)
+    preis = (w or {}).get("preis_kwh", z.get("preis_kwh"))
+    herkunft = (w or {}).get("herkunft") or z.get("herkunft") or {}
+    return {"karte": str(karte or "")[:60], "preis_kwh": preis if isinstance(preis, (int, float)) else None,
+            "preis_quelle": str(herkunft.get("text") or "")[:80], "preis_stufe": str(herkunft.get("stufe") or "")[:20]}
 
 
 def _vorlieben(f):

@@ -116,6 +116,20 @@ class TestRoute(unittest.TestCase):
                          ("Mi 05:00–22:00", True, True))
         self.assertIsNone(rp.kurz(dict(PLAN, filter={"bevorzugt": [], "nur_offen": False}))["vorlieben"])
 
+    def test_karte_preis_quelle_je_stopp(self):
+        d = dict(PLAN, kosten={"basis": {"gesamt": 9.9, "beschreibung": "bester Mix aus deinen Karten",
+                                         "wahl": [{"stopp": 0, "gewaehlt": "Lidl Plus", "tarif_id": 4, "preis_kwh": 0.29,
+                                                   "herkunft": {"stufe": "bestaetigt", "text": "bestaetigt, geprueft heute"}}]}})
+        d["stopps"] = [dict(PLAN["stopps"][0], zahlungsarten=[{"tarif_id": 4, "msp": "Lidl", "tarif": "Plus", "preis_kwh": 0.29}]),
+                       dict(PLAN["stopps"][1], zahlungsarten=[{"tarif_id": 9, "msp": "IONITY", "tarif": "Direkt", "preis_kwh": 0.69,
+                                                               "herkunft": {"text": "laut Website"}}])]
+        k = rp.kurz(d)
+        self.assertEqual((k["stopps"][0]["karte"], k["stopps"][0]["preis_kwh"], k["stopps"][0]["preis_quelle"]),
+                         ("Lidl Plus", 0.29, "bestaetigt, geprueft heute"))
+        self.assertEqual((k["stopps"][1]["karte"], k["stopps"][1]["preis_kwh"], k["stopps"][1]["preis_quelle"]),
+                         ("IONITY Direkt", 0.69, "laut Website"))                 # ohne Wahl: erste Zahlungsart
+        self.assertEqual((k["kosten"], k["kosten_text"]), (9.9, "bester Mix aus deinen Karten"))
+
 
 if __name__ == "__main__":
     unittest.main()
