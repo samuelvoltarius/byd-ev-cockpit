@@ -147,9 +147,16 @@ def mit_laden(body, laden):
         return body
     b = dict(body)
     for k, v in stueck.items():
-        if k != "soc_ziel_min":
-            b[k] = v
+        if k == "soc_ziel_min" or (k == "fahrzeug" and not v):
+            continue
+        b[k] = v
     return b
+
+
+def fahrzeug_aus_laden(laden):
+    """GET /api/laden -> fahrzeug.wirksam (vom Nutzer im Auto gewaehlt oder erkannt). null -> None (dann gilt die Wahl hier)."""
+    w = ((laden or {}).get("fahrzeug") or {}).get("wirksam") if isinstance((laden or {}).get("fahrzeug"), dict) else None
+    return str(w)[:80] if isinstance(w, str) and w.strip() else None
 
 
 def laden_anzeige(laden):

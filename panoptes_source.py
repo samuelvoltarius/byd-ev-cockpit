@@ -193,6 +193,28 @@ class Panoptes:
             self._anmelden()                       # Token abgelaufen/ungueltig: einmal neu
             return self.http(self.url + pfad, jwt=self.jwt)
 
+    def senden(self, pfad, daten):
+        """POST an Panoptes (nur Ladenachfrage, vom Nutzer ausgeloest). HTTP-Fehler -> Antwort mit _status statt Ausnahme."""
+        if not self.jwt:
+            self._anmelden()
+
+        def einmal():
+            try:
+                return self.http(self.url + pfad, daten, jwt=self.jwt)
+            except urllib.error.HTTPError as e:
+                try:
+                    d = json.loads(e.read().decode("utf-8") or "{}")
+                except Exception:
+                    d = {}
+                d = d if isinstance(d, dict) else {}
+                d["_status"] = e.code
+                return d
+        try:
+            return einmal()
+        except NichtAngemeldet:
+            self._anmelden()                       # Token abgelaufen/ungueltig: einmal neu
+            return einmal()
+
     def lies(self):
         """Aktueller Zustand als Cockpit-Felder, oder None (Auto aus / nicht erreichbar / falscher Code)."""
         if not self.url:
