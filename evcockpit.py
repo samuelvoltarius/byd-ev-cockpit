@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.11.4"
+VERSION = "1.11.5"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -3039,26 +3039,30 @@ async function aufnLaden(seite){const m=document.getElementById('aufnmsg'),l=doc
   document.getElementById('aufnsum').textContent=d.gesamt!=null?'· '+d.gesamt:'';
   const html=d.aufnahmen.map(a=>{const art=__T(AUFN_ART[a.type]||a.type||'');
    const wer=[a.personCount?a.personCount+' 🚶':'',a.vehicleCount?a.vehicleCount+' 🚗':'',a.bikeCount?a.bikeCount+' 🚲':'',a.animalCount?a.animalCount+' 🐾':''].filter(Boolean).join(' ');
-   return '<div class="aufn'+(a.available?'':' weg')+'" data-id="'+esc(a.id)+'" data-ok="'+(a.available?1:0)+'" data-t="'+esc((a.dateFormatted||a.date||'')+' '+(a.timeFormatted||a.time||''))+'">'+
+   return '<div class="aufn'+(a.available?'':' weg')+'" data-id="'+esc(a.id)+'" data-ok="'+(a.available?1:0)+'" data-t="'+esc(aufnZeit(a))+'">'+
     (a.available?'<img loading=lazy alt="" src="/waechter/bild/'+esc(a.id)+'" onerror="aufnBildFehler(this)">':'<div class=leer>'+esc(__T('Datenträger fehlt'))+'</div>')+
-    '<div class=t><b>'+esc((a.dateFormatted||a.date||'')+' '+(a.timeFormatted||a.time||''))+'</b>'+esc(art)+(wer?' · '+esc(wer):'')+(a.sizeFormatted?' · '+esc(a.sizeFormatted):'')+'</div></div>';}).join('');
+    '<div class=t><b>'+esc(aufnZeit(a))+'</b>'+esc(art)+(wer?' · '+esc(wer):'')+(a.sizeFormatted?' · '+esc(a.sizeFormatted):'')+'</div></div>';}).join('');
   l.innerHTML=(seite>1?l.innerHTML:'')+html;
   l.querySelectorAll('.aufn').forEach(e=>e.onclick=()=>aufnSpielen(e));
   document.getElementById('aufnmehr').style.display=d.seite<d.seiten?'inline-block':'none';
  }catch(e){m.textContent='⚠️ '+__T('Panoptes antwortet nicht');}}
 function aufnBildFehler(im){if(!im.dataset.n){im.dataset.n=1;const s=im.src;setTimeout(()=>{im.src=s.split('?')[0]+'?n=1';},3000);return;}
  const d=document.createElement('div');d.className='leer';d.textContent=__T('Vorschau folgt');im.replaceWith(d);}
+function aufnZeit(a){   // aus dem Zeitstempel, in der Sprache des Cockpits (Panoptes liefert englische Texte)
+ if(a&&a.timestamp){const d=new Date(a.timestamp),en=window.__LANG__==='en';
+  return d.toLocaleDateString(en?'en-GB':'de-AT',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString(en?'en-GB':'de-AT',{hour:'2-digit',minute:'2-digit'});}
+ return ((a&&(a.dateFormatted||a.date))||'')+' '+((a&&(a.timeFormatted||a.time))||'');}
 function wletzt(s){const box=document.getElementById('wletztbox');box.style.display=s.panoptes_an?'block':'none';if(!s.panoptes_an)return;
  const w=s.waechter_letzt||{},t=document.getElementById('wletzttxt'),u=document.getElementById('wletztsub'),b=document.getElementById('wletztbild');
  if(w.zu_alt){t.textContent=__T('Noch kein Ereignis');u.textContent=__T('Aufnahmen gibt es im Cockpit ab Panoptes 0.1.9.');b.textContent='';return;}
  if(!w.id){t.textContent=__T('Noch kein Ereignis');u.textContent='';b.textContent='🎥';return;}
  const min=Math.max(0,Math.round((Date.now()-(w.timestamp||0))/60000)),en=window.__LANG__==='en';
- const alt=min<1?__T('gerade eben'):min<120?(en?min+' min ago':'vor '+min+' min'):min<2880?(en?Math.round(min/60)+' h ago':'vor '+Math.round(min/60)+' h'):(w.dateFormatted||'');
- t.textContent=alt;u.textContent=[__T(AUFN_ART[w.type]||w.type||''),(w.dateFormatted||'')+' '+(w.timeFormatted||''),w.place||''].filter(Boolean).join(' · ');
+ const alt=min<1?__T('gerade eben'):min<120?(en?min+' min ago':'vor '+min+' min'):min<2880?(en?Math.round(min/60)+' h ago':'vor '+Math.round(min/60)+' h'):aufnZeit(w);
+ t.textContent=alt;u.textContent=[__T(AUFN_ART[w.type]||w.type||''),aufnZeit(w),w.place||''].filter(Boolean).join(' · ');
  if(b.dataset.id!==w.id){b.dataset.id=w.id;b.innerHTML=w.available?'<img alt="" style="width:100%;height:100%;object-fit:cover" src="/waechter/bild/'+esc(w.id)+'" onerror="aufnBildFehler(this)">':esc(__T('Datenträger fehlt'));}}
 function wletztOeffnen(){const w=(LAST_STATE||{}).waechter_letzt||{};const d=document.getElementById('aufndet');if(!d)return;
  if(!d.open)d.open=true;document.getElementById('aufnbox').scrollIntoView({behavior:'smooth',block:'start'});
- if(w.id&&w.available){const f={dataset:{ok:'1',id:w.id,t:(w.dateFormatted||'')+' '+(w.timeFormatted||'')}};setTimeout(()=>aufnSpielen(f),400);}}
+ if(w.id&&w.available){const f={dataset:{ok:'1',id:w.id,t:aufnZeit(w)}};setTimeout(()=>aufnSpielen(f),400);}}
 function aufnSpielen(e){if(e.dataset.ok!=='1')return;const v=document.getElementById('aufnvideo');
  document.getElementById('aufnplayer').style.display='block';document.getElementById('aufnclip').textContent=e.dataset.t;
  v.src='/waechter/clip/'+e.dataset.id;v.play().catch(()=>{});document.getElementById('aufnplayer').scrollIntoView({behavior:'smooth',block:'nearest'});}
