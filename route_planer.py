@@ -4,6 +4,7 @@ Regel 2: Start und Ziel verlassen den Rechner NUR bei "Route berechnen" (das ist
 "Ins Auto schicken" - kein Dauerversand, nichts im Hintergrund. Koordinaten nur im POST-Body, nie in URL oder Log.
 Der Schluessel bleibt im Cockpit-Prozess; der Browser sieht ihn nie.
 """
+import re
 import socket
 import urllib.error
 
@@ -47,6 +48,19 @@ def anfrage_body(w, auto_pos, auto_soc, fahrzeug, auto_kennung=""):
          "modus": w.get("modus") if w.get("modus") in MODI else "kompromiss"}
     if auto_kennung:
         b["auto"] = auto_kennung
+    abf = str(w.get("abfahrt") or "")
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?([+-]\d{2}:\d{2}|Z)", abf):
+        b["abfahrt"] = abf                         # der Planer nimmt sie nur zwischen -1 h und +3 Tagen
+    via = []
+    for v in (w.get("via") or [])[:5]:            # Zwischenstopps in Fahrreihenfolge (Vertrag: via <= 5)
+        lat, lon = _punkt([v.get("lat"), v.get("lon")])
+        e = {"lat": lat, "lon": lon, "name": str(v.get("name") or "")[:80]}
+        a = _zahl(v.get("aufenthalt_min"), 0, 0, 1440)
+        if a:
+            e["aufenthalt_min"] = int(a)
+        via.append(e)
+    if via:
+        b["via"] = via
     return b
 
 
@@ -84,11 +98,17 @@ def kurz(d):
                        "dauer_min": s.get("ladedauer_min"), "kwh": s.get("kwh"),
                        "preis": s.get("kosten_beste_option"), "eigene_karte": bool(s.get("mit_eigener_karte")),
                        "oeffnung": _oeffnung(s), "geschlossen": s.get("geoeffnet_bei_ankunft") is False,
-                       "bevorzugt": bool(s.get("bevorzugtes_netz")), **_tarif(wahl.get(i), s)})
+                       "bevorzugt": bool(s.get("bevorzugtes_netz")), "ankunft_ca": s.get("ankunft_ca"),
+                       **_tarif(wahl.get(i), s)})
     kosten = basis.get("gesamt")
     return {"km": r.get("km"), "minuten": r.get("minuten"), "geometrie": r.get("geometrie") or [],
             "soc_start": d.get("soc_start"), "soc_ankunft": d.get("soc_ankunft"), "stopps": stopps,
             "lade_min": round(sum(float(x["dauer_min"] or 0) for x in stopps)),
+            "fahrtplan": {k: (d.get("fahrtplan") or {}).get(k) for k in ("abfahrt_ca", "abfahrt_gewaehlt", "ankunft_ca", "fahr_min",
+                                                                          "lade_min", "aufenthalt_min", "gesamt_min", "hinweis")}
+            if d.get("fahrtplan") else None,
+            "zwischenziele": [{k: z.get(k) for k in ("nr", "name", "km_auf_route", "soc_ankunft", "aufenthalt_min", "ankunft_ca",
+                                                    "abfahrt_ca")} for z in (d.get("zwischenziele") or []) if isinstance(z, dict)][:5],
             "kosten": kosten, "kosten_text": str(basis.get("beschreibung") or "")[:80], "fahrzeug": (d.get("fahrzeug") or {}).get("name") or "",
             "modus": d.get("modus") or "", "warnungen": [str(w)[:200] for w in (d.get("warnungen") or [])][:6],
             "vorlieben": _vorlieben(d.get("filter") or {}),

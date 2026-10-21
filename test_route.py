@@ -130,6 +130,27 @@ class TestRoute(unittest.TestCase):
                          ("IONITY Direkt", 0.69, "laut Website"))                 # ohne Wahl: erste Zahlungsart
         self.assertEqual((k["kosten"], k["kosten_text"]), (9.9, "bester Mix aus deinen Karten"))
 
+    def test_abfahrt_und_zwischenstopps(self):
+        w = {"ziel": [47.07, 15.43], "abfahrt": "2026-10-22T12:00:00+02:00",
+             "via": [{"lat": 47.8, "lon": 14.6, "name": "Kirchdorf", "aufenthalt_min": 20}, {"lat": 47.5, "lon": 14.9}]}
+        b = rp.anfrage_body(w, (48.3, 14.28), 40, "X")
+        self.assertEqual(b["abfahrt"], "2026-10-22T12:00:00+02:00")
+        self.assertEqual(b["via"], [{"lat": 47.8, "lon": 14.6, "name": "Kirchdorf", "aufenthalt_min": 20}, {"lat": 47.5, "lon": 14.9, "name": ""}])
+        self.assertNotIn("abfahrt", rp.anfrage_body({"ziel": [1, 2], "abfahrt": "morgen; rm"}, (3, 4), 40, "X"))
+        self.assertEqual(len(rp.anfrage_body({"ziel": [1, 2], "via": [{"lat": 1, "lon": 1}] * 9}, (3, 4), 40, "X")["via"]), 5)
+        with self.assertRaises(ValueError):
+            rp.anfrage_body({"ziel": [1, 2], "via": [{"lat": "x"}]}, (3, 4), 40, "X")
+
+    def test_fahrtplan_und_zwischenziele(self):
+        d = dict(PLAN, fahrtplan={"abfahrt_ca": "2026-10-22T10:00:00Z", "ankunft_ca": "2026-10-22T13:32:50Z", "gesamt_min": 213, "geheim": 1},
+                 zwischenziele=[{"nr": 1, "name": "Kirchdorf", "ankunft_ca": "2026-10-22T11:50:07Z", "aufenthalt_min": 20, "lat": 47.8}])
+        k = rp.kurz(d)
+        self.assertEqual((k["fahrtplan"]["ankunft_ca"], k["fahrtplan"]["gesamt_min"]), ("2026-10-22T13:32:50Z", 213))
+        self.assertNotIn("geheim", k["fahrtplan"])
+        self.assertEqual(k["zwischenziele"][0]["name"], "Kirchdorf")
+        self.assertNotIn("lat", k["zwischenziele"][0])                      # nur was die Anzeige braucht
+        self.assertIsNone(rp.kurz(PLAN)["fahrtplan"])
+
 
 if __name__ == "__main__":
     unittest.main()
