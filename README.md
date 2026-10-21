@@ -67,8 +67,9 @@ Then open <http://127.0.0.1:8099> in your browser.
 ## Your car in 3D
 
 Instead of a silhouette the cockpit shows your model in 3D: the same models as in Panoptes, in your paint colour
-(colour buttons below the car). The model (~1 MB) is downloaded once from the community server, checked by checksum
-and stored on your computer. Your own photo takes precedence. Models partly by Nazh Design (CC BY 4.0), partly built by the Panoptes project (CC0); details under "About".
+(colour buttons below the car). **Only if you tick "Your car in 3D" in the wizard** (off by default): the model
+(~1 MB) is then downloaded once from the community server (which sees your IP address and your car model), checked by
+checksum and stored on your computer. Without the tick: a neutral silhouette. Your own photo takes precedence. Models partly by Nazh Design (CC BY 4.0), partly built by the Panoptes project (CC0); details under "About".
 
 ## Where does the data come from? You choose
 
@@ -153,9 +154,9 @@ cockpit gets its own device key with limited rights (revocable under "My devices
   the planner (only which cards, no charging sessions) and applies on `/ev/` too. Chargers on the map then show
   your card's price, and the planner prefers matching charging stops.
 
-**Map:** by default the cockpit shows the same map as the planner and the Panoptes app (served by the community
-server, byd.serveone.at); until that server delivers it completely, OpenStreetMap. Untick "Community map style"
-for OpenStreetMap always. The map libraries (MapLibre, PMTiles) ship in the package, no CDN.
+**Map:** by default the map tiles come from OpenStreetMap. Tick "Community map style" (off by default) for the
+same map as the planner and the Panoptes app; the tiles for your area then come from the community server
+(byd.serveone.at), which sees your IP address and the map area. The map libraries (MapLibre, PMTiles) ship in the package, no CDN.
 With "Chargers" ticked, the community map shows **live occupancy** (currently Austria, Switzerland and Germany, via the planner; source and licence are shown at the bottom of the map): free
 normal, occupied **red**, out of order grey, status unknown grey with "?" (source shown at the bottom of the map). Only the map centre rounded to ~5 km is sent to the planner by POST
 (no access log), at most every 2 minutes per area.

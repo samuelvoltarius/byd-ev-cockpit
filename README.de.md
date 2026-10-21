@@ -67,8 +67,9 @@ Danach im Browser: <http://127.0.0.1:8099>
 ## Dein Auto in 3D
 
 Statt einer Silhouette zeigt das Cockpit dein Modell in 3D: dieselben Modelle wie in Panoptes, in deiner Lackfarbe
-(Farbknöpfe unter dem Auto). Das Modell (~1 MB) lädt das Cockpit einmal vom Community-Server, prüft es per Prüfsumme
-und legt es auf deinem Rechner ab. Ein eigenes Foto hat Vorrang. Die Modelle stammen teils von Nazh Design (CC BY 4.0), teils sind es Eigenbauten des Panoptes-Projekts (CC0),
+(Farbknöpfe unter dem Auto). **Nur wenn du im Assistenten „Dein Auto in 3D“ anhakst** (Standard aus): Dann lädt das
+Cockpit das Modell (~1 MB) einmal vom Community-Server (der sieht dabei deine IP-Adresse und dein Automodell), prüft es
+per Prüfsumme und legt es auf deinem Rechner ab. Ohne Haken: neutrale Silhouette. Ein eigenes Foto hat Vorrang. Die Modelle stammen teils von Nazh Design (CC BY 4.0), teils sind es Eigenbauten des Panoptes-Projekts (CC0),
 Details unter „Über“.
 
 ## Woher kommen die Daten? Du wählst
@@ -155,9 +156,9 @@ unter „Meine Geräte“). Der alte persönliche Link (`byd.serveone.at/ev/#z=�
   Planer (nur welche Karten, keine Ladevorgänge) und gilt genauso auf `/ev/`. Die Säulen auf der Karte zeigen dann
   den Preis deiner Karte, der Planer bevorzugt passende Ladestopps.
 
-**Karte:** Das Cockpit zeigt standardmäßig dieselbe Karte wie Planer und Panoptes-App (vom Server der Community,
-byd.serveone.at); solange der Server sie nicht vollständig liefert, OpenStreetMap. Ohne Häkchen „Karte im
-Community-Look": immer OpenStreetMap. Die Kartenbibliotheken (MapLibre, PMTiles) liegen im Paket, kein CDN.
+**Karte:** Standardmäßig kommen die Kartenkacheln von OpenStreetMap. Mit dem Häkchen „Karte im Community-Look“
+(Standard aus) zeigt das Cockpit dieselbe Karte wie Planer und Panoptes-App; die Kacheln deiner Gegend kommen dann vom
+Server der Community (byd.serveone.at), der dabei deine IP-Adresse und den Kartenausschnitt sieht. Die Kartenbibliotheken (MapLibre, PMTiles) liegen im Paket, kein CDN.
 Mit Häkchen „Ladesäulen" zeigt die Community-Karte die **Live-Belegung** (derzeit Österreich, Schweiz und Deutschland, über den Planer; Quelle und Lizenz stehen unten in der Karte):
 frei normal, belegt **rot**, außer Betrieb grau, Status unbekannt grau mit „?“ (Quelle steht unten in der Karte). Dafür geht nur der auf ~5 km gerundete Kartenmittelpunkt per POST
 an den Planer (kein Zugriffslog), höchstens alle 2 Minuten je Gebiet.
