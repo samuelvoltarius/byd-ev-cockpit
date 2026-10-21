@@ -1166,7 +1166,7 @@ _I18N.update({
     "FAHRZEUGE & LADEPUNKTE": "VEHICLES & CHARGE POINTS", "PV-Erzeugung": "Solar production",
     "Netz": "Grid", "Speicher": "Battery", "Hausverbrauch": "Home consumption",
     "Netzpreis": "Grid tariff", "Grünstromanteil": "Green energy share",
-    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette", "3D-Modell nicht geladen": "3D model not loaded", "Erneut versuchen": "Try again", "Laden fehlgeschlagen": "Loading failed", "Dieser Browser kann kein WebGL": "This browser has no WebGL",
+    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette", "3D-Modell nicht geladen": "3D model not loaded", "Erneut versuchen": "Try again", "3D-Modell wird geladen …": "Loading 3D model …", "Laden fehlgeschlagen": "Loading failed", "Dieser Browser kann kein WebGL": "This browser has no WebGL",
     "Eigenes Foto verwenden": "Use your own photo", "Reichweite": "Range",
     "Verbunden": "Connected", "Nicht verbunden": "Not connected",
     "Kompakt": "Compact", "Limousine": "Sedan", "Kombi": "Estate", "SUV": "SUV", "Van": "Van",
@@ -2512,6 +2512,7 @@ async function kartenSpeichern(){const m=document.getElementById('kartenmsg');
 const AUTO3D={ok:null,farbe:null,lack:[],r:null,grund:'',still:false,wieder:0};
 function auto3dNochmal(){AUTO3D.ok=null;AUTO3D.lack=[];AUTO3D.grund='';document.getElementById('car').dataset.p='';load();}
 async function auto3d(car,s){AUTO3D.ok='laedt';
+ car.dataset.p='laedt';car.innerHTML='<div class=wrap><div class=ph>⏳ '+__T('3D-Modell wird geladen …')+'</div></div>';
  try{const i=await (await fetch('/modell3d/info',{cache:'no-store'})).json();
   if(!i.verfuegbar)throw {grund:i.grund||'',still:!!i.still};
   if(!window.WebGLRenderingContext)throw {grund:__T('Dieser Browser kann kein WebGL'),still:false};
@@ -2520,6 +2521,7 @@ async function auto3d(car,s){AUTO3D.ok='laedt';
   const {DRACOLoader}=await import('/static/three/examples/jsm/loaders/DRACOLoader.js');
   car.dataset.p='3d';
   car.innerHTML='<div class=wrap><canvas id=auto3d style="width:100%;max-width:560px;height:250px;display:block"></canvas>'+
+   '<div class=hint id=laedt3d>⏳ '+__T('3D-Modell wird geladen …')+'</div>'+
    '<div class=vehicle-caption><strong>'+esc(s.model||i.name)+'</strong><span>3D: '+esc(i.attribution)+
    ' · <a href="'+esc(i.lizenzen)+'" target=_blank rel=noopener style="color:inherit">'+esc(__T('Lizenz'))+'</a></span></div>'+
    '<div class=lackwahl>'+(i.farben||[]).map(f=>'<button type=button title="'+esc(f.name)+'" data-farbe="'+esc(f.hex)+
@@ -2544,6 +2546,7 @@ async function auto3d(car,s){AUTO3D.ok='laedt';
   const groesse=()=>{const w=cv.clientWidth||520,h=cv.clientHeight||250;r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();};
   groesse();window.addEventListener('resize',groesse);
   r.setAnimationLoop(()=>{if(document.hidden)return;pivot.rotation.y+=0.004;r.render(sc,cam);});
+  const l3=document.getElementById('laedt3d');if(l3)l3.remove();
   AUTO3D.ok=true;
  }catch(e){AUTO3D.ok=false;AUTO3D.still=!!(e&&e.still);
   AUTO3D.grund=(e&&e.grund!==undefined)?e.grund:(__T('Laden fehlgeschlagen')+(e&&e.message?' ('+e.message+')':''));
