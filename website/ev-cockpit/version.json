@@ -1,5 +1,5 @@
 {
-  "version": "1.9.7",
-  "was_neu": "Sprachknopf zeigt die aktuelle Sprache, Energie-Bereich sitzt richtig, ruhiger Hintergrund",
+  "version": "1.9.8",
+  "was_neu": "Abfrage-Takt beim Auto einstellbar (Minuten oder nur von Hand), Pause bei verborgenem Tab, Akkugröße vom Auto",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }

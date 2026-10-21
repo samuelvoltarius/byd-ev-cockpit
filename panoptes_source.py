@@ -16,6 +16,7 @@ import urllib.error
 import urllib.request
 
 TIMEOUT = 6
+AKKU_TAKT_S = 6 * 3600   # nutzbare Akku-kWh aendert sich kaum: hoechstens alle 6 h nachsehen
 ODO_TAKT_S = 600          # Kilometerstand separat nur alle 10 min (der Endpunkt kann Cloud-Abfragen ausloesen)
 
 
@@ -126,6 +127,9 @@ def aus_uebersicht(s, gps=None, fahrzeug=None):
     loc = (gps or {}).get("location") or {}
     if (gps or {}).get("hasLocation", True) and _zahl(loc.get("lat")) and _zahl(loc.get("lng")):
         st["latitude"], st["longitude"] = _zahl(loc["lat"]), _zahl(loc["lng"])
+    kwh = _zahl((s.get("battery") or {}).get("usableKwh"))
+    if kwh is not None and 10 <= kwh <= 200:
+        st["usable_kwh"] = kwh                            # vom Auto gemeldet, schlaegt den Listenwert
     odo = ((fahrzeug or {}).get("odometer") or {}).get("totalKm")
     if _zahl(odo):
         st["odometer"] = _zahl(odo)
@@ -140,6 +144,7 @@ class Panoptes:
         self.http, self.uhr = http, uhr
         self.jwt_gespeichert = jwt_gespeichert or (lambda j, code_verbraucht=False: None)
         self.odo_t = 0.0
+        self.akku_t = 0.0
         self.code_verbraucht = False
         self.letzter_fehler = ""
 
@@ -203,6 +208,14 @@ class Panoptes:
                 st = dict(aus_uebersicht(s, g, fz), **st)
             if "soc" not in st:
                 return None
+            if "usable_kwh" not in st and self.uhr() - self.akku_t >= AKKU_TAKT_S:
+                self.akku_t = self.uhr()
+                try:
+                    kwh = _zahl(((self._get("/api/launcher/v1/summary") or {}).get("battery") or {}).get("usableKwh"))
+                    if kwh is not None and 10 <= kwh <= 200:
+                        st["usable_kwh"] = kwh
+                except Exception:
+                    pass
             self.letzter_fehler = ""
             st["online"] = "ON"
             st["_quelle"] = "Panoptes"

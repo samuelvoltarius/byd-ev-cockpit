@@ -91,7 +91,12 @@ class TestPanoptes(unittest.TestCase):
         p, f, g = self.neu({"/api/mqtt/telemetry": tel})
         st = p.lies()
         self.assertEqual((st["soc"], st["online"], st["_quelle"]), (70.0, "ON", "Panoptes"))
-        self.assertEqual([a[0] for a in f.aufrufe], ["/auth/kopplung", "/auth/token", "/api/mqtt/telemetry"])
+        # 1.9.8: nutzbare Akku-kWh hoechstens alle 6 h aus der Uebersicht (hier ohne Antwort -> kein Wert)
+        self.assertEqual([a[0] for a in f.aufrufe], ["/auth/kopplung", "/auth/token", "/api/mqtt/telemetry",
+                                                     "/api/launcher/v1/summary"])
+        self.assertNotIn("usable_kwh", st)
+        p.lies()
+        self.assertEqual([a[0] for a in f.aufrufe][-1], "/api/mqtt/telemetry")   # nicht schon wieder
         self.assertEqual(g, ["jwt-1"])                 # Token wird gemerkt (altes Panoptes: Rueckfall /auth/token)
 
     def test_neue_kopplung_einmal_code(self):

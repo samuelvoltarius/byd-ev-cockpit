@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.9.7"
+VERSION = "1.9.8"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -172,6 +172,12 @@ POLL_DRIVE = 90          # 1,5 min waehrend der Fahrt
 POLL_IDLE = 900          # 15 min wenn das Auto schlaeft
 POLL_PANOPTES = 60       # 1 min, solange Panoptes im Auto antwortet (kein Cloud-Kontingent)
 POLL_HA = 60             # 1 min, Home Assistant als Quelle (lokal, kein Cloud-Kontingent)
+# Panoptes-Takt (1.9.8): jede Abfrage weckt die App im Auto -> der Nutzer waehlt, wie oft.
+ABFRAGE_WAHL = (1, 2, 5, 10, 15, 30, 0)   # Minuten; 0 = nur manuell (Knopf ↻)
+ABFRAGE_STD = {"abfrage_geparkt": 5, "abfrage_fahrt": 1}
+ABFRAGE_SCHNELL_S = 5        # nach einer Nutzeraktion kurz alle 5 s ...
+ABFRAGE_SCHNELL_DAUER = 60   # ... hoechstens 60 s lang, dann wieder der gewaehlte Takt
+SICHTBAR_FRIST = 30          # so lange nach dem letzten Abruf eines SICHTBAREN Tabs gilt "jemand schaut hin"
 
 
 # ---------------------------------------------------------------- Konfig
@@ -482,6 +488,7 @@ def _panoptes_runde(cache):
     if pv is None:
         return False
     t0 = time.time()
+    _abfrage_zaehlen()                   # jede Abfrage weckt die App im Auto -> ehrlich mitzaehlen
     st = pv.lies()
     if not st:
         _STATE["panoptes_erreichbar"] = False
@@ -496,6 +503,13 @@ def _panoptes_runde(cache):
         except Exception:
             _CFG["panoptes_erneuert"] = time.time() - 86400 + 6 * 3600   # aeltere Panoptes ohne Endpunkt: in 6 h wieder
         save_cfg(_CFG)
+    _kwh_auto = st.pop("usable_kwh", None)
+    if _kwh_auto and _CFG.get("battery_quelle") != "manuell" and (
+            abs(float(_CFG.get("battery_kwh") or 0) - _kwh_auto) >= 0.05
+            or not str(_CFG.get("battery_quelle") or "").startswith("Panoptes")):
+        _CFG["battery_kwh"] = _kwh_auto          # vom Auto gemeldet schlaegt den Listenwert des Modells
+        _CFG["battery_quelle"] = "Panoptes (usableKwh)"
+        save_cfg(_CFG)
     _c, _s = st.get("consumption_avg") or cache.get("consumption_avg"), st.get("soc")   # Panoptes liefert ihn mit
     kwh = float(_CFG.get("battery_kwh") or 60.0)
     if _c and _s:
@@ -507,6 +521,67 @@ def _panoptes_runde(cache):
                    "_latency_ms": int((time.time() - t0) * 1000)})
     _ha_publish(st)
     return True
+
+
+_WECKER = threading.Event()
+_TAKT = {"sichtbar_ts": 0.0, "schnell_bis": 0.0, "tag": "", "heute": 0}
+
+
+def _abfrage_min(key):
+    try:
+        v = int(_CFG.get(key, ABFRAGE_STD[key]))
+    except (TypeError, ValueError):
+        v = ABFRAGE_STD[key]
+    return v if v in ABFRAGE_WAHL else ABFRAGE_STD[key]
+
+
+def _unterwegs():
+    return str(_STATE.get("gear") or "").upper() in ("D", "R") or _STATE.get("charging") == "ON"
+
+
+def _panoptes_takt(jetzt=None):
+    """Sekunden bis zur naechsten Panoptes-Abfrage, None = gerade keine (nur manuell oder kein Tab sichtbar)."""
+    jetzt = time.time() if jetzt is None else jetzt
+    if jetzt < _TAKT["schnell_bis"]:
+        return ABFRAGE_SCHNELL_S
+    if jetzt - _TAKT["sichtbar_ts"] > SICHTBAR_FRIST and not _CFG.get("ha"):
+        return None                      # Tab verborgen/zu -> pausiert (ausser Werte gehen an Home Assistant)
+    m = _abfrage_min("abfrage_fahrt" if _unterwegs() else "abfrage_geparkt")
+    return m * 60 if m else None
+
+
+def _abfrage_zaehlen():
+    tag = time.strftime("%Y-%m-%d")
+    if _TAKT["tag"] != tag:
+        _TAKT.update(tag=tag, heute=0)
+    _TAKT["heute"] += 1
+
+
+def _warte_panoptes(seit):
+    """Wartet bis zur naechsten faelligen Abfrage; der Takt wird jede Sekunde neu bewertet
+    (Tab wieder sichtbar, Einstellung geaendert, Knopf gedrueckt)."""
+    while True:
+        if _WECKER.wait(1):
+            _WECKER.clear()
+            return
+        t = _panoptes_takt()
+        if t is not None and time.time() - seit >= t:
+            return
+
+
+def nutzer_aktion():
+    """Nutzer hat etwas getan: sofort abfragen, dann kurz alle 5 s (hoechstens 60 s)."""
+    _TAKT["schnell_bis"] = time.time() + ABFRAGE_SCHNELL_DAUER
+    _WECKER.set()
+
+
+def abfrage_status():
+    t = _panoptes_takt()
+    return {"geparkt": _abfrage_min("abfrage_geparkt"), "fahrt": _abfrage_min("abfrage_fahrt"),
+            "heute": _TAKT["heute"] if _TAKT["tag"] == time.strftime("%Y-%m-%d") else 0,
+            "schnell": time.time() < _TAKT["schnell_bis"], "unterwegs": _unterwegs(),
+            "takt_s": t, "pausiert": t is None and time.time() - _TAKT["sichtbar_ts"] > SICHTBAR_FRIST
+            and not _CFG.get("ha")}
 
 
 def _poller():
@@ -525,8 +600,9 @@ def _poller():
             if not _CFG.get("vin"):
                 time.sleep(3)
                 continue
+            _r0 = time.time()
             if _panoptes_runde(cache):
-                time.sleep(POLL_PANOPTES)
+                _warte_panoptes(_r0)
                 continue
             if _CFG.get("datenquelle") == "ha":
                 # Nie zusaetzlich die BYD-Cloud abfragen: haengt an HA schon eine BYD-Anbindung mit
@@ -537,7 +613,7 @@ def _poller():
             if not _cloud_an():
                 _STATE["_err"] = ("Keine Daten: Panoptes im Auto antwortet gerade nicht und es ist kein "
                                   "BYD-Konto eingerichtet. Ist das Auto wach und im Netz?")
-                time.sleep(POLL_PANOPTES)
+                _warte_panoptes(_r0) if _panoptes_gekoppelt() else time.sleep(POLL_PANOPTES)
                 continue
             if _STATE.get("_auth_blocked") or _CFG.get("auth_blocked"):
                 _STATE["_auth_blocked"] = True
@@ -1225,7 +1301,7 @@ _I18N.update({
     "FAHRZEUGE & LADEPUNKTE": "VEHICLES & CHARGE POINTS", "PV-Erzeugung": "Solar production",
     "Netz": "Grid", "Speicher": "Battery", "Hausverbrauch": "Home consumption",
     "Netzpreis": "Grid tariff", "Grünstromanteil": "Green energy share",
-    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette", "lernt aus deinen Fahrten": "learns from your trips", "liefert diese Datenquelle nicht": "not provided by this data source", "Ich habe den Hinweis gelesen und verstanden.": "I have read and understood the notice.", "Deine Passwörter und Schlüssel liegen unverschlüsselt in der Einstellungsdatei (nur für deinen Benutzer lesbar), weil hier kein Schlüsselbund verfügbar ist. Unter Linux hilft das Paket „libsecret-tools“ (secret-tool) mit einem laufenden Schlüsselbund.": "Your passwords and keys are stored unencrypted in the settings file (readable only by your user) because no keyring is available here. On Linux, the package “libsecret-tools” (secret-tool) with a running keyring helps.", "Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust. Du entscheidest:": "Whoever delivers the map images sees your IP address and the area you look at. You decide:", "Keine Karte": "No map", "Es werden keine Kartenbilder geladen.": "No map images are loaded.", "Kartenbilder von OpenStreetMap (fremder Dienst).": "Map images from OpenStreetMap (third-party service).", "Community-Karte": "Community map", "Dieselbe Karte wie im Planer und in der Panoptes-App, vom Server der BYD-Community (byd.serveone.at). Nur damit gibt es die Live-Belegung der Ladesäulen.": "The same map as in the planner and the Panoptes app, from the BYD community server (byd.serveone.at). Live charger availability only works with it.", "Karte anzeigen?": "Show the map?", "Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust.": "Whoever delivers the map images sees your IP address and the area you look at.", "Neu: Karte und 3D-Modell sind freiwillig": "New: map and 3D model are optional", "Beides lädt Daten von fremden Servern; die sehen dabei deine IP-Adresse (und bei der Karte die Gegend, beim 3D-Modell dein Automodell). Ohne deine Wahl bleibt beides aus.": "Both load data from other servers, which see your IP address (and the area for the map, your car model for the 3D model). Without your choice both stay off.", "Karte": "Map", "Dein Auto in 3D (vom Community-Server)": "Your car in 3D (from the community server)", "Speichern": "Save", "Dieselbe Karte wie im Planer und in der Panoptes-App. Die Kartenkacheln deiner Gegend lädt dann der Server der BYD-Community (byd.serveone.at); er sieht dabei deine IP-Adresse und den Kartenausschnitt. Ohne Haken lädt sie OpenStreetMap.": "The same map as in the planner and the Panoptes app. The map tiles for your area are then loaded from the BYD community server (byd.serveone.at); it sees your IP address and the map area. Without the tick, OpenStreetMap loads them.", "🚗 Dein Auto in 3D": "🚗 Your car in 3D", "Lädt einmal das 3D-Modell deines Autos vom Server der BYD-Community (byd.serveone.at). Der Server sieht dabei deine IP-Adresse und welches Modell du fährst. Ohne Haken: neutrale Silhouette oder dein Foto.": "Loads your car's 3D model once from the BYD community server (byd.serveone.at). The server sees your IP address and which model you drive. Without the tick: a neutral silhouette or your photo.", "Zeigt öffentliche Ladestationen am Standort deines Autos mit Entfernung und Steckertyp. Dafür geht die Position deines Autos an OpenStreetMap (Overpass-Dienst) oder an deinen eigenen OpenGlance-Server, wenn du ihn unten einträgst. Mit der Community-Karte kommt die Live-Belegung dazu: dafür geht nur die Kartenmitte, auf etwa 5 km gerundet, an den Server der BYD-Community.": "Shows public chargers at your car's location with distance and connector type. For this, your car's position is sent to OpenStreetMap (Overpass service) or to your own OpenGlance server if you enter it below. With the community map, live availability is added: only the map centre, rounded to about 5 km, goes to the BYD community server.", "Kurz vorab": "Quick note first", "Das EV-Cockpit ist ein privates Freizeitprojekt, kostenlos und ohne Gewähr. Du nutzt es auf eigenes Risiko, nur privat. Es verwendet dein BYD-Konto, Home Assistant oder deine Wallbox so, wie du es einstellst. Für Fernbefehle (z. B. Klima, Zusperren) und Ladebefehle an die Wallbox bist du selbst verantwortlich. Werte wie Ladestand, Reichweite und Preise können abweichen. Das EV-Cockpit ist nicht mit BYD verbunden.": "EV-Cockpit is a private hobby project, free and without warranty. You use it at your own risk, for private use only. It uses your BYD account, Home Assistant or your wallbox as you configure it. You are responsible for remote commands (e.g. climate, locking) and charging commands to your wallbox. Values such as charge level, range and prices may be inaccurate. EV-Cockpit is not affiliated with BYD.", "Alle Hinweise lesen": "Read all notes", "Gelesen und einverstanden": "Read and agreed", "Bitte bestätige die Hinweise, um fortzufahren.": "Please confirm the notes to continue.", "Freizeitprojekt.": "Hobby project.", "Panoptes, das EV-Cockpit und der Routenplaner sind ein privates Freizeitprojekt von Alfred Aigner. Sie werden kostenlos und ohne Gewähr angeboten.": "Panoptes, EV-Cockpit and the route planner are a private hobby project by Alfred Aigner. They are provided free of charge and without warranty.", "Ohne Gewähr.": "No warranty.", "Es gibt keine Garantie, dass alles fehlerfrei, vollständig oder jederzeit verfügbar ist. Das gilt auch für Ladestände, Reichweiten, Preise, Belegung von Ladesäulen, Routen, Blitzer- und Gefahrenhinweise. Prüfe Wichtiges selbst; im Straßenverkehr gilt immer, was du siehst und was die Schilder sagen.": "There is no guarantee that everything is correct, complete or always available. This includes charge levels, range, prices, charger availability, routes, speed camera and hazard warnings. Check anything important yourself; on the road, what you see and the road signs always come first.", "Eigenes Risiko.": "Your own risk.", "Du nutzt alles auf eigenes Risiko. Soweit gesetzlich zulässig, übernimmt Alfred Aigner keine Haftung für Schäden, die aus der Nutzung entstehen, auch nicht für Schäden am Fahrzeug, an Daten oder durch Fernbefehle.": "You use everything at your own risk. To the extent permitted by law, Alfred Aigner accepts no liability for any damage resulting from its use, including damage to your vehicle, to data, or caused by remote commands.", "Du bist verantwortlich.": "You are responsible.", "Du allein entscheidest, wie du die Funktionen einsetzt, und bist dafür verantwortlich, dass das erlaubt ist. Das betrifft vor allem Datenschutz, Kamera-Aufnahmen, Fernbefehle über das BYD-Konto und die Regeln im Straßenverkehr.": "You alone decide how you use the features, and you are responsible for making sure that use is legal. This applies especially to data protection, camera recordings, remote commands via your BYD account, and traffic rules.", "Nur privat.": "Private use only.", "Gedacht ist alles nur für die private Nutzung mit deinem eigenen Fahrzeug. Ein gewerblicher Einsatz (z. B. Flotten, Vermietung, Taxi, Firmenwagen-Überwachung) ist nicht vorgesehen.": "Everything is intended for private use with your own vehicle only. Commercial use (e.g. fleets, rental, taxi, monitoring company cars) is not intended.", "Wächter nur auf eigenem Grund.": "Guardian on your own property only.", "Kamera-Aufnahmen des Wächters sind für deinen eigenen Privatgrund gedacht (z. B. Garage, Einfahrt). Richte die Kameras so aus, dass weder öffentlicher Raum (Straße, Gehweg, öffentlicher Parkplatz) noch das Grundstück der Nachbarn erfasst wird. Aufnahmen nicht veröffentlichen.": "Guardian recordings are intended for your own private property (e.g. garage, driveway). Point the cameras so that neither public space (street, pavement, public car park) nor your neighbours' property is captured. Do not publish recordings.", "Nicht von BYD.": "Not BYD.", "Dieses Projekt ist nicht mit BYD verbunden und wird von BYD weder unterstützt noch geprüft. „BYD“, „DiLink“ und alle anderen genannten Namen und Marken gehören ihren jeweiligen Inhabern.": "This project is not affiliated with BYD and is not supported or reviewed by BYD. “BYD”, “DiLink” and all other names and trademarks mentioned belong to their respective owners.", "Gesetzliche Rechte bleiben.": "Your legal rights remain.", "Die Haftung für Vorsatz und grobe Fahrlässigkeit, für Personenschäden sowie zwingende Rechte von Verbraucherinnen und Verbrauchern werden durch diese Hinweise nicht eingeschränkt.": "Liability for intent and gross negligence, for personal injury, and mandatory consumer rights are not limited by these notes.", "🔗 Mit Panoptes verbinden": "🔗 Connect to Panoptes", "Bestätige in Telegram oder hier:": "Confirm in Telegram or here:", "will sich verbinden. Prüfzahl:": "wants to connect. Check number:", "Panoptes öffnen („Gekoppelte Geräte“)": "Open Panoptes (“Paired devices”)", "Vergleiche die Prüfzahl und tippe auf „Erlauben“. Die Anfrage gilt 2 Minuten.": "Compare the check number and tap “Allow”. The request is valid for 2 minutes.", "Erweitert: mit Kopplungs-Code oder Link": "Advanced: with pairing code or link", "Kopplungs-Code oder Link aus Panoptes („Neues Gerät koppeln“, 10 min gültig, einmal verwendbar)": "Pairing code or link from Panoptes (“Pair new device”, valid 10 min, single use)", "482913 oder https://…/system.html#koppeln=…": "482913 or https://…/system.html#koppeln=…", "🔗 Mit Routenplaner verbinden": "🔗 Connect to route planner", "Im Browser bestätigen:": "Confirm in your browser:", "Code": "Code", "Routenplaner öffnen und erlauben": "Open route planner and allow", "Melde dich dort als Mitglied an und tippe auf „Erlauben“. Der Code gilt 10 Minuten.": "Sign in there as a member and tap “Allow”. The code is valid for 10 minutes.", "Erweitert: mit persönlichem Planer-Link": "Advanced: with your personal planner link", "Warte auf „Erlauben“ …": "Waiting for “Allow” …", "Verbunden": "Connected", "Ladestand ": "charge level ", "Mit dem Routenplaner verbunden": "Connected to the route planner", "Schon gekoppelt. Nur neu verbinden, wenn die Kopplung in Panoptes entfernt wurde.": "Already paired. Only connect again if the pairing was removed in Panoptes.", "3D-Modell nicht geladen": "3D model not loaded", "Erneut versuchen": "Try again", "3D-Modell wird geladen …": "Loading 3D model …", "Laden fehlgeschlagen": "Loading failed", "Dieser Browser kann kein WebGL": "This browser has no WebGL",
+    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette", "Wie oft beim Auto nachfragen?": "How often to ask the car?", "Geparkt": "Parked", "Bei Fahrt bzw. Laden": "While driving or charging", "nur manuell": "manual only", "Jede Abfrage weckt die App im Auto. Ist dieser Tab verborgen, wird pausiert.": "Every query wakes the app in the car. While this tab is hidden, queries pause.", "Nach jedem Antippen kurz alle 5 s (höchstens 60 s), dann wieder der gewählte Takt.": "After each tap briefly every 5 s (at most 60 s), then back to the chosen interval.", "Akku nutzbar in kWh": "Usable battery in kWh", "vom Auto": "from the car", "von dir eingetragen": "entered by you", "Mit Panoptes wird der Wert vom Auto übernommen.": "With Panoptes the value is taken from the car.", "lernt aus deinen Fahrten": "learns from your trips", "liefert diese Datenquelle nicht": "not provided by this data source", "Ich habe den Hinweis gelesen und verstanden.": "I have read and understood the notice.", "Deine Passwörter und Schlüssel liegen unverschlüsselt in der Einstellungsdatei (nur für deinen Benutzer lesbar), weil hier kein Schlüsselbund verfügbar ist. Unter Linux hilft das Paket „libsecret-tools“ (secret-tool) mit einem laufenden Schlüsselbund.": "Your passwords and keys are stored unencrypted in the settings file (readable only by your user) because no keyring is available here. On Linux, the package “libsecret-tools” (secret-tool) with a running keyring helps.", "Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust. Du entscheidest:": "Whoever delivers the map images sees your IP address and the area you look at. You decide:", "Keine Karte": "No map", "Es werden keine Kartenbilder geladen.": "No map images are loaded.", "Kartenbilder von OpenStreetMap (fremder Dienst).": "Map images from OpenStreetMap (third-party service).", "Community-Karte": "Community map", "Dieselbe Karte wie im Planer und in der Panoptes-App, vom Server der BYD-Community (byd.serveone.at). Nur damit gibt es die Live-Belegung der Ladesäulen.": "The same map as in the planner and the Panoptes app, from the BYD community server (byd.serveone.at). Live charger availability only works with it.", "Karte anzeigen?": "Show the map?", "Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust.": "Whoever delivers the map images sees your IP address and the area you look at.", "Neu: Karte und 3D-Modell sind freiwillig": "New: map and 3D model are optional", "Beides lädt Daten von fremden Servern; die sehen dabei deine IP-Adresse (und bei der Karte die Gegend, beim 3D-Modell dein Automodell). Ohne deine Wahl bleibt beides aus.": "Both load data from other servers, which see your IP address (and the area for the map, your car model for the 3D model). Without your choice both stay off.", "Karte": "Map", "Dein Auto in 3D (vom Community-Server)": "Your car in 3D (from the community server)", "Speichern": "Save", "Dieselbe Karte wie im Planer und in der Panoptes-App. Die Kartenkacheln deiner Gegend lädt dann der Server der BYD-Community (byd.serveone.at); er sieht dabei deine IP-Adresse und den Kartenausschnitt. Ohne Haken lädt sie OpenStreetMap.": "The same map as in the planner and the Panoptes app. The map tiles for your area are then loaded from the BYD community server (byd.serveone.at); it sees your IP address and the map area. Without the tick, OpenStreetMap loads them.", "🚗 Dein Auto in 3D": "🚗 Your car in 3D", "Lädt einmal das 3D-Modell deines Autos vom Server der BYD-Community (byd.serveone.at). Der Server sieht dabei deine IP-Adresse und welches Modell du fährst. Ohne Haken: neutrale Silhouette oder dein Foto.": "Loads your car's 3D model once from the BYD community server (byd.serveone.at). The server sees your IP address and which model you drive. Without the tick: a neutral silhouette or your photo.", "Zeigt öffentliche Ladestationen am Standort deines Autos mit Entfernung und Steckertyp. Dafür geht die Position deines Autos an OpenStreetMap (Overpass-Dienst) oder an deinen eigenen OpenGlance-Server, wenn du ihn unten einträgst. Mit der Community-Karte kommt die Live-Belegung dazu: dafür geht nur die Kartenmitte, auf etwa 5 km gerundet, an den Server der BYD-Community.": "Shows public chargers at your car's location with distance and connector type. For this, your car's position is sent to OpenStreetMap (Overpass service) or to your own OpenGlance server if you enter it below. With the community map, live availability is added: only the map centre, rounded to about 5 km, goes to the BYD community server.", "Kurz vorab": "Quick note first", "Das EV-Cockpit ist ein privates Freizeitprojekt, kostenlos und ohne Gewähr. Du nutzt es auf eigenes Risiko, nur privat. Es verwendet dein BYD-Konto, Home Assistant oder deine Wallbox so, wie du es einstellst. Für Fernbefehle (z. B. Klima, Zusperren) und Ladebefehle an die Wallbox bist du selbst verantwortlich. Werte wie Ladestand, Reichweite und Preise können abweichen. Das EV-Cockpit ist nicht mit BYD verbunden.": "EV-Cockpit is a private hobby project, free and without warranty. You use it at your own risk, for private use only. It uses your BYD account, Home Assistant or your wallbox as you configure it. You are responsible for remote commands (e.g. climate, locking) and charging commands to your wallbox. Values such as charge level, range and prices may be inaccurate. EV-Cockpit is not affiliated with BYD.", "Alle Hinweise lesen": "Read all notes", "Gelesen und einverstanden": "Read and agreed", "Bitte bestätige die Hinweise, um fortzufahren.": "Please confirm the notes to continue.", "Freizeitprojekt.": "Hobby project.", "Panoptes, das EV-Cockpit und der Routenplaner sind ein privates Freizeitprojekt von Alfred Aigner. Sie werden kostenlos und ohne Gewähr angeboten.": "Panoptes, EV-Cockpit and the route planner are a private hobby project by Alfred Aigner. They are provided free of charge and without warranty.", "Ohne Gewähr.": "No warranty.", "Es gibt keine Garantie, dass alles fehlerfrei, vollständig oder jederzeit verfügbar ist. Das gilt auch für Ladestände, Reichweiten, Preise, Belegung von Ladesäulen, Routen, Blitzer- und Gefahrenhinweise. Prüfe Wichtiges selbst; im Straßenverkehr gilt immer, was du siehst und was die Schilder sagen.": "There is no guarantee that everything is correct, complete or always available. This includes charge levels, range, prices, charger availability, routes, speed camera and hazard warnings. Check anything important yourself; on the road, what you see and the road signs always come first.", "Eigenes Risiko.": "Your own risk.", "Du nutzt alles auf eigenes Risiko. Soweit gesetzlich zulässig, übernimmt Alfred Aigner keine Haftung für Schäden, die aus der Nutzung entstehen, auch nicht für Schäden am Fahrzeug, an Daten oder durch Fernbefehle.": "You use everything at your own risk. To the extent permitted by law, Alfred Aigner accepts no liability for any damage resulting from its use, including damage to your vehicle, to data, or caused by remote commands.", "Du bist verantwortlich.": "You are responsible.", "Du allein entscheidest, wie du die Funktionen einsetzt, und bist dafür verantwortlich, dass das erlaubt ist. Das betrifft vor allem Datenschutz, Kamera-Aufnahmen, Fernbefehle über das BYD-Konto und die Regeln im Straßenverkehr.": "You alone decide how you use the features, and you are responsible for making sure that use is legal. This applies especially to data protection, camera recordings, remote commands via your BYD account, and traffic rules.", "Nur privat.": "Private use only.", "Gedacht ist alles nur für die private Nutzung mit deinem eigenen Fahrzeug. Ein gewerblicher Einsatz (z. B. Flotten, Vermietung, Taxi, Firmenwagen-Überwachung) ist nicht vorgesehen.": "Everything is intended for private use with your own vehicle only. Commercial use (e.g. fleets, rental, taxi, monitoring company cars) is not intended.", "Wächter nur auf eigenem Grund.": "Guardian on your own property only.", "Kamera-Aufnahmen des Wächters sind für deinen eigenen Privatgrund gedacht (z. B. Garage, Einfahrt). Richte die Kameras so aus, dass weder öffentlicher Raum (Straße, Gehweg, öffentlicher Parkplatz) noch das Grundstück der Nachbarn erfasst wird. Aufnahmen nicht veröffentlichen.": "Guardian recordings are intended for your own private property (e.g. garage, driveway). Point the cameras so that neither public space (street, pavement, public car park) nor your neighbours' property is captured. Do not publish recordings.", "Nicht von BYD.": "Not BYD.", "Dieses Projekt ist nicht mit BYD verbunden und wird von BYD weder unterstützt noch geprüft. „BYD“, „DiLink“ und alle anderen genannten Namen und Marken gehören ihren jeweiligen Inhabern.": "This project is not affiliated with BYD and is not supported or reviewed by BYD. “BYD”, “DiLink” and all other names and trademarks mentioned belong to their respective owners.", "Gesetzliche Rechte bleiben.": "Your legal rights remain.", "Die Haftung für Vorsatz und grobe Fahrlässigkeit, für Personenschäden sowie zwingende Rechte von Verbraucherinnen und Verbrauchern werden durch diese Hinweise nicht eingeschränkt.": "Liability for intent and gross negligence, for personal injury, and mandatory consumer rights are not limited by these notes.", "🔗 Mit Panoptes verbinden": "🔗 Connect to Panoptes", "Bestätige in Telegram oder hier:": "Confirm in Telegram or here:", "will sich verbinden. Prüfzahl:": "wants to connect. Check number:", "Panoptes öffnen („Gekoppelte Geräte“)": "Open Panoptes (“Paired devices”)", "Vergleiche die Prüfzahl und tippe auf „Erlauben“. Die Anfrage gilt 2 Minuten.": "Compare the check number and tap “Allow”. The request is valid for 2 minutes.", "Erweitert: mit Kopplungs-Code oder Link": "Advanced: with pairing code or link", "Kopplungs-Code oder Link aus Panoptes („Neues Gerät koppeln“, 10 min gültig, einmal verwendbar)": "Pairing code or link from Panoptes (“Pair new device”, valid 10 min, single use)", "482913 oder https://…/system.html#koppeln=…": "482913 or https://…/system.html#koppeln=…", "🔗 Mit Routenplaner verbinden": "🔗 Connect to route planner", "Im Browser bestätigen:": "Confirm in your browser:", "Code": "Code", "Routenplaner öffnen und erlauben": "Open route planner and allow", "Melde dich dort als Mitglied an und tippe auf „Erlauben“. Der Code gilt 10 Minuten.": "Sign in there as a member and tap “Allow”. The code is valid for 10 minutes.", "Erweitert: mit persönlichem Planer-Link": "Advanced: with your personal planner link", "Warte auf „Erlauben“ …": "Waiting for “Allow” …", "Verbunden": "Connected", "Ladestand ": "charge level ", "Mit dem Routenplaner verbunden": "Connected to the route planner", "Schon gekoppelt. Nur neu verbinden, wenn die Kopplung in Panoptes entfernt wurde.": "Already paired. Only connect again if the pairing was removed in Panoptes.", "3D-Modell nicht geladen": "3D model not loaded", "Erneut versuchen": "Try again", "3D-Modell wird geladen …": "Loading 3D model …", "Laden fehlgeschlagen": "Loading failed", "Dieser Browser kann kein WebGL": "This browser has no WebGL",
     "Eigenes Foto verwenden": "Use your own photo", "Reichweite": "Range",
     "Verbunden": "Connected", "Nicht verbunden": "Not connected",
     "Kompakt": "Compact", "Limousine": "Sedan", "Kombi": "Estate", "SUV": "SUV", "Van": "Van",
@@ -1682,7 +1758,8 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
   <label>Modell (setzt die Akkugröße)</label>
   <select id=model onchange="setkwh()">__MODELS__</select>
   <div class=row>
-   <div><label>Akku nutzbar in kWh — <b>bitte prüfen</b></label><input id=kwh value="43.2"></div>
+   <div><label id=kwhlbl>Akku nutzbar in kWh — <b>bitte prüfen</b></label><input id=kwh value="43.2" oninput="KWH_HAND=true">
+    <small id=kwhauto style="display:none;margin-top:4px">Mit Panoptes wird der Wert vom Auto übernommen.</small></div>
    <div><label>Reifendruck-Sollwert (kPa, optional)</label><input id=tyretarget placeholder="z.B. 250"></div>
   </div>
   <div id=capswrap>
@@ -1953,7 +2030,8 @@ function go(n){
  document.getElementById('wsub').textContent=TITEL[n][1];
  window.scrollTo({top:0,behavior:'smooth'});
 }
-function setkwh(){document.getElementById('kwh').value=KWH[document.getElementById('model').value]||60;}
+let KWH_HAND=false;
+function setkwh(){KWH_HAND=false;document.getElementById('kwh').value=KWH[document.getElementById('model').value]||60;}
 function body(){return {username:username.value.trim(),password:password.value,control_pin:pin.value.trim(),
  country_code:country.value,time_zone:tz.value,language:'de'};}
 // Bestehende Einstellungen zurueckschreiben, damit man z.B. nur ein Foto nachreichen kann.
@@ -1971,6 +2049,11 @@ function vorfuellen(){
  if(VOR.model){const m=document.getElementById('model');
   if([...m.options].some(o=>o.value===VOR.model)) m.value=VOR.model;}
  if(VOR.battery_kwh) document.getElementById('kwh').value=VOR.battery_kwh;
+ if(String(VOR.battery_quelle||'').indexOf('Panoptes')===0){
+  document.getElementById('kwhlbl').innerHTML=__T('Akku nutzbar in kWh')+' — <b>'+__T('vom Auto')+'</b> (Panoptes)';}
+ else if(VOR.battery_quelle==='manuell'){
+  document.getElementById('kwhlbl').innerHTML=__T('Akku nutzbar in kWh')+' — <b>'+__T('von dir eingetragen')+'</b>';}
+ else if(VOR.panoptes){document.getElementById('kwhauto').style.display='block';}
  if(VOR.tyre_target) document.getElementById('tyretarget').value=VOR.tyre_target;
  if(VOR.features){document.getElementById('capsmsg').textContent=
    'ℹ️ Deine Auswahl ist gespeichert. Erneut abfragen, um sie zu ändern.';}
@@ -2198,6 +2281,7 @@ async function planerFz(){const m=document.getElementById('planermsg'), sel=docu
  }catch(e){m.textContent='⚠️ '+e}}
 async function save(){const m=document.getElementById('smsg');
  const b=body(); b.vin=document.getElementById('vin').value; b.battery_kwh=parseFloat(document.getElementById('kwh').value);
+ b.battery_kwh_hand=KWH_HAND;
  b.model=document.getElementById('model').value; b.photo_data=PHOTO;
  b.tyre_target=parseFloat(document.getElementById('tyretarget').value)||null;
  b.features={}; document.querySelectorAll('.capchk').forEach(c=>{
@@ -2346,6 +2430,11 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
 .brand b{color:var(--cyan)}.brand-sub{color:var(--mut);font-size:11px;letter-spacing:.04em;margin-top:2px}
 .on{gap:9px;flex-wrap:wrap;justify-content:flex-end}.dot{background:var(--ok);box-shadow:0 0 0 5px rgba(34,197,94,.12)}
 .dot.off{background:#64748B}.fresh{font-variant-numeric:tabular-nums}
+.taktbox{position:absolute;right:16px;z-index:900;max-width:330px;margin-top:-6px;padding:14px 16px;border-radius:16px;
+ border:1px solid var(--border);background:var(--surface);box-shadow:0 12px 40px rgba(0,0,0,.35);font-size:13px;line-height:1.45}
+.taktbox label{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
+.taktbox select{padding:6px 8px;border-radius:10px;border:1px solid var(--border);background:var(--soft);color:var(--txt);font:inherit}
+.taktbox p{margin:10px 0 0;color:var(--mut)}.wrap{position:relative}
 .iconbtn{min-width:40px;height:40px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--txt);cursor:pointer;
  transition:background var(--fast),border-color var(--fast),transform var(--fast)}
 .iconbtn:hover{background:var(--soft);border-color:#2a5566}.iconbtn:active{transform:scale(.96)}
@@ -2375,7 +2464,7 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
 @media(max-width:760px){body{padding:14px}.hero{grid-template-columns:1fr;padding:18px}.grid[style]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  .overview-kpis{margin-top:0}
  .top{align-items:flex-start}.brand-sub{display:none}}
-@media(max-width:460px){.grid[style]{grid-template-columns:1fr!important}.on #onl,.fresh{display:none}.hero{padding:14px}.quicknav{top:6px}}
+@media(max-width:460px){.grid[style]{grid-template-columns:1fr!important}.on #onl{display:none}.fresh{font-size:11px}.hero{padding:14px}.quicknav{top:6px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
 </style></head><body><div class=wrap>
  <div id=updbar style="display:none;background:linear-gradient(90deg,rgba(95,214,230,.16),rgba(95,214,230,.10));
@@ -2386,8 +2475,17 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
  <div class=top><div><div class=brand>EV <b>•</b> COCKPIT</div><div class=brand-sub>TEIL VON PANOPTES</div></div>
   <div class=on><span id=dot class=dot></span><span id=onl>—</span><span id=fresh class=fresh>noch nicht aktualisiert</span>
    <button class=iconbtn id=refreshbtn onclick="manualRefresh()" title="Jetzt aktualisieren" aria-label="Jetzt aktualisieren">↻</button>
+   <button class=iconbtn id=taktbtn onclick="taktUm(event)" title="Wie oft beim Auto nachfragen?" aria-label="Wie oft beim Auto nachfragen?" style="display:none">⏱</button>
    &nbsp;<span id=glocke class=glocke onclick="glockeUm()" title="Benachrichtigen, wenn das Laden fertig ist">🔕</span>
    &nbsp;<a class=cfg href="/setup">⚙︎</a></div></div>
+ <div id=taktbox class=taktbox style="display:none" onclick="event.stopPropagation()">
+  <b>Wie oft beim Auto nachfragen?</b>
+  <label>Geparkt<select id=taktpark onchange="taktSpeichern()"></select></label>
+  <label>Bei Fahrt bzw. Laden<select id=taktfahrt onchange="taktSpeichern()"></select></label>
+  <p><span>Jede Abfrage weckt die App im Auto. Ist dieser Tab verborgen, wird pausiert.</span>
+  <span>Nach jedem Antippen kurz alle 5 s (höchstens 60 s), dann wieder der gewählte Takt.</span></p>
+  <p id=taktheute></p>
+ </div>
  <nav class=quicknav aria-label="Schnellnavigation"><a href="#overview">Übersicht</a><a href="#climate">Klima</a>
   <a href="#charging">Laden</a><a href="#energy-panel">Energie</a><a href="#prices">Preise</a><a href="#location">Standort</a></nav>
  <div class=err id=err></div>
@@ -2797,18 +2895,34 @@ function zeichneKarte(s){
 
 // --- Benachrichtigungen: entstehen im Browser, verlassen den Rechner NICHT ---
 let LETZTER = {};                       // vorheriger Zustand, um Wechsel zu erkennen
-let LOAD_BUSY=false, POLL_TIMER=null, LAST_STATE=null, LAST_OK=0, LAST_LATENCY=0;
+let LOAD_BUSY=false, POLL_TIMER=null, LAST_STATE=null, LAST_OK=0, LAST_LATENCY=0, DATA_TS=0;
+const TAKT_WAHL=[1,2,5,10,15,30,0];
+function taktText(m){return m?(window.__LANG__==='en'?'every '+m+' min':'alle '+m+' min'):__T('nur manuell');}
+function taktFuellen(a){
+ ['taktpark','taktfahrt'].forEach(function(id,i){const el=document.getElementById(id);
+  if(!el.options.length)el.innerHTML=TAKT_WAHL.map(m=>'<option value="'+m+'">'+taktText(m)+'</option>').join('');
+  if(document.activeElement!==el)el.value=String(i?a.fahrt:a.geparkt);});
+ document.getElementById('taktheute').textContent=(window.__LANG__==='en'?'Queries to the car today: ':'Heute ans Auto gefragt: ')+a.heute+'×';}
+function taktUm(e){e.stopPropagation();const b=document.getElementById('taktbox');b.style.display=b.style.display==='none'?'block':'none';}
+document.addEventListener('click',function(){const b=document.getElementById('taktbox');if(b)b.style.display='none';});
+async function taktSpeichern(){
+ try{const r=await fetch('/abfrage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(
+  {geparkt:parseInt(document.getElementById('taktpark').value,10),fahrt:parseInt(document.getElementById('taktfahrt').value,10)})});
+  const d=await r.json();if(d.abfrage)taktFuellen(d.abfrage);}catch(e){}
+ schedulePoll();}
 function freshness(){
  const e=document.getElementById('fresh');if(!e)return;
  if(!LAST_OK){e.textContent=__T('noch nicht aktualisiert');return;}
- const age=Math.max(0,Math.round((Date.now()-LAST_OK)/1000));
- e.textContent=(age<2?__T('gerade eben'):(window.__LANG__==='en'?age+' s ago':'vor '+age+' s'))+' · '+LAST_LATENCY+' ms'+
+ const age=Math.max(0,Math.round((Date.now()-(DATA_TS||LAST_OK))/1000)), en=window.__LANG__==='en';
+ const alt=age<2?__T('gerade eben'):(age<120?(en?age+' s ago':'vor '+age+' s'):(en?Math.round(age/60)+' min ago':'vor '+Math.round(age/60)+' min'));
+ const a=LAST_STATE&&LAST_STATE.panoptes_an&&LAST_STATE.abfrage;
+ e.textContent=alt+(a&&a.takt_s==null&&!a.pausiert?' · '+__T('nur manuell'):'')+' · '+LAST_LATENCY+' ms'+
   (window.__QUELLE__?' · '+window.__QUELLE__:'');
 }
 function schedulePoll(){
  clearTimeout(POLL_TIMER);
- const delay=document.hidden?60000:(LAST_STATE&&LAST_STATE.charging==='ON'?4000:(LAST_STATE&&LAST_STATE.online==='ON'?8000:20000));
- POLL_TIMER=setTimeout(load,delay);
+ if(document.hidden)return;          // Tab verborgen: nichts abrufen -> der Server pausiert die Abfragen beim Auto
+ POLL_TIMER=setTimeout(load,5000);   // nur der lokale Zwischenspeicher; wie oft das Auto gefragt wird, steht unter ⏱
 }
 function melden(titel, text){
  try{ if(window.Notification && Notification.permission==='granted'){
@@ -2854,9 +2968,10 @@ async function load(){
  const refresh=document.getElementById('refreshbtn');if(refresh){refresh.disabled=true;refresh.textContent='…';}
  const started=performance.now();
  try{
- const response=await fetch('/data',{cache:'no-store'});
+ const response=await fetch('/data?sichtbar='+(document.hidden?0:1),{cache:'no-store'});
  if(!response.ok)throw Error('HTTP '+response.status);
- const s=await response.json();LAST_STATE=s;window.__QUELLE__=s.quelle||'';LAST_OK=Date.now();LAST_LATENCY=Math.round(performance.now()-started);freshness();
+ const s=await response.json();LAST_STATE=s;window.__QUELLE__=s.quelle||'';LAST_OK=Date.now();DATA_TS=s.daten_alter_s!=null?Date.now()-s.daten_alter_s*1000:0;LAST_LATENCY=Math.round(performance.now()-started);
+ document.getElementById('taktbtn').style.display=s.panoptes_an?'':'none';if(s.panoptes_an&&s.abfrage)taktFuellen(s.abfrage);freshness();
  document.getElementById('dot').className='dot'+(s.online==='ON'?'':' off');
  document.getElementById('onl').textContent=s.online==='ON'?'ONLINE':'SCHLÄFT';
  const e=document.getElementById('err');
@@ -3014,7 +3129,8 @@ async function load(){
 }finally{
  LOAD_BUSY=false;if(refresh){refresh.disabled=false;refresh.textContent='↻';}schedulePoll();
 }}
-function manualRefresh(){clearTimeout(POLL_TIMER);load();}
+function manualRefresh(){clearTimeout(POLL_TIMER);
+ fetch('/jetzt',{method:'POST'}).catch(function(){}).then(function(){setTimeout(load,1500);});}
 function zusperren(){
  if(confirm('Auto wirklich zusperren?')) cmd('lock');}
 function battUm(){ // an/aus je nach aktuellem Zustand des Autos
@@ -3030,7 +3146,7 @@ async function cmd(a){
  }catch(ex){m.textContent='⚠️ '+ex.message;}
  finally{controls.forEach(e=>e.classList.remove('busy'));}
  setTimeout(()=>{m.dataset.hold='';manualRefresh();},2200);}
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)manualRefresh();else schedulePoll();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){clearTimeout(POLL_TIMER);load();}else clearTimeout(POLL_TIMER);});
 setInterval(freshness,5000);glockeMalen();load();
 </script></body></html>"""
 
@@ -3483,7 +3599,7 @@ class H(BaseHTTPRequestHandler):
         # Bestehende Einstellungen vorausfuellen, damit man spaeter z.B. nur ein Foto
         # nachreichen kann, ohne alles neu zu tippen. Passwort wird NICHT ausgeliefert.
         vor = {k: _CFG.get(k) for k in ("username", "country_code", "time_zone", "vin", "model",
-                                        "battery_kwh", "tyre_target", "lan", "count_optin", "show_price",
+                                        "battery_kwh", "battery_quelle", "tyre_target", "lan", "count_optin", "show_price",
                                         "poll_min", "sentry", "car_adb", "show_chargers", "charger_url", "update_check", "features",
                                         "planer", "planer_fahrzeug", "planer_fahrten", "karte", "modell3d", "kartenquelle",
                                         "panoptes", "panoptes_url",
@@ -3668,7 +3784,12 @@ class H(BaseHTTPRequestHandler):
             self.send_header("Content-Length", "0")
             self.end_headers()
         elif p == "/data":
+            if "sichtbar=1" in (urllib.parse.urlparse(self.path).query or ""):
+                _TAKT["sichtbar_ts"] = time.time()
             d = dict(_STATE)
+            d["abfrage"] = abfrage_status()
+            if _STATE.get("_poll_ts"):
+                d["daten_alter_s"] = max(0, int(time.time() - _STATE["_poll_ts"]))
             # Entfernungen IMMER aus der aktuellen Position rechnen — sonst zeigt die Liste
             # nach dem Losfahren noch die Entfernungen vom alten Standort.
             _la, _lo = _STATE.get("latitude"), _STATE.get("longitude")
@@ -3716,6 +3837,23 @@ class H(BaseHTTPRequestHandler):
         if ln < 0 or ln > 2 * 1024 * 1024:
             return self._send(json.dumps({"error": "Request body too large"}), "application/json", 413)
         raw = self.rfile.read(ln).decode("utf-8") if ln else "{}"
+        if u.path == "/jetzt":
+            nutzer_aktion()
+            return self._send(json.dumps({"ok": True}), "application/json")
+        if u.path == "/abfrage":
+            try:
+                c = json.loads(raw or "{}")
+                for feld, key in (("geparkt", "abfrage_geparkt"), ("fahrt", "abfrage_fahrt")):
+                    if feld in c:
+                        v = int(c[feld])
+                        if v not in ABFRAGE_WAHL:
+                            raise ValueError("Ungültiger Takt")
+                        _CFG[key] = v
+                save_cfg(_CFG)
+                nutzer_aktion()
+                return self._send(json.dumps({"ok": True, "abfrage": abfrage_status()}), "application/json")
+            except Exception as e:
+                return self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json", 400)
         if u.path in ("/energy/steuern-erlauben", "/energy/steuern"):
             # Wallbox steuern NUR ueber evcc und NUR fuer Ladepunkte, die der Nutzer ausdruecklich
             # freigeschaltet hat (Standard aus). evcc kuemmert sich um Phasen, Stromgrenzen, Schutz.
@@ -4132,6 +4270,17 @@ class H(BaseHTTPRequestHandler):
                 # ein "neues" Auto. Nur bei anderem Fahrzeug (VIN) eine neue.
                 if _CFG.get("planer_auto") and c.get("vin") == _CFG.get("vin"):
                     c["planer_auto"] = _CFG["planer_auto"]
+                for k in ABFRAGE_STD:                 # im Cockpit eingestellt, nicht im Assistenten
+                    if k in _CFG and k not in c:
+                        c[k] = _CFG[k]
+                # Akku-kWh: von Hand eingetippt -> bleibt; unveraendert -> Herkunft behalten; sonst Listenwert
+                if c.pop("battery_kwh_hand", False):
+                    c["battery_quelle"] = "manuell"
+                elif abs(float(c.get("battery_kwh") or 0) - float(_CFG.get("battery_kwh") or 0)) < 0.05 \
+                        and _CFG.get("battery_quelle"):
+                    c["battery_quelle"] = _CFG["battery_quelle"]
+                else:
+                    c.pop("battery_quelle", None)
                 c.pop("auth_blocked", None)       # bewusstes Speichern erlaubt genau einen neuen Versuch
                 save_cfg(c)
                 load_cfg()
@@ -4141,6 +4290,7 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json")
         elif u.path == "/cmd":
+            nutzer_aktion()
             a = (urllib.parse.parse_qs(u.query).get("a") or [""])[0]
             if a in ERLAUBTE_BEFEHLE and a not in NIE:     # Aufsperren gibt es nie (Alfred, 21.10.)
                 _run_cmd(a)
