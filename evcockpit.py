@@ -166,7 +166,7 @@ POLL_HA = 60             # 1 min, Home Assistant als Quelle (lokal, kein Cloud-K
 def load_cfg():
     global _CFG
     try:
-        _CFG = json.loads(CFG_FILE.read_text("utf-8"))
+        _CFG = json.loads(CFG_FILE.read_text("utf-8-sig"))   # utf-8-sig: auch von Hand mit BOM gespeichert
     except Exception:
         _CFG = {}
     return _CFG
@@ -183,7 +183,7 @@ def save_cfg(c):
 
 def load_cache():
     try:
-        return json.loads(CACHE_FILE.read_text("utf-8"))
+        return json.loads(CACHE_FILE.read_text("utf-8-sig"))
     except Exception:
         return {}
 
@@ -1166,7 +1166,7 @@ _I18N.update({
     "FAHRZEUGE & LADEPUNKTE": "VEHICLES & CHARGE POINTS", "PV-Erzeugung": "Solar production",
     "Netz": "Grid", "Speicher": "Battery", "Hausverbrauch": "Home consumption",
     "Netzpreis": "Grid tariff", "Grünstromanteil": "Green energy share",
-    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette",
+    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette", "3D-Modell nicht geladen": "3D model not loaded", "Erneut versuchen": "Try again", "Laden fehlgeschlagen": "Loading failed", "Dieser Browser kann kein WebGL": "This browser has no WebGL",
     "Eigenes Foto verwenden": "Use your own photo", "Reichweite": "Range",
     "Verbunden": "Connected", "Nicht verbunden": "Not connected",
     "Kompakt": "Compact", "Limousine": "Sedan", "Kombi": "Estate", "SUV": "SUV", "Van": "Van",
@@ -2509,10 +2509,12 @@ async function kartenSpeichern(){const m=document.getElementById('kartenmsg');
  }catch(e){m.textContent='⚠️ '+e;}}
 
 // 3D-Auto wie in Panoptes (gemeinsame Modelle, CC BY 4.0 Nazh Design). Faellt still auf Foto/Silhouette zurueck.
-const AUTO3D={ok:null,farbe:null,lack:[],r:null};
+const AUTO3D={ok:null,farbe:null,lack:[],r:null,grund:'',still:false,wieder:0};
+function auto3dNochmal(){AUTO3D.ok=null;AUTO3D.lack=[];AUTO3D.grund='';document.getElementById('car').dataset.p='';load();}
 async function auto3d(car,s){AUTO3D.ok='laedt';
  try{const i=await (await fetch('/modell3d/info',{cache:'no-store'})).json();
-  if(!i.verfuegbar||!window.WebGLRenderingContext)throw 0;
+  if(!i.verfuegbar)throw {grund:i.grund||'',still:!!i.still};
+  if(!window.WebGLRenderingContext)throw {grund:__T('Dieser Browser kann kein WebGL'),still:false};
   const THREE=await import('three');
   const {GLTFLoader}=await import('/static/three/examples/jsm/loaders/GLTFLoader.js');
   const {DRACOLoader}=await import('/static/three/examples/jsm/loaders/DRACOLoader.js');
@@ -2543,7 +2545,11 @@ async function auto3d(car,s){AUTO3D.ok='laedt';
   groesse();window.addEventListener('resize',groesse);
   r.setAnimationLoop(()=>{if(document.hidden)return;pivot.rotation.y+=0.004;r.render(sc,cam);});
   AUTO3D.ok=true;
- }catch(e){AUTO3D.ok=false;document.getElementById('car').dataset.p='';load();}}
+ }catch(e){AUTO3D.ok=false;AUTO3D.still=!!(e&&e.still);
+  AUTO3D.grund=(e&&e.grund!==undefined)?e.grund:(__T('Laden fehlgeschlagen')+(e&&e.message?' ('+e.message+')':''));
+  if(!AUTO3D.still){console.warn('3D-Modell nicht geladen:',e);
+   if(!AUTO3D.wieder){AUTO3D.wieder=1;setTimeout(auto3dNochmal,60000);}}   // ein zweiter Versuch von selbst
+  document.getElementById('car').dataset.p='';load();}}
 
 // Klick auf ein Saeulensymbol der Karte: eigene Infos der naechsten Saeule (<120 m), sonst OSM-Angaben
 function klickSaeule(e){
@@ -2696,6 +2702,8 @@ async function load(){
   const caption='<div class=vehicle-caption><strong>'+model+'</strong><span>'+__T('Rechtlich neutrale Silhouette')+'</span></div>';
   if(s.photo){car.innerHTML='<div class=wrap><img src="'+esc(s.photo)+'" alt="'+model+'">'+caption+'</div>';}
   else{car.innerHTML='<div class=wrap>'+(SIL[s.silhouette]||SIL.klein)+caption+
+   (AUTO3D.ok===false&&!AUTO3D.still?'<div class=hint style="opacity:.85">⚠️ '+__T('3D-Modell nicht geladen')+
+    (AUTO3D.grund?': '+esc(AUTO3D.grund):'')+' <button type=button onclick="auto3dNochmal()">↻ '+__T('Erneut versuchen')+'</button></div>':'')+
    '<div class=hint><button type=button onclick="chooseCarPhoto()">📷 '+__T('Eigenes Autofoto hinzufügen')+'</button></div></div>';}}
  if(s.lan_url){document.getElementById('lanhint').style.display='block';
   document.getElementById('lanurl').textContent=s.lan_url;}
@@ -3315,18 +3323,26 @@ class H(BaseHTTPRequestHandler):
         elif p == "/modell3d/info":
             # Gleiche 3D-Modelle wie Panoptes (Manifest auf byd.serveone.at/tiles/models/), mit Pflicht-Namensnennung
             try:
-                if _CFG.get("modell3d") is False:
-                    raise LookupError
                 import modell3d
-                mani = _MANIFEST.get()
-                m = modell3d.eintrag(mani, modell3d.modell_id(_CFG.get("model")))
+                mid = modell3d.modell_id(_CFG.get("model"))
+                if _CFG.get("modell3d") is False or not mid:
+                    return self._send(json.dumps({"verfuegbar": False, "still": True}), "application/json")
+                try:
+                    mani = _MANIFEST.get()
+                except Exception as e:
+                    print("3D-Modell: Verzeichnis nicht erreichbar:", type(e).__name__, e)
+                    return self._send(json.dumps({"verfuegbar": False, "grund": "Modell-Verzeichnis nicht erreichbar (%s)"
+                                                  % type(e).__name__}), "application/json")
+                m = modell3d.eintrag(mani, mid)
                 if not m:
-                    raise LookupError
+                    return self._send(json.dumps({"verfuegbar": False, "grund": "Modell „%s“ ist gerade nicht verfügbar" % mid}),
+                                      "application/json")
                 d = modell3d.info(m, mani.get("paintPresets") or [])
                 d["farbe"] = _CFG.get("lackfarbe") or ""
                 self._send(json.dumps(d), "application/json")
-            except Exception:
-                self._send(json.dumps({"verfuegbar": False}), "application/json")
+            except Exception as e:
+                print("3D-Modell: Fehler:", type(e).__name__, e)
+                self._send(json.dumps({"verfuegbar": False, "grund": type(e).__name__}), "application/json")
         elif p == "/modell3d/datei":
             try:
                 import modell3d
@@ -3334,8 +3350,9 @@ class H(BaseHTTPRequestHandler):
                 if not m or _CFG.get("modell3d") is False:
                     raise LookupError
                 self._send(Path(modell3d.datei(m, str(MODELL_DIR))).read_bytes(), "model/gltf-binary")
-            except Exception:
-                self._send(b"", "text/plain", 404)
+            except Exception as e:
+                print("3D-Modell: Datei nicht geladen:", type(e).__name__, e)
+                self._send(("Modell-Datei nicht geladen (%s)" % type(e).__name__).encode("utf-8"), "text/plain", 404)
         elif p == "/panoptes":
             self._send(_i18n(PANOPTES_SEITE))
         elif p == "/panoptes/einstellungen":
