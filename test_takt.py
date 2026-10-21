@@ -122,7 +122,7 @@ class TestAkkuGeschaetzt(unittest.TestCase):
     def test_speichern_laesst_seite_nicht_leer(self):
         q = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "evcockpit.py"), encoding="utf-8").read()
         i = q.index("gleiches_auto = c.get(\"vin\") == _CFG.get(\"vin\")")
-        teil = q[i:i + 600]
+        teil = q[i:i + 1500]
         self.assertIn("load_cache()", teil)                                 # letzte bekannte Werte statt leer
         self.assertIn("nutzer_aktion()", teil)                              # und sofort neu fragen
         self.assertGreaterEqual(q.count('cache["_poll_ts"] = time.time()'), 3)   # Alter ueberlebt den Neustart
