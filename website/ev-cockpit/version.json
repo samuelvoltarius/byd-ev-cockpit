@@ -1,5 +1,5 @@
 {
-  "version": "1.10.2",
-  "was_neu": "Kein adb mehr mit Panoptes, keine alten Werte, Reichweite (geschätzt), Routenplaner geduldiger",
+  "version": "1.10.3",
+  "was_neu": "Keine leere Anzeige mehr nach dem Speichern, ehrliches Alter, Route ohne Autoposition",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }

@@ -36,7 +36,7 @@ def anfrage_body(w, auto_pos, auto_soc, fahrzeug, auto_kennung=""):
     Start = Autoposition, solange der Nutzer keinen anderen Start angibt."""
     start = _punkt(w["start"]) if w.get("start") else (_punkt(auto_pos) if auto_pos else None)
     if start is None:
-        raise ValueError("Keine Autoposition bekannt – bitte einen Start eingeben")
+        raise ValueError("Autoposition gerade nicht verfügbar – Start eingeben")
     ziel = _punkt(w.get("ziel"))
     if not fahrzeug:
         raise ValueError("Kein Fahrzeugprofil im Planer gefunden – bitte in den Einstellungen wählen")
@@ -139,9 +139,12 @@ def grund(e):
     return "Routenplaner-Fehler (%s)" % type(e).__name__
 
 
-def planen(token, body, anfrage=pb._anfrage):
+def planen(token, body, anfrage=pb._anfrage, warte=None):
     try:
         code, d = anfrage("plan", token, body, timeout=PLAN_TIMEOUT)
+        if code in (502, 503, 504):              # Planer startet sanft neu (~1 s Luecke): einmal nach 2 s wiederholen
+            (warte or __import__("time").sleep)(2)
+            code, d = anfrage("plan", token, body, timeout=PLAN_TIMEOUT)
     except (socket.timeout, TimeoutError):
         raise ValueError("Der Routenplaner hat nach %d s nicht geantwortet – bitte gleich noch einmal versuchen" % PLAN_TIMEOUT)
     except urllib.error.URLError as e:

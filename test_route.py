@@ -80,7 +80,13 @@ class TestRoute(unittest.TestCase):
     def test_planer_haengt_nicht_still(self):
         for code in (502, 503, 504):
             with self.assertRaisesRegex(ValueError, "neu gestartet oder ist ausgelastet"):
-                rp.planen("t", {}, anfrage=Fake({"plan": (code, {})}))
+                rp.planen("t", {}, anfrage=Fake({"plan": (code, {})}), warte=lambda s: None)
+
+    def test_503_einmal_wiederholen(self):
+        antworten = [(503, {}), (200, PLAN)]
+        gewartet = []
+        k = rp.planen("t", {}, anfrage=lambda *a, **kw: antworten.pop(0), warte=gewartet.append)
+        self.assertEqual((k["km"], gewartet), (199.4, [2]))
         import socket
 
         def zu_langsam(*a, **k):
