@@ -207,7 +207,8 @@ class Panoptes:
 def kennung_aus(d):
     """GET /api/planer/identitaet -> sichere auto-Kennung oder "" (Format wie beim Planer: 1-32 Zeichen [A-Za-z0-9_-])."""
     import re
-    a = str((d or {}).get("auto") or "")
+    d = d or {}
+    a = str(d.get("autoId") or d.get("auto") or "")       # Kern liefert {success, autoId:"a-<16 hex>"}
     return a if re.fullmatch(r"[A-Za-z0-9_-]{1,32}", a) else ""
 
 

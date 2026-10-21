@@ -39,6 +39,7 @@ class Fake:
 class TestIdentitaet(unittest.TestCase):
     def test_kennung(self):
         self.assertEqual(ps.kennung_aus({"auto": "pan-3f9a2c", "fahrzeug": "X", "quelle": "panoptes"}), "pan-3f9a2c")
+        self.assertEqual(ps.kennung_aus({"success": True, "autoId": "a-0123456789abcdef"}), "a-0123456789abcdef")
         self.assertEqual(ps.kennung_aus({"auto": "LGXC1234567890123"}), "LGXC1234567890123")  # Format ok
         self.assertEqual(ps.kennung_aus({"auto": "a b/../c"}), "")      # nichts Unsauberes in URLs
         self.assertEqual(ps.kennung_aus({}), "")
