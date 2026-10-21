@@ -1,5 +1,5 @@
 {
-  "version": "1.9.2",
-  "was_neu": "Datenschutz: Karte nur nach deiner Wahl (keine, OpenStreetMap oder Community), Zählung abwählen löscht beim Server",
+  "version": "1.9.3",
+  "was_neu": "Sicherheit: Passwörter und Schlüssel unter Windows verschlüsselt gespeichert (DPAPI)",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }

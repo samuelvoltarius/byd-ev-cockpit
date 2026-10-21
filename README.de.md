@@ -210,6 +210,10 @@ Nutzungszählung (Zufalls-ID, Version, Automodell; Häkchen weg = Eintrag wird b
 Kartenquelle, 3D-Modell, Ladesäulen in der Nähe, Strompreis, Routenplaner und „Echten Verbrauch lernen“. Die Kopplung
 mit Panoptes bleibt in deinem Heimnetz bzw. Tailscale.
 
+**Passwörter und Schlüssel auf deinem Rechner:** Unter Windows verschlüsselt das Cockpit sie in seiner
+Einstellungsdatei mit dem Windows-Datenschutz (DPAPI) deines Benutzerkontos; nur du an diesem Rechner kannst sie
+lesen. Unter Linux und macOS liegen sie in der Einstellungsdatei, die nur dein Benutzer lesen darf (0600).
+
 ## Hinweise / Haftung
 
 **DE:** Privates Freizeitprojekt, kostenlos und ohne Gewähr. Nutzung auf eigenes Risiko und nur privat mit dem eigenen Fahrzeug. Für eine rechtmäßige Nutzung (Datenschutz, Kamera-Aufnahmen, Fernbefehle, Straßenverkehr) sind allein die Nutzer verantwortlich. Wächter-Aufnahmen sind nur für den eigenen Privatgrund gedacht, ohne öffentlichen Raum oder Nachbargrund. Soweit gesetzlich zulässig, übernimmt der Entwickler keine Haftung; Haftung für Vorsatz, grobe Fahrlässigkeit, Personenschäden und zwingende Verbraucherrechte bleiben unberührt. Nicht mit BYD verbunden; alle Marken gehören ihren Inhabern. Siehe auch LICENSE.

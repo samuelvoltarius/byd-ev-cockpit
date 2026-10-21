@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.9.2"
+VERSION = "1.9.3"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -176,21 +176,32 @@ POLL_HA = 60             # 1 min, Home Assistant als Quelle (lokal, kein Cloud-K
 
 # ---------------------------------------------------------------- Konfig
 def load_cfg():
+    """Im Speicher Klartext; auf der Platte sind Geheimnisse unter Windows per DPAPI geschuetzt (geheim.py)."""
     global _CFG
+    import geheim
     try:
-        _CFG = json.loads(CFG_FILE.read_text("utf-8-sig"))   # utf-8-sig: auch von Hand mit BOM gespeichert
+        roh = json.loads(CFG_FILE.read_text("utf-8-sig"))   # utf-8-sig: auch von Hand mit BOM gespeichert
     except Exception:
-        _CFG = {}
+        roh = {}
+    _CFG = geheim.aus_platte(roh)
+    if geheim.noch_klartext(roh):
+        try:
+            save_cfg(_CFG)                 # aeltere Version: Klartext-Geheimnisse einmal geschuetzt neu schreiben
+        except Exception:
+            pass
     return _CFG
 
 
 def save_cfg(c):
+    import geheim
     CFG_DIR.mkdir(parents=True, exist_ok=True)
-    CFG_FILE.write_text(json.dumps(c, indent=1, ensure_ascii=False), "utf-8")
+    tmp = CFG_FILE.with_name(CFG_FILE.name + ".neu")
+    tmp.write_text(json.dumps(geheim.fuer_platte(c), indent=1, ensure_ascii=False), "utf-8")
     try:
-        os.chmod(CFG_FILE, 0o600)      # nur der eigene Benutzer darf lesen
+        os.chmod(tmp, 0o600)           # nur der eigene Benutzer darf lesen
     except Exception:
         pass
+    os.replace(tmp, CFG_FILE)
 
 
 def load_cache():

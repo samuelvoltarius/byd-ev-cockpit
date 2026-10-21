@@ -208,6 +208,10 @@ count (random ID, version, car model; untick it and the entry is deleted on the 
 3D model, chargers nearby, electricity price, route planner and "learn real consumption". Pairing with Panoptes
 stays in your home network or Tailscale.
 
+**Passwords and keys on your computer:** on Windows the cockpit encrypts them in its settings file with the
+Windows data protection (DPAPI) of your user account; only you on this computer can read them. On Linux and macOS
+they are stored in the settings file readable only by your user (0600).
+
 ## Notes / liability
 
 **DE:** Privates Freizeitprojekt, kostenlos und ohne Gewähr. Nutzung auf eigenes Risiko und nur privat mit dem eigenen Fahrzeug. Für eine rechtmäßige Nutzung (Datenschutz, Kamera-Aufnahmen, Fernbefehle, Straßenverkehr) sind allein die Nutzer verantwortlich. Wächter-Aufnahmen sind nur für den eigenen Privatgrund gedacht, ohne öffentlichen Raum oder Nachbargrund. Soweit gesetzlich zulässig, übernimmt der Entwickler keine Haftung; Haftung für Vorsatz, grobe Fahrlässigkeit, Personenschäden und zwingende Verbraucherrechte bleiben unberührt. Nicht mit BYD verbunden; alle Marken gehören ihren Inhabern. Siehe auch LICENSE.
