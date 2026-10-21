@@ -37,11 +37,22 @@ def neue_auto_kennung():
 
 
 def panoptes_meldet(cfg):
-    """True, wenn Panoptes im Auto gekoppelt ist - dann meldet Panoptes selbst an den Planer."""
-    return bool(cfg.get("panoptes") and cfg.get("panoptes_url") and cfg.get("panoptes_code"))
+    """True, wenn Panoptes im Auto gekoppelt ist - dann meldet Panoptes selbst an den Planer.
+    Nach dem Koppeln ist der Code verbraucht und nur der JWT bleibt; beides zaehlt."""
+    return bool(cfg.get("panoptes") and cfg.get("panoptes_url") and (cfg.get("panoptes_code") or cfg.get("panoptes_jwt")))
+
+
+# Geraete-Schluessel (Vertrag §6) liegen als "g:<64 hex>" im selben Feld wie der alte Mitglieds-Schluessel.
+GERAET = "g:"
+
+
+def ist_geraet(token):
+    return bool(token) and token.startswith(GERAET)
 
 
 def oeffnen_url(token):
+    if ist_geraet(token):
+        return BASIS                       # Geraete-Schluessel meldet keinen Browser an
     return BASIS + ("#z=" + token if token else "")
 
 
@@ -49,7 +60,8 @@ def _anfrage(pfad, token, daten=None, timeout=12):
     req = urllib.request.Request(
         BASIS + "api/" + pfad, method="POST" if daten is not None else "GET",
         data=json.dumps(daten).encode("utf-8") if daten is not None else None,
-        headers={"X-Member-Token": token, "Content-Type": "application/json", "User-Agent": UA})
+        headers={("X-Geraete-Token" if ist_geraet(token) else "X-Member-Token"): (token[len(GERAET):] if ist_geraet(token) else token),
+                 "Content-Type": "application/json", "User-Agent": UA})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return r.status, json.loads(r.read().decode("utf-8") or "{}")
@@ -58,6 +70,26 @@ def _anfrage(pfad, token, daten=None, timeout=12):
             return e.code, json.loads(e.read().decode("utf-8") or "{}")
         except Exception:
             return e.code, {}
+
+
+# ---- Mit dem Routenplaner verbinden ohne Abtippen (Vertrag §6). Code + Link anzeigen, Mensch erlaubt auf /ev/verbinden,
+# das Cockpit holt den Schluessel einmal ab. pollId ist ein Abholrecht: bleibt im Prozess, nie in Datei/Log/Browser.
+def geraet_start(name, anfrage=_anfrage):
+    code, d = anfrage("geraet/start", "", {"geraet": (name or "EV-Cockpit")[:40], "typ": "cockpit"})
+    if code != 200 or not d.get("ok") or not re.fullmatch(r"[0-9a-f]{32}", str(d.get("pollId") or "")):
+        raise RuntimeError("Planer antwortet %s" % code)
+    link = str(d.get("link") or "")
+    return {"code": str(d.get("code_anzeige") or d.get("code") or ""), "pollId": d["pollId"],
+            "link": ("https://byd.serveone.at" + link) if link.startswith("/ev/verbinden") else BASIS,
+            "ablauf_s": int(d.get("ablauf_s") or 600)}
+
+
+def geraet_abholen(poll_id, anfrage=_anfrage):
+    """-> {status: wartet|erlaubt|abgelehnt|abgelaufen|fehler, token?}. Bei erlaubt: token = "g:<schluessel>" (einmalig)."""
+    code, d = anfrage("geraet/abholen?pollId=" + poll_id, "")
+    if code == 200 and re.fullmatch(r"[0-9a-f]{64}", str(d.get("schluessel") or "")):
+        return {"status": "erlaubt", "token": GERAET + d["schluessel"], "name": str(d.get("name") or "")}
+    return {"status": {202: "wartet", 403: "abgelehnt", 410: "abgelaufen"}.get(code, "fehler")}
 
 
 def pruefe_token(token, anfrage=_anfrage):

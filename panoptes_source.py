@@ -8,6 +8,9 @@ Ist das Auto aus oder nicht erreichbar, liefert lies() None - das Cockpit fragt 
 die BYD-Cloud (pybyd). Steuern (Klima, Schloss) laeuft weiter ueber die BYD-Cloud.
 """
 import json
+import re
+import secrets
+import socket
 import time
 import urllib.error
 import urllib.request
@@ -140,7 +143,7 @@ class Panoptes:
         if not self.code:
             raise KopplungAbgelaufen()
         try:
-            d = self.http(self.url + "/auth/kopplung", {"code": self.code})
+            d = self.http(self.url + "/auth/kopplung", {"code": self.code, "name": geraetename()})
             einmal = True
         except urllib.error.HTTPError as e:
             if e.code != 404:
@@ -219,6 +222,78 @@ def identitaet(p):
         return kennung_aus(p._get("/api/planer/identitaet"))
     except Exception:
         return ""
+
+
+# ---- Kopplung per Anfrage + 1 Tipp (Vertrag KOPPLUNG_ANFRAGE.md v1.1, ab Panoptes 0.1.7). Kein Code abtippen:
+# Das Cockpit zeigt eine Pruefzahl, der Mensch erlaubt in Telegram, im Panoptes-Web oder am Display.
+# Die Abhol-id ist ein Geheimnis: sie bleibt im Cockpit-Prozess (nie in Datei, Log oder Browser).
+def geraetename():
+    """Name, unter dem das Cockpit in Panoptes erscheint (hoechstens 40 Zeichen, ohne Steuerzeichen und <>)."""
+    try:
+        h = socket.gethostname()
+    except Exception:
+        h = ""
+    return re.sub(r"[\x00-\x1f<>]", "", ("EV-Cockpit " + h).strip())[:40]
+
+
+def neue_pruefzahl():
+    return "%04d" % secrets.randbelow(10000)
+
+
+def _roh(url, daten=None, timeout=TIMEOUT):
+    """(Status, JSON) ohne Ausnahme bei HTTP-Fehlern; Netzfehler werfen weiter."""
+    req = urllib.request.Request(url, data=json.dumps(daten).encode() if daten is not None else None,
+                                 method="POST" if daten is not None else "GET",
+                                 headers={"Accept": "application/json", "User-Agent": "ev-cockpit",
+                                          "Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.status, json.loads(r.read().decode("utf-8") or "{}")
+    except urllib.error.HTTPError as e:
+        try:
+            return e.code, json.loads(e.read().decode("utf-8") or "{}")
+        except Exception:
+            return e.code, {}
+
+
+def kopplung_anfrage(url, geraet, pruefzahl, roh=_roh):
+    """POST /auth/kopplung/anfrage -> {ok, id, gueltigBis} oder {ok:False, grund}."""
+    code, d = roh(url.rstrip("/") + "/auth/kopplung/anfrage", {"geraet": geraet, "pruefzahl": pruefzahl})
+    if code == 200 and d.get("ok") and re.fullmatch(r"[0-9a-f]{32}", str(d.get("id") or "")):
+        return {"ok": True, "id": d["id"], "gueltigBis": d.get("gueltigBis")}
+    if code == 404:
+        return {"ok": False, "grund": "zu_alt"}           # Panoptes vor 0.1.7: nur der Code-Weg
+    return {"ok": False, "grund": str(d.get("grund") or "http_%s" % code)}
+
+
+def kopplung_status(url, aid, roh=_roh):
+    """GET /auth/kopplung/anfrage/{id} -> {status: wartet|erlaubt|abgeholt|abgelehnt|abgelaufen|unbekannt|fehler}."""
+    if not re.fullmatch(r"[0-9a-f]{32}", aid or ""):
+        return {"status": "unbekannt"}
+    code, d = roh(url.rstrip("/") + "/auth/kopplung/anfrage/" + aid)
+    if code == 404:
+        return {"status": "unbekannt"}
+    st = d.get("status")
+    if st == "erlaubt" and d.get("jwt"):
+        return {"status": "erlaubt", "jwt": d["jwt"], "kopplungId": str(d.get("kopplungId") or ""),
+                "expiresIn": d.get("expiresIn")}
+    return {"status": st if st in ("wartet", "abgeholt", "abgelehnt", "abgelaufen") else "fehler"}
+
+
+def aus_kopplungslink(text):
+    """Link aus Panoptes "Neues Geraet koppeln" (<adresse>/system.html#koppeln=<code>) -> (adresse, code) oder None."""
+    m = re.fullmatch(r"\s*(https?://[^/#?\s]+)(?:/[^#\s]*)?#koppeln=([A-Za-z0-9_-]{4,64})\s*", text or "")
+    return (m.group(1), m.group(2)) if m else None
+
+
+def sitzung_erneuern(p):
+    """POST /api/sitzung/erneuern -> frischer JWT (30 Tage, gleiche Kopplung). Neuer JWT oder ""."""
+    d = p.http(p.url + "/api/sitzung/erneuern", daten={}, jwt=p.jwt)
+    j = str(d.get("jwt") or d.get("token") or "")
+    if j:
+        p.jwt = j
+        p.jwt_gespeichert(j)
+    return j
 
 
 # ---- Einstellungen (Vertrag EINSTELLUNGEN_SCHEMA.md v1). Nur gespeicherte Werte - KEINE Befehle ans Auto (Regel A).

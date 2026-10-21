@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.8.1"
+VERSION = "1.9"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -363,7 +363,21 @@ from live_saeulen import Live
 _LIVE = Live()
 
 _PANOPTES = {"key": None, "obj": None}
-_PAN_TEST = {"url": "", "jwt": "", "verbraucht": False}   # JWT aus dem Verbindungstest (Code ist dabei verbraucht)
+_PAN_TEST = {"url": "", "jwt": "", "verbraucht": False, "kopplung_id": ""}   # JWT aus Test bzw. erlaubter Anfrage
+_PAN_ANFRAGE = {"url": "", "id": "", "bis": 0.0}     # offene Kopplungs-Anfrage; id = Abholrecht, bleibt im Prozess
+_PLANER_NEU = {"poll": "", "token": "", "bis": 0.0}  # Planer-Geraete-Fluss; pollId = Abholrecht, bleibt im Prozess
+DISCLAIMER_VERSION = "2026-10-21"                    # Textversion der Hinweise im Assistenten (DISCLAIMER.md Fassung 1)
+_KOPPLUNG_GRUND = {
+    "zu_alt": "Dieses Panoptes kann Anfragen noch nicht (erst ab Version 0.1.7). Nimm unter „Erweitert“ den Kopplungs-Code.",
+    "zu_viele_offen": "In Panoptes warten schon 3 Anfragen. Bitte dort ablehnen oder 2 Minuten warten.",
+    "ratenlimit": "Zu viele Anfragen in kurzer Zeit. Bitte 10 Minuten warten.",
+    "pruefzahl": "Fehler bei der Prüfzahl. Bitte nochmal versuchen."}
+_KOPPLUNG_STATUS = {
+    "abgelehnt": "In Panoptes abgelehnt.",
+    "abgelaufen": "Nicht rechtzeitig erlaubt (2 Minuten). Bitte nochmal verbinden.",
+    "abgeholt": "Diese Erlaubnis wurde schon abgeholt. Bitte nochmal verbinden.",
+    "unbekannt": "Panoptes kennt die Anfrage nicht mehr (neu gestartet?). Bitte nochmal verbinden.",
+    "fehler": "Unerwartete Antwort von Panoptes. Bitte nochmal verbinden."}
 
 
 def _cloud_an():
@@ -437,6 +451,14 @@ def _panoptes_runde(cache):
         _STATE["panoptes_fehler"] = pv.letzter_fehler
         return False
     st.pop("_quelle", None)
+    if not _CFG.get("panoptes_code") and time.time() - float(_CFG.get("panoptes_erneuert") or 0) > 86400:
+        try:
+            from panoptes_source import sitzung_erneuern
+            sitzung_erneuern(pv)                       # neuer JWT wird ueber jwt_gespeichert gesichert
+            _CFG["panoptes_erneuert"] = time.time()
+        except Exception:
+            _CFG["panoptes_erneuert"] = time.time() - 86400 + 6 * 3600   # aeltere Panoptes ohne Endpunkt: in 6 h wieder
+        save_cfg(_CFG)
     _c, _s = cache.get("consumption_avg"), st.get("soc")
     kwh = float(_CFG.get("battery_kwh") or 60.0)
     if _c and _s:
@@ -1166,7 +1188,7 @@ _I18N.update({
     "FAHRZEUGE & LADEPUNKTE": "VEHICLES & CHARGE POINTS", "PV-Erzeugung": "Solar production",
     "Netz": "Grid", "Speicher": "Battery", "Hausverbrauch": "Home consumption",
     "Netzpreis": "Grid tariff", "Grünstromanteil": "Green energy share",
-    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette", "3D-Modell nicht geladen": "3D model not loaded", "Erneut versuchen": "Try again", "3D-Modell wird geladen …": "Loading 3D model …", "Laden fehlgeschlagen": "Loading failed", "Dieser Browser kann kein WebGL": "This browser has no WebGL",
+    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette", "Kurz vorab": "Quick note first", "Das EV-Cockpit ist ein privates Freizeitprojekt, kostenlos und ohne Gewähr. Du nutzt es auf eigenes Risiko, nur privat. Es verwendet dein BYD-Konto, Home Assistant oder deine Wallbox so, wie du es einstellst. Für Fernbefehle (z. B. Klima, Zusperren) und Ladebefehle an die Wallbox bist du selbst verantwortlich. Werte wie Ladestand, Reichweite und Preise können abweichen. Das EV-Cockpit ist nicht mit BYD verbunden.": "EV-Cockpit is a private hobby project, free and without warranty. You use it at your own risk, for private use only. It uses your BYD account, Home Assistant or your wallbox as you configure it. You are responsible for remote commands (e.g. climate, locking) and charging commands to your wallbox. Values such as charge level, range and prices may be inaccurate. EV-Cockpit is not affiliated with BYD.", "Alle Hinweise lesen": "Read all notes", "Gelesen und einverstanden": "Read and agreed", "Bitte bestätige die Hinweise, um fortzufahren.": "Please confirm the notes to continue.", "Freizeitprojekt.": "Hobby project.", "Panoptes, das EV-Cockpit und der Routenplaner sind ein privates Freizeitprojekt von Alfred Aigner. Sie werden kostenlos und ohne Gewähr angeboten.": "Panoptes, EV-Cockpit and the route planner are a private hobby project by Alfred Aigner. They are provided free of charge and without warranty.", "Ohne Gewähr.": "No warranty.", "Es gibt keine Garantie, dass alles fehlerfrei, vollständig oder jederzeit verfügbar ist. Das gilt auch für Ladestände, Reichweiten, Preise, Belegung von Ladesäulen, Routen, Blitzer- und Gefahrenhinweise. Prüfe Wichtiges selbst; im Straßenverkehr gilt immer, was du siehst und was die Schilder sagen.": "There is no guarantee that everything is correct, complete or always available. This includes charge levels, range, prices, charger availability, routes, speed camera and hazard warnings. Check anything important yourself; on the road, what you see and the road signs always come first.", "Eigenes Risiko.": "Your own risk.", "Du nutzt alles auf eigenes Risiko. Soweit gesetzlich zulässig, übernimmt Alfred Aigner keine Haftung für Schäden, die aus der Nutzung entstehen, auch nicht für Schäden am Fahrzeug, an Daten oder durch Fernbefehle.": "You use everything at your own risk. To the extent permitted by law, Alfred Aigner accepts no liability for any damage resulting from its use, including damage to your vehicle, to data, or caused by remote commands.", "Du bist verantwortlich.": "You are responsible.", "Du allein entscheidest, wie du die Funktionen einsetzt, und bist dafür verantwortlich, dass das erlaubt ist. Das betrifft vor allem Datenschutz, Kamera-Aufnahmen, Fernbefehle über das BYD-Konto und die Regeln im Straßenverkehr.": "You alone decide how you use the features, and you are responsible for making sure that use is legal. This applies especially to data protection, camera recordings, remote commands via your BYD account, and traffic rules.", "Nur privat.": "Private use only.", "Gedacht ist alles nur für die private Nutzung mit deinem eigenen Fahrzeug. Ein gewerblicher Einsatz (z. B. Flotten, Vermietung, Taxi, Firmenwagen-Überwachung) ist nicht vorgesehen.": "Everything is intended for private use with your own vehicle only. Commercial use (e.g. fleets, rental, taxi, monitoring company cars) is not intended.", "Wächter nur auf eigenem Grund.": "Guardian on your own property only.", "Kamera-Aufnahmen des Wächters sind für deinen eigenen Privatgrund gedacht (z. B. Garage, Einfahrt). Richte die Kameras so aus, dass weder öffentlicher Raum (Straße, Gehweg, öffentlicher Parkplatz) noch das Grundstück der Nachbarn erfasst wird. Aufnahmen nicht veröffentlichen.": "Guardian recordings are intended for your own private property (e.g. garage, driveway). Point the cameras so that neither public space (street, pavement, public car park) nor your neighbours' property is captured. Do not publish recordings.", "Nicht von BYD.": "Not BYD.", "Dieses Projekt ist nicht mit BYD verbunden und wird von BYD weder unterstützt noch geprüft. „BYD“, „DiLink“ und alle anderen genannten Namen und Marken gehören ihren jeweiligen Inhabern.": "This project is not affiliated with BYD and is not supported or reviewed by BYD. “BYD”, “DiLink” and all other names and trademarks mentioned belong to their respective owners.", "Gesetzliche Rechte bleiben.": "Your legal rights remain.", "Die Haftung für Vorsatz und grobe Fahrlässigkeit, für Personenschäden sowie zwingende Rechte von Verbraucherinnen und Verbrauchern werden durch diese Hinweise nicht eingeschränkt.": "Liability for intent and gross negligence, for personal injury, and mandatory consumer rights are not limited by these notes.", "🔗 Mit Panoptes verbinden": "🔗 Connect to Panoptes", "Bestätige in Telegram oder hier:": "Confirm in Telegram or here:", "will sich verbinden. Prüfzahl:": "wants to connect. Check number:", "Panoptes öffnen („Gekoppelte Geräte“)": "Open Panoptes (“Paired devices”)", "Vergleiche die Prüfzahl und tippe auf „Erlauben“. Die Anfrage gilt 2 Minuten.": "Compare the check number and tap “Allow”. The request is valid for 2 minutes.", "Erweitert: mit Kopplungs-Code oder Link": "Advanced: with pairing code or link", "Kopplungs-Code oder Link aus Panoptes („Neues Gerät koppeln“, 10 min gültig, einmal verwendbar)": "Pairing code or link from Panoptes (“Pair new device”, valid 10 min, single use)", "482913 oder https://…/system.html#koppeln=…": "482913 or https://…/system.html#koppeln=…", "🔗 Mit Routenplaner verbinden": "🔗 Connect to route planner", "Im Browser bestätigen:": "Confirm in your browser:", "Code": "Code", "Routenplaner öffnen und erlauben": "Open route planner and allow", "Melde dich dort als Mitglied an und tippe auf „Erlauben“. Der Code gilt 10 Minuten.": "Sign in there as a member and tap “Allow”. The code is valid for 10 minutes.", "Erweitert: mit persönlichem Planer-Link": "Advanced: with your personal planner link", "Warte auf „Erlauben“ …": "Waiting for “Allow” …", "Verbunden": "Connected", "Ladestand ": "charge level ", "Mit dem Routenplaner verbunden": "Connected to the route planner", "Schon gekoppelt. Nur neu verbinden, wenn die Kopplung in Panoptes entfernt wurde.": "Already paired. Only connect again if the pairing was removed in Panoptes.", "3D-Modell nicht geladen": "3D model not loaded", "Erneut versuchen": "Try again", "3D-Modell wird geladen …": "Loading 3D model …", "Laden fehlgeschlagen": "Loading failed", "Dieser Browser kann kein WebGL": "This browser has no WebGL",
     "Eigenes Foto verwenden": "Use your own photo", "Reichweite": "Range",
     "Verbunden": "Connected", "Nicht verbunden": "Not connected",
     "Kompakt": "Compact", "Limousine": "Sedan", "Kombi": "Estate", "SUV": "SUV", "Van": "Van",
@@ -1503,11 +1525,31 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
   gespeichert. Dieses Programm sendet <b>nichts</b> an den Entwickler — es spricht nur mit der
   BYD-Cloud selbst. Nachlesbar: die Datei <code>evcockpit.py</code> ist normaler, lesbarer Text.
  </div>
+ <div class=warn style="border-color:#3b5268;background:rgba(56,189,248,.06)">
+  <b>Kurz vorab</b><br>
+  <span>Das EV-Cockpit ist ein privates Freizeitprojekt, kostenlos und ohne Gewähr. Du nutzt es auf eigenes Risiko, nur privat. Es verwendet dein BYD-Konto, Home Assistant oder deine Wallbox so, wie du es einstellst. Für Fernbefehle (z. B. Klima, Zusperren) und Ladebefehle an die Wallbox bist du selbst verantwortlich. Werte wie Ladestand, Reichweite und Preise können abweichen. Das EV-Cockpit ist nicht mit BYD verbunden.</span>
+  <details style="margin-top:8px"><summary style="cursor:pointer">Alle Hinweise lesen</summary>
+   <ol style="margin:8px 0 0 18px;padding:0">
+    <li><b>Freizeitprojekt.</b> <span>Panoptes, das EV-Cockpit und der Routenplaner sind ein privates Freizeitprojekt von Alfred Aigner. Sie werden kostenlos und ohne Gewähr angeboten.</span></li>
+    <li><b>Ohne Gewähr.</b> <span>Es gibt keine Garantie, dass alles fehlerfrei, vollständig oder jederzeit verfügbar ist. Das gilt auch für Ladestände, Reichweiten, Preise, Belegung von Ladesäulen, Routen, Blitzer- und Gefahrenhinweise. Prüfe Wichtiges selbst; im Straßenverkehr gilt immer, was du siehst und was die Schilder sagen.</span></li>
+    <li><b>Eigenes Risiko.</b> <span>Du nutzt alles auf eigenes Risiko. Soweit gesetzlich zulässig, übernimmt Alfred Aigner keine Haftung für Schäden, die aus der Nutzung entstehen, auch nicht für Schäden am Fahrzeug, an Daten oder durch Fernbefehle.</span></li>
+    <li><b>Du bist verantwortlich.</b> <span>Du allein entscheidest, wie du die Funktionen einsetzt, und bist dafür verantwortlich, dass das erlaubt ist. Das betrifft vor allem Datenschutz, Kamera-Aufnahmen, Fernbefehle über das BYD-Konto und die Regeln im Straßenverkehr.</span></li>
+    <li><b>Nur privat.</b> <span>Gedacht ist alles nur für die private Nutzung mit deinem eigenen Fahrzeug. Ein gewerblicher Einsatz (z. B. Flotten, Vermietung, Taxi, Firmenwagen-Überwachung) ist nicht vorgesehen.</span></li>
+    <li><b>Wächter nur auf eigenem Grund.</b> <span>Kamera-Aufnahmen des Wächters sind für deinen eigenen Privatgrund gedacht (z. B. Garage, Einfahrt). Richte die Kameras so aus, dass weder öffentlicher Raum (Straße, Gehweg, öffentlicher Parkplatz) noch das Grundstück der Nachbarn erfasst wird. Aufnahmen nicht veröffentlichen.</span></li>
+    <li><b>Nicht von BYD.</b> <span>Dieses Projekt ist nicht mit BYD verbunden und wird von BYD weder unterstützt noch geprüft. „BYD“, „DiLink“ und alle anderen genannten Namen und Marken gehören ihren jeweiligen Inhabern.</span></li>
+    <li><b>Gesetzliche Rechte bleiben.</b> <span>Die Haftung für Vorsatz und grobe Fahrlässigkeit, für Personenschäden sowie zwingende Rechte von Verbraucherinnen und Verbrauchern werden durch diese Hinweise nicht eingeschränkt.</span></li>
+   </ol></details>
+ </div>
  <div class=chk>
-  <input type=checkbox id=ack onchange="document.getElementById('n1').disabled=!this.checked">
+  <input type=checkbox id=disc onchange="schritt1()">
+  <div><div class=h>Gelesen und einverstanden</div></div>
+ </div>
+ <div class=chk>
+  <input type=checkbox id=ack onchange="schritt1()">
   <div><div class=h>Verstanden — ich verwende ein zweites BYD-Konto</div>
    <small>Oder: mir ist bewusst, dass es sonst mit meiner BYD-App kollidieren kann.</small></div>
  </div>
+ <div class=msg id=discmsg></div>
  <div class=nav><span></span><button id=n1 disabled onclick="go(2)">Weiter →</button></div>
 </div>
 
@@ -1541,10 +1583,20 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
   <div id=panoptesrow>
    <label>Adresse des Autos (Heimnetz oder Tailscale)</label>
    <input id=panoptesurl placeholder="http://100.x.x.x:8180">
-   <label>Kopplungs-Code aus Panoptes („Gerät koppeln“, 10 min gültig, einmal verwendbar)</label>
-   <input id=panoptescode type=password placeholder="byd-…">
-   <div style="margin:10px 0"><button class=sec type=button onclick="panoptesTest()">🔌 Verbindung prüfen</button></div>
+   <div style="margin:10px 0"><button type=button onclick="panoptesAnfrage()">🔗 Mit Panoptes verbinden</button></div>
+   <div id=panoptesbest style="display:none;border:1px solid #2a4a63;border-radius:14px;padding:12px 14px;margin:8px 0">
+    <div class=h>Bestätige in Telegram oder hier:</div>
+    <div style="margin:6px 0">„<span id=pangeraet></span>“ <span>will sich verbinden. Prüfzahl:</span>
+     <b id=panpz style="font-size:26px;letter-spacing:.12em;margin-left:6px"></b></div>
+    <a id=panweb class=sec target=_blank rel=noopener style="display:inline-block;padding:8px 14px;border-radius:10px;border:1px solid #2a4a63;text-decoration:none">Panoptes öffnen („Gekoppelte Geräte“)</a>
+    <small style="display:block;margin-top:8px">Vergleiche die Prüfzahl und tippe auf „Erlauben“. Die Anfrage gilt 2 Minuten.</small>
+   </div>
    <div class=msg id=panoptesmsg></div>
+   <details style="margin-top:10px"><summary style="cursor:pointer">Erweitert: mit Kopplungs-Code oder Link</summary>
+    <label>Kopplungs-Code oder Link aus Panoptes („Neues Gerät koppeln“, 10 min gültig, einmal verwendbar)</label>
+    <input id=panoptescode type=password placeholder="482913 oder https://…/system.html#koppeln=…">
+    <div style="margin:10px 0"><button class=sec type=button onclick="panoptesTest()">🔌 Verbindung prüfen</button></div>
+   </details>
   </div>
  </div>
 
@@ -1681,8 +1733,17 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
     Mitglieder der BYD-Karte (byd.serveone.at) per E-Mail.</small></div>
   </div>
   <div id=planerrow style="display:none;margin:0 0 14px 46px">
-   <label>Dein persönlicher Planer-Link</label>
-   <input id=planerlink type=password placeholder="https://byd.serveone.at/ev/#z=…">
+   <div style="margin:4px 0 10px"><button type=button onclick="planerVerbinden()">🔗 Mit Routenplaner verbinden</button></div>
+   <div id=planerbest style="display:none;border:1px solid #2a4a63;border-radius:14px;padding:12px 14px;margin:8px 0">
+    <div class=h>Im Browser bestätigen:</div>
+    <div style="margin:6px 0"><span>Code</span> <b id=planercode style="font-size:22px;letter-spacing:.08em;margin-left:6px"></b></div>
+    <a id=planerweb target=_blank rel=noopener style="display:inline-block;padding:8px 14px;border-radius:10px;border:1px solid #2a4a63;text-decoration:none">Routenplaner öffnen und erlauben</a>
+    <small style="display:block;margin-top:8px">Melde dich dort als Mitglied an und tippe auf „Erlauben“. Der Code gilt 10 Minuten.</small>
+   </div>
+   <details style="margin:6px 0 10px"><summary style="cursor:pointer">Erweitert: mit persönlichem Planer-Link</summary>
+    <label>Dein persönlicher Planer-Link</label>
+    <input id=planerlink type=password placeholder="https://byd.serveone.at/ev/#z=…">
+   </details>
    <div style="margin:10px 0"><button class=sec type=button onclick="planerFz()">🚗 Fahrzeuge aus dem Planer laden</button></div>
    <label>Fahrzeug im Planer</label>
    <select id=planerfz><option value="">– erst Fahrzeuge laden –</option></select>
@@ -1872,6 +1933,9 @@ function vorfuellen(){
  if(q0==='ha'&&HA_OK) haSuchen();
  document.getElementById('panoptesurl').value=VOR.panoptes_url||'';
  if(VOR.has_panoptes_code) document.getElementById('panoptescode').placeholder='••••••• (gespeichert — leer lassen zum Behalten)';
+ if(VOR.has_panoptes_jwt&&VOR.panoptes) document.getElementById('panoptesmsg').textContent='✅ '+__T('Schon gekoppelt. Nur neu verbinden, wenn die Kopplung in Panoptes entfernt wurde.');
+ if(VOR.planer_geraet) document.getElementById('planermsg').textContent='✅ '+__T('Mit dem Routenplaner verbunden');
+ if(VOR.disclaimer_ok){document.getElementById('disc').checked=true;}
  document.getElementById('planer').checked=!!VOR.planer;
  document.getElementById('planerrow').style.display=VOR.planer?'block':'none';
  document.getElementById('planerfahrten').checked=!!VOR.planer_fahrten;
@@ -2016,11 +2080,52 @@ async function haSuchen(){const m=document.getElementById('hasrcmsg'), box=docum
 function haPruefen(){const s=document.querySelector('.hasel[data-f=soc]');HA_OK=!!(s&&s.value);n2pruefen();}
 function haMap(){const z={};document.querySelectorAll('.hasel').forEach(s=>{if(s.value)z[s.dataset.f]=s.value;});return z;}
 function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function schritt1(){const ok=document.getElementById('disc').checked&&document.getElementById('ack').checked;
+ document.getElementById('n1').disabled=!ok;
+ document.getElementById('discmsg').textContent=document.getElementById('disc').checked?'':__T('Bitte bestätige die Hinweise, um fortzufahren.');}
+let PAN_POLL=null, PLANER_POLL=null;
+async function panoptesAnfrage(){const m=document.getElementById('panoptesmsg'),b=document.getElementById('panoptesbest');
+ clearTimeout(PAN_POLL); b.style.display='none'; m.textContent=__T('⏳ Frage das Auto …');
+ try{const r=await (await fetch('/panoptes/anfrage',{method:'POST',body:JSON.stringify({
+    url:document.getElementById('panoptesurl').value.trim()})})).json();
+  if(!r.ok){m.textContent='⚠️ '+r.error;return;}
+  m.textContent='⏳ '+__T('Warte auf „Erlauben“ …');
+  document.getElementById('panpz').textContent=r.pruefzahl;
+  document.getElementById('pangeraet').textContent=r.geraet;
+  document.getElementById('panweb').href=r.webseite; b.style.display='block';
+  PAN_POLL=setTimeout(panoptesWarte,2000);
+ }catch(e){m.textContent='⚠️ '+e}}
+async function panoptesWarte(){const m=document.getElementById('panoptesmsg'),b=document.getElementById('panoptesbest');
+ try{const r=await (await fetch('/panoptes/anfrage/status',{method:'POST',body:'{}'})).json();
+  if(r.ok&&r.status==='wartet'){PAN_POLL=setTimeout(panoptesWarte,2000);return;}
+  b.style.display='none';
+  if(r.ok&&r.status==='erlaubt'){m.textContent='✅ '+__T('Verbunden')+(r.soc!=null?' — '+__T('Ladestand ')+r.soc+' %':'');
+   if(r.url)document.getElementById('panoptesurl').value=r.url;
+   PAN_OK=true; n2pruefen(); return;}
+  m.textContent='⚠️ '+(r.error||r.status);
+ }catch(e){PAN_POLL=setTimeout(panoptesWarte,3000);}}
+async function planerVerbinden(){const m=document.getElementById('planermsg'),b=document.getElementById('planerbest');
+ clearTimeout(PLANER_POLL); b.style.display='none'; m.textContent=__T('⏳ Frage den Planer …');
+ try{const r=await (await fetch('/planer/verbinden',{method:'POST',body:'{}'})).json();
+  if(!r.ok){m.textContent='⚠️ '+r.error;return;}
+  m.textContent='⏳ '+__T('Warte auf „Erlauben“ …');
+  document.getElementById('planercode').textContent=r.code;
+  document.getElementById('planerweb').href=r.link; b.style.display='block';
+  PLANER_POLL=setTimeout(planerWarte,3000);
+ }catch(e){m.textContent='⚠️ '+e}}
+async function planerWarte(){const m=document.getElementById('planermsg'),b=document.getElementById('planerbest');
+ try{const r=await (await fetch('/planer/verbinden/status',{method:'POST',body:'{}'})).json();
+  if(r.ok&&r.status==='wartet'){PLANER_POLL=setTimeout(planerWarte,3000);return;}
+  b.style.display='none';
+  if(r.ok&&r.status==='erlaubt'){m.textContent='✅ '+__T('Mit dem Routenplaner verbunden');planerFz();return;}
+  m.textContent='⚠️ '+(r.error||r.status);
+ }catch(e){PLANER_POLL=setTimeout(planerWarte,4000);}}
 async function panoptesTest(){const m=document.getElementById('panoptesmsg');
  m.textContent=__T('⏳ Frage das Auto …');
  try{const r=await (await fetch('/panoptes/test',{method:'POST',body:JSON.stringify({
     url:document.getElementById('panoptesurl').value.trim(), code:document.getElementById('panoptescode').value.trim()})})).json();
   m.textContent=r.ok?('✅ '+__T('Verbunden — Ladestand ')+r.soc+' %'):('⚠️ '+r.error);
+  if(r.ok&&r.url)document.getElementById('panoptesurl').value=r.url;
   PAN_OK=!!r.ok; n2pruefen();
  }catch(e){m.textContent='⚠️ '+e}}
 async function planerFz(){const m=document.getElementById('planermsg'), sel=document.getElementById('planerfz');
@@ -2050,6 +2155,7 @@ async function save(){const m=document.getElementById('smsg');
  b.charger_token=document.getElementById('chargertoken').value.trim();
  b.planer=document.getElementById('planer').checked;
  b.planer_link=document.getElementById('planerlink').value.trim();
+ b.disclaimer_ok=document.getElementById('disc').checked;
  b.planer_fahrzeug=document.getElementById('planerfz').value;
  b.planer_fahrten=document.getElementById('planerfahrten').checked;
  b.karte=document.getElementById('kartecommunity').checked?'community':'osm';
@@ -3294,6 +3400,9 @@ class H(BaseHTTPRequestHandler):
         vor["has_ha_src_token"] = bool(_CFG.get("ha_src_token"))
         vor["has_charger_token"] = bool(_CFG.get("charger_token"))
         vor["has_planer_token"] = bool(_CFG.get("planer_token"))
+        vor["planer_geraet"] = str(_CFG.get("planer_token") or "").startswith("g:")
+        vor["has_panoptes_jwt"] = bool(_CFG.get("panoptes_jwt"))
+        vor["disclaimer_ok"] = _CFG.get("disclaimer_version") == DISCLAIMER_VERSION
         vor["has_panoptes_code"] = bool(_CFG.get("panoptes_code"))
         vor["has_photo"] = PHOTO_FILE.exists()
         vor["vin_known"] = _CFG.get("vin") or ""
@@ -3698,12 +3807,102 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send(json.dumps({"ok": False, "error": ("Home Assistant nicht erreichbar: %s" % e)[:160]}),
                            "application/json")
+        elif u.path == "/panoptes/anfrage":
+            # Kopplung per Anfrage (KOPPLUNG_ANFRAGE.md v1.1): Pruefzahl zeigen, erlaubt wird in Telegram/Web/Display
+            try:
+                import panoptes_source as ps
+                c = json.loads(raw or "{}")
+                url = (c.get("url") or _CFG.get("panoptes_url") or "").strip().rstrip("/")
+                if not url.startswith(("http://", "https://")):
+                    raise ValueError("Adresse bitte mit http:// oder https:// angeben (z. B. http://100.x.x.x:8180)")
+                pz, geraet = ps.neue_pruefzahl(), ps.geraetename()
+                try:
+                    r = ps.kopplung_anfrage(url, geraet, pz)
+                except Exception as e:
+                    raise ValueError("Panoptes unter dieser Adresse nicht erreichbar (%s). Auto an, Adresse richtig?" % type(e).__name__)
+                if not r["ok"]:
+                    raise ValueError(_KOPPLUNG_GRUND.get(r["grund"], "Panoptes lehnt die Anfrage ab (%s)" % r["grund"]))
+                _PAN_ANFRAGE.update(url=url, id=r["id"], bis=time.time() + 130)
+                self._send(json.dumps({"ok": True, "pruefzahl": pz, "geraet": geraet, "webseite": url + "/system.html"}),
+                           "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "error": str(e)[:220]}), "application/json")
+        elif u.path == "/panoptes/anfrage/status":
+            try:
+                import panoptes_source as ps
+                if not _PAN_ANFRAGE.get("id"):
+                    raise ValueError("Keine offene Anfrage. Bitte „Mit Panoptes verbinden“ drücken.")
+                try:
+                    r = ps.kopplung_status(_PAN_ANFRAGE["url"], _PAN_ANFRAGE["id"])
+                except Exception:
+                    r = {"status": "wartet"}               # kurz nicht erreichbar: weiter warten bis zum Ablauf
+                st = r["status"]
+                if st == "wartet" and time.time() > _PAN_ANFRAGE["bis"]:
+                    st = "abgelaufen"
+                if st == "erlaubt":
+                    url = _PAN_ANFRAGE["url"]
+                    _PAN_ANFRAGE.update(id="")
+                    _PAN_TEST.update(url=url, jwt=r["jwt"], verbraucht=True, kopplung_id=r.get("kopplungId", ""))
+                    soc = None
+                    try:
+                        from panoptes_source import Panoptes
+                        soc = (Panoptes(url, "", r["jwt"]).lies() or {}).get("soc")
+                    except Exception:
+                        pass
+                    return self._send(json.dumps({"ok": True, "status": "erlaubt", "soc": soc, "url": url}), "application/json")
+                if st != "wartet":
+                    _PAN_ANFRAGE.update(id="")
+                    raise ValueError(_KOPPLUNG_STATUS.get(st, _KOPPLUNG_STATUS["fehler"]))
+                self._send(json.dumps({"ok": True, "status": "wartet"}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "status": "fehler", "error": str(e)[:220]}), "application/json")
+        elif u.path == "/planer/verbinden":
+            # Mit dem Routenplaner verbinden ohne Abtippen (API §6): Code + Link, Mensch erlaubt auf /ev/verbinden
+            try:
+                import planer_bridge as pb
+                import panoptes_source as ps
+                try:
+                    r = pb.geraet_start(ps.geraetename())
+                except Exception as e:
+                    raise ValueError("Routenplaner nicht erreichbar (%s). Später nochmal versuchen." % type(e).__name__)
+                _PLANER_NEU.update(poll=r["pollId"], token="", bis=time.time() + r["ablauf_s"])
+                self._send(json.dumps({"ok": True, "code": r["code"], "link": r["link"], "ablauf_s": r["ablauf_s"]}),
+                           "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "error": str(e)[:220]}), "application/json")
+        elif u.path == "/planer/verbinden/status":
+            try:
+                import planer_bridge as pb
+                if not _PLANER_NEU.get("poll"):
+                    raise ValueError("Keine offene Verbindung. Bitte „Mit Routenplaner verbinden“ drücken.")
+                try:
+                    r = pb.geraet_abholen(_PLANER_NEU["poll"])
+                except Exception:
+                    r = {"status": "wartet"}
+                st = "wartet" if r["status"] == "fehler" else r["status"]
+                if st == "wartet" and time.time() > _PLANER_NEU["bis"]:
+                    st = "abgelaufen"
+                if st == "erlaubt":
+                    _PLANER_NEU.update(poll="", token=r["token"])
+                    return self._send(json.dumps({"ok": True, "status": "erlaubt"}), "application/json")
+                if st != "wartet":
+                    _PLANER_NEU.update(poll="")
+                    raise ValueError({"abgelehnt": "Auf dem Routenplaner abgelehnt.",
+                                      "abgelaufen": "Nicht rechtzeitig bestätigt (10 Minuten). Bitte nochmal verbinden."}
+                                     .get(st, "Unerwartete Antwort vom Routenplaner. Bitte nochmal verbinden."))
+                self._send(json.dumps({"ok": True, "status": "wartet"}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "status": "fehler", "error": str(e)[:220]}), "application/json")
         elif u.path == "/panoptes/test":
             try:
                 from panoptes_source import Panoptes
                 c = json.loads(raw or "{}")
                 url = (c.get("url") or _CFG.get("panoptes_url") or "").strip()
                 code = (c.get("code") or _CFG.get("panoptes_code") or "").strip()
+                from panoptes_source import aus_kopplungslink
+                lk = aus_kopplungslink(code)
+                if lk:
+                    url, code = lk
                 if not url.startswith(("http://", "https://")):
                     raise ValueError("Adresse bitte mit http:// oder https:// angeben")
                 pt = Panoptes(url, code, "" if code else _CFG.get("panoptes_jwt", ""))
@@ -3712,17 +3911,17 @@ class H(BaseHTTPRequestHandler):
                     if pt.letzter_fehler == "kopplung_abgelaufen":
                         raise ValueError("Kopplung abgelaufen — in Panoptes „Gerät koppeln“ wählen und den neuen Code eintragen")
                     raise ValueError("Keine Antwort mit Daten — Auto an? Adresse und Kopplungs-Code (10 min gültig, einmal verwendbar) richtig?")
-                _PAN_TEST.update(url=url, jwt=pt.jwt, verbraucht=pt.code_verbraucht)
-                self._send(json.dumps({"ok": True, "soc": st.get("soc")}), "application/json")
+                _PAN_TEST.update(url=url, jwt=pt.jwt, verbraucht=pt.code_verbraucht, kopplung_id="")
+                self._send(json.dumps({"ok": True, "soc": st.get("soc"), "url": url}), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json")
         elif u.path == "/planer/fahrzeuge":
             try:
                 import planer_bridge as pb
                 c = json.loads(raw or "{}")
-                tok = pb.token_aus_link(c.get("link", "")) or _CFG.get("planer_token", "")
+                tok = pb.token_aus_link(c.get("link", "")) or _PLANER_NEU.get("token") or _CFG.get("planer_token", "")
                 if not tok:
-                    raise ValueError("Bitte zuerst deinen persönlichen Planer-Link einfügen")
+                    raise ValueError("Bitte zuerst „Mit Routenplaner verbinden“")
                 if not pb.pruefe_token(tok):
                     raise ValueError("Der Planer kennt diesen Link nicht - bitte den persönlichen Link aus der E-Mail nehmen")
                 liste = pb.fahrzeuge(tok)
@@ -3769,17 +3968,31 @@ class H(BaseHTTPRequestHandler):
                 if c.get("panoptes_url") == _CFG.get("panoptes_url") and _CFG.get("panoptes_jwt") \
                         and c.get("panoptes_code") == _CFG.get("panoptes_code"):
                     c["panoptes_jwt"] = _CFG["panoptes_jwt"]
-                if c.get("panoptes_url") and c.get("panoptes_url") == _PAN_TEST.get("url") and _PAN_TEST.get("jwt"):
-                    c["panoptes_jwt"] = _PAN_TEST["jwt"]          # beim Test gekoppelt
+                if c.get("panoptes_url") == _CFG.get("panoptes_url"):
+                    for k in ("panoptes_kopplung_id", "panoptes_erneuert"):
+                        if _CFG.get(k):
+                            c[k] = _CFG[k]
+                if c.get("panoptes_url") and c.get("panoptes_url").rstrip("/") == _PAN_TEST.get("url", "").rstrip("/") \
+                        and _PAN_TEST.get("jwt"):
+                    c["panoptes_jwt"] = _PAN_TEST["jwt"]          # beim Test bzw. per erlaubter Anfrage gekoppelt
+                    c["panoptes_erneuert"] = time.time()
+                    if _PAN_TEST.get("kopplung_id"):
+                        c["panoptes_kopplung_id"] = _PAN_TEST["kopplung_id"]   # zum Widerrufen
                     if _PAN_TEST.get("verbraucht"):
                         c["panoptes_code"] = ""                    # einmal verwendbar - nicht aufheben
                 if c.get("panoptes") and not (c.get("panoptes_url") and (c.get("panoptes_code") or c.get("panoptes_jwt"))):
-                    raise ValueError("Für Panoptes bitte Adresse und Kopplungs-Code eintragen")
+                    raise ValueError("Für Panoptes bitte zuerst „Mit Panoptes verbinden“ (oder unter „Erweitert“ den Kopplungs-Code)")
                 from planer_bridge import token_aus_link
                 link = c.pop("planer_link", "") or ""
-                c["planer_token"] = token_aus_link(link) or ("" if link else _CFG.get("planer_token", ""))
+                c["planer_token"] = token_aus_link(link) or _PLANER_NEU.get("token") or ("" if link else _CFG.get("planer_token", ""))
                 if c.get("planer") and not c["planer_token"]:
-                    raise ValueError("Planer-Link fehlt oder ist ungültig (er endet auf #z= und 32 Zeichen)")
+                    raise ValueError("Bitte zuerst „Mit Routenplaner verbinden“ (oder unter „Erweitert“ den persönlichen Link)")
+                # Hinweise (Haftung) im ersten Schritt bestaetigt: Version + Zeitpunkt merken
+                if c.pop("disclaimer_ok", None) is not True:
+                    raise ValueError("Bitte im ersten Schritt die Hinweise bestätigen")
+                c["disclaimer_version"] = DISCLAIMER_VERSION
+                c["disclaimer_zeit"] = (_CFG.get("disclaimer_zeit") if _CFG.get("disclaimer_version") == DISCLAIMER_VERSION
+                                        else None) or time.time()
                 # Foto als Datei ablegen (nicht in die config.json quetschen)
                 pd = c.pop("photo_data", "") or ""
                 if pd.startswith("data:image"):

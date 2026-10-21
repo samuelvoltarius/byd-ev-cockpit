@@ -121,8 +121,11 @@ Profilen entfernt und niemals dort gespeichert.
 
 Läuft die Panoptes-App (vormals SurfMate) im Auto, holt das Cockpit Ladestand, Kilometer, Standort,
 Gang, Schloss und Außentemperatur direkt von dort (Heimnetz oder Tailscale, Port 8180) — jede Minute,
-ohne die BYD-Cloud zu belasten. Im Assistenten Adresse und Kopplungs-Code aus der App eintragen;
-„Verbindung prüfen" zeigt sofort, ob es klappt. Ist das Auto aus oder nicht erreichbar, fragt das Cockpit
+ohne die BYD-Cloud zu belasten. Im Assistenten die Adresse des Autos eintragen und **„Mit Panoptes verbinden“**
+drücken: Das Cockpit zeigt eine vierstellige Prüfzahl, du erlaubst in **Telegram** oder in der Panoptes-Seite
+„Gekoppelte Geräte“ mit einem Tipp (ab Panoptes 0.1.7). Kein Code abtippen. Ältere Panoptes (ab 0.1.5) koppelst
+du unter „Erweitert“ mit dem Kopplungs-Code oder dem Link aus „Neues Gerät koppeln“. Die Kopplung erneuert sich
+täglich von selbst und lässt sich in Panoptes jederzeit entfernen. Ist das Auto aus oder nicht erreichbar, fragt das Cockpit
 wie bisher die BYD-Cloud. **Steuern (Klima, Schloss, Laden) läuft weiterhin über die BYD-Cloud.**
 
 **Fernbefehle nur bei ausgeschaltetem Auto:** Vor jedem Befehl fragt das Cockpit frisch nach, ob das Auto aus ist
@@ -131,8 +134,10 @@ nicht gesendet. Grund: Ein Cloud-Befehl kann ein eingeschaltetes Auto komplett a
 
 ## Routenplaner der BYD-Community (optional)
 
-Mitglieder der [BYD-Community-Karte](https://byd.serveone.at) bekommen einen persönlichen Link zum
-Routenplaner (`byd.serveone.at/ev/#z=…`). Im Assistenten eingefügt, passiert Folgendes:
+Mitglieder der [BYD-Community-Karte](https://byd.serveone.at) verbinden das Cockpit im Assistenten mit
+**„Mit Routenplaner verbinden“**: Das Cockpit zeigt einen Code und einen Link, du meldest dich auf `/ev/` an und
+tippst auf „Erlauben“. Das Cockpit bekommt einen eigenen Geräte-Schlüssel mit begrenzten Rechten (widerrufbar
+unter „Meine Geräte“). Der alte persönliche Link (`byd.serveone.at/ev/#z=…`) geht weiter unter „Erweitert“. Danach:
 
 - **Ladestand an den Planer:** Der Planer kennt dann den Start-Ladestand deines Autos. Gesendet wird nur der
   letzte Wert, kein Ort, nur wenn das Auto wach ist.
@@ -196,11 +201,13 @@ EVCOCKPIT_CFGDIR=~/.evcockpit-zweitwagen EVCOCKPIT_PORT=8100 ./start.sh
 - Klappt ein Befehl mal nicht: kurz warten und **einmal** nochmal — nicht hektisch
   mehrfach, das mag die BYD-Cloud nicht.
 
-## Haftung
+## Hinweise / Haftung
 
-Freies, nicht-kommerzielles Community-Projekt, gebaut in der Freizeit, **ohne jede Gewähr** —
-siehe [LICENSE](LICENSE). Nutzung auf eigene Verantwortung. Kein offizielles BYD-Produkt und
-in keiner Weise mit BYD verbunden. „BYD" ist eine Marke der jeweiligen Rechteinhaber.
+**DE:** Privates Freizeitprojekt, kostenlos und ohne Gewähr. Nutzung auf eigenes Risiko und nur privat mit dem eigenen Fahrzeug. Für eine rechtmäßige Nutzung (Datenschutz, Kamera-Aufnahmen, Fernbefehle, Straßenverkehr) sind allein die Nutzer verantwortlich. Wächter-Aufnahmen sind nur für den eigenen Privatgrund gedacht, ohne öffentlichen Raum oder Nachbargrund. Soweit gesetzlich zulässig, übernimmt der Entwickler keine Haftung; Haftung für Vorsatz, grobe Fahrlässigkeit, Personenschäden und zwingende Verbraucherrechte bleiben unberührt. Nicht mit BYD verbunden; alle Marken gehören ihren Inhabern. Siehe auch LICENSE.
+
+**EN:** Private hobby project, free and without warranty. Use at your own risk, for private use with your own vehicle only. Users alone are responsible for lawful use (data protection, camera recordings, remote commands, traffic rules). Guardian recordings are intended for your own private property only, without capturing public space or neighbouring property. To the extent permitted by law, the developer accepts no liability; liability for intent, gross negligence, personal injury and mandatory consumer rights remains unaffected. Not affiliated with BYD; all trademarks belong to their owners. See also LICENSE.
+
+Der Einrichtungs-Assistent zeigt diese Hinweise im ersten Schritt; weiter geht es erst mit Häkchen.
 
 ## Fragen & Fehler
 

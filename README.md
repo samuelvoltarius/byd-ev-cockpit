@@ -119,8 +119,11 @@ and never stored in these profiles.
 
 If the Panoptes app (formerly SurfMate) runs in the car, the cockpit reads charge level, mileage, location,
 gear, lock state and outside temperature directly from it (home network or Tailscale, port 8180) — every
-minute, without loading the BYD cloud. Enter the car address and the pairing code from the app in the
-wizard; "Test connection" shows right away whether it works. If the car is off or unreachable, the cockpit
+minute, without loading the BYD cloud. In the wizard, enter the car's address and press **"Connect to Panoptes"**:
+the cockpit shows a four-digit check number and you allow it with one tap in **Telegram** or on the Panoptes page
+"Paired devices" (Panoptes 0.1.7 or newer). No code to type. Older Panoptes (0.1.5 or newer) is paired under
+"Advanced" with the pairing code or the link from "Pair new device". The pairing renews itself daily and can be
+removed in Panoptes at any time. If the car is off or unreachable, the cockpit
 asks the BYD cloud as before. **Controls (climate, lock, charging) still go through the BYD cloud.**
 
 **Remote commands only when the car is switched off:** before every command the cockpit freshly checks
@@ -129,8 +132,10 @@ command is not sent. Reason: a cloud command can switch off a car that is runnin
 
 ## BYD community route planner (optional)
 
-Members of the [BYD community map](https://byd.serveone.at) get a personal route-planner link
-(`byd.serveone.at/ev/#z=…`). Pasted into the setup wizard:
+Members of the [BYD community map](https://byd.serveone.at) connect the cockpit in the wizard with
+**"Connect to route planner"**: the cockpit shows a code and a link, you sign in on `/ev/` and tap "Allow". The
+cockpit gets its own device key with limited rights (revocable under "My devices"). The old personal link
+(`byd.serveone.at/ev/#z=…`) still works under "Advanced". Then:
 
 - **Charge level to the planner:** the planner then knows your car's starting charge level. Only the latest
   value is sent, no location, and only while the car is awake.
@@ -194,11 +199,13 @@ EVCOCKPIT_CFGDIR=~/.evcockpit-second EVCOCKPIT_PORT=8100 ./start.sh
 - If a command doesn't go through: wait a moment and try **once** more — not frantically
   several times, the BYD cloud doesn't like that.
 
-## Liability
+## Notes / liability
 
-Free, non-commercial community project, built in spare time, **with no warranty whatsoever** —
-see [LICENSE](LICENSE). Use at your own risk. Not an official BYD product and in no way
-affiliated with BYD. "BYD" is a trademark of its respective owners.
+**DE:** Privates Freizeitprojekt, kostenlos und ohne Gewähr. Nutzung auf eigenes Risiko und nur privat mit dem eigenen Fahrzeug. Für eine rechtmäßige Nutzung (Datenschutz, Kamera-Aufnahmen, Fernbefehle, Straßenverkehr) sind allein die Nutzer verantwortlich. Wächter-Aufnahmen sind nur für den eigenen Privatgrund gedacht, ohne öffentlichen Raum oder Nachbargrund. Soweit gesetzlich zulässig, übernimmt der Entwickler keine Haftung; Haftung für Vorsatz, grobe Fahrlässigkeit, Personenschäden und zwingende Verbraucherrechte bleiben unberührt. Nicht mit BYD verbunden; alle Marken gehören ihren Inhabern. Siehe auch LICENSE.
+
+**EN:** Private hobby project, free and without warranty. Use at your own risk, for private use with your own vehicle only. Users alone are responsible for lawful use (data protection, camera recordings, remote commands, traffic rules). Guardian recordings are intended for your own private property only, without capturing public space or neighbouring property. To the extent permitted by law, the developer accepts no liability; liability for intent, gross negligence, personal injury and mandatory consumer rights remains unaffected. Not affiliated with BYD; all trademarks belong to their owners. See also LICENSE.
+
+The setup wizard shows these notes in its first step; you can only continue after ticking the box.
 
 ## Questions & bugs
 
