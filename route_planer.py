@@ -119,7 +119,24 @@ def fuer_auto(k, start, ziel, start_name, ziel_name, fahrzeug=""):
             "fahrzeug": fahrzeug}
 
 
-PLAN_TIMEOUT = 50          # der Browser bricht nach 60 s ab; der Server muss vorher mit Klartext antworten
+PLAN_TIMEOUT = 90          # der Browser bricht nach 100 s ab; der Server muss vorher mit Klartext antworten
+
+
+def grund(e):
+    """Fehlertext aus dem echten Grund (Timeout ist nicht 503 ist nicht 'kein Netz')."""
+    import ssl
+    r = getattr(e, "reason", None)
+    if isinstance(e, (socket.timeout, TimeoutError)) or isinstance(r, (socket.timeout, TimeoutError)):
+        return "Routenplaner antwortet gerade zu langsam"
+    if isinstance(e, urllib.error.HTTPError) or isinstance(e, RuntimeError) and "antwortet" in str(e):
+        code = getattr(e, "code", None) or "".join(ch for ch in str(e) if ch.isdigit())[:3]
+        return "Routenplaner antwortet mit Fehler %s" % code if str(code) not in ("502", "503", "504") \
+            else "Routenplaner startet gerade neu oder ist ausgelastet"
+    if isinstance(r, ssl.SSLError) or isinstance(e, ssl.SSLError):
+        return "Verbindung zum Routenplaner unsicher (Zertifikat) – abgebrochen"
+    if isinstance(e, (urllib.error.URLError, ConnectionError, OSError)):
+        return "Keine Verbindung zum Routenplaner – Internet prüfen"
+    return "Routenplaner-Fehler (%s)" % type(e).__name__
 
 
 def planen(token, body, anfrage=pb._anfrage):

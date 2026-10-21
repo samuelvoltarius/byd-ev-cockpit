@@ -88,7 +88,18 @@ class TestRoute(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "nicht geantwortet"):
             rp.planen("t", {}, anfrage=zu_langsam)
         e = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "evcockpit.py"), encoding="utf-8").read()
-        self.assertIn("setTimeout(()=>ab.abort(),60000)", e)              # der Browser wartet nie endlos
+        self.assertIn("setTimeout(()=>ab.abort(),100000)", e)             # der Browser wartet nie endlos
+        self.assertGreaterEqual(rp.PLAN_TIMEOUT, 90)                         # Proxy nie kuerzer als der Planer braucht
+
+    def test_grund_statt_typname(self):
+        import socket, urllib.error
+        self.assertIn("zu langsam", rp.grund(socket.timeout()))
+        self.assertIn("zu langsam", rp.grund(urllib.error.URLError(socket.timeout())))
+        self.assertIn("startet gerade neu", rp.grund(RuntimeError("Planer antwortet 503")))
+        self.assertIn("Fehler 500", rp.grund(RuntimeError("Planer antwortet 500")))
+        self.assertIn("Internet", rp.grund(urllib.error.URLError(ConnectionRefusedError())))
+        e = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "evcockpit.py"), encoding="utf-8").read()
+        self.assertNotIn('fehler="Planer nicht erreichbar', e)              # Fehler werden nicht mehr zwischengespeichert
 
     def test_vertrag_10_ladenetze_und_oeffnung(self):
         d = dict(PLAN, filter={"bevorzugt": ["LIDL_AT"], "netze_modus": "nur", "umweg_max_min": 10, "nur_offen": True})

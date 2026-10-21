@@ -112,6 +112,13 @@ class TestAkkuGeschaetzt(unittest.TestCase):
     def test_unbekanntes_modell_ohne_grenze(self):
         self.assertEqual(self.runde(70.0, "Anderes / unbekannt")["battery_kwh"], 70.0)
 
+    def test_alte_cloudwerte_weg(self):
+        ev._STATE.update(doors_open="ON", plugged="ON", klima_on="ON")
+        self.runde(44.1, "BYD Dolphin Surf / Seagull (Comfort/Design)")
+        for k in ("doors_open", "plugged", "klima_on"):
+            self.assertNotIn(k, ev._STATE)
+        self.assertIn("doors_open", ev._STATE["fehlt"])
+
     def test_handeintrag_gewinnt(self):
         self.assertEqual(self.runde(44.1, "BYD Dolphin Surf / Seagull (Comfort/Design)", "manuell")["battery_kwh"], 10.0)
 
