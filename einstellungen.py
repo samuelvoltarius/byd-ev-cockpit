@@ -38,7 +38,12 @@ def sichtbar(feld, werte, faehigkeiten=None):
 
 
 def bearbeitbar(feld):
-    return feld.get("typ") in BEARBEITBAR and not feld.get("nurLesendExtern")
+    return feld.get("typ") in BEARBEITBAR and not feld.get("nurLesendExtern") and not feld.get("nurLesend")
+
+
+def _zahl(d):
+    """Wie der Kern (Einstellungen.zahl): ganze Zahlen ohne Nachkommastellen."""
+    return str(int(d)) if float(d) == int(float(d)) else ("%g" % d)
 
 
 def _pruefe(feld, v):
@@ -52,9 +57,9 @@ def _pruefe(feld, v):
         if isinstance(v, bool) or not isinstance(v, (int, float)) or (typ == "int" and int(v) != v):
             return "typ"
         if feld.get("min") is not None and v < feld["min"]:
-            return "min %s" % feld["min"]
+            return "min " + _zahl(feld["min"])
         if feld.get("max") is not None and v > feld["max"]:
-            return "max %s" % feld["max"]
+            return "max " + _zahl(feld["max"])
         return None
     if typ == "auswahl":
         erlaubt = [o.get("wert") for o in feld.get("optionen") or [] if not o.get("gesperrt")]
@@ -64,7 +69,9 @@ def _pruefe(feld, v):
     if typ == "farbe":
         return None if isinstance(v, str) and re.fullmatch(r"#[0-9A-Fa-f]{6}", v) else "typ"
     if typ == "text":
-        return None if isinstance(v, str) and len(v) <= 500 else "typ"
+        if not isinstance(v, str):
+            return "typ"
+        return None if len(v) <= 200 else "max 200"
     return "typ"
 
 

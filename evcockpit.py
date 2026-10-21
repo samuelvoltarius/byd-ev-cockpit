@@ -1363,6 +1363,12 @@ const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 const wert=k=>((STAND.werte||{}).werte||{})[k]||{};
 function sichtbar(f){const n=f.nurWenn;if('sichtbar' in f&&!(n&&n.key))return !!f.sichtbar;if(!n)return true;
  if(n.key)return (k=>k in AEND?AEND[k]:wert(k).wert)(n.key)===n.gleich;return false;}
+// Pflichttext wortgleich wie im Web: Titel, Einleitung, je Option Name + Erklaerung, Schluss
+function pflichttext(t){if(!t)return '';if(typeof t==='string')return '<div>'+esc(t)+'</div>';
+ const buch=[...new Set(Object.keys(t).map(k=>k.split('.')[0]).filter(x=>/^[a-z]$/.test(x)))].sort();
+ return (t.title?'<div class=t>'+esc(t.title)+'</div>':'')+(t.intro?'<div>'+esc(t.intro)+'</div>':'')+
+  buch.map(b=>'<div style="margin-top:6px"><b>'+esc(t[b+'.label']||'')+'</b>'+(t[b+'.desc']?' — '+esc(t[b+'.desc']):'')+'</div>').join('')+
+  (t.footer?'<div style="margin:6px 0">'+esc(t.footer)+'</div>':'');}
 function feldHtml(f){const w=wert(f.key),v=(f.key in AEND)?AEND[f.key]:w.wert,lock=!!f.nurLesendExtern,
  id='f_'+f.key.replace(/[^a-zA-Z0-9]/g,'_'),dis=lock?' disabled':'';let e='';
  if(f.typ==='bool')e='<input type=checkbox id='+id+(v?' checked':'')+dis+' onchange="setze(\''+f.key+'\',this.checked)">';
@@ -1375,15 +1381,22 @@ function feldHtml(f){const w=wert(f.key),v=(f.key in AEND)?AEND[f.key]:w.wert,lo
  else if(f.typ==='text')e='<input id='+id+' value="'+esc(v??'')+'"'+dis+' onchange="setze(\''+f.key+'\',this.value)">';
  else if(f.typ==='geheim')e='<input type=password id='+id+' placeholder="'+(w.gesetzt?'••••••• (gesetzt — leer lassen zum Behalten)':'nicht gesetzt')+'"'+dis+' onchange="if(this.value)setze(\''+f.key+'\',this.value)">';
  else e='<div class=h>'+(Array.isArray(v)?v.length+' Einträge':'')+' — bearbeiten im Auto oder im Panoptes-Web.</div>';
- const best=f.bestaetigung&&(f.key in AEND)?'<div class=best><label><input type=checkbox onchange="this.checked?BEST.add(\''+f.key+'\'):BEST.delete(\''+f.key+'\')"> '+
-  esc(f.bestaetigungText||'Ich habe den Hinweis zu dieser Einstellung gelesen und bestätige ihn.')+'</label></div>':'';
- return '<div class=f><div class=t>'+esc(f.titel||f.key)+(f.gefahr?' ⚠️':'')+'</div>'+(f.hilfe?'<div class=h>'+esc(f.hilfe)+'</div>':'')+e+
+ const best=f.bestaetigung&&(f.key in AEND)?'<div class=best>'+pflichttext(f.bestaetigungText)+'<label><input type=checkbox onchange="this.checked?BEST.add(\''+f.key+'\'):BEST.delete(\''+f.key+'\')"> '+
+  esc((f.bestaetigungText&&f.bestaetigungText.confirm)?'Gelesen — '+f.bestaetigungText.confirm:'Ich habe den Hinweis zu dieser Einstellung gelesen und bestätige ihn.')+'</label></div>':'';
+ const wirk=(w.gesetzt===false&&w.wirksam!=null&&w.wirksam!==v)?'<div class=lock>derzeit wirksam: '+esc(((f.optionen||[]).find(o=>o.wert===w.wirksam)||{}).titel||w.wirksam)+'</div>':'';
+ return '<div class=f><div class=t>'+esc(f.titel||f.key)+(f.gefahr?' ⚠️':'')+'</div>'+(f.hilfe?'<div class=h>'+esc(f.hilfe)+'</div>':'')+e+wirk+
   (lock?'<div class=lock>🔒 nur im Auto änderbar</div>':'')+(f.neustartNoetig?'<div class=lock>↻ wirkt nach einem Neustart von Panoptes</div>':'')+best+
   '<div class=err id=e_'+id+'></div></div>';}
-function zeichne(){const g=(STAND.schema||{}).gruppen||[];
- document.getElementById('inhalt').innerHTML=g.slice().sort((a,b)=>(a.reihenfolge||0)-(b.reihenfolge||0)).map(x=>{
-  const ff=(x.felder||[]).filter(sichtbar);if(!ff.length)return '';
-  return '<div class=card><h2>'+esc(x.titel||x.id)+'</h2>'+ff.map(feldHtml).join('')+'</div>';}).join('')||'<div class=card>Keine Einstellungen.</div>';
+const OFFEN=new Set();   // aufgeklappte "Erweitert"-Bereiche bleiben beim Neuzeichnen offen
+function zeichne(){const g=(STAND.schema||{}).gruppen||[],ord=(a,b)=>(a.reihenfolge||0)-(b.reihenfolge||0);
+ document.getElementById('inhalt').innerHTML=g.slice().sort(ord).map(x=>{
+  const ff=(x.felder||[]).filter(sichtbar).sort(ord);if(!ff.length)return '';
+  const abs=[];ff.forEach(f=>{const a=f.abschnitt||{id:'',titel:'',reihenfolge:-1};let z=abs.find(y=>y.id===a.id);
+   if(!z){z={id:a.id,titel:a.titel,reihenfolge:a.reihenfolge||0,f:[]};abs.push(z);}z.f.push(f);});
+  return '<div class=card><h2>'+esc(x.titel||x.id)+'</h2>'+abs.sort(ord).map(a=>{const normal=a.f.filter(f=>!f.erweitert),erw=a.f.filter(f=>f.erweitert);
+   return (a.titel?'<div class=t style="margin-top:10px;color:#5FD6E6">'+esc(a.titel)+'</div>':'')+normal.map(feldHtml).join('')+
+    (erw.length?'<details id="d_'+esc(x.id+'_'+a.id)+'"'+(OFFEN.has('d_'+x.id+'_'+a.id)?' open':'')+' ontoggle="this.open?OFFEN.add(this.id):OFFEN.delete(this.id)"><summary class=h style="cursor:pointer">Erweitert ('+erw.length+')</summary>'+erw.map(feldHtml).join('')+'</details>':'');}).join('')+'</div>';
+ }).join('')||'<div class=card>Keine Einstellungen.</div>';
  document.getElementById('speichern').disabled=!Object.keys(AEND).length;}
 function setze(k,v){const f=((STAND.schema.gruppen||[]).flatMap(g=>g.felder||[])).find(x=>x.key===k);
  if(f&&f.gefahr&&!confirm('Diese Einstellung verändert sichtbares Verhalten am Auto. Wirklich ändern?')){zeichne();return;}

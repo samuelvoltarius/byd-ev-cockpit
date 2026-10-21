@@ -55,6 +55,10 @@ class TestVorbereiten(unittest.TestCase):
         self.assertEqual(f, {"guardStop.socBelow": "typ"})
         _, f = es.vorbereiten(SCHEMA, WERTE, {"deterrent.light": "ja"})
         self.assertEqual(f, {"deterrent.light": "typ"})
+        sch = {"gruppen": [{"felder": [{"key": "v12", "typ": "zahl", "min": 11.5, "max": 13.0},
+                                       {"key": "t", "typ": "text"}]}]}
+        _, f = es.vorbereiten(sch, {"werte": {}}, {"v12": 13.5, "t": "x" * 201})
+        self.assertEqual(f, {"v12": "max 13", "t": "max 200"})            # gleiche Gruende wie der Kern
 
     def test_bestaetigung_und_gesperrte_option(self):
         _, f = es.vorbereiten(SCHEMA, WERTE, {"surveillance.triggerMode": "ai_private"})
