@@ -57,8 +57,8 @@ class TestUmrechnung(unittest.TestCase):
     def test_telemetrie(self):
         st = ps.aus_telemetrie({"soc": 63.5, "odometer": 18342, "ev_range_km": 205, "ext_temp": 8,
                                 "lat": 47.8, "lon": 13.0, "gear": "p", "is_charging": 0, "door_lock": [1, 1, 1, 1]})
-        self.assertEqual((st["soc"], st["odometer"], st["gear"], st["charging"], st["locked"]),
-                         (63.5, 18342.0, "P", "OFF", "ON"))
+        self.assertEqual((st["soc"], st["odometer"], st["gear"], st["charging"]), (63.5, 18342.0, "P", "OFF"))
+        self.assertNotIn("locked", st)          # door_lock der Telemetrie ist unzuverlaessig (meist -1) -> nie daraus ableiten
         self.assertEqual((st["latitude"], st["longitude"]), (47.8, 13.0))
 
     def test_zuendung_fuer_die_befehlssperre(self):
@@ -93,7 +93,7 @@ class TestPanoptes(unittest.TestCase):
         self.assertEqual((st["soc"], st["online"], st["_quelle"]), (70.0, "ON", "Panoptes"))
         # 1.9.8: nutzbare Akku-kWh hoechstens alle 6 h aus der Uebersicht (hier ohne Antwort -> kein Wert)
         self.assertEqual([a[0] for a in f.aufrufe], ["/auth/kopplung", "/auth/token", "/api/mqtt/telemetry",
-                                                     "/api/launcher/v1/summary"])
+                                                     "/api/vehicle/state", "/api/launcher/v1/summary"])
         self.assertNotIn("usable_kwh", st)
         p.lies()
         self.assertEqual([a[0] for a in f.aufrufe][-1], "/api/mqtt/telemetry")   # nicht schon wieder
@@ -140,6 +140,33 @@ class TestPanoptes(unittest.TestCase):
 
     def test_ohne_url_none(self):
         self.assertIsNone(ps.Panoptes("", "byd-1-geheim").lies())
+
+
+class TestSchloss(unittest.TestCase):
+    """Alfred 21.10.: 'Verriegelt: Nein' bei verriegeltem Auto. Quelle ist /api/vehicle/state doors.overall
+    (API-Bedeutung 1 = verriegelt, 2 = offen, -1 = unbekannt)."""
+    def lies(self, overall, telemetrie_tuer=(-1, -1, -1, -1)):
+        tel = {"success": True, "telemetry": {"soc": 71, "lat": 47.8, "lon": 13.0, "odometer": 1, "door_lock": list(telemetrie_tuer)}}
+        fz = {"doors": {"overall": overall, "lf": overall, "scope": "driver_door", "source": "ota"}}
+        f = Fake({"/api/mqtt/telemetry": tel, "/api/vehicle/state": fz, "/api/launcher/v1/summary": {}})
+        p = ps.Panoptes("http://100.1.2.3:8180", "", jwt="jwt-1", http=f)
+        return p.lies(), p, f
+
+    def test_verriegelt(self):
+        self.assertEqual(self.lies(1)[0]["locked"], "ON")
+
+    def test_offen(self):
+        self.assertEqual(self.lies(2)[0]["locked"], "OFF")
+
+    def test_unbekannt_kein_nein(self):
+        for o in (-1, 0, None):
+            self.assertNotIn("locked", self.lies(o)[0])
+
+    def test_nicht_jede_runde(self):
+        st, p, f = self.lies(1)
+        p.lies()
+        self.assertEqual([a[0] for a in f.aufrufe].count("/api/vehicle/state"), 1)   # hoechstens alle 2 min
+        self.assertEqual(p.lies()["locked"], "ON")                                       # zuletzt bekannter Wert bleibt
 
 
 if __name__ == "__main__":

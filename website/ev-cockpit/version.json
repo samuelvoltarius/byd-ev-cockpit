@@ -1,5 +1,5 @@
 {
-  "version": "1.11.1",
-  "was_neu": "Route: Karte, Preis pro kWh und Preisquelle je Ladestopp",
+  "version": "1.11.2",
+  "was_neu": "Verriegelt stimmt wieder; Unbekanntes steht als – da, nie als Nein",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }

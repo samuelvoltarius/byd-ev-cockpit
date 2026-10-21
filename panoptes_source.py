@@ -16,6 +16,7 @@ import urllib.error
 import urllib.request
 
 TIMEOUT = 6
+SCHLOSS_TAKT_S = 120      # Zentralverriegelung aus /api/vehicle/state hoechstens alle 2 min
 AKKU_TAKT_S = 6 * 3600   # nutzbare Akku-kWh aendert sich kaum: hoechstens alle 6 h nachsehen
 ODO_TAKT_S = 600          # Kilometerstand separat nur alle 10 min (der Endpunkt kann Cloud-Abfragen ausloesen)
 
@@ -89,9 +90,8 @@ def aus_telemetrie(t):
         st["speed"] = _zahl(t["speed"])
     if t.get("is_charging") is not None:
         st["charging"] = _an(t["is_charging"])
-    dl = t.get("door_lock")
-    if isinstance(dl, list) and dl:
-        st["locked"] = "ON" if all(v == 1 for v in dl) else "OFF"
+    # door_lock aus der Telemetrie NICHT verwenden: meist -1 (unbekannt) je Tuer - daraus wurde frueher "OFF"
+    # (Alfred, 21.10.: Cockpit zeigte "Verriegelt: Nein", Auto war verriegelt). Schloss kommt aus /api/vehicle/state.
     for ecke in ("fl", "fr", "rl", "rr"):                 # Reifendruck in kPa (wie die BYD-Cloud)
         v = _zahl(t.get("tyre_p_" + ecke))
         if v is not None and 50 <= v <= 600:
@@ -145,6 +145,7 @@ class Panoptes:
         self.jwt_gespeichert = jwt_gespeichert or (lambda j, code_verbraucht=False: None)
         self.odo_t = 0.0
         self.akku_t = 0.0
+        self.schloss, self.schloss_t = None, 0.0
         self.code_verbraucht = False
         self.letzter_fehler = ""
 
@@ -208,6 +209,21 @@ class Panoptes:
                 st = dict(aus_uebersicht(s, g, fz), **st)
             if "soc" not in st:
                 return None
+            if self.uhr() - self.schloss_t >= SCHLOSS_TAKT_S:
+                self.schloss_t = self.uhr()
+                try:
+                    fz = self._get("/api/vehicle/state") or {}
+                    # API-Bedeutung (VehicleControlApiHandler): 1 = verriegelt, 2 = offen, -1/0 = unbekannt
+                    self.schloss = {1: "ON", 2: "OFF"}.get(((fz.get("doors") or {}).get("overall")))
+                    odo = (fz.get("odometer") or {}).get("totalKm")
+                    if "odometer" not in st and _zahl(odo):
+                        st["odometer"] = _zahl(odo)
+                except NichtAngemeldet:
+                    raise
+                except Exception:
+                    self.schloss = None
+            if self.schloss:
+                st["locked"] = self.schloss
             if "usable_kwh" not in st and self.uhr() - self.akku_t >= AKKU_TAKT_S:
                 self.akku_t = self.uhr()
                 try:
