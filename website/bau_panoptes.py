@@ -261,7 +261,12 @@ h2{font-size:26px;margin:46px 0 6px}
 .galerie figure{margin:0}
 .paar{display:grid;grid-template-columns:3fr 1fr;gap:10px;align-items:end}
 .zwei{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
-.galerie figcaption{color:var(--mut);font-size:14.5px;margin-top:8px}
+.reihe{display:flex;gap:12px;justify-content:center;align-items:flex-start;margin-top:22px}
+.galerie .reihe{margin-top:0}
+.reihe>a{display:block;min-width:0}
+.reihe img{width:100%;height:100%;object-fit:cover;display:block;border-radius:12px;border:1px solid var(--line);background:var(--card)}
+.reihe>a.allein.hoch{max-width:300px}.reihe>a.allein.breit{max-width:820px}
+.galerie figcaption{color:var(--mut);font-size:14.5px;margin-top:8px;text-align:center}
 .galerie figcaption b{color:var(--txt)}
 .diagramm{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px;margin:8px 0 14px}
 .diagramm svg{width:100%;height:auto;display:block}
@@ -284,19 +289,33 @@ ul.liste{margin:.2em 0;padding-left:1.2em}ul.liste li{margin:.35em 0}
 .foot{color:var(--mut);font-size:13.5px;text-align:center;margin-top:46px;border-top:1px solid var(--line);padding-top:18px}
 .foot a{color:var(--mut);text-decoration:underline}
 ol.hw{padding-left:1.3em}ol.hw li{margin:.7em 0}
-@media(max-width:720px){.hero,.galerie,.paar,.zwei{grid-template-columns:1fr}.hero .handy,.paar .handy{max-width:260px;margin:0 auto}h2{font-size:23px}}
+@media(max-width:720px){.reihe{flex-direction:column;align-items:center}.reihe>a{flex:none!important;width:100%}.reihe>a.hoch{max-width:260px}.hero,.galerie,.paar,.zwei{grid-template-columns:1fr}.hero .handy,.paar .handy{max-width:260px;margin:0 auto}h2{font-size:23px}}
 """
 
 
-def bild(name, art, alt, pfad, klasse="", sofort=False):
+GROESSE = {"pc": (1440, 900), "handy": (780, 1688), "display": (1280, 720)}
+
+
+def reihe(bilder, pfad, sofort=False):
+    """Bilder einer Reihe: gleiche Hoehe, Ober- und Unterkante buendig (flex-grow = Seitenverhaeltnis), allein zentriert."""
+    teile = []
+    for n, a, alt in bilder:
+        w, h = GROESSE[a]
+        kl = ("hoch" if a == "handy" else "breit") + (" allein" if len(bilder) == 1 else "")
+        stil = "flex:%.4f 1 0;aspect-ratio:%d/%d" % (w / h, w, h) if len(bilder) > 1 else "aspect-ratio:%d/%d;width:100%%" % (w, h)
+        teile.append(bild(n, a, alt, pfad, klasse=kl, sofort=sofort, stil=stil))
+    return '<div class="reihe">%s</div>' % "".join(teile)
+
+
+def bild(name, art, alt, pfad, klasse="", sofort=False, stil=""):
     """<picture>: hell im hellen Modus (wenn es die Fassung gibt), sonst dunkel."""
     b = pfad + "bilder/" + name + "-" + art
-    w, h = {"pc": (1440, 900), "handy": (780, 1688), "display": (1280, 720)}[art]
+    w, h = GROESSE[art]
     hell = os.path.exists(os.path.join(QUELLE, name + "-" + art + "-hell.webp"))
     quelle = ('<source media="(prefers-color-scheme: light)" srcset="%s-hell.webp">' % b) if hell else ""
-    return ('<a href="%s-dunkel.webp" target="_blank" rel="noopener"%s><picture>%s'
+    return ('<a href="%s-dunkel.webp" target="_blank" rel="noopener"%s%s><picture>%s'
             '<img src="%s-dunkel.webp" alt="%s" width="%d" height="%d"%s></picture></a>'
-            % (b, (' class="%s"' % klasse) if klasse else "", quelle, b, html.escape(alt), w, h,
+            % (b, (' class="%s"' % klasse) if klasse else "", (' style="%s"' % stil) if stil else "", quelle, b, html.escape(alt), w, h,
                ' loading="eager" fetchpriority="high"' if sofort else ' loading="lazy" decoding="async"'))
 
 
@@ -412,8 +431,7 @@ def seite(t):
              % (t["zurueck"], t["andere"], "en" if t["lang"] == "de" else "de", t["andere_name"]))
     o.append('  <header><div class="eyebrow">%s</div><h1>%s — <span class="grad">%s</span></h1><p class="sub">%s</p></header>'
              % (t["eyebrow"], t["h1a"], t["h1b"], t["sub"]))
-    o.append('  <div class="hero">%s<div class="handy">%s</div></div>'
-             % (bild("start", "pc", t["hero_alt_pc"], p, sofort=True), bild("start", "handy", t["hero_alt_handy"], p, sofort=True)))
+    o.append("  " + reihe([("start", "pc", t["hero_alt_pc"]), ("start", "handy", t["hero_alt_handy"])], p, sofort=True))
     o.append('  <div class="note">%s</div>' % t["wichtig"])
     # Funktionen
     o.append('  <h2 id="funktionen">%s</h2>\n  <div class="raster">' % t["h_kann"])
@@ -423,14 +441,7 @@ def seite(t):
     # Galerie
     o.append('  <h2 id="bilder">%s</h2><p class="lead">%s</p>\n  <div class="galerie">' % (t["h_bilder"], t["bilder_lead"]))
     for cap, bilder in t["bilder"]:
-        breit = [x for x in bilder if x[1] != "handy"]
-        hoch = [x for x in bilder if x[1] == "handy"]
-        teile = "".join(bild(n, a, alt, p) for n, a, alt in breit)
-        if hoch:
-            teile = '<div class="paar">%s<div class="handy">%s</div></div>' % (
-                "".join(bild(n, a, alt, p) for n, a, alt in breit) or "<div></div>", "".join(bild(n, a, alt, p) for n, a, alt in hoch))
-        elif len(breit) == 2:
-            teile = '<div class="zwei">%s</div>' % teile
+        teile = reihe([x for x in bilder if x[1] != "handy"] + [x for x in bilder if x[1] == "handy"], p)
         o.append('    <figure>%s<figcaption><b>%s</b></figcaption></figure>' % (teile, html.escape(cap)))
     o.append("  </div>")
     # Zusammenhang
