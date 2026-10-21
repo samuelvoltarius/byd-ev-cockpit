@@ -77,6 +77,17 @@ class TestWaechter(unittest.TestCase):
         finally:
             ur.urlopen = alt
 
+    def test_letztes_ereignis(self):
+        aufrufe = []
+
+        def liste_(pv, seite, datum, art, groesse):
+            aufrufe.append((art, groesse))
+            return {"ok": True, "aufnahmen": [{"id": art, "timestamp": {"sentry": 100, "proximity": 200}[art]}]}
+        self.assertEqual(w.letztes(None, liste_)["id"], "proximity")
+        self.assertEqual(aufrufe, [("sentry", 1), ("proximity", 1)])          # je Art nur die neueste, keine Dashcam
+        self.assertEqual(w.letztes(None, lambda *a: {"ok": False, "grund": "zu_alt"}), {"grund": "zu_alt"})
+        self.assertIsNone(w.letztes(None, lambda *a: {"ok": True, "aufnahmen": []}))
+
 
 if __name__ == "__main__":
     unittest.main()

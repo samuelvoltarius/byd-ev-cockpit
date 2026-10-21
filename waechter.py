@@ -29,9 +29,9 @@ def _knapp(a):
     return d
 
 
-def liste(pv, seite=1, datum="", art=""):
+def liste(pv, seite=1, datum="", art="", groesse=SEITE):
     """Eine Seite der Aufnahmen. -> {ok, aufnahmen, seiten, seite, gesamt} | {ok:False, grund}"""
-    q = {"page": max(1, int(seite or 1)), "pageSize": SEITE}
+    q = {"page": max(1, int(seite or 1)), "pageSize": max(1, min(SEITE, int(groesse)))}
     if datum and DATUM.fullmatch(datum):
         q["date"] = datum
     if art in ARTEN:
@@ -47,6 +47,25 @@ def liste(pv, seite=1, datum="", art=""):
     auf = [x for x in (_knapp(a) for a in (d.get("recordings") or []) if isinstance(a, dict)) if x]
     return {"ok": True, "aufnahmen": auf, "seiten": int(d.get("totalPages") or 1), "seite": int(d.get("page") or 1),
             "gesamt": int(d.get("totalCount") or len(auf))}
+
+
+EREIGNIS_ARTEN = ("sentry", "proximity")    # Waechter-Ereignisse; Fahrtkamera/Dashcam zaehlen nicht
+
+
+def letztes(pv, liste_=None):
+    """Neuestes Waechter-Ereignis (je Art die neueste, davon die juengste). -> dict | None; {'grund': 'zu_alt'} vor 0.1.9."""
+    liste_ = liste_ or liste
+    beste = None
+    for art in EREIGNIS_ARTEN:
+        d = liste_(pv, 1, "", art, 1)
+        if not d.get("ok"):
+            if d.get("grund") == "zu_alt":
+                return {"grund": "zu_alt"}
+            continue
+        for a in d.get("aufnahmen") or []:
+            if beste is None or (a.get("timestamp") or 0) > (beste.get("timestamp") or 0):
+                beste = a
+    return beste
 
 
 def tage(pv):
