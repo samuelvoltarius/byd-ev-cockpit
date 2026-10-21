@@ -1,5 +1,5 @@
 {
-  "version": "1.7",
-  "was_neu": "Gleiche Live-Belegung wie Planer und Panoptes (gemeinsames Kartenmodul), vorbereitet für Panoptes",
+  "version": "1.8",
+  "was_neu": "Mit Panoptes im Auto koppeln (ab Panoptes 0.1.5) und alle Panoptes-Einstellungen im Cockpit bearbeiten",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }
