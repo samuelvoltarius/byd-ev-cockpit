@@ -278,14 +278,15 @@ ol.hw{padding-left:1.3em}ol.hw li{margin:.7em 0}
 """
 
 
-def bild(name, art, alt, pfad, klasse=""):
+def bild(name, art, alt, pfad, klasse="", sofort=False):
     """<picture>: hell im hellen Modus, sonst dunkel."""
     b = pfad + "bilder/" + name + "-" + art
     w, h = (1440, 900) if art == "desktop" else (780, 1688)
     return ('<a href="%s-dunkel.webp" target="_blank" rel="noopener"%s><picture>'
             '<source media="(prefers-color-scheme: light)" srcset="%s-hell.webp">'
-            '<img src="%s-dunkel.webp" alt="%s" width="%d" height="%d" loading="lazy" decoding="async"></picture></a>'
-            % (b, (' class="%s"' % klasse) if klasse else "", b, b, html.escape(alt), w, h))
+            '<img src="%s-dunkel.webp" alt="%s" width="%d" height="%d" %s></picture></a>'
+            % (b, (' class="%s"' % klasse) if klasse else "", b, b, html.escape(alt), w, h,
+               ' loading="eager" fetchpriority="high"' if sofort else ' loading="lazy" decoding="async"'))
 
 
 def diagramm(s):
@@ -401,7 +402,7 @@ def seite(t):
     o.append('  <header><div class="eyebrow">%s</div><h1>%s — <span class="grad">%s</span></h1><p class="sub">%s</p></header>'
              % (t["eyebrow"], t["h1a"], t["h1b"], t["sub"]))
     o.append('  <div class="hero">%s<div class="handy">%s</div></div>'
-             % (bild("start", "desktop", t["hero_alt_pc"], p), bild("start", "handy", t["hero_alt_handy"], p)))
+             % (bild("start", "desktop", t["hero_alt_pc"], p, sofort=True), bild("start", "handy", t["hero_alt_handy"], p, sofort=True)))
     o.append('  <div class="note">%s</div>' % t["wichtig"])
     # Funktionen
     o.append('  <h2 id="funktionen">%s</h2>\n  <div class="raster">' % t["h_kann"])
