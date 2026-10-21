@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>Wichtige Hinweise – Panoptes, EV-Cockpit, Routenplaner</title>
+<meta name="description" content="Gilt für Panoptes, das EV-Cockpit und den Routenplaner. Stand 21.10.2026.">
+<link rel="canonical" href="https://byd.serveone.at/panoptes/hinweise.html">
+<link rel="alternate" hreflang="de" href="https://byd.serveone.at/panoptes/hinweise.html">
+<link rel="alternate" hreflang="en" href="https://byd.serveone.at/panoptes/en/hinweise.html">
+<meta property="og:title" content="Wichtige Hinweise – Panoptes, EV-Cockpit, Routenplaner">
+<meta property="og:description" content="Gilt für Panoptes, das EV-Cockpit und den Routenplaner. Stand 21.10.2026.">
+<style>
+:root{--bg:#0b0f14;--card:#131a22;--card2:#182029;--line:#243040;--txt:#e7edf3;--mut:#93a2b3;
+ --grn:#28d17c;--grn2:#1aa862;--blue:#38bdf8;--amber:#ffb020;--lime:#c8f560;--link:#3aa0ff;--node:#16212c;--note-bg:#10241a;--note-bd:#1c4a33;--note-tx:#bfe6d2}
+@media (prefers-color-scheme: light){:root{--bg:#f4f7f9;--card:#ffffff;--card2:#eef3f6;--line:#d5dee6;--txt:#14202b;--mut:#55667a;
+ --grn:#13995a;--grn2:#0e7d49;--blue:#0a7fb8;--amber:#a86a00;--lime:#4f7d00;--link:#0a66c2;--node:#ffffff;--note-bg:#e9f7ef;--note-bd:#b7e2c8;--note-tx:#1d4d33}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:17px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:980px;margin:0 auto;padding:22px 16px 70px}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px;gap:12px}
+.top a{color:var(--mut);font-weight:600}
+header{text-align:center;padding:24px 0 6px}
+.eyebrow{color:var(--grn);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
+h1{font-size:clamp(30px,6vw,48px);line-height:1.12;margin:.3em 0 .25em}
+.grad{background:linear-gradient(90deg,var(--grn),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mut);font-size:19px;max-width:680px;margin:0 auto}
+h2{font-size:26px;margin:46px 0 6px}
+.lead{color:var(--mut);margin:.3em 0 1.1em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:14px 0}
+.note{background:var(--note-bg);border:1px solid var(--note-bd);border-radius:12px;padding:13px 16px;color:var(--note-tx);font-size:15.5px;margin:18px 0}
+.note a{color:inherit;text-decoration:underline}
+.hero{display:grid;grid-template-columns:3fr 1fr;gap:16px;align-items:end;margin-top:22px}
+.hero img,.galerie img{width:100%;height:auto;display:block;border-radius:12px;border:1px solid var(--line);background:var(--card)}
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.feat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.feat .ic{font-size:24px}.feat h3{margin:4px 0 4px;font-size:17.5px}.feat p{margin:0;color:var(--mut);font-size:15.5px}
+.galerie{display:grid;grid-template-columns:1fr;gap:30px}
+.galerie figure{margin:0}
+.paar{display:grid;grid-template-columns:3fr 1fr;gap:10px;align-items:end}
+.galerie figcaption{color:var(--mut);font-size:14.5px;margin-top:8px}
+.galerie figcaption b{color:var(--txt)}
+.diagramm{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px;margin:8px 0 14px}
+.diagramm svg{width:100%;height:auto;display:block}
+.diagramm .schmal{display:none}@media(max-width:640px){.diagramm .breit{display:none}.diagramm .schmal{display:block}}
+.verb{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.verb .card{margin:0}
+.verb h3{margin:0 0 6px;font-size:16.5px;display:flex;gap:8px;align-items:center}
+.nr{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--grn);color:#04110a;font-size:13px;font-weight:800;display:grid;place-items:center}
+.verb p{margin:0 0 8px;font-size:15px}.verb p.nicht{color:var(--mut);margin:0;font-size:14.5px}
+.verb p.nicht b{color:var(--amber)}
+.tab{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px;min-width:560px}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:var(--card2)}
+ul.liste{margin:.2em 0;padding-left:1.2em}ul.liste li{margin:.35em 0}
+.bald{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:2px 12px;font-size:13px;font-weight:700;color:var(--amber);margin-left:8px;vertical-align:middle}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-weight:700;padding:10px 16px;border-radius:12px;font-size:15.5px}
+.btn:hover{text-decoration:none;border-color:var(--grn)}
+.foot{color:var(--mut);font-size:13.5px;text-align:center;margin-top:46px;border-top:1px solid var(--line);padding-top:18px}
+.foot a{color:var(--mut);text-decoration:underline}
+ol.hw{padding-left:1.3em}ol.hw li{margin:.7em 0}
+@media(max-width:720px){.hero,.galerie,.paar{grid-template-columns:1fr}.hero .handy,.paar .handy{max-width:260px;margin:0 auto}h2{font-size:23px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top"><a href="./">← Zurück zu Panoptes</a><a href="en/hinweise.html" hreflang="en">🌐 English</a></div>
+  <h1 style="font-size:clamp(28px,5vw,40px)">Wichtige Hinweise</h1><p class="lead">Gilt für Panoptes, das EV-Cockpit und den Routenplaner. Stand 21.10.2026.</p>
+  <div class="card"><ol class="hw">
+    <li><b>Freizeitprojekt.</b> Panoptes, das EV-Cockpit und der Routenplaner sind ein privates Freizeitprojekt von Alfred Aigner. Sie werden kostenlos und ohne Gewähr angeboten.</li>
+    <li><b>Ohne Gewähr.</b> Es gibt keine Garantie, dass alles fehlerfrei, vollständig oder jederzeit verfügbar ist. Das gilt auch für Ladestände, Reichweiten, Preise, Belegung von Ladesäulen, Routen, Blitzer- und Gefahrenhinweise. Prüfe Wichtiges selbst; im Straßenverkehr gilt immer, was du siehst und was die Schilder sagen.</li>
+    <li><b>Eigenes Risiko.</b> Du nutzt alles auf eigenes Risiko. Soweit gesetzlich zulässig, übernimmt Alfred Aigner keine Haftung für Schäden, die aus der Nutzung entstehen, auch nicht für Schäden am Fahrzeug, an Daten oder durch Fernbefehle.</li>
+    <li><b>Du bist verantwortlich.</b> Du allein entscheidest, wie du die Funktionen einsetzt, und bist dafür verantwortlich, dass das erlaubt ist. Das betrifft vor allem Datenschutz, Kamera-Aufnahmen, Fernbefehle über das BYD-Konto und die Regeln im Straßenverkehr.</li>
+    <li><b>Nur privat.</b> Gedacht ist alles nur für die private Nutzung mit deinem eigenen Fahrzeug. Ein gewerblicher Einsatz (z. B. Flotten, Vermietung, Taxi, Firmenwagen-Überwachung) ist nicht vorgesehen.</li>
+    <li><b>Wächter nur auf eigenem Grund.</b> Kamera-Aufnahmen des Wächters sind für deinen eigenen Privatgrund gedacht (z. B. Garage, Einfahrt). Richte die Kameras so aus, dass weder öffentlicher Raum (Straße, Gehweg, öffentlicher Parkplatz) noch das Grundstück der Nachbarn erfasst wird. Aufnahmen nicht veröffentlichen.</li>
+    <li><b>Nicht von BYD.</b> Dieses Projekt ist nicht mit BYD verbunden und wird von BYD weder unterstützt noch geprüft. „BYD“, „DiLink“ und alle anderen genannten Namen und Marken gehören ihren jeweiligen Inhabern.</li>
+    <li><b>Gesetzliche Rechte bleiben.</b> Die Haftung für Vorsatz und grobe Fahrlässigkeit, für Personenschäden sowie zwingende Rechte von Verbraucherinnen und Verbrauchern werden durch diese Hinweise nicht eingeschränkt.</li>
+  </ol></div>
+  <script>document.addEventListener('click',function(e){var a=e.target.closest('a');var i=a&&a.querySelector('picture img');
+    if(i&&i.currentSrc){e.preventDefault();window.open(i.currentSrc,'_blank','noopener');}});</script>
+  <div class="foot">Privates Freizeitprojekt, ohne Gewähr, nicht mit BYD verbunden. Nutzung auf eigenes Risiko.<br>
+    <a href="hinweise.html">Hinweise</a> · <a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a><br>
+    <span style="font-size:12.5px">Kartendaten © OpenStreetMap-Mitwirkende (ODbL). 3D-Automodelle teils von Nazh (CC BY 4.0), teils selbst erstellt (CC0).</span></div>
+</div>
+</body>
+</html>
