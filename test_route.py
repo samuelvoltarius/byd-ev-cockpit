@@ -77,6 +77,28 @@ class TestRoute(unittest.TestCase):
         self.assertIn("Start und Ziel gehen nur beim Klick auf „Route berechnen“", e)
         self.assertIn("Am Fahrzeug wird nichts ausgelöst", e)
 
+    def test_planer_haengt_nicht_still(self):
+        for code in (502, 503, 504):
+            with self.assertRaisesRegex(ValueError, "neu gestartet oder ist ausgelastet"):
+                rp.planen("t", {}, anfrage=Fake({"plan": (code, {})}))
+        import socket
+
+        def zu_langsam(*a, **k):
+            raise socket.timeout("timed out")
+        with self.assertRaisesRegex(ValueError, "nicht geantwortet"):
+            rp.planen("t", {}, anfrage=zu_langsam)
+        e = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "evcockpit.py"), encoding="utf-8").read()
+        self.assertIn("setTimeout(()=>ab.abort(),60000)", e)              # der Browser wartet nie endlos
+
+    def test_vertrag_10_ladenetze_und_oeffnung(self):
+        d = dict(PLAN, filter={"bevorzugt": ["LIDL_AT"], "netze_modus": "nur", "umweg_max_min": 10, "nur_offen": True})
+        d["stopps"] = [dict(PLAN["stopps"][0], oeffnung_text="Mi 05:00–22:00", geoeffnet_bei_ankunft=False, bevorzugtes_netz=True)]
+        k = rp.kurz(d)
+        self.assertEqual(k["vorlieben"], {"netze": ["LIDL_AT"], "modus": "nur", "umweg_min": 10, "nur_offen": True})
+        self.assertEqual((k["stopps"][0]["oeffnung"], k["stopps"][0]["geschlossen"], k["stopps"][0]["bevorzugt"]),
+                         ("Mi 05:00–22:00", True, True))
+        self.assertIsNone(rp.kurz(dict(PLAN, filter={"bevorzugt": [], "nur_offen": False}))["vorlieben"])
+
 
 if __name__ == "__main__":
     unittest.main()

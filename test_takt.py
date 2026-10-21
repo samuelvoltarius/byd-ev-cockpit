@@ -80,5 +80,41 @@ class TestAkkuVomAuto(unittest.TestCase):
         self.assertIn("b.battery_kwh_hand=KWH_HAND;", q)
 
 
+class TestAkkuGeschaetzt(unittest.TestCase):
+    """Kern 3: usableKwh = Nennkapazitaet x geschaetzte SOH, kein Messwert; kann ueber der Nennkapazitaet liegen."""
+    def setUp(self):
+        self.cfg, self.obj, self.save = dict(ev._CFG), ev._panoptes_obj, ev.save_cfg
+        ev.save_cfg = lambda c: None
+
+    def tearDown(self):
+        ev._CFG.clear(); ev._CFG.update(self.cfg); ev._panoptes_obj = self.obj; ev.save_cfg = self.save
+
+    def runde(self, schaetzung, model, quelle=None):
+        class Pv:
+            letzter_fehler = ""
+            def lies(self):
+                return {"soc": 71.0, "usable_kwh": schaetzung, "consumption_avg": 16.3, "_quelle": "Panoptes", "online": "ON"}
+        ev._CFG.clear(); ev._CFG.update(model=model, battery_kwh=10.0, panoptes_code="x")
+        if quelle:
+            ev._CFG["battery_quelle"] = quelle
+        ev._panoptes_obj = lambda: Pv()
+        ev._panoptes_runde({})
+        return ev._CFG
+
+    def test_begrenzt_auf_nennkapazitaet(self):
+        c = self.runde(44.1, "BYD Dolphin Surf / Seagull (Comfort/Design)")
+        self.assertEqual((c["battery_kwh"], c["battery_schaetzung"], c["battery_nenn"], c["battery_quelle"]),
+                         (43.2, 44.1, 43.2, "Panoptes (geschätzt)"))
+
+    def test_darunter_bleibt_schaetzung(self):
+        self.assertEqual(self.runde(40.0, "BYD Dolphin Surf / Seagull (Comfort/Design)")["battery_kwh"], 40.0)
+
+    def test_unbekanntes_modell_ohne_grenze(self):
+        self.assertEqual(self.runde(70.0, "Anderes / unbekannt")["battery_kwh"], 70.0)
+
+    def test_handeintrag_gewinnt(self):
+        self.assertEqual(self.runde(44.1, "BYD Dolphin Surf / Seagull (Comfort/Design)", "manuell")["battery_kwh"], 10.0)
+
+
 if __name__ == "__main__":
     unittest.main()
