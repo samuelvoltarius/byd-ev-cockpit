@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.6.1"
+VERSION = "1.7"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -2279,7 +2279,7 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
  </div>
 </div>
 <script src="/static/leaflet.js"></script>
-<script src="/static/panoptes-karte-1.0.0.js" integrity="sha384-Ilpbx/zNs2aeCliJNG2UPcl342QsoUvckXUhZaoOfiHCQVOBFkgGm2QrnL85Ans8"></script>
+<script src="/static/panoptes-karte-1.1.0.js" integrity="sha384-WFV5q2HBex9eBQHZgdppShpKNwUGDJS+1xYid+boekvLEIzWPflpxKMRzPjeDs0m"></script>
 <script>
 const SIL={
 klein:'<svg viewBox="0 0 320 130" xmlns="http://www.w3.org/2000/svg"><g transform="translate(16,14)"><path d="M 8,96 L 10,70 C 12,57 22,49 40,46 L 66,43 L 96,15 C 102,8 112,5 126,5 L 200,5 C 214,5 224,9 230,17 L 250,45 L 272,51 C 284,55 288,65 288,76 L 288,96 Z" fill="#5FD6E6"/><circle cx="60" cy="96" r="19" fill="#071a2b"/><circle cx="60" cy="96" r="12" fill="#5FD6E6"/><circle cx="240" cy="96" r="19" fill="#071a2b"/><circle cx="240" cy="96" r="12" fill="#5FD6E6"/></g></svg>',
@@ -2340,22 +2340,17 @@ function basiskarte(m){
  }).catch(()=>osm());
 }
 
-// Live-Belegung: gemeinsames Kartenmodul panoptes-karte 1.0.0 (gleich wie /ev/ und Panoptes; Vertrag
+// Live-Belegung: gemeinsames Kartenmodul panoptes-karte 1.1.0 (gleich wie /ev/ und Panoptes; Vertrag
 // https://byd.serveone.at/tiles/lib/README.md). Die Anfrage laeuft ueber den lokalen Server (/live/umkreis),
 // der die eigenen Ladekarten anhaengt; die Pflicht-Quellenangabe (z. B. EnBW CC BY 4.0) steht in der Kartenfusszeile.
+// Das "?" fuer OSM-Saeulen nur ab Zoom 11 (v2.1) erledigt das Modul selbst.
 let LIVE_ROH={};
 function liveSaeulen(m){
  const PK=window.PanoptesKarte,g=GL_KARTE.getMaplibreMap();if(!PK)return;
- const hol=(u,i)=>fetch(u,i).then(r=>{r.clone().json().then(d=>{LIVE_ROH={};(d.stationen||[]).forEach(x=>{if(x.id!=null)LIVE_ROH[x.id]=x;});}).catch(()=>{});return r;});
- PK.liveEbene(g,{umkreisUrl:'/live/umkreis',fetch:hol,sprache:window.__LANG__==='en'?'en':'de',
+ PK.liveEbene(g,{umkreisUrl:'/live/umkreis',sprache:window.__LANG__==='en'?'en':'de',
+  beiDaten:stand=>{LIVE_ROH={};(stand.liste||[]).forEach(x=>{if(x.id!=null)LIVE_ROH[x.id]=x;});},
   quellen:t=>{if(t!==(window.LIVE_QUELLEN||'')){if(window.LIVE_QUELLEN)m.attributionControl.removeAttribution(esc(window.LIVE_QUELLEN));
    if(t)m.attributionControl.addAttribution(esc(t));window.LIVE_QUELLEN=t;}}});
- // v2.1: "?" fuer OSM-Saeulen nur, solange die Live-Ebene sichtbar ist (ab Zoom 11) - das Modul 1.0.0 setzt es
- // dauerhaft; bis zur korrigierten Modulversion hier nachziehen (an die Karten-Sitzung gemeldet).
- const osmSymbol=()=>{if(!g.getLayer('chargers')||!g.hasImage('charge-unknown'))return;
-  if(g.getZoom()<11)g.setLayoutProperty('chargers','icon-image',['case',['==',['get','dc'],1],'charge-dc','charge']);
-  else g.setLayoutProperty('chargers','icon-image',PK.OSM_UNBEKANNT_ICON);};
- g.on('zoomend',osmSymbol);setTimeout(osmSymbol,1500);
 }
 
 // Routenplaner: eingebettet (gleiche Seite wie byd.serveone.at/ev/ mit Login) + Route/Rueckmeldung aus dem Auto
@@ -3201,7 +3196,7 @@ class H(BaseHTTPRequestHandler):
                 if ff.exists():
                     return self._send(ff.read_bytes(), "font/woff2")
             if f.exists() and name in ("leaflet.js", "leaflet.css", "maplibre-gl.js", "maplibre-gl.css",
-                                       "pmtiles.js", "leaflet-maplibre-gl.js", "panoptes-karte-1.0.0.js"):
+                                       "pmtiles.js", "leaflet-maplibre-gl.js", "panoptes-karte-1.1.0.js"):
                 self._send(f.read_bytes(),
                            "text/css" if name.endswith(".css") else "application/javascript")
             else:

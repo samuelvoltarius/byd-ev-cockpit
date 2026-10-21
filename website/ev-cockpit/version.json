@@ -1,5 +1,5 @@
 {
-  "version": "1.6.1",
-  "was_neu": "Live-Belegung auch in Deutschland, Quellenangabe mit Lizenz, Altersangabe in Stunden",
+  "version": "1.7",
+  "was_neu": "Gleiche Live-Belegung wie Planer und Panoptes (gemeinsames Kartenmodul), vorbereitet für Panoptes",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }

@@ -1,6 +1,6 @@
 {
  "modul": "panoptes-karte",
- "version": "1.0.0",
+ "version": "1.1.0",
  "quelle_formel": "byd-ev-cockpit release-1.5 planer_bridge.faktor_aus (5644b77), Sollwerte damit erzeugt",
  "regel": "faktor = clamp(0.70, 1.40, 1 + (median - 1) * n/(n+4)); Verhältnis je Fahrt = echt/Modell, außerhalb 0,4..2,5 verwerfen; gesendet wird faktor auf 3 Stellen",
  "faktor": [

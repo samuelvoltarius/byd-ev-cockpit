@@ -1,4 +1,4 @@
-/*! panoptes-karte 1.0.0 – gemeinsames Kartenmodul für /ev/, EV-Cockpit und Panoptes
+/*! panoptes-karte 1.1.0 – gemeinsames Kartenmodul für /ev/, EV-Cockpit und Panoptes
  *  Vertrag: https://byd.serveone.at/tiles/lib/README.md  (Repo: deploy/server/tiles/lib/README.md)
  *  Diese Datei ist unveränderlich. Jede Änderung = neue Versionsnummer = neue Datei.
  *  Keine Abhängigkeiten. Browser: window.PanoptesKarte, Node/CommonJS: require(...).
@@ -9,7 +9,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '1.0.0';
+  var VERSION = '1.1.0';
   var BASIS = 'https://byd.serveone.at';
 
   // ---------------------------------------------------------------- Stil / Karte
@@ -141,12 +141,18 @@
     return fuellen(t.frei, s) + kw + alt;
   }
 
+  /** Stationen der Antwort im Radius (mit Lage), unverändert. */
+  function liveStationen(antwort, radiusKm) {
+    var rad = radiusKm || LIVE.RADIUS_KM;
+    return ((antwort && antwort.stationen) || []).filter(function (s) {
+      return s.lat != null && s.lon != null && (s.entfernung_km == null ? 0 : s.entfernung_km) <= rad;
+    });
+  }
+
   /** Umkreis-Antwort → GeoJSON für die Quelle 'live'. Alle Stationen im Radius (auch „unbekannt“). */
   function liveFeatures(antwort, radiusKm, sprache) {
     var rad = radiusKm || LIVE.RADIUS_KM;
-    var f = ((antwort && antwort.stationen) || []).filter(function (s) {
-      return s.lat != null && s.lon != null && (s.entfernung_km == null ? 0 : s.entfernung_km) <= rad;
-    }).map(function (s) {
+    var f = liveStationen(antwort, rad).map(function (s) {
       var z = liveZustand(s);
       return { type: 'Feature', geometry: { type: 'Point', coordinates: [s.lon, s.lat] },
         properties: { id: s.id == null ? null : s.id, dc: istDC(s) ? 1 : 0, zustand: z, belegt: z === 'belegt' ? 1 : 0,
@@ -241,11 +247,20 @@
           quellenZeigen(quellenText(d.live_quellen, o.sprache));
           var zaehl = function (k) { return fc.features.filter(function (x) { return x.properties.zustand === k; }).length; };
           steuer.stand = { rasterfeld: z, stationen: fc.features.length, frei: zaehl('frei'), belegt: zaehl('belegt'),
-            aus: zaehl('aus'), unbekannt: zaehl('unbekannt'), quellen: d.live_quellen || [] };
+            aus: zaehl('aus'), unbekannt: zaehl('unbekannt'), quellen: d.live_quellen || [],
+            // 1.1.0: Rohstationen im Radius (Planer-Felder + zustand), z. B. für Klickfenster
+            liste: liveStationen(d, rad).map(function (s) {
+              var k = {}; for (var x in s) k[x] = s[x]; k.zustand = liveZustand(s); return k; }) };
           if (o.beiDaten) o.beiDaten(steuer.stand);
           return steuer.stand;
         })
         .catch(function (e) { zelle = null; if (o.beiFehler) o.beiFehler(e); return null; });
+    }
+
+    // v2.1: „?“ auf chargers nur, solange die Live-Ebene sichtbar ist (ab Zoom 11), sonst Stilsymbol (wie /ev/ osmSymbol)
+    function osmSymbol() {
+      if (!aktiv || !map.getLayer('chargers')) return;
+      map.setLayoutProperty('chargers', 'icon-image', map.getZoom() >= 11 ? OSM_UNBEKANNT_ICON : osmIconAlt);
     }
 
     function beiBewegung() { clearTimeout(warte); warte = setTimeout(laden, 600); }
@@ -253,11 +268,12 @@
     function start() {
       if (map.getLayer('chargers')) {
         osmIconAlt = map.getLayoutProperty('chargers', 'icon-image');
-        map.setLayoutProperty('chargers', 'icon-image', OSM_UNBEKANNT_ICON);
+        osmSymbol();
       }
       if (!map.getSource('live')) map.addSource('live', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
       if (!map.getLayer('chargers-live')) map.addLayer(liveLayer(), map.getLayer('signals') ? 'signals' : undefined);
       map.on('moveend', beiBewegung);
+      map.on('zoomend', osmSymbol);
       takt = setInterval(function () { zelle = null; laden(); }, LIVE.TAKT_MS);
       laden();
     }
@@ -266,6 +282,7 @@
     steuer.stop = function () {
       aktiv = false; clearTimeout(warte); clearInterval(takt);
       map.off('moveend', beiBewegung);
+      map.off('zoomend', osmSymbol);
       if (map.getLayer('chargers-live')) map.removeLayer('chargers-live');
       if (map.getSource('live')) map.removeSource('live');
       if (map.getLayer('chargers')) {
@@ -283,7 +300,7 @@
     VERSION: VERSION, STIL_URL: STIL_URL, FAKTOR: FAKTOR, LIVE: LIVE,
     pmtilesAnmelden: pmtilesAnmelden, kartenOptionen: kartenOptionen, blitzerSichtbar: blitzerSichtbar,
     verhaeltnis: verhaeltnis, faktorAus: faktorAus, verhaeltnisAnhaengen: verhaeltnisAnhaengen, faktorMeldung: faktorMeldung,
-    umkreisAnfrage: umkreisAnfrage, liveZustand: liveZustand, liveText: liveText, liveFeatures: liveFeatures,
+    umkreisAnfrage: umkreisAnfrage, liveStationen: liveStationen, liveZustand: liveZustand, liveText: liveText, liveFeatures: liveFeatures,
     osmFilter: osmFilter, quellenText: quellenText, liveLayer: liveLayer, OSM_UNBEKANNT_ICON: OSM_UNBEKANNT_ICON,
     liveEbene: liveEbene
   });
