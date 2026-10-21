@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>Panoptes – the community app for your BYD</title>
+<meta name="description" content="Panoptes is a free community app for BYD cars with DiLink 3, 4 and 5: camera guard, remote access, Telegram notifications, a map with chargers and a link to the route planner.">
+<link rel="canonical" href="https://byd.serveone.at/panoptes/en/">
+<link rel="alternate" hreflang="de" href="https://byd.serveone.at/panoptes/">
+<link rel="alternate" hreflang="en" href="https://byd.serveone.at/panoptes/en/">
+<meta property="og:title" content="Panoptes – the community app for your BYD">
+<meta property="og:description" content="Panoptes is a free community app for BYD cars with DiLink 3, 4 and 5: camera guard, remote access, Telegram notifications, a map with chargers and a link to the route planner.">
+<style>
+:root{--bg:#0b0f14;--card:#131a22;--card2:#182029;--line:#243040;--txt:#e7edf3;--mut:#93a2b3;
+ --grn:#28d17c;--grn2:#1aa862;--blue:#38bdf8;--amber:#ffb020;--lime:#c8f560;--link:#3aa0ff;--node:#16212c;--note-bg:#10241a;--note-bd:#1c4a33;--note-tx:#bfe6d2}
+@media (prefers-color-scheme: light){:root{--bg:#f4f7f9;--card:#ffffff;--card2:#eef3f6;--line:#d5dee6;--txt:#14202b;--mut:#55667a;
+ --grn:#13995a;--grn2:#0e7d49;--blue:#0a7fb8;--amber:#a86a00;--lime:#4f7d00;--link:#0a66c2;--node:#ffffff;--note-bg:#e9f7ef;--note-bd:#b7e2c8;--note-tx:#1d4d33}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:17px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:980px;margin:0 auto;padding:22px 16px 70px}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px;gap:12px}
+.top a{color:var(--mut);font-weight:600}
+header{text-align:center;padding:24px 0 6px}
+.eyebrow{color:var(--grn);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
+h1{font-size:clamp(30px,6vw,48px);line-height:1.12;margin:.3em 0 .25em}
+.grad{background:linear-gradient(90deg,var(--grn),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mut);font-size:19px;max-width:680px;margin:0 auto}
+h2{font-size:26px;margin:46px 0 6px}
+.lead{color:var(--mut);margin:.3em 0 1.1em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:14px 0}
+.note{background:var(--note-bg);border:1px solid var(--note-bd);border-radius:12px;padding:13px 16px;color:var(--note-tx);font-size:15.5px;margin:18px 0}
+.note a{color:inherit;text-decoration:underline}
+.hero{display:grid;grid-template-columns:3fr 1fr;gap:16px;align-items:end;margin-top:22px}
+.hero img,.galerie img{width:100%;height:auto;display:block;border-radius:12px;border:1px solid var(--line);background:var(--card)}
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.feat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.feat .ic{font-size:24px}.feat h3{margin:4px 0 4px;font-size:17.5px}.feat p{margin:0;color:var(--mut);font-size:15.5px}
+.galerie{display:grid;grid-template-columns:1fr;gap:30px}
+.galerie figure{margin:0}
+.paar{display:grid;grid-template-columns:3fr 1fr;gap:10px;align-items:end}
+.galerie figcaption{color:var(--mut);font-size:14.5px;margin-top:8px}
+.galerie figcaption b{color:var(--txt)}
+.diagramm{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px;margin:8px 0 14px}
+.diagramm svg{width:100%;height:auto;display:block}
+.diagramm .schmal{display:none}@media(max-width:640px){.diagramm .breit{display:none}.diagramm .schmal{display:block}}
+.verb{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.verb .card{margin:0}
+.verb h3{margin:0 0 6px;font-size:16.5px;display:flex;gap:8px;align-items:center}
+.nr{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--grn);color:#04110a;font-size:13px;font-weight:800;display:grid;place-items:center}
+.verb p{margin:0 0 8px;font-size:15px}.verb p.nicht{color:var(--mut);margin:0;font-size:14.5px}
+.verb p.nicht b{color:var(--amber)}
+.tab{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px;min-width:560px}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:var(--card2)}
+ul.liste{margin:.2em 0;padding-left:1.2em}ul.liste li{margin:.35em 0}
+.bald{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:2px 12px;font-size:13px;font-weight:700;color:var(--amber);margin-left:8px;vertical-align:middle}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-weight:700;padding:10px 16px;border-radius:12px;font-size:15.5px}
+.btn:hover{text-decoration:none;border-color:var(--grn)}
+.foot{color:var(--mut);font-size:13.5px;text-align:center;margin-top:46px;border-top:1px solid var(--line);padding-top:18px}
+.foot a{color:var(--mut);text-decoration:underline}
+ol.hw{padding-left:1.3em}ol.hw li{margin:.7em 0}
+@media(max-width:720px){.hero,.galerie,.paar{grid-template-columns:1fr}.hero .handy,.paar .handy{max-width:260px;margin:0 auto}h2{font-size:23px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top"><a href="/">← BYD EU Community</a><a href="../" hreflang="de">🌐 Deutsch</a></div>
+  <header><div class="eyebrow">Free · for BYD with DiLink 3, 4 and 5 · community project</div><h1>Panoptes — <span class="grad">your BYD, awake and connected</span></h1><p class="sub">An app that runs right on your car's screen, plus an interface you open on your phone or PC: a camera guard, remote access, Telegram notifications, its own map with chargers and a link to the route planner.</p></header>
+  <div class="hero"><a href="../bilder/start-desktop-dunkel.webp" target="_blank" rel="noopener"><picture><source media="(prefers-color-scheme: light)" srcset="../bilder/start-desktop-hell.webp"><img src="../bilder/start-desktop-dunkel.webp" alt="Panoptes home on a PC: 68 % charge, 236 km range, map and charging costs" width="1440" height="900" loading="lazy" decoding="async"></picture></a><div class="handy"><a href="../bilder/start-handy-dunkel.webp" target="_blank" rel="noopener"><picture><source media="(prefers-color-scheme: light)" srcset="../bilder/start-handy-hell.webp"><img src="../bilder/start-handy-dunkel.webp" alt="Panoptes home on a phone: charge level and range" width="780" height="1688" loading="lazy" decoding="async"></picture></a></div></div>
+  <div class="note"><b>Important:</b> Panoptes is a private hobby project and not made by BYD. Please read the <a href="hinweise.html">notes</a> before installing it.</div>
+  <h2 id="funktionen">What Panoptes does</h2>
+  <div class="raster">
+    <div class="feat"><div class="ic">🛡️</div><h3>Guard with AI detection</h3><p>While your car is parked, the cameras watch its surroundings. You decide when it records: only on impact, with AI detection everywhere, or only at your own private places such as your garage or driveway. To protect the batteries, the guard can go to sleep.</p></div>
+    <div class="feat"><div class="ic">🌍</div><h3>Remote access</h3><p>Reach your car from anywhere via Tailscale. Setup uses a QR code on the car screen and your own Tailscale account.</p></div>
+    <div class="feat"><div class="ic">💬</div><h3>Telegram notifications</h3><p>Your own bot reports guard events, charging, a weak starter battery, tyre pressure and updates. Each kind can be switched on its own, with quiet hours for the night. Pictures and videos only if you turn that on.</p></div>
+    <div class="feat"><div class="ic">🗺️</div><h3>Map with chargers</h3><p>Its own map shows chargers nearby. Where operators provide data, you see whether a spot is free right now.</p></div>
+    <div class="feat"><div class="ic">🔋</div><h3>“Will it make it?”</h3><p>With a route from the route planner, Panoptes tells you on the road whether the battery will last to the next stop and suggests a charging stop if needed.</p></div>
+    <div class="feat"><div class="ic">🧭</div><h3>Route planner link</h3><p>Connect Panoptes to your account on <a href="/ev/">byd.serveone.at/ev/</a>: show a code in the car, confirm on your phone, done. Disconnect at any time.</p></div>
+    <div class="feat"><div class="ic">🖥️</div><h3>EV Cockpit on your PC</h3><p>The <a href="/ev-cockpit/">EV Cockpit</a> shows Panoptes data on your PC and can change its settings. You confirm the pairing with one tap and a four-digit check number.</p></div>
+    <div class="feat"><div class="ic">📒</div><h3>Trips and charging</h3><p>Trips, consumption and charging costs are recorded in the car and shown clearly.</p></div>
+    <div class="feat"><div class="ic">🌐</div><h3>Five languages</h3><p>German, English, French, Italian and Dutch.</p></div>
+    <div class="feat"><div class="ic">🏠</div><h3>Home Assistant</h3><p>Coming soon.</p></div>
+  </div>
+  <h2 id="bilder">What Panoptes looks like</h2><p class="lead">The pictures follow your device: light or dark, as you have set it. Click a picture to enlarge it. All pictures show sample data and the German interface.</p>
+  <div class="galerie">
+    <figure><div class="paar"><a href="../bilder/waechter-desktop-dunkel.webp" target="_blank" rel="noopener"><picture><source media="(prefers-color-scheme: light)" srcset="../bilder/waechter-desktop-hell.webp"><img src="../bilder/waechter-desktop-dunkel.webp" alt="Guard with the choice of when it records (on a PC)" width="1440" height="900" loading="lazy" decoding="async"></picture></a><div class="handy"><a href="../bilder/waechter-handy-dunkel.webp" target="_blank" rel="noopener"><picture><source media="(prefers-color-scheme: light)" srcset="../bilder/waechter-handy-hell.webp"><img src="../bilder/waechter-handy-dunkel.webp" alt="Guard with the choice of when it records (on a phone)" width="780" height="1688" loading="lazy" decoding="async"></picture></a></div></div><figcaption><b>Guard: you choose when it records.</b></figcaption></figure>
+    <figure><div class="paar"><a href="../bilder/karte-desktop-dunkel.webp" target="_blank" rel="noopener"><picture><source media="(prefers-color-scheme: light)" srcset="../bilder/karte-desktop-hell.webp"><img src="../bilder/karte-desktop-dunkel.webp" alt="Map with chargers and free spots (on a PC)" width="1440" height="900" loading="lazy" decoding="async"></picture></a><div class="handy"><a href="../bilder/karte-handy-dunkel.webp" target="_blank" rel="noopener"><picture><source media="(prefers-color-scheme: light)" srcset="../bilder/karte-handy-hell.webp"><img src="../bilder/karte-handy-dunkel.webp" alt="Map with chargers and free spots (on a phone)" width="780" height="1688" loading="lazy" decoding="async"></picture></a></div></div><figcaption><b>Map with chargers nearby.</b></figcaption></figure>
+    <figure><div class="paar"><a href="../bilder/waechter-einstellungen-desktop-dunkel.webp" target="_blank" rel="noopener"><picture><source media="(prefers-color-scheme: light)" srcset="../bilder/waechter-einstellungen-desktop-hell.webp"><img src="../bilder/waechter-einstellungen-desktop-dunkel.webp" alt="Guard settings with deterrence and stop conditions (on a PC)" width="1440" height="900" loading="lazy" decoding="async"></picture></a><div class="handy"><a href="../bilder/waechter-einstellungen-handy-dunkel.webp" target="_blank" rel="noopener"><picture><source media="(prefers-color-scheme: light)" srcset="../bilder/waechter-einstellungen-handy-hell.webp"><img src="../bilder/waechter-einstellungen-handy-dunkel.webp" alt="Guard settings with deterrence and stop conditions (on a phone)" width="780" height="1688" loading="lazy" decoding="async"></picture></a></div></div><figcaption><b>Settings: deterrence and when the guard stops.</b></figcaption></figure>
+    <figure><div class="paar"><a href="../bilder/telegram-desktop-dunkel.webp" target="_blank" rel="noopener"><picture><source media="(prefers-color-scheme: light)" srcset="../bilder/telegram-desktop-hell.webp"><img src="../bilder/telegram-desktop-dunkel.webp" alt="Telegram notifications, each kind switchable (on a PC)" width="1440" height="900" loading="lazy" decoding="async"></picture></a><div class="handy"><a href="../bilder/telegram-handy-dunkel.webp" target="_blank" rel="noopener"><picture><source media="(prefers-color-scheme: light)" srcset="../bilder/telegram-handy-hell.webp"><img src="../bilder/telegram-handy-dunkel.webp" alt="Telegram notifications, each kind switchable (on a phone)" width="780" height="1688" loading="lazy" decoding="async"></picture></a></div></div><figcaption><b>Telegram: every kind of message on its own.</b></figcaption></figure>
+    <figure><div class="paar"><a href="../bilder/geraete-desktop-dunkel.webp" target="_blank" rel="noopener"><picture><source media="(prefers-color-scheme: light)" srcset="../bilder/geraete-desktop-hell.webp"><img src="../bilder/geraete-desktop-dunkel.webp" alt="Pairing: the EV Cockpit wants to connect, check number 4711 (on a PC)" width="1440" height="900" loading="lazy" decoding="async"></picture></a><div class="handy"><a href="../bilder/geraete-handy-dunkel.webp" target="_blank" rel="noopener"><picture><source media="(prefers-color-scheme: light)" srcset="../bilder/geraete-handy-hell.webp"><img src="../bilder/geraete-handy-dunkel.webp" alt="Pairing: the EV Cockpit wants to connect, check number 4711 (on a phone)" width="780" height="1688" loading="lazy" decoding="async"></picture></a></div></div><figcaption><b>Pair a device: allow with a check number.</b></figcaption></figure>
+  </div>
+  <h2 id="zusammenhang">How it all fits together</h2><p class="lead">Panoptes runs in the car. Everything else is optional and can be connected and disconnected one by one.</p>
+  <div class="diagramm"><div class="breit"><svg viewBox="0 0 910 520" role="img" aria-label="Diagram: Panoptes in the car in the middle, connected to the EV Cockpit on a PC, the route planner, the community map, a Telegram bot and, soon, Home Assistant" xmlns="http://www.w3.org/2000/svg">
+<style>.kn{fill:var(--node);stroke:var(--line);stroke-width:1.5}.kn.haupt{stroke:var(--grn);stroke-width:2.5}.kn.bald{stroke-dasharray:6 5}.t1{fill:var(--txt);font:700 17px system-ui,sans-serif}.t2{fill:var(--mut);font:13px system-ui,sans-serif}.li{stroke:var(--grn);stroke-width:2.2;fill:none}.li.bald{stroke:var(--mut);stroke-dasharray:6 5}.lb{fill:var(--mut);font:600 12.5px system-ui,sans-serif}.lbbg{fill:var(--bg)}.nk{fill:var(--grn)}.nt{fill:#04110a;font:800 12px system-ui,sans-serif}</style>
+<line class="li" x1="455" y1="275" x2="140" y2="85"/>
+<line class="li" x1="455" y1="275" x2="775" y2="85"/>
+<line class="li" x1="455" y1="275" x2="145" y2="455"/>
+<line class="li" x1="455" y1="275" x2="785" y2="275"/>
+<line class="li bald" x1="455" y1="275" x2="775" y2="455"/>
+<line class="li bald" x1="140" y1="85" x2="775" y2="85"/>
+<rect class="kn haupt" x="355" y="220" width="200" height="110" rx="16"/>
+<text class="t1" x="455" y="272" text-anchor="middle">Panoptes</text>
+<text class="t2" x="455" y="293" text-anchor="middle">in the car</text>
+<rect class="kn" x="40" y="40" width="200" height="90" rx="16"/>
+<text class="t1" x="140" y="82" text-anchor="middle">EV Cockpit</text>
+<text class="t2" x="140" y="103" text-anchor="middle">on your PC</text>
+<rect class="kn" x="670" y="40" width="210" height="90" rx="16"/>
+<text class="t1" x="775" y="82" text-anchor="middle">Route planner</text>
+<text class="t2" x="775" y="103" text-anchor="middle">byd.serveone.at/ev/</text>
+<rect class="kn" x="40" y="410" width="210" height="90" rx="16"/>
+<text class="t1" x="145" y="452" text-anchor="middle">Community map</text>
+<text class="t2" x="145" y="473" text-anchor="middle">tiles, chargers</text>
+<rect class="kn" x="690" y="230" width="190" height="90" rx="16"/>
+<text class="t1" x="785" y="272" text-anchor="middle">Telegram bot</text>
+<text class="t2" x="785" y="293" text-anchor="middle">your own</text>
+<rect class="kn bald" x="670" y="410" width="210" height="90" rx="16"/>
+<text class="t1" x="775" y="452" text-anchor="middle">Home Assistant</text>
+<text class="t2" x="775" y="473" text-anchor="middle">soon</text>
+<rect class="lbbg" x="257" y="169" width="79" height="22" rx="11"/>
+<circle class="nk" cx="267" cy="180" r="10"/><text class="nt" x="267" y="184" text-anchor="middle">1</text>
+<text class="lb" x="305" y="184" text-anchor="middle">pairing</text>
+<rect class="lbbg" x="486" y="169" width="257" height="22" rx="11"/>
+<circle class="nk" cx="496" cy="180" r="10"/><text class="nt" x="496" y="184" text-anchor="middle">2</text>
+<text class="lb" x="623" y="184" text-anchor="middle">account, destination, trip log E2E</text>
+<rect class="lbbg" x="273" y="354" width="52" height="22" rx="11"/>
+<circle class="nk" cx="283" cy="365" r="10"/><text class="nt" x="283" y="369" text-anchor="middle">3</text>
+<text class="lb" x="308" y="369" text-anchor="middle">map</text>
+<rect class="lbbg" x="560" y="264" width="118" height="22" rx="11"/>
+<circle class="nk" cx="570" cy="275" r="10"/><text class="nt" x="570" y="279" text-anchor="middle">4</text>
+<text class="lb" x="628" y="279" text-anchor="middle">notifications</text>
+<rect class="lbbg" x="585" y="354" width="59" height="22" rx="11"/>
+<circle class="nk" cx="595" cy="365" r="10"/><text class="nt" x="595" y="369" text-anchor="middle">5</text>
+<text class="lb" x="623" y="369" text-anchor="middle">soon</text>
+<rect class="lbbg" x="378" y="74" width="158" height="22" rx="11"/>
+<circle class="nk" cx="388" cy="85" r="10"/><text class="nt" x="388" y="89" text-anchor="middle">6</text>
+<text class="lb" x="465" y="89" text-anchor="middle">route, charge cards</text>
+</svg></div><div class="schmal"><svg viewBox="0 0 400 610" role="img" aria-label="Diagram: Panoptes in the car in the middle, connected to the EV Cockpit on a PC, the route planner, the community map, a Telegram bot and, soon, Home Assistant" xmlns="http://www.w3.org/2000/svg">
+<style>.kn{fill:var(--node);stroke:var(--line);stroke-width:1.5}.kn.haupt{stroke:var(--grn);stroke-width:2.5}.kn.bald{stroke-dasharray:6 5}.t1{fill:var(--txt);font:700 18px system-ui,sans-serif}.t2{fill:var(--mut);font:14px system-ui,sans-serif}.t3{fill:var(--grn);font:600 14px system-ui,sans-serif}.li{stroke:var(--grn);stroke-width:2.4;fill:none}.li.bald{stroke:var(--mut);stroke-dasharray:6 5}.nk{fill:var(--grn)}.nt{fill:#04110a;font:800 13px system-ui,sans-serif}</style>
+<line class="li" x1="34" y1="60" x2="34" y2="456"/><line class="li" x1="34" y1="60" x2="80" y2="60"/>
+<line class="li bald" x1="34" y1="456" x2="34" y2="552"/>
+<rect class="kn haupt" x="80" y="16" width="290" height="88" rx="16"/>
+<text class="t1" x="225" y="55" text-anchor="middle">Panoptes</text><text class="t2" x="225" y="80" text-anchor="middle">in the car</text>
+<line class="li" x1="34" y1="168" x2="80" y2="168"/>
+<rect class="kn" x="80" y="130" width="290" height="76" rx="14"/>
+<text class="t1" x="98" y="160">EV Cockpit</text><text class="t2" x="98" y="185">on your PC</text><text class="t3" x="352" y="160" text-anchor="end">pairing</text>
+<circle class="nk" cx="34" cy="168" r="12"/><text class="nt" x="34" y="172" text-anchor="middle">1</text>
+<line class="li" x1="34" y1="264" x2="80" y2="264"/>
+<rect class="kn" x="80" y="226" width="290" height="76" rx="14"/>
+<text class="t1" x="98" y="256">Route planner</text><text class="t2" x="98" y="281">byd.serveone.at/ev/</text><text class="t3" x="352" y="256" text-anchor="end">account</text>
+<circle class="nk" cx="34" cy="264" r="12"/><text class="nt" x="34" y="268" text-anchor="middle">2</text>
+<line class="li" x1="34" y1="360" x2="80" y2="360"/>
+<rect class="kn" x="80" y="322" width="290" height="76" rx="14"/>
+<text class="t1" x="98" y="352">Community map</text><text class="t2" x="98" y="377">tiles, chargers</text><text class="t3" x="352" y="352" text-anchor="end">map</text>
+<circle class="nk" cx="34" cy="360" r="12"/><text class="nt" x="34" y="364" text-anchor="middle">3</text>
+<line class="li" x1="34" y1="456" x2="80" y2="456"/>
+<rect class="kn" x="80" y="418" width="290" height="76" rx="14"/>
+<text class="t1" x="98" y="448">Telegram bot</text><text class="t2" x="98" y="473">your own</text><text class="t3" x="352" y="448" text-anchor="end">notifications</text>
+<circle class="nk" cx="34" cy="456" r="12"/><text class="nt" x="34" y="460" text-anchor="middle">4</text>
+<line class="li bald" x1="34" y1="552" x2="80" y2="552"/>
+<rect class="kn bald" x="80" y="514" width="290" height="76" rx="14"/>
+<text class="t1" x="98" y="544">Home Assistant</text><text class="t2" x="98" y="569">soon</text><text class="t3" x="352" y="544" text-anchor="end">soon</text>
+<circle class="nk" cx="34" cy="552" r="12"/><text class="nt" x="34" y="556" text-anchor="middle">5</text>
+</svg></div></div>
+  <div class="verb">
+    <div class="card"><h3><span class="nr">1</span>Panoptes ↔ EV Cockpit (pairing)</h3><p>You allow the cockpit once with a check number, in Telegram or on the Panoptes page. The cockpit then fetches vehicle data, settings and the trip log straight from the car, over your home network or Tailscale.</p><p class="nicht"><b>What does not flow:</b> remote access, password and ports. None of this goes through our servers; the trip log stays on your PC.</p></div>
+    <div class="card"><h3><span class="nr">2</span>Panoptes ↔ route planner</h3><p>Once linked, your destination with charging stops goes into the car. Panoptes reports charge level, consumption factor and driving status so the plan is right. When you fetch your trip log on /ev/, it comes end-to-end encrypted straight from the car to your browser.</p><p class="nicht"><b>What does not flow:</b> the server cannot read the trip log and never stores it (only briefly in memory, 2 minutes at most). Your approximate position is only sent when Panoptes suggests a new charging stop on the road.</p></div>
+    <div class="card"><h3><span class="nr">3</span>Panoptes ↔ community map</h3><p>Map tiles and charger data come from byd.serveone.at, with live availability where open data exists.</p><p class="nicht"><b>What does not flow:</b> your position stays in the car. Shared rules only go to the community server if you share them yourself (off by default).</p></div>
+    <div class="card"><h3><span class="nr">4</span>Panoptes → Telegram</h3><p>Your own bot sends you message texts. Pictures and videos only if you explicitly turn that on; they are then stored on Telegram&#x27;s servers.</p><p class="nicht"><b>What does not flow:</b> no videos on our servers, no detour through the project.</p></div>
+    <div class="card"><h3><span class="nr">5</span>Panoptes ↔ Home Assistant (soon)</h3><p>A direct connection between your car and your own Home Assistant is planned.</p><p class="nicht"><b>What does not flow:</b> the data is not meant to be stored with us.</p></div>
+    <div class="card"><h3><span class="nr">6</span>EV Cockpit ↔ route planner</h3><p>The cockpit shows the route waiting for you and your charge cards. When it is paired with Panoptes, only Panoptes reports the charge level, so nothing arrives twice.</p><p class="nicht"><b>What does not flow:</b> your trips stay on your PC.</p></div>
+  </div>
+  <h2 id="datenschutz">Privacy: what goes where</h2><p class="lead">Principle: your recordings, trips and positions stay in the car. Panoptes does not send camera recordings to the project's servers. No ads, no tracking.</p>
+  <div class="tab"><table><tr><th>Where</th><th>What</th><th>When</th></tr>
+    <tr><td><b>In the car (USB stick, app)</b></td><td>guard recordings, trip log, charging history, settings</td><td>always. On a new setup Panoptes deletes recordings after 72 hours; you can keep individual ones.</td></tr>
+    <tr><td><b>Telegram</b></td><td>message texts; pictures and videos only if you turn that on (they are then stored at Telegram)</td><td>only with your own bot</td></tr>
+    <tr><td><b>Tailscale</b></td><td>connection for remote access</td><td>only with remote access set up</td></tr>
+    <tr><td><b>byd.serveone.at (the project&#x27;s server)</b></td><td>map tiles, charger data. With a linked route planner: charge level, consumption factor, driving status; your approximate position only for a newly suggested charging stop. The trip log only end-to-end encrypted when you fetch it yourself, and never stored.</td><td>map always, route planner only after linking</td></tr>
+    <tr><td><b>Community server (byd.serveone.at/community)</b></td><td>shared rules, only if you share them</td><td>off by default</td></tr>
+    <tr><td><b>OpenStreetMap services, Open-Meteo</b></td><td>address search, map data, weather for your area</td><td>when you use these features</td></tr>
+    <tr><td><b>Other services (BYD account, MQTT/smart home, ABRP, Stadia Maps, AI assistant)</b></td><td>depends on the service</td><td>only if you set them up yourself; the AI assistant is off by default</td></tr>
+  </table></div>
+  <h2 id="brauchst">What you need</h2>
+  <div class="card"><ul class="liste"><li>A BYD with DiLink 3, 4 or 5 and Android 9 or newer on the car screen.</li><li>So far Panoptes has mainly been tested on the <b>BYD Dolphin Surf (DiLink 3)</b>. On other models some things may be missing or work differently; Panoptes hides what your car cannot do.</li><li>Storage for camera recordings, ideally a USB stick in the car.</li><li>A free Tailscale account for remote access and your own Telegram bot for notifications. Panoptes shows you how.</li></ul></div>
+  <h2 id="download">Download and install<span class="bald">Soon</span></h2>
+  <div class="card"><p style="margin-top:0">The ready-made app and step-by-step instructions for getting it onto the various BYD models will follow here. The way differs by model and software version.</p><p style="margin-bottom:0;color:var(--mut)">The source code will be published on GitHub under the MIT licence after the open-source release.</p></div>
+  <h2 id="hinweise">Notes</h2>
+  <div class="card"><p style="margin-top:0">Private hobby project, free and without warranty. Use at your own risk, for private use with your own vehicle only. Users alone are responsible for lawful use (data protection, camera recordings, remote commands, traffic rules). Guardian recordings are intended for your own private property only, without capturing public space or neighbouring property. To the extent permitted by law, the developer accepts no liability; liability for intent, gross negligence, personal injury and mandatory consumer rights remains unaffected. Not affiliated with BYD; all trademarks belong to their owners.</p><p style="margin-bottom:0"><a href="hinweise.html">Read all notes →</a></p></div>
+  <h2>More from the community</h2>
+  <div class="btns"><a class="btn" href="/ev/">🧭 Route planner</a><a class="btn" href="/ev-cockpit/">🖥️ EV Cockpit</a><a class="btn" href="/">🗺️ Community map</a></div>
+  <script>document.addEventListener('click',function(e){var a=e.target.closest('a');var i=a&&a.querySelector('picture img');
+    if(i&&i.currentSrc){e.preventDefault();window.open(i.currentSrc,'_blank','noopener');}});</script>
+  <div class="foot">Private hobby project, no warranty, not affiliated with BYD. Use at your own risk.<br>
+    <a href="hinweise.html">Notes</a> · <a href="/impressum">Imprint (German)</a> · <a href="/datenschutz">Privacy (German)</a><br>
+    <span style="font-size:12.5px">Map data © OpenStreetMap contributors (ODbL). 3D car models partly by Nazh (CC BY 4.0), partly own work (CC0).</span></div>
+</div>
+</body>
+</html>
