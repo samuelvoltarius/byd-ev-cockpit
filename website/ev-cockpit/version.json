@@ -1,5 +1,5 @@
 {
-  "version": "1.8",
-  "was_neu": "Mit Panoptes im Auto koppeln (ab Panoptes 0.1.5) und alle Panoptes-Einstellungen im Cockpit bearbeiten",
+  "version": "1.8.1",
+  "was_neu": "3D-Auto zuverlässiger: Lade-Anzeige, Grund bei Fehlern und zweiter Versuch; Einstellungen mit BOM werden gelesen",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }
