@@ -156,9 +156,10 @@ unter „Meine Geräte“). Der alte persönliche Link (`byd.serveone.at/ev/#z=�
   Planer (nur welche Karten, keine Ladevorgänge) und gilt genauso auf `/ev/`. Die Säulen auf der Karte zeigen dann
   den Preis deiner Karte, der Planer bevorzugt passende Ladestopps.
 
-**Karte:** Standardmäßig kommen die Kartenkacheln von OpenStreetMap. Mit dem Häkchen „Karte im Community-Look“
-(Standard aus) zeigt das Cockpit dieselbe Karte wie Planer und Panoptes-App; die Kacheln deiner Gegend kommen dann vom
-Server der Community (byd.serveone.at), der dabei deine IP-Adresse und den Kartenausschnitt sieht. Die Kartenbibliotheken (MapLibre, PMTiles) liegen im Paket, kein CDN.
+**Karte:** Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust. Darum werden
+**ohne deine Wahl gar keine Kartenbilder geladen**. Im Assistenten (oder direkt in der Karte) wählst du: keine Karte,
+OpenStreetMap oder die Community-Karte (dieselbe wie im Planer und in der Panoptes-App, von byd.serveone.at; nur damit
+gibt es die Live-Belegung der Ladesäulen). Die Kartenbibliotheken (MapLibre, PMTiles) liegen im Paket, kein CDN.
 Mit Häkchen „Ladesäulen" zeigt die Community-Karte die **Live-Belegung** (derzeit Österreich, Schweiz und Deutschland, über den Planer; Quelle und Lizenz stehen unten in der Karte):
 frei normal, belegt **rot**, außer Betrieb grau, Status unbekannt grau mit „?“ (Quelle steht unten in der Karte). Dafür geht nur der auf ~5 km gerundete Kartenmittelpunkt per POST
 an den Planer (kein Zugriffslog), höchstens alle 2 Minuten je Gebiet.
@@ -201,6 +202,13 @@ EVCOCKPIT_CFGDIR=~/.evcockpit-zweitwagen EVCOCKPIT_PORT=8100 ./start.sh
   ist drin.
 - Klappt ein Befehl mal nicht: kurz warten und **einmal** nochmal — nicht hektisch
   mehrfach, das mag die BYD-Cloud nicht.
+
+## Was deinen Rechner verlässt – nur mit deinem Häkchen
+
+Alles, was Daten an einen anderen Server schickt, hat im Assistenten ein eigenes Häkchen und ist **standardmäßig aus**:
+Nutzungszählung (Zufalls-ID, Version, Automodell; Häkchen weg = Eintrag wird beim Server gelöscht), Update-Prüfung,
+Kartenquelle, 3D-Modell, Ladesäulen in der Nähe, Strompreis, Routenplaner und „Echten Verbrauch lernen“. Die Kopplung
+mit Panoptes bleibt in deinem Heimnetz bzw. Tailscale.
 
 ## Hinweise / Haftung
 

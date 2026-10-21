@@ -1,5 +1,5 @@
 {
-  "version": "1.9.1",
-  "was_neu": "Datenschutz: Community-Karte und 3D-Modell nur noch mit deinem Häkchen, klarer gesagt, wohin die Position geht",
+  "version": "1.9.2",
+  "was_neu": "Datenschutz: Karte nur nach deiner Wahl (keine, OpenStreetMap oder Community), Zählung abwählen löscht beim Server",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }

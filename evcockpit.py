@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.9.1"
+VERSION = "1.9.2"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -30,6 +30,18 @@ def ping_optin():
     aktiv angehakt hat. Standard ist AUS. Sendet genau drei Felder, sonst nichts:
     zufaellige Installations-ID (kein Personenbezug), Version, Automodell.
     Faellt still aus, wenn kein Netz — blockiert das Cockpit nie."""
+    if _CFG.get("_ping_loeschen"):
+        # Haekchen wurde weggenommen: alle Eintraege dieser Zufalls-ID beim Server loeschen (Regel 2);
+        # ohne Netz bleibt der Auftrag stehen und wird beim naechsten Start nachgeholt.
+        try:
+            import urllib.request
+            req = urllib.request.Request(PING_URL, data=json.dumps({"id": _CFG["_ping_loeschen"], "loeschen": True}).encode(),
+                                         headers={"Content-Type": "application/json"})
+            urllib.request.urlopen(req, timeout=6).read()
+            _CFG.pop("_ping_loeschen", None)
+            save_cfg(_CFG)
+        except Exception:
+            pass
     if not _CFG.get("count_optin"):
         return
     try:
@@ -364,6 +376,14 @@ _LIVE = Live()
 
 _PANOPTES = {"key": None, "obj": None}
 _PAN_TEST = {"url": "", "jwt": "", "verbraucht": False, "kopplung_id": ""}   # JWT aus Test bzw. erlaubter Anfrage
+def _kartenquelle():
+    """"community" | "osm" | "keine". Nur eine ausdrueckliche Wahl (ab 1.9.2) zaehlt; ohne Wahl werden gar keine
+    Kartenkacheln geladen - auch OpenStreetMap sieht IP und Gegend (Regel 2)."""
+    q = _CFG.get("kartenquelle")
+    return q if q in ("community", "osm") else "keine"
+
+
+EINWILLIGUNG_STAND = "1.9.2"     # einmaliger Hinweis "Karte und 3D sind freiwillig" bis zu dieser Version
 _PAN_ANFRAGE = {"url": "", "id": "", "bis": 0.0}     # offene Kopplungs-Anfrage; id = Abholrecht, bleibt im Prozess
 _PLANER_NEU = {"poll": "", "token": "", "bis": 0.0}  # Planer-Geraete-Fluss; pollId = Abholrecht, bleibt im Prozess
 DISCLAIMER_VERSION = "2026-10-21"                    # Textversion der Hinweise im Assistenten (DISCLAIMER.md Fassung 1)
@@ -1188,7 +1208,7 @@ _I18N.update({
     "FAHRZEUGE & LADEPUNKTE": "VEHICLES & CHARGE POINTS", "PV-Erzeugung": "Solar production",
     "Netz": "Grid", "Speicher": "Battery", "Hausverbrauch": "Home consumption",
     "Netzpreis": "Grid tariff", "Grünstromanteil": "Green energy share",
-    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette", "Dieselbe Karte wie im Planer und in der Panoptes-App. Die Kartenkacheln deiner Gegend lädt dann der Server der BYD-Community (byd.serveone.at); er sieht dabei deine IP-Adresse und den Kartenausschnitt. Ohne Haken lädt sie OpenStreetMap.": "The same map as in the planner and the Panoptes app. The map tiles for your area are then loaded from the BYD community server (byd.serveone.at); it sees your IP address and the map area. Without the tick, OpenStreetMap loads them.", "🚗 Dein Auto in 3D": "🚗 Your car in 3D", "Lädt einmal das 3D-Modell deines Autos vom Server der BYD-Community (byd.serveone.at). Der Server sieht dabei deine IP-Adresse und welches Modell du fährst. Ohne Haken: neutrale Silhouette oder dein Foto.": "Loads your car's 3D model once from the BYD community server (byd.serveone.at). The server sees your IP address and which model you drive. Without the tick: a neutral silhouette or your photo.", "Zeigt öffentliche Ladestationen am Standort deines Autos mit Entfernung und Steckertyp. Dafür geht die Position deines Autos an OpenStreetMap (Overpass-Dienst) oder an deinen eigenen OpenGlance-Server, wenn du ihn unten einträgst. Mit der Community-Karte kommt die Live-Belegung dazu: dafür geht nur die Kartenmitte, auf etwa 5 km gerundet, an den Server der BYD-Community.": "Shows public chargers at your car's location with distance and connector type. For this, your car's position is sent to OpenStreetMap (Overpass service) or to your own OpenGlance server if you enter it below. With the community map, live availability is added: only the map centre, rounded to about 5 km, goes to the BYD community server.", "Kurz vorab": "Quick note first", "Das EV-Cockpit ist ein privates Freizeitprojekt, kostenlos und ohne Gewähr. Du nutzt es auf eigenes Risiko, nur privat. Es verwendet dein BYD-Konto, Home Assistant oder deine Wallbox so, wie du es einstellst. Für Fernbefehle (z. B. Klima, Zusperren) und Ladebefehle an die Wallbox bist du selbst verantwortlich. Werte wie Ladestand, Reichweite und Preise können abweichen. Das EV-Cockpit ist nicht mit BYD verbunden.": "EV-Cockpit is a private hobby project, free and without warranty. You use it at your own risk, for private use only. It uses your BYD account, Home Assistant or your wallbox as you configure it. You are responsible for remote commands (e.g. climate, locking) and charging commands to your wallbox. Values such as charge level, range and prices may be inaccurate. EV-Cockpit is not affiliated with BYD.", "Alle Hinweise lesen": "Read all notes", "Gelesen und einverstanden": "Read and agreed", "Bitte bestätige die Hinweise, um fortzufahren.": "Please confirm the notes to continue.", "Freizeitprojekt.": "Hobby project.", "Panoptes, das EV-Cockpit und der Routenplaner sind ein privates Freizeitprojekt von Alfred Aigner. Sie werden kostenlos und ohne Gewähr angeboten.": "Panoptes, EV-Cockpit and the route planner are a private hobby project by Alfred Aigner. They are provided free of charge and without warranty.", "Ohne Gewähr.": "No warranty.", "Es gibt keine Garantie, dass alles fehlerfrei, vollständig oder jederzeit verfügbar ist. Das gilt auch für Ladestände, Reichweiten, Preise, Belegung von Ladesäulen, Routen, Blitzer- und Gefahrenhinweise. Prüfe Wichtiges selbst; im Straßenverkehr gilt immer, was du siehst und was die Schilder sagen.": "There is no guarantee that everything is correct, complete or always available. This includes charge levels, range, prices, charger availability, routes, speed camera and hazard warnings. Check anything important yourself; on the road, what you see and the road signs always come first.", "Eigenes Risiko.": "Your own risk.", "Du nutzt alles auf eigenes Risiko. Soweit gesetzlich zulässig, übernimmt Alfred Aigner keine Haftung für Schäden, die aus der Nutzung entstehen, auch nicht für Schäden am Fahrzeug, an Daten oder durch Fernbefehle.": "You use everything at your own risk. To the extent permitted by law, Alfred Aigner accepts no liability for any damage resulting from its use, including damage to your vehicle, to data, or caused by remote commands.", "Du bist verantwortlich.": "You are responsible.", "Du allein entscheidest, wie du die Funktionen einsetzt, und bist dafür verantwortlich, dass das erlaubt ist. Das betrifft vor allem Datenschutz, Kamera-Aufnahmen, Fernbefehle über das BYD-Konto und die Regeln im Straßenverkehr.": "You alone decide how you use the features, and you are responsible for making sure that use is legal. This applies especially to data protection, camera recordings, remote commands via your BYD account, and traffic rules.", "Nur privat.": "Private use only.", "Gedacht ist alles nur für die private Nutzung mit deinem eigenen Fahrzeug. Ein gewerblicher Einsatz (z. B. Flotten, Vermietung, Taxi, Firmenwagen-Überwachung) ist nicht vorgesehen.": "Everything is intended for private use with your own vehicle only. Commercial use (e.g. fleets, rental, taxi, monitoring company cars) is not intended.", "Wächter nur auf eigenem Grund.": "Guardian on your own property only.", "Kamera-Aufnahmen des Wächters sind für deinen eigenen Privatgrund gedacht (z. B. Garage, Einfahrt). Richte die Kameras so aus, dass weder öffentlicher Raum (Straße, Gehweg, öffentlicher Parkplatz) noch das Grundstück der Nachbarn erfasst wird. Aufnahmen nicht veröffentlichen.": "Guardian recordings are intended for your own private property (e.g. garage, driveway). Point the cameras so that neither public space (street, pavement, public car park) nor your neighbours' property is captured. Do not publish recordings.", "Nicht von BYD.": "Not BYD.", "Dieses Projekt ist nicht mit BYD verbunden und wird von BYD weder unterstützt noch geprüft. „BYD“, „DiLink“ und alle anderen genannten Namen und Marken gehören ihren jeweiligen Inhabern.": "This project is not affiliated with BYD and is not supported or reviewed by BYD. “BYD”, “DiLink” and all other names and trademarks mentioned belong to their respective owners.", "Gesetzliche Rechte bleiben.": "Your legal rights remain.", "Die Haftung für Vorsatz und grobe Fahrlässigkeit, für Personenschäden sowie zwingende Rechte von Verbraucherinnen und Verbrauchern werden durch diese Hinweise nicht eingeschränkt.": "Liability for intent and gross negligence, for personal injury, and mandatory consumer rights are not limited by these notes.", "🔗 Mit Panoptes verbinden": "🔗 Connect to Panoptes", "Bestätige in Telegram oder hier:": "Confirm in Telegram or here:", "will sich verbinden. Prüfzahl:": "wants to connect. Check number:", "Panoptes öffnen („Gekoppelte Geräte“)": "Open Panoptes (“Paired devices”)", "Vergleiche die Prüfzahl und tippe auf „Erlauben“. Die Anfrage gilt 2 Minuten.": "Compare the check number and tap “Allow”. The request is valid for 2 minutes.", "Erweitert: mit Kopplungs-Code oder Link": "Advanced: with pairing code or link", "Kopplungs-Code oder Link aus Panoptes („Neues Gerät koppeln“, 10 min gültig, einmal verwendbar)": "Pairing code or link from Panoptes (“Pair new device”, valid 10 min, single use)", "482913 oder https://…/system.html#koppeln=…": "482913 or https://…/system.html#koppeln=…", "🔗 Mit Routenplaner verbinden": "🔗 Connect to route planner", "Im Browser bestätigen:": "Confirm in your browser:", "Code": "Code", "Routenplaner öffnen und erlauben": "Open route planner and allow", "Melde dich dort als Mitglied an und tippe auf „Erlauben“. Der Code gilt 10 Minuten.": "Sign in there as a member and tap “Allow”. The code is valid for 10 minutes.", "Erweitert: mit persönlichem Planer-Link": "Advanced: with your personal planner link", "Warte auf „Erlauben“ …": "Waiting for “Allow” …", "Verbunden": "Connected", "Ladestand ": "charge level ", "Mit dem Routenplaner verbunden": "Connected to the route planner", "Schon gekoppelt. Nur neu verbinden, wenn die Kopplung in Panoptes entfernt wurde.": "Already paired. Only connect again if the pairing was removed in Panoptes.", "3D-Modell nicht geladen": "3D model not loaded", "Erneut versuchen": "Try again", "3D-Modell wird geladen …": "Loading 3D model …", "Laden fehlgeschlagen": "Loading failed", "Dieser Browser kann kein WebGL": "This browser has no WebGL",
+    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette", "Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust. Du entscheidest:": "Whoever delivers the map images sees your IP address and the area you look at. You decide:", "Keine Karte": "No map", "Es werden keine Kartenbilder geladen.": "No map images are loaded.", "Kartenbilder von OpenStreetMap (fremder Dienst).": "Map images from OpenStreetMap (third-party service).", "Community-Karte": "Community map", "Dieselbe Karte wie im Planer und in der Panoptes-App, vom Server der BYD-Community (byd.serveone.at). Nur damit gibt es die Live-Belegung der Ladesäulen.": "The same map as in the planner and the Panoptes app, from the BYD community server (byd.serveone.at). Live charger availability only works with it.", "Karte anzeigen?": "Show the map?", "Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust.": "Whoever delivers the map images sees your IP address and the area you look at.", "Neu: Karte und 3D-Modell sind freiwillig": "New: map and 3D model are optional", "Beides lädt Daten von fremden Servern; die sehen dabei deine IP-Adresse (und bei der Karte die Gegend, beim 3D-Modell dein Automodell). Ohne deine Wahl bleibt beides aus.": "Both load data from other servers, which see your IP address (and the area for the map, your car model for the 3D model). Without your choice both stay off.", "Karte": "Map", "Dein Auto in 3D (vom Community-Server)": "Your car in 3D (from the community server)", "Speichern": "Save", "Dieselbe Karte wie im Planer und in der Panoptes-App. Die Kartenkacheln deiner Gegend lädt dann der Server der BYD-Community (byd.serveone.at); er sieht dabei deine IP-Adresse und den Kartenausschnitt. Ohne Haken lädt sie OpenStreetMap.": "The same map as in the planner and the Panoptes app. The map tiles for your area are then loaded from the BYD community server (byd.serveone.at); it sees your IP address and the map area. Without the tick, OpenStreetMap loads them.", "🚗 Dein Auto in 3D": "🚗 Your car in 3D", "Lädt einmal das 3D-Modell deines Autos vom Server der BYD-Community (byd.serveone.at). Der Server sieht dabei deine IP-Adresse und welches Modell du fährst. Ohne Haken: neutrale Silhouette oder dein Foto.": "Loads your car's 3D model once from the BYD community server (byd.serveone.at). The server sees your IP address and which model you drive. Without the tick: a neutral silhouette or your photo.", "Zeigt öffentliche Ladestationen am Standort deines Autos mit Entfernung und Steckertyp. Dafür geht die Position deines Autos an OpenStreetMap (Overpass-Dienst) oder an deinen eigenen OpenGlance-Server, wenn du ihn unten einträgst. Mit der Community-Karte kommt die Live-Belegung dazu: dafür geht nur die Kartenmitte, auf etwa 5 km gerundet, an den Server der BYD-Community.": "Shows public chargers at your car's location with distance and connector type. For this, your car's position is sent to OpenStreetMap (Overpass service) or to your own OpenGlance server if you enter it below. With the community map, live availability is added: only the map centre, rounded to about 5 km, goes to the BYD community server.", "Kurz vorab": "Quick note first", "Das EV-Cockpit ist ein privates Freizeitprojekt, kostenlos und ohne Gewähr. Du nutzt es auf eigenes Risiko, nur privat. Es verwendet dein BYD-Konto, Home Assistant oder deine Wallbox so, wie du es einstellst. Für Fernbefehle (z. B. Klima, Zusperren) und Ladebefehle an die Wallbox bist du selbst verantwortlich. Werte wie Ladestand, Reichweite und Preise können abweichen. Das EV-Cockpit ist nicht mit BYD verbunden.": "EV-Cockpit is a private hobby project, free and without warranty. You use it at your own risk, for private use only. It uses your BYD account, Home Assistant or your wallbox as you configure it. You are responsible for remote commands (e.g. climate, locking) and charging commands to your wallbox. Values such as charge level, range and prices may be inaccurate. EV-Cockpit is not affiliated with BYD.", "Alle Hinweise lesen": "Read all notes", "Gelesen und einverstanden": "Read and agreed", "Bitte bestätige die Hinweise, um fortzufahren.": "Please confirm the notes to continue.", "Freizeitprojekt.": "Hobby project.", "Panoptes, das EV-Cockpit und der Routenplaner sind ein privates Freizeitprojekt von Alfred Aigner. Sie werden kostenlos und ohne Gewähr angeboten.": "Panoptes, EV-Cockpit and the route planner are a private hobby project by Alfred Aigner. They are provided free of charge and without warranty.", "Ohne Gewähr.": "No warranty.", "Es gibt keine Garantie, dass alles fehlerfrei, vollständig oder jederzeit verfügbar ist. Das gilt auch für Ladestände, Reichweiten, Preise, Belegung von Ladesäulen, Routen, Blitzer- und Gefahrenhinweise. Prüfe Wichtiges selbst; im Straßenverkehr gilt immer, was du siehst und was die Schilder sagen.": "There is no guarantee that everything is correct, complete or always available. This includes charge levels, range, prices, charger availability, routes, speed camera and hazard warnings. Check anything important yourself; on the road, what you see and the road signs always come first.", "Eigenes Risiko.": "Your own risk.", "Du nutzt alles auf eigenes Risiko. Soweit gesetzlich zulässig, übernimmt Alfred Aigner keine Haftung für Schäden, die aus der Nutzung entstehen, auch nicht für Schäden am Fahrzeug, an Daten oder durch Fernbefehle.": "You use everything at your own risk. To the extent permitted by law, Alfred Aigner accepts no liability for any damage resulting from its use, including damage to your vehicle, to data, or caused by remote commands.", "Du bist verantwortlich.": "You are responsible.", "Du allein entscheidest, wie du die Funktionen einsetzt, und bist dafür verantwortlich, dass das erlaubt ist. Das betrifft vor allem Datenschutz, Kamera-Aufnahmen, Fernbefehle über das BYD-Konto und die Regeln im Straßenverkehr.": "You alone decide how you use the features, and you are responsible for making sure that use is legal. This applies especially to data protection, camera recordings, remote commands via your BYD account, and traffic rules.", "Nur privat.": "Private use only.", "Gedacht ist alles nur für die private Nutzung mit deinem eigenen Fahrzeug. Ein gewerblicher Einsatz (z. B. Flotten, Vermietung, Taxi, Firmenwagen-Überwachung) ist nicht vorgesehen.": "Everything is intended for private use with your own vehicle only. Commercial use (e.g. fleets, rental, taxi, monitoring company cars) is not intended.", "Wächter nur auf eigenem Grund.": "Guardian on your own property only.", "Kamera-Aufnahmen des Wächters sind für deinen eigenen Privatgrund gedacht (z. B. Garage, Einfahrt). Richte die Kameras so aus, dass weder öffentlicher Raum (Straße, Gehweg, öffentlicher Parkplatz) noch das Grundstück der Nachbarn erfasst wird. Aufnahmen nicht veröffentlichen.": "Guardian recordings are intended for your own private property (e.g. garage, driveway). Point the cameras so that neither public space (street, pavement, public car park) nor your neighbours' property is captured. Do not publish recordings.", "Nicht von BYD.": "Not BYD.", "Dieses Projekt ist nicht mit BYD verbunden und wird von BYD weder unterstützt noch geprüft. „BYD“, „DiLink“ und alle anderen genannten Namen und Marken gehören ihren jeweiligen Inhabern.": "This project is not affiliated with BYD and is not supported or reviewed by BYD. “BYD”, “DiLink” and all other names and trademarks mentioned belong to their respective owners.", "Gesetzliche Rechte bleiben.": "Your legal rights remain.", "Die Haftung für Vorsatz und grobe Fahrlässigkeit, für Personenschäden sowie zwingende Rechte von Verbraucherinnen und Verbrauchern werden durch diese Hinweise nicht eingeschränkt.": "Liability for intent and gross negligence, for personal injury, and mandatory consumer rights are not limited by these notes.", "🔗 Mit Panoptes verbinden": "🔗 Connect to Panoptes", "Bestätige in Telegram oder hier:": "Confirm in Telegram or here:", "will sich verbinden. Prüfzahl:": "wants to connect. Check number:", "Panoptes öffnen („Gekoppelte Geräte“)": "Open Panoptes (“Paired devices”)", "Vergleiche die Prüfzahl und tippe auf „Erlauben“. Die Anfrage gilt 2 Minuten.": "Compare the check number and tap “Allow”. The request is valid for 2 minutes.", "Erweitert: mit Kopplungs-Code oder Link": "Advanced: with pairing code or link", "Kopplungs-Code oder Link aus Panoptes („Neues Gerät koppeln“, 10 min gültig, einmal verwendbar)": "Pairing code or link from Panoptes (“Pair new device”, valid 10 min, single use)", "482913 oder https://…/system.html#koppeln=…": "482913 or https://…/system.html#koppeln=…", "🔗 Mit Routenplaner verbinden": "🔗 Connect to route planner", "Im Browser bestätigen:": "Confirm in your browser:", "Code": "Code", "Routenplaner öffnen und erlauben": "Open route planner and allow", "Melde dich dort als Mitglied an und tippe auf „Erlauben“. Der Code gilt 10 Minuten.": "Sign in there as a member and tap “Allow”. The code is valid for 10 minutes.", "Erweitert: mit persönlichem Planer-Link": "Advanced: with your personal planner link", "Warte auf „Erlauben“ …": "Waiting for “Allow” …", "Verbunden": "Connected", "Ladestand ": "charge level ", "Mit dem Routenplaner verbunden": "Connected to the route planner", "Schon gekoppelt. Nur neu verbinden, wenn die Kopplung in Panoptes entfernt wurde.": "Already paired. Only connect again if the pairing was removed in Panoptes.", "3D-Modell nicht geladen": "3D model not loaded", "Erneut versuchen": "Try again", "3D-Modell wird geladen …": "Loading 3D model …", "Laden fehlgeschlagen": "Loading failed", "Dieser Browser kann kein WebGL": "This browser has no WebGL",
     "Eigenes Foto verwenden": "Use your own photo", "Reichweite": "Range",
     "Verbunden": "Connected", "Nicht verbunden": "Not connected",
     "Kompakt": "Compact", "Limousine": "Sedan", "Kombi": "Estate", "SUV": "SUV", "Van": "Van",
@@ -1763,11 +1783,14 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
    „Routenplaner → Meine Ladekarten“. Gespeichert wird beim Planer nur, welche Karten du hast.</small>
   </div>
 
-  <div class=chk>
-   <input type=checkbox id=kartecommunity>
-   <div><div class=h>🗺️ Karte im Community-Look</div>
-    <small>Dieselbe Karte wie im Planer und in der Panoptes-App. Die Kartenkacheln deiner Gegend lädt dann der Server der BYD-Community (byd.serveone.at); er sieht dabei deine IP-Adresse und den Kartenausschnitt. Ohne Haken lädt sie OpenStreetMap.</small></div>
-  </div>
+  <div class=h style="margin:10px 0 4px">🗺️ Karte</div>
+  <small style="display:block;margin-bottom:6px">Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust. Du entscheidest:</small>
+  <div class=chk><input type=radio name=kartenquelle id=kq_keine value=keine checked>
+   <div><div class=h>Keine Karte</div><small>Es werden keine Kartenbilder geladen.</small></div></div>
+  <div class=chk><input type=radio name=kartenquelle id=kq_osm value=osm>
+   <div><div class=h>OpenStreetMap</div><small>Kartenbilder von OpenStreetMap (fremder Dienst).</small></div></div>
+  <div class=chk><input type=radio name=kartenquelle id=kq_community value=community>
+   <div><div class=h>Community-Karte</div><small>Dieselbe Karte wie im Planer und in der Panoptes-App, vom Server der BYD-Community (byd.serveone.at). Nur damit gibt es die Live-Belegung der Ladesäulen.</small></div></div>
 
   <div class=chk>
    <input type=checkbox id=lan>
@@ -1942,7 +1965,7 @@ function vorfuellen(){
  document.getElementById('planer').checked=!!VOR.planer;
  document.getElementById('planerrow').style.display=VOR.planer?'block':'none';
  document.getElementById('planerfahrten').checked=!!VOR.planer_fahrten;
- document.getElementById('kartecommunity').checked=VOR.karte==='community';
+ {const q=['community','osm'].includes(VOR.kartenquelle)?VOR.kartenquelle:'keine';document.getElementById('kq_'+q).checked=true;}
  document.getElementById('modell3d').checked=VOR.modell3d===true;
  if(VOR.has_planer_token) document.getElementById('planerlink').placeholder='••••••• (gespeichert — leer lassen zum Behalten)';
  if(VOR.planer_fahrzeug){const o=document.createElement('option');o.value=o.textContent=VOR.planer_fahrzeug;o.selected=true;
@@ -2162,7 +2185,8 @@ async function save(){const m=document.getElementById('smsg');
  b.disclaimer_ok=document.getElementById('disc').checked;
  b.planer_fahrzeug=document.getElementById('planerfz').value;
  b.planer_fahrten=document.getElementById('planerfahrten').checked;
- b.karte=document.getElementById('kartecommunity').checked?'community':'osm';
+ b.kartenquelle=(document.querySelector('input[name=kartenquelle]:checked')||{}).value||'keine';
+ b.karte=b.kartenquelle==='community'?'community':'osm';
  b.modell3d=document.getElementById('modell3d').checked;
  b.panoptes=document.getElementById('panoptes').checked;
  b.panoptes_url=document.getElementById('panoptesurl').value.trim();
@@ -2532,7 +2556,31 @@ function yn(id,cond,ja,nein,warn){var e=document.getElementById(id);if(!e)return
 
 // --- Basiskarte: Community-Look (MapLibre-Stil wie Planer/Panoptes) sobald der Server ihn
 // komplett liefert; sonst - und bei jedem Fehler - OpenStreetMap. Bibliotheken liegen im Paket.
-const KARTEN_STIL='__KARTENSTIL__';
+const KARTEN_STIL='__KARTENSTIL__', EINW=__EINWILLIGUNG__;
+async function einwilligung(werte){
+ try{const r=await (await fetch('/einwilligung',{method:'POST',body:JSON.stringify(werte)})).json();
+  if(r.ok)location.reload();}catch(e){}}
+function karteWahl(el){            // ohne ausdrueckliche Wahl: keine Kacheln, sondern die Frage
+ el.innerHTML='<div style="padding:18px;text-align:center;color:var(--mut)"><div style="font-weight:700;color:var(--txt);margin-bottom:6px">'+
+  __T('Karte anzeigen?')+'</div><div style="font-size:13px;margin-bottom:12px">'+
+  __T('Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust.')+'</div>'+
+  '<button type=button onclick="einwilligung({kartenquelle:\'osm\'})">'+__T('OpenStreetMap')+'</button> '+
+  '<button type=button onclick="einwilligung({kartenquelle:\'community\'})">'+__T('Community-Karte')+'</button></div>';}
+function einwHinweis(){            // einmal nach dem Update: Karte und 3D sind freiwillig
+ if(!EINW.fragen)return;
+ const d=document.createElement('div');d.id='einwhinweis';d.className='card';
+ d.style.cssText='margin:12px 0;padding:14px 16px;border:1px solid var(--line);border-radius:14px';
+ const q=EINW.kartenquelle;
+ d.innerHTML='<div style="font-weight:700;margin-bottom:4px">'+__T('Neu: Karte und 3D-Modell sind freiwillig')+'</div>'+
+  '<div style="font-size:13px;color:var(--mut);margin-bottom:8px">'+__T('Beides lädt Daten von fremden Servern; die sehen dabei deine IP-Adresse (und bei der Karte die Gegend, beim 3D-Modell dein Automodell). Ohne deine Wahl bleibt beides aus.')+'</div>'+
+  '<div style="margin:4px 0"><b>'+__T('Karte')+':</b> '+
+  ['keine','osm','community'].map(v=>'<label style="margin-right:12px"><input type=radio name=ewk value='+v+(q===v?' checked':'')+'> '+
+   __T({keine:'Keine Karte',osm:'OpenStreetMap',community:'Community-Karte'}[v])+'</label>').join('')+'</div>'+
+  '<div style="margin:4px 0"><label><input type=checkbox id=ew3d'+(EINW.modell3d?' checked':'')+'> '+__T('Dein Auto in 3D (vom Community-Server)')+'</label></div>'+
+  '<button type=button style="margin-top:8px" onclick="einwilligung({kartenquelle:(document.querySelector(\'input[name=ewk]:checked\')||{}).value||\'keine\',modell3d:document.getElementById(\'ew3d\').checked})">'+__T('Speichern')+'</button>';
+ const ziel=document.getElementById('overview')||document.body.firstElementChild;
+ ziel.parentNode.insertBefore(d,ziel);}
+document.addEventListener('DOMContentLoaded',einwHinweis);
 function basiskarte(m){
  const osm=()=>L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(m);
  if(!KARTEN_STIL){osm();return;}
@@ -2692,6 +2740,7 @@ function zeichneKarte(s){
  if(!s.latitude||!s.longitude||typeof L==='undefined') return;
  const pos=[s.latitude,s.longitude];
  if(!MAP){
+  if(EINW.kartenquelle==='keine'){const el=document.getElementById('lmap');if(!el.dataset.wahl){el.dataset.wahl=1;karteWahl(el);}return;}
   MAP=L.map('lmap',{zoomControl:true,attributionControl:true,scrollWheelZoom:false}).setView(pos,13);
   basiskarte(MAP);
  }
@@ -3396,7 +3445,7 @@ class H(BaseHTTPRequestHandler):
         vor = {k: _CFG.get(k) for k in ("username", "country_code", "time_zone", "vin", "model",
                                         "battery_kwh", "tyre_target", "lan", "count_optin", "show_price",
                                         "poll_min", "sentry", "car_adb", "show_chargers", "charger_url", "update_check", "features",
-                                        "planer", "planer_fahrzeug", "planer_fahrten", "karte", "modell3d",
+                                        "planer", "planer_fahrzeug", "planer_fahrten", "karte", "modell3d", "kartenquelle",
                                         "panoptes", "panoptes_url",
                                         "ha", "ha_host", "ha_port", "ha_user",
                                         "pv", "pv_url", "pv_entity",
@@ -3608,8 +3657,10 @@ class H(BaseHTTPRequestHandler):
         elif p == "/setup" or not _CFG.get("vin"):
             self._wizard()
         else:
-            stil = KARTE_STIL if _CFG.get("karte") == "community" else ""     # nur mit Einwilligung (Regel 2)
-            self._send(_i18n(COCKPIT.replace("__KARTENSTIL__", stil)
+            stil = KARTE_STIL if _kartenquelle() == "community" else ""       # nur mit Einwilligung (Regel 2)
+            einw = {"fragen": _CFG.get("einwilligung_stand") != EINWILLIGUNG_STAND, "kartenquelle": _kartenquelle(),
+                    "modell3d": _CFG.get("modell3d") is True}
+            self._send(_i18n(COCKPIT.replace("__KARTENSTIL__", stil).replace("__EINWILLIGUNG__", json.dumps(einw))
                              .replace("</body>", ENERGY_PANEL + "</body>")))
 
     def do_POST(self):
@@ -3701,7 +3752,7 @@ class H(BaseHTTPRequestHandler):
             # Live-Belegung fuer die Community-Karte: nur mit Haekchen "Ladesaeulen" und Community-Karte.
             # Der Planer bekommt nur den auf ~5 km gerundeten Kartenmittelpunkt, per POST (kein Log).
             leer = json.dumps({"stationen": [], "live_quellen": []})
-            if not _CFG.get("show_chargers") or _CFG.get("karte") != "community":
+            if not _CFG.get("show_chargers") or _kartenquelle() != "community":
                 return self._send(leer, "application/json")
             try:
                 d = _LIVE.abfrage(json.loads(raw), karten=_CFG.get("planer_karten") or ())
@@ -3812,6 +3863,22 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send(json.dumps({"ok": False, "error": ("Home Assistant nicht erreichbar: %s" % e)[:160]}),
                            "application/json")
+        elif u.path == "/einwilligung":
+            # Regel 2: Kartenquelle und 3D-Modell ausdruecklich waehlen (einmaliger Hinweis bzw. direkt in der Karte)
+            try:
+                c = json.loads(raw or "{}")
+                if "kartenquelle" in c:
+                    if c["kartenquelle"] not in ("keine", "osm", "community"):
+                        raise ValueError("unbekannte Kartenquelle")
+                    _CFG["kartenquelle"] = c["kartenquelle"]
+                    _CFG["karte"] = "community" if c["kartenquelle"] == "community" else "osm"
+                if "modell3d" in c:
+                    _CFG["modell3d"] = c["modell3d"] is True
+                _CFG["einwilligung_stand"] = EINWILLIGUNG_STAND
+                save_cfg(_CFG)
+                self._send(json.dumps({"ok": True}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "error": str(e)[:120]}), "application/json")
         elif u.path == "/panoptes/anfrage":
             # Kopplung per Anfrage (KOPPLUNG_ANFRAGE.md v1.1): Pruefzahl zeigen, erlaubt wird in Telegram/Web/Display
             try:
@@ -3992,6 +4059,9 @@ class H(BaseHTTPRequestHandler):
                 c["planer_token"] = token_aus_link(link) or _PLANER_NEU.get("token") or ("" if link else _CFG.get("planer_token", ""))
                 if c.get("planer") and not c["planer_token"]:
                     raise ValueError("Bitte zuerst „Mit Routenplaner verbinden“ (oder unter „Erweitert“ den persönlichen Link)")
+                if c.get("kartenquelle") not in ("keine", "osm", "community"):
+                    c["kartenquelle"] = "keine"
+                c["einwilligung_stand"] = EINWILLIGUNG_STAND          # im Assistenten ausdruecklich gewaehlt
                 # Hinweise (Haftung) im ersten Schritt bestaetigt: Version + Zeitpunkt merken
                 if c.pop("disclaimer_ok", None) is not True:
                     raise ValueError("Bitte im ersten Schritt die Hinweise bestätigen")
@@ -4011,7 +4081,11 @@ class H(BaseHTTPRequestHandler):
                 if c.get("count_optin"):
                     c["install_id"] = _CFG.get("install_id") or uuid.uuid4().hex[:16]
                 else:
-                    c.pop("install_id", None)      # Haekchen weg -> ID weg
+                    c.pop("install_id", None)      # Haekchen weg -> ID weg ...
+                    if _CFG.get("install_id"):
+                        c["_ping_loeschen"] = _CFG["install_id"]   # ... und beim Server loeschen lassen
+                if _CFG.get("_ping_loeschen") and not c.get("_ping_loeschen"):
+                    c["_ping_loeschen"] = _CFG["_ping_loeschen"]
                 # Planer-Kennung des Autos bleibt dieselbe, sonst saehe der Planer nach jedem Speichern
                 # ein "neues" Auto. Nur bei anderem Fahrzeug (VIN) eine neue.
                 if _CFG.get("planer_auto") and c.get("vin") == _CFG.get("vin"):

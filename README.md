@@ -154,9 +154,10 @@ cockpit gets its own device key with limited rights (revocable under "My devices
   the planner (only which cards, no charging sessions) and applies on `/ev/` too. Chargers on the map then show
   your card's price, and the planner prefers matching charging stops.
 
-**Map:** by default the map tiles come from OpenStreetMap. Tick "Community map style" (off by default) for the
-same map as the planner and the Panoptes app; the tiles for your area then come from the community server
-(byd.serveone.at), which sees your IP address and the map area. The map libraries (MapLibre, PMTiles) ship in the package, no CDN.
+**Map:** whoever delivers the map tiles sees your IP address and the area you look at, so **without your choice
+no map tiles are loaded at all**. In the wizard (or directly in the map) you choose: no map, OpenStreetMap, or the
+community map (same map as the planner and the Panoptes app, from byd.serveone.at; live charger availability only
+works with it). The map libraries (MapLibre, PMTiles) ship in the package, no CDN.
 With "Chargers" ticked, the community map shows **live occupancy** (currently Austria, Switzerland and Germany, via the planner; source and licence are shown at the bottom of the map): free
 normal, occupied **red**, out of order grey, status unknown grey with "?" (source shown at the bottom of the map). Only the map centre rounded to ~5 km is sent to the planner by POST
 (no access log), at most every 2 minutes per area.
@@ -199,6 +200,13 @@ EVCOCKPIT_CFGDIR=~/.evcockpit-second EVCOCKPIT_PORT=8100 ./start.sh
   is included.
 - If a command doesn't go through: wait a moment and try **once** more — not frantically
   several times, the BYD cloud doesn't like that.
+
+## What leaves your computer — only with your tick
+
+Everything that sends data to another server needs its own tick in the wizard and is **off by default**: usage
+count (random ID, version, car model; untick it and the entry is deleted on the server), update check, map source,
+3D model, chargers nearby, electricity price, route planner and "learn real consumption". Pairing with Panoptes
+stays in your home network or Tailscale.
 
 ## Notes / liability
 
