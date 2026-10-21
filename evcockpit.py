@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.13.0"
+VERSION = "1.14.0"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -4097,7 +4097,7 @@ ENERGY_PANEL = r'''<style>
 @media(max-width:600px){.energy-shell{margin:20px 14px;padding:16px}.energy-form input{width:100%}.energy-form button{flex:1}.vehicle-select{grid-template-columns:76px minmax(0,1fr) auto}.vehicle-art svg{width:70px}}
 </style><section id="energy-panel" class="energy-shell">
 <div class="energy-head"><div><h2>⚡ Energie &amp; Ladepunkte</h2>
-<p>Überblick für Wallboxen, PV, Speicher und Fahrzeuge via evcc (nur lesend; Steuern kommt nach dem Praxistest).</p></div><span id="evcc-health" class="chip">NICHT VERBUNDEN</span></div>
+<p>Überblick für Wallboxen, PV, Speicher und Fahrzeuge via evcc. Steuern (Lademodus, Ziel-Ladestand) nur für Ladepunkte, die du einzeln freigibst, jedes Mal mit Rückfrage.</p></div><span id="evcc-health" class="chip">NICHT VERBUNDEN</span></div>
 <div class="energy-auto"><button id="evcc-discover">⌕ &nbsp;Geräte automatisch finden</button><span>Kein IP-Wissen nötig</span></div>
 <details class="energy-advanced"><summary>Manuell verbinden (Experten)</summary><div class="energy-form"><input id="evcc-host" inputmode="decimal" placeholder="evcc-IP · 192.168.1.20" aria-label="evcc IP-Adresse">
 <input id="evcc-port" type="number" value="7070" min="1" max="65535" aria-label="evcc Port">
@@ -4105,6 +4105,7 @@ ENERGY_PANEL = r'''<style>
 <div id="evcc-message" class="energy-message">Optional – noch nicht verbunden</div>
 <div id="evcc-values" class="energy-grid"><div class="energy-placeholder">☀️ Solar wird automatisch angezeigt, sobald evcc oder Home Assistant Werte liefert.</div></div>
 <h3 class="energy-sub">FAHRZEUGE &amp; LADEPUNKTE</h3><div id="evcc-points" class="energy-grid"></div>
+<details id="evcc-protdet" style="margin-top:10px;display:none"><summary style="cursor:pointer;color:var(--mut);font-size:13px">Steuer-Protokoll</summary><div id="evcc-prot" style="font-size:12.5px;color:var(--mut);margin-top:6px"></div></details>
 <div class="vehicle-legal">Fahrzeugformen sind neutrale Illustrationen, keine Herstellerlogos oder exakten Modellabbildungen.</div>
 <div id="evcc-discovery" class="energy-discovery"></div>
 </section>
@@ -4163,7 +4164,8 @@ ENERGY_PANEL = r'''<style>
     (typeof x.phasesActive==='number'?' · '+x.phasesActive+' Phase(n)':'')+
     (typeof x.sessionSolarPercentage==='number'?' · '+x.sessionSolarPercentage.toFixed(0)+' % Solar':'')+
     (typeof x.chargedEnergy==='number'?' · '+(x.chargedEnergy/1000).toFixed(1)+' kWh':'')+
-    (typeof x.effectiveLimitSoc==='number'?' · Ziel '+x.effectiveLimitSoc+' %':''))+steuerung(x,i,d.steuern_erlaubt||[])).join('');
+    (typeof x.effectiveLimitSoc==='number'&&x.art==='wallbox'?' · Ziel '+x.effectiveLimitSoc+' %':''))+steuerung(x,i,d.steuern_erlaubt||[])).join('');
+   el('evcc-protdet').style.display=STEUERN_MOEGLICH?'':'none';
    el('evcc-points').innerHTML=vehicleCards+details+points||'Noch keine Fahrzeuge oder Ladepunkte in evcc konfiguriert';
    el('evcc-points').querySelectorAll('[data-lp]').forEach(b=>b.addEventListener('click',()=>lpAktion(b.dataset)));
    el('evcc-points').querySelectorAll('select[data-lpziel]').forEach(s=>s.addEventListener('change',()=>
@@ -4182,12 +4184,13 @@ ENERGY_PANEL = r'''<style>
  let STEUERN_MOEGLICH=false;
  function steuerung(x,i,frei){if(!STEUERN_MOEGLICH)return '<div class="lp-ctl"><span class="lp-off" style="border:0;padding:4px 0">⚙ '+
    escapeHtml(__T('Wallbox steuern kommt nach dem Praxistest'))+'</span></div>';
+  if(x.art&&x.art!=='wallbox')return '<div class="lp-ctl"><span class="lp-off" style="border:0;padding:4px 0">'+escapeHtml(__T('Heizung/Gerät – nur Anzeige, wird nie gesteuert'))+'</span></div>';
   const t=String(x.title||x.name||''),key=(i+1)+':'+t.slice(0,60),an=frei.includes(key),
    a='data-titel="'+escapeHtml(t)+'"';
   if(!an) return '<div class="lp-ctl"><button type="button" class="lp-off" data-lp="'+(i+1)+'" '+a+' data-tun="erlauben">⚙ '+
    escapeHtml(__T('Steuern erlauben'))+'</button></div>';
   const ziele=[50,60,70,80,90,100];
-  return '<div class="lp-ctl">'+MODI.map(([m,n])=>'<button type="button" class="'+(x.mode===m||(m==='pv'&&x.mode==='smart')?'lp-on':'')+'" data-lp="'+(i+1)+'" '+a+
+  return '<div class="lp-ctl">'+MODI.map(([m,n])=>'<button type="button" class="'+(x.modus===m?'lp-on':'')+'" data-lp="'+(i+1)+'" '+a+
    ' data-modus="'+m+'">'+escapeHtml(__T(n))+'</button>').join('')+
    '<select data-lpziel="'+(i+1)+'" '+a+' aria-label="'+escapeHtml(__T('Ziel-Ladestand'))+'">'+
    ziele.map(z=>'<option value="'+z+'"'+(x.limitSoc===z?' selected':'')+'>'+escapeHtml(__T('Ziel'))+' '+z+' %</option>').join('')+
@@ -4195,18 +4198,25 @@ ENERGY_PANEL = r'''<style>
    '</select><button type="button" class="lp-off" data-lp="'+(i+1)+'" '+a+' data-tun="sperren">'+escapeHtml(__T('Steuern aus'))+'</button></div>';}
  async function lpAktion(ds){const m=el('evcc-message');
   try{
-   if(ds.tun){const an=ds.tun==='erlauben';
-    if(an&&!confirm(__T('Steuern für diesen Ladepunkt erlauben? Das Cockpit darf dann über evcc den Lademodus und den Ziel-Ladestand ändern. Mehr nicht.')))return;
-    await fetch('/energy/steuern-erlauben',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lp:+ds.lp,titel:ds.titel,an})});
-    return refresh();}
-   m.textContent='⏳ '+__T('Sende an evcc …');
    const b={host:h.value,port:+p.value||7070,lp:+ds.lp,titel:ds.titel};
+   if(ds.tun){b.an=ds.tun==='erlauben';const r=await lpPost('/energy/steuern-erlauben',b);
+    if(r&&!r.ok)m.textContent='⚠️ '+(r.error||'');return refresh();}
    if(ds.ziel)b.limit_soc=+ds.ziel;else b.mode=ds.modus;
-   const r=await (await fetch('/energy/steuern',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)})).json();
+   m.textContent='⏳ '+__T('Sende an evcc …');
+   const r=await lpPost('/energy/steuern',b);if(!r){m.textContent=__T('Abgebrochen');return refresh();}
    m.textContent=r.ok?('✅ '+__T('evcc hat übernommen')+(r.mode?' · '+__T('Modus')+' '+r.mode:'')+(typeof r.limit_soc==='number'?' · '+__T('Ziel')+' '+r.limit_soc+' %':''))
     :('⚠️ '+(r.error||__T('evcc hat die Änderung nicht übernommen')+' ('+(r.mode||'?')+', '+(r.limit_soc??'?')+' %)'));
    setTimeout(refresh,1500);
   }catch(e){m.textContent='⚠️ '+e;}}
+ // Rueckfrage kommt vom Server (409 + Einmal-Kennung, 30 s); erst nach Ja wird gesendet
+ async function lpPost(url,b){const o=x=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(x)});
+  let r=await fetch(url,o(b)),d=await r.json();
+  if(r.status===409&&d.grund==='bestaetigung_noetig'){if(!confirm(__T(d.frage&&d.frage.text||'Wirklich?')))return null;
+   r=await fetch(url,o(Object.assign({},b,{bestaetigung:d.bestaetigung})));d=await r.json();}
+  return d;}
+ async function lpProtokoll(){try{const d=await (await fetch('/energy/protokoll',{cache:'no-store'})).json();
+  el('evcc-prot').innerHTML=(d.eintraege||[]).slice(0,20).map(z=>escapeHtml(new Date(z.zeit).toLocaleString()+' · '+z.ladepunkt+' · '+z.aktion+' '+String(z.wert)+' · '+z.ergebnis)).join('<br>')||escapeHtml(__T('Noch nichts gesteuert.'));}catch(e){}}
+ el('evcc-protdet').addEventListener('toggle',()=>{if(el('evcc-protdet').open)lpProtokoll();});
  el('evcc-connect').onclick=()=>{localStorage.setItem('evc_evcc_host',h.value);localStorage.setItem('evc_evcc_port',p.value);refresh();};
  el('evcc-discover').onclick=async()=>{
   const button=el('evcc-discover');button.disabled=true;button.textContent='⌛ '+__T('Suche im Heimnetz …');el('evcc-discovery').textContent='Das dauert normalerweise nur wenige Sekunden.';
@@ -4491,10 +4501,15 @@ class H(BaseHTTPRequestHandler):
                 result["profiles"] = combine_profiles(saved, result["vehicles"], legacy)
                 from evcc_backend import STEUERN_FREIGEGEBEN
                 result["steuern_moeglich"] = bool(STEUERN_FREIGEGEBEN)
-                result["steuern_erlaubt"] = list(_CFG.get("evcc_steuern") or []) if STEUERN_FREIGEGEBEN else []
+                import wallbox_steuern as ws
+                gleich = _CFG.get("evcc_steuern_ziel") == ws.ziel_kennung(q["host"][0], int(q.get("port", ["7070"])[0]))
+                result["steuern_erlaubt"] = list(_CFG.get("evcc_steuern") or []) if STEUERN_FREIGEGEBEN and gleich else []
                 self._send(json.dumps(result), "application/json")
             except Exception as e:
                 self._send(json.dumps({"error": str(e)[:160]}), "application/json", 400)
+        elif p == "/energy/protokoll":
+            import wallbox_steuern as ws
+            self._send(json.dumps({"eintraege": ws.protokoll_lesen(CFG_DIR / "wallbox_protokoll.jsonl")}), "application/json")
         elif p == "/karten":
             # Meine Ladekarten: Tarifliste (oeffentlich, 1 h zwischengespeichert) + eigene Auswahl beim Planer
             try:
@@ -4687,30 +4702,71 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 return self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json", 400)
         if u.path in ("/energy/steuern-erlauben", "/energy/steuern"):
-            # Wallbox steuern NUR ueber evcc und NUR fuer Ladepunkte, die der Nutzer ausdruecklich
-            # freigeschaltet hat (Standard aus). evcc kuemmert sich um Phasen, Stromgrenzen, Schutz.
+            # WALLBOX_VERTRAG §5: nur ueber evcc, nur einzeln freigegebene Ladepunkte, Bestaetigung serverseitig
+            # (409 + Einmal-Kennung 30 s), Zuruecklesen, Protokoll ohne URL/Token. evcc macht Phasen, Stroeme, Schutz.
+            import wallbox_steuern as ws
+            prot = CFG_DIR / "wallbox_protokoll.jsonl"
+
+            def rueckfrage(lp, titel, aktion, wert, k):
+                return self._send(json.dumps({"ok": False, "grund": "bestaetigung_noetig", "bestaetigung": ws.frage(k),
+                                              "gueltigMs": ws.GUELTIG_S * 1000,
+                                              "frage": {"ladepunkt": "evcc:%d" % lp, "titel": titel, "aktion": aktion, "wert": wert,
+                                                        "text": ws.frage_text(titel, aktion, wert)}}), "application/json", 409)
             try:
-                from evcc_backend import STEUERN_FREIGEGEBEN
-                if not STEUERN_FREIGEGEBEN:          # 1.6: fest aus bis zum Praxistest - nichts geht an evcc
+                from evcc_backend import STEUERN_FREIGEGEBEN, set_loadpoint, pruefe_wert, get_evcc_state, validate_evcc_address
+                if not STEUERN_FREIGEGEBEN:
                     raise PermissionError("Wallbox steuern kommt nach dem Praxistest")
-                b = json.loads(raw)
-                lp = int(b.get("lp"))
-                schluessel = "%d:%s" % (lp, str(b.get("titel") or "")[:60])
-                frei = list(_CFG.get("evcc_steuern") or [])
-                if u.path == "/energy/steuern-erlauben":
-                    frei = [x for x in frei if x != schluessel] + ([schluessel] if b.get("an") else [])
-                    _CFG["evcc_steuern"] = frei
+                b = json.loads(raw or "{}")
+                host, port = str(b.get("host") or ""), int(b.get("port") or 7070)
+                validate_evcc_address(host, port)
+                lp, titel = int(b.get("lp")), str(b.get("titel") or "")[:60]
+                if not 1 <= lp <= 20:
+                    raise ValueError("Invalid loadpoint")
+                ziel = ws.ziel_kennung(host, port)
+                if _CFG.get("evcc_steuern") and _CFG.get("evcc_steuern_ziel") != ziel:
+                    _CFG["evcc_steuern"] = []            # anderer Host: alle Freigaben weg (§2)
                     save_cfg(_CFG)
+                frei, sch, lpid = list(_CFG.get("evcc_steuern") or []), "%d:%s" % (lp, titel), "evcc:%d" % lp
+                if u.path == "/energy/steuern-erlauben":
+                    an = bool(b.get("an"))
+                    if an:
+                        punkte = get_evcc_state(host, port).get("loadpoints") or []
+                        if len(punkte) < lp:
+                            raise ValueError("Ladepunkt nicht gefunden")
+                        if punkte[lp - 1].get("art") != "wallbox":
+                            return self._send(json.dumps({"ok": False, "grund": "keine_wallbox",
+                                                          "error": "Heizung oder Gerät – wird nie gesteuert"}), "application/json", 400)
+                        k = ws.schluessel(lp, titel, "freigeben", True)
+                        if not ws.einloesen(b.get("bestaetigung"), k):
+                            return rueckfrage(lp, titel, "freigeben", True, k)
+                    frei = [x for x in frei if x != sch] + ([sch] if an else [])
+                    _CFG["evcc_steuern"], _CFG["evcc_steuern_ziel"] = frei, ziel
+                    save_cfg(_CFG)
+                    ws.protokoll(prot, "evcc", lpid, "freigabe", an, "uebernommen")
                     return self._send(json.dumps({"ok": True, "steuern_erlaubt": frei}), "application/json")
-                if schluessel not in frei:
-                    raise ValueError("Steuern ist für diesen Ladepunkt nicht freigeschaltet")
-                from evcc_backend import set_loadpoint
-                ziel = b.get("limit_soc")
-                r = set_loadpoint(str(b.get("host") or ""), int(b.get("port") or 7070), lp,
-                                  mode=b.get("mode"), limit_soc=int(ziel) if ziel is not None else None)
+                if sch not in frei or _CFG.get("evcc_steuern_ziel") != ziel:
+                    return self._send(json.dumps({"ok": False, "grund": "nicht_freigegeben",
+                                                  "error": "Steuern ist für diesen Ladepunkt nicht freigeschaltet"}), "application/json", 403)
+                mode, lim = b.get("mode"), b.get("limit_soc")
+                if isinstance(lim, float) and lim.is_integer():
+                    lim = int(lim)
+                pruefe_wert(mode, lim)                   # Werte vor der Rueckfrage pruefen (400 statt 409)
+                aktion, wert = ("modus", mode) if mode is not None else ("ziel", lim)
+                k = ws.schluessel(lp, titel, aktion, wert)
+                if not ws.einloesen(b.get("bestaetigung"), k):
+                    return rueckfrage(lp, titel, aktion, wert, k)
+                try:
+                    r = set_loadpoint(host, port, lp, mode=mode, limit_soc=lim)
+                except Exception as e:
+                    ws.protokoll(prot, "evcc", lpid, aktion, wert, "fehler:" + type(e).__name__)
+                    raise
+                ws.protokoll(prot, "evcc", lpid, aktion, wert, "uebernommen" if r["ok"] else "abweichend")
+                r["uebernommen"] = r["ok"]
                 self._send(json.dumps(r), "application/json")
+            except PermissionError as e:
+                self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json", 403)
             except Exception as e:
-                self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json")
+                self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json", 400)
         elif u.path in ("/route/plan", "/route/orte", "/route/an-auto"):
             # Route-Reiter: Schluessel bleibt hier; Koordinaten nur im Body, nie im Log (Regel 2: nur auf Klick)
             try:

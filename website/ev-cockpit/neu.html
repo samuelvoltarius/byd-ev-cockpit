@@ -40,6 +40,17 @@ footer a{color:var(--mut)}
   <p class=lead>Alle Änderungen am EV-Cockpit — das Neueste zuerst.</p>
 
     <section class="ver">
+      <div class="verhead"><h2>Version 1.14</h2><span class="datum">22.10.2026</span></div>
+      <p class="titel">Wallbox steuern über evcc</p>
+      <ul>
+        <li><b>⚡ Lademodus und Ziel-Ladestand</b> — Aus, Sofort, Min+PV, PV und das Ladeziel direkt im Cockpit. Nur über evcc, das sich um Phasen, Ströme und Schutz kümmert.</li>
+        <li><b>🔒 Nur was du freigibst</b> — Standard ist nur lesen. Jeder Ladepunkt muss einzeln freigegeben werden, jede Änderung fragt nach. Wärmepumpen und Heizstäbe werden nie gesteuert. Wechselt die evcc-Adresse, sind alle Freigaben weg.</li>
+        <li><b>🧾 Steuer-Protokoll</b> — jede Änderung mit Zeit und Ergebnis, ohne Adressen oder Zugangsdaten. Das Cockpit liest nach jeder Änderung nach, ob evcc sie übernommen hat.</li>
+        <li><b>🌐 Eigener VPN</b> — evcc ist jetzt auch über Tailscale-Adressen (100.64.0.0/10) und lokale Namen erreichbar.</li>
+      </ul>
+    </section>
+
+    <section class="ver">
       <div class="verhead"><h2>Version 1.13</h2><span class="datum">22.10.2026</span></div>
       <p class="titel">Was kostet mich das Fahren?</p>
       <ul>

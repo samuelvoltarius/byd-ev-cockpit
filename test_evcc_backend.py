@@ -57,21 +57,48 @@ class EvccSteuernTests(unittest.TestCase):
         self.frei.stop()
         self.patcher.stop()
 
-    def lies(self, mode="pv", limit=80):
-        return lambda host, port: {"loadpoints": [{"title": "Garage", "mode": mode, "limitSoc": limit}]}
+    def lies(self, mode="pv", limit=80, **feld):
+        return lambda host, port: {"loadpoints": [dict({"title": "Garage", "mode": mode, "limitSoc": limit}, **feld)]}
 
     def test_modus_und_zuruecklesen(self):
+        # Aelteres evcc (ohne alwaysCharge): meldet pv/minpv direkt, nur ein Schreibaufruf
         from evcc_backend import set_loadpoint
         r = set_loadpoint("192.168.1.8", 7070, 1, mode="pv", read_state=self.lies("pv"))
         self.assertEqual(self.calls, [("POST", "http://192.168.1.8:7070/api/loadpoints/1/mode/pv")])
-        self.assertEqual(r, {"ok": True, "mode": "pv", "limit_soc": 80})
+        self.assertEqual(r, {"ok": True, "mode": "pv", "mode_roh": "pv", "limit_soc": 80})
 
-    def test_neues_evcc_meldet_smart(self):
-        # Aktuelles evcc: pv/minpv sind Aliase und kommen als "smart" zurueck -> gilt als uebernommen
+    def test_neues_evcc_smart_exakt_unterschieden(self):
+        # Neues evcc (0.317): smart + alwaysCharge off = pv, smart + on/once = minpv (WALLBOX_VERTRAG §4)
         from evcc_backend import set_loadpoint
-        self.assertTrue(set_loadpoint("192.168.1.8", 7070, 1, mode="pv", read_state=self.lies("smart"))["ok"])
-        self.assertTrue(set_loadpoint("192.168.1.8", 7070, 1, mode="minpv", read_state=self.lies("smart"))["ok"])
-        self.assertFalse(set_loadpoint("192.168.1.8", 7070, 1, mode="now", read_state=self.lies("smart"))["ok"])
+        self.assertTrue(set_loadpoint("192.168.1.8", 7070, 1, mode="pv", read_state=self.lies("smart", alwaysCharge="off"))["ok"])
+        self.assertFalse(set_loadpoint("192.168.1.8", 7070, 1, mode="pv", read_state=self.lies("smart", alwaysCharge="on"))["ok"])
+        self.assertTrue(set_loadpoint("192.168.1.8", 7070, 1, mode="minpv", read_state=self.lies("smart", alwaysCharge="once"))["ok"])
+        self.assertFalse(set_loadpoint("192.168.1.8", 7070, 1, mode="minpv", read_state=self.lies("smart", alwaysCharge="off"))["ok"])
+        self.assertFalse(set_loadpoint("192.168.1.8", 7070, 1, mode="now", read_state=self.lies("smart", alwaysCharge="off"))["ok"])
+
+    def test_neues_evcc_alwayscharge_wird_mitgesetzt(self):
+        from evcc_backend import set_loadpoint
+        set_loadpoint("192.168.1.8", 7070, 1, mode="pv", read_state=self.lies("smart", alwaysCharge="on"))
+        set_loadpoint("192.168.1.8", 7070, 1, mode="minpv", read_state=self.lies("smart", alwaysCharge="off"))
+        set_loadpoint("192.168.1.8", 7070, 1, mode="now", read_state=self.lies("smart", alwaysCharge="off"))
+        self.assertEqual([u.split("7070")[1] for _, u in self.calls], [
+            "/api/loadpoints/1/mode/pv", "/api/loadpoints/1/alwayscharge/off",
+            "/api/loadpoints/1/mode/minpv", "/api/loadpoints/1/alwayscharge/on",
+            "/api/loadpoints/1/mode/now"])
+
+    def test_heizung_nie_steuern(self):
+        from evcc_backend import set_loadpoint
+        for feld in ({"chargerFeatureHeating": True}, {"chargerFeatureIntegratedDevice": True}):
+            with self.assertRaises(PermissionError):
+                set_loadpoint("192.168.1.8", 7070, 1, limit_soc=60, read_state=self.lies(**feld))
+        self.assertEqual(self.calls, [])
+
+    def test_modus_von(self):
+        from evcc_backend import modus_von, normalize_loadpoints
+        self.assertEqual([modus_von(*x) for x in (("smart", "off"), ("smart", "on"), ("smart", None), ("off", None), ("fast", None))],
+                         ["pv", "minpv", None, "off", None])
+        n = normalize_loadpoints({"loadpoints": [{"title": "Heat pump", "mode": "smart", "alwaysCharge": "off", "chargerFeatureHeating": True}]})
+        self.assertEqual((n[0]["art"], n[0]["modus"]), ("heizung", "pv"))
 
     def test_anmeldung_verlangt(self):
         import urllib.error
@@ -104,12 +131,11 @@ class EvccSteuernTests(unittest.TestCase):
 
 
 class EvccSteuernAbgeschaltetTests(unittest.TestCase):
-    """1.6: Steuern fest aus (Code-Schalter). Beweis: es geht KEIN Schreibaufruf an evcc raus."""
+    """Code-Schalter aus: es geht KEIN Schreibaufruf an evcc raus (seit 1.14 an, nach dem Praxistest)."""
 
     def test_kein_schreibaufruf(self):
         import evcc_backend
-        self.assertFalse(evcc_backend.STEUERN_FREIGEGEBEN)
-        with patch("evcc_backend.open_lan_url") as offen:
+        with patch("evcc_backend.STEUERN_FREIGEGEBEN", False), patch("evcc_backend.open_lan_url") as offen:
             for kw in ({"mode": "pv"}, {"mode": "now"}, {"mode": "off"}, {"limit_soc": 80}):
                 with self.assertRaises(PermissionError):
                     evcc_backend.set_loadpoint("192.168.1.8", 7070, 1, read_state=lambda h, p: {}, **kw)

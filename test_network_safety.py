@@ -35,5 +35,37 @@ class NetworkSafetyTests(unittest.TestCase):
                 open_lan_url(url, timeout=1)
 
 
+
+class PrivatesZielTests(unittest.TestCase):
+    """WALLBOX_VERTRAG §2: Tailscale, Namen nur mit privater Aufloesung, eigene Server gesperrt, Testschalter nur im Test."""
+
+    def test_adressen(self):
+        from network_safety import private_ziel
+        self.assertEqual(private_ziel("100.86.70.71"), ("http", "100.86.70.71"))
+        self.assertEqual(private_ziel("192.168.1.8"), ("http", "192.168.1.8"))
+        for h in ("127.0.0.1", "169.254.169.254", "8.8.8.8", "0.0.0.0", "byd.serveone.at", "serveone.at", "a b", ""):
+            with self.assertRaises(ValueError):
+                private_ziel(h, aufloesen=lambda *a: [(0, 0, 0, "", ("192.168.1.2", 0))])
+
+    def test_namen(self):
+        from network_safety import private_ziel
+        privat = lambda *a: [(0, 0, 0, "", ("192.168.1.9", 0)), (0, 0, 0, "", ("100.70.1.2", 0))]
+        gemischt = lambda *a: [(0, 0, 0, "", ("192.168.1.9", 0)), (0, 0, 0, "", ("93.184.216.34", 0))]
+        self.assertEqual(private_ziel("evcc.local", aufloesen=privat), ("http", "100.70.1.2"))
+        with self.assertRaises(ValueError):
+            private_ziel("evcc.example.com", aufloesen=gemischt)
+
+    def test_testziel_nur_im_testlauf(self):
+        from network_safety import private_ziel, testziel, open_lan_url
+        with self.assertRaises(ValueError):
+            private_ziel("demo.evcc.io", aufloesen=lambda *a: [(0, 0, 0, "", ("93.184.216.34", 0))])
+        with testziel("demo.evcc.io"):
+            self.assertEqual(private_ziel("demo.evcc.io"), ("https", "demo.evcc.io"))
+        with self.assertRaises(ValueError):
+            open_lan_url("https://demo.evcc.io:443/api/state", timeout=1)
+        with self.assertRaises(ValueError):
+            open_lan_url("http://demo.evcc.io/api/state", timeout=1)
+
+
 if __name__ == "__main__":
     unittest.main()

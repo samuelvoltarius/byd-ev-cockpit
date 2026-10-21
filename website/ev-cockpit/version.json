@@ -1,5 +1,5 @@
 {
-  "version": "1.13.0",
-  "was_neu": "Ladekosten je 100 km, Liste der Ladungen, „Wo hast du geladen?“ direkt beantworten (ab Panoptes 0.1.10)",
+  "version": "1.14.0",
+  "was_neu": "Wallbox über evcc steuern: Lademodus und Ziel-Ladestand, je Ladepunkt freigeben, mit Rückfrage",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }
