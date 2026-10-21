@@ -4,7 +4,9 @@ Das Auto ist die Quelle: Das Cockpit liest die offenen Ladungen ueber die Kopplu
 Hier wird nichts gespeichert und nichts selbst gerechnet. Ueber die Kopplung kommen keine Koordinaten.
 """
 import math
+import time
 import urllib.error
+import urllib.parse
 
 ARTEN = ("karte", "adhoc", "zuhause", "zuhause_gratis", "ortskreis")
 PREIS_MAX = 5.0          # EUR je kWh: alles darueber ist ein Tippfehler (Panoptes prueft zusaetzlich PreisPlausibel)
@@ -129,3 +131,96 @@ def ergebnis(d):
     elif d.get("ortMerken"):
         h.append("Ort gemerkt")
     return {"ok": True, "hinweis": " · ".join(h)}
+
+
+# ---------------------------------------------------------------- Kosten und Ladungen (Panoptes >= 0.1.10.1)
+ZEITRAEUME = ("monat", "30t", "jahr", "gesamt")
+QUELLEN = ("tarif", "nutzer", "standard", "ersatz", "fehlt", "overdrive")
+_CACHE = {}              # (pfad) -> (zeit, antwort); nichts auf Platte
+CACHE_S = 300
+FEHLT_S = 3600           # aelteres Panoptes (404/403): hoechstens stuendlich neu fragen
+
+
+def cache_leeren():
+    """Nach einer Antwort auf die Nachfrage aendern sich Kosten und Ladungen."""
+    for k in [k for k, v in _CACHE.items() if not v[1].get("fehlt")]:
+        _CACHE.pop(k, None)
+
+
+def _zahl(x):
+    if isinstance(x, bool):
+        return None
+    try:
+        v = float(x)
+    except (TypeError, ValueError):
+        return None
+    return v if math.isfinite(v) else None
+
+
+def _betrag(x):
+    """rate/kosten: -1 = Preis fehlt -> None."""
+    v = _zahl(x)
+    return v if v is not None and v >= 0 else None
+
+
+def _ganz(x):
+    return int(x) if isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x) else None
+
+
+def _holen(pv, pfad, uhr=time.time):
+    t, d = _CACHE.get(pfad, (0.0, None))
+    if d is not None and uhr() - t < (FEHLT_S if d.get("fehlt") else CACHE_S):
+        return d
+    try:
+        d = pv._get(pfad)
+    except urllib.error.HTTPError as e:
+        d = {"_status": e.code}
+    if not isinstance(d, dict):
+        d = {"_status": 0}
+    if d.get("_status") in (403, 404):
+        d = {"ok": False, "fehlt": True}            # Panoptes vor 0.1.10.1: ausblenden
+    elif d.get("_status") or d.get("ok") is False:
+        return {"ok": False, "error": "Panoptes hat die Abfrage abgelehnt"}
+    _CACHE[pfad] = (uhr(), d)
+    return d
+
+
+def kosten(pv, zeitraum, uhr=time.time):
+    """GET /api/laden/kosten?zeitraum=... -> Zahlen fuer die Kachel. Gerechnet wird im Auto, hier nichts."""
+    z = zeitraum if zeitraum in ZEITRAEUME else "monat"
+    d = _holen(pv, "/api/laden/kosten?zeitraum=" + z, uhr)
+    if not d.get("ok"):
+        return {k: d[k] for k in ("ok", "fehlt", "error") if k in d}
+    return {"ok": True, "zeitraum": z, "von": _ganz(d.get("von")), "bis": _ganz(d.get("bis")), "km": _zahl(d.get("km")),
+            "kwh_geladen": _zahl(d.get("kwh_geladen")), "kosten_summe": _betrag(d.get("kosten_summe")),
+            "kosten_je_100km": _betrag(d.get("kosten_je_100km")), "kwh_je_100km": _zahl(d.get("kwh_je_100km")),
+            "ladungen": _ganz(d.get("ladungen")) or 0, "ladungen_ohne_preis": _ganz(d.get("ladungen_ohne_preis")) or 0,
+            "gratis_ladungen": _ganz(d.get("gratis_ladungen")) or 0, "vollstaendig": d.get("vollstaendig") is not False,
+            "waehrung": _txt(d.get("waehrung") or "EUR", 3)}
+
+
+def ladungen(pv, seite=0, jetzt_ms=None, uhr=time.time):
+    """GET /api/laden/ladungen (letzte 12 Monate, 50 je Seite) -> Liste ohne Koordinaten plus Monatssummen."""
+    bis = int(jetzt_ms if jetzt_ms is not None else uhr() * 1000)
+    bis -= bis % 3600000                           # stuendlich gleiche URL -> Cache greift
+    von = bis - 366 * 86400000
+    seite = max(0, min(int(seite or 0), 200))
+    d = _holen(pv, "/api/laden/ladungen?" + urllib.parse.urlencode({"von": von, "bis": bis + 3600000, "seite": seite, "anzahl": 50}), uhr)
+    if not d.get("ok"):
+        return {k: d[k] for k in ("ok", "fehlt", "error") if k in d}
+    li = []
+    for e in (d.get("ladungen") or [])[:50]:
+        if not isinstance(e, dict):
+            continue
+        q = e.get("quelle") if e.get("quelle") in QUELLEN else ""
+        li.append({"id": _ganz(e.get("id")), "start": _ganz(e.get("start")), "ende": _ganz(e.get("ende")),
+                   "dc": e.get("dc") if isinstance(e.get("dc"), bool) else None, "kwh": _zahl(e.get("kwh")),
+                   "rate": _betrag(e.get("rate")), "kosten": _betrag(e.get("kosten")), "waehrung": _txt(e.get("waehrung") or "EUR", 3),
+                   "quelle": q, "tarif": _txt(e.get("tarifName")), "ort": _txt(e.get("ort")) if isinstance(e.get("ort"), str) else ""})
+    mo = []
+    for m in (d.get("monate") or [])[:24]:
+        if isinstance(m, dict) and isinstance(m.get("monat"), str):
+            mo.append({"monat": _txt(m["monat"], 7), "ladungen": _ganz(m.get("ladungen")) or 0, "kwh": _zahl(m.get("kwh")),
+                       "kosten": _betrag(m.get("kosten")), "ohne_preis": _ganz(m.get("ohne_preis")) or 0,
+                       "vollstaendig": m.get("vollstaendig") is not False})
+    return {"ok": True, "seite": seite, "mehr": bool(d.get("mehr")), "ladungen": li, "monate": mo}

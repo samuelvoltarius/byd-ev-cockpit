@@ -86,5 +86,83 @@ class TestFahrzeug(unittest.TestCase):
         self.assertEqual((b["fahrzeug"], b["karten"]), ("A", [1]))
 
 
+class Pv:
+    def __init__(self, antworten):
+        self.a, self.pfade = antworten, []
+
+    def _get(self, pfad):
+        self.pfade.append(pfad)
+        a = self.a(pfad) if callable(self.a) else self.a
+        if isinstance(a, Exception):
+            raise a
+        return a
+
+
+KOSTEN = {"ok": True, "zeitraum": "monat", "von": 1, "bis": 2, "km": 812.4, "kwh_geladen": 140.2, "kosten_summe": 31.5,
+          "kosten_je_100km": 3.88, "kwh_je_100km": 16.1, "ladungen": 9, "ladungen_ohne_preis": 2, "gratis_ladungen": 4,
+          "vollstaendig": False, "waehrung": "EUR"}
+
+
+class TestKosten(unittest.TestCase):
+    def setUp(self):
+        ln._CACHE.clear()
+
+    def test_durchgereicht_nichts_gerechnet(self):
+        pv = Pv(KOSTEN)
+        k = ln.kosten(pv, "30t")
+        self.assertEqual(pv.pfade, ["/api/laden/kosten?zeitraum=30t"])
+        self.assertEqual((k["kosten_je_100km"], k["kwh_je_100km"], k["vollstaendig"], k["ladungen_ohne_preis"]), (3.88, 16.1, False, 2))
+
+    def test_zeitraum_nur_erlaubte(self):
+        pv = Pv(KOSTEN)
+        ln.kosten(pv, "x&zeitraum=jahr")
+        self.assertEqual(pv.pfade, ["/api/laden/kosten?zeitraum=monat"])
+
+    def test_cache_und_leeren(self):
+        t = [1000.0]
+        pv = Pv(KOSTEN)
+        ln.kosten(pv, "monat", uhr=lambda: t[0])
+        t[0] += 100
+        ln.kosten(pv, "monat", uhr=lambda: t[0])
+        self.assertEqual(len(pv.pfade), 1)
+        ln.cache_leeren()
+        ln.kosten(pv, "monat", uhr=lambda: t[0])
+        self.assertEqual(len(pv.pfade), 2)
+
+    def test_aelteres_panoptes_ausblenden(self):
+        for fehler in (urllib.error.HTTPError("u", 404, "nf", {}, None), {"_status": 403}):
+            ln._CACHE.clear()
+            pv = Pv(fehler)
+            self.assertEqual(ln.kosten(pv, "monat"), {"ok": False, "fehlt": True})
+            ln.cache_leeren()                              # 'fehlt' bleibt eine Stunde gemerkt
+            ln.kosten(pv, "monat")
+            self.assertEqual(len(pv.pfade), 1)
+
+    def test_null_bei_wenig_km(self):
+        k = ln.kosten(Pv(dict(KOSTEN, km=0.4, kosten_je_100km=None, kwh_je_100km=None)), "jahr")
+        self.assertIsNone(k["kosten_je_100km"])
+
+
+class TestLadungen(unittest.TestCase):
+    def setUp(self):
+        ln._CACHE.clear()
+
+    def test_liste_ohne_koordinaten(self):
+        pv = Pv({"ok": True, "seite": 0, "mehr": True, "ladungen": [
+            {"id": 5, "start": 1792651200000, "ende": 1792654800000, "dc": True, "kwh": 31.2, "rate": -1, "kosten": -1, "waehrung": "EUR",
+             "quelle": "fehlt", "tarifName": None, "ort": None, "lat": 47.1, "lng": 15.4},
+            {"id": 6, "start": 1792560000000, "dc": False, "kwh": 18.4, "rate": 0, "kosten": 0, "quelle": "tarif", "tarifName": "Zuhause", "ort": "Garage"}],
+            "monate": [{"monat": "2026-10", "ladungen": 2, "kwh": 49.6, "kosten": 0, "ohne_preis": 1, "vollstaendig": False}]})
+        d = ln.ladungen(pv, 0, jetzt_ms=1792700000000)
+        self.assertTrue(pv.pfade[0].startswith("/api/laden/ladungen?von="))
+        self.assertIn("seite=0&anzahl=50", pv.pfade[0])
+        self.assertNotIn("lat", str(d))
+        a, b = d["ladungen"]
+        self.assertEqual((a["rate"], a["kosten"], a["quelle"], a["ort"]), (None, None, "fehlt", ""))
+        self.assertEqual((b["kosten"], b["ort"], b["tarif"]), (0, "Garage", "Zuhause"))
+        self.assertEqual(d["monate"][0]["vollstaendig"], False)
+        self.assertTrue(d["mehr"])
+
+
 if __name__ == "__main__":
     unittest.main()
