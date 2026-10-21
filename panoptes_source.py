@@ -91,6 +91,13 @@ def aus_telemetrie(t):
     dl = t.get("door_lock")
     if isinstance(dl, list) and dl:
         st["locked"] = "ON" if all(v == 1 for v in dl) else "OFF"
+    for ecke in ("fl", "fr", "rl", "rr"):                 # Reifendruck in kPa (wie die BYD-Cloud)
+        v = _zahl(t.get("tyre_p_" + ecke))
+        if v is not None and 50 <= v <= 600:
+            st["tyre_" + ecke] = v
+    v = _zahl(t.get("consumption_50km"))                  # gleitender Verbrauch der letzten 50 km, kWh/100 km
+    if v is not None and 5 <= v <= 60:
+        st["consumption_avg"] = v
     return st
 
 
