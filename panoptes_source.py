@@ -20,20 +20,27 @@ class NichtAngemeldet(Exception):
     pass
 
 
-def _http(url, daten=None, jwt="", timeout=TIMEOUT):
+def _http(url, daten=None, jwt="", timeout=TIMEOUT, methode=None):
     kopf = {"Accept": "application/json", "User-Agent": "ev-cockpit"}
     if daten is not None:
         kopf["Content-Type"] = "application/json"
     if jwt:
         kopf["Authorization"] = "Bearer " + jwt
     req = urllib.request.Request(url, data=json.dumps(daten).encode() if daten is not None else None,
-                                 method="POST" if daten is not None else "GET", headers=kopf)
+                                 method=methode or ("POST" if daten is not None else "GET"), headers=kopf)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.loads(r.read().decode("utf-8") or "{}")
     except urllib.error.HTTPError as e:
         if e.code == 401:
             raise NichtAngemeldet()
+        if e.code in (403, 409):          # Einstellungen: veraltet / nicht erlaubt -> Antwort mit Grund zurueckgeben
+            try:
+                d = json.loads(e.read().decode("utf-8") or "{}")
+            except Exception:
+                d = {}
+            d["_status"] = e.code
+            return d
         raise
 
 
@@ -189,3 +196,20 @@ def identitaet(p):
         return kennung_aus(p._get("/api/planer/identitaet"))
     except Exception:
         return ""
+
+
+# ---- Einstellungen (Vertrag EINSTELLUNGEN_SCHEMA.md v1). Nur gespeicherte Werte - KEINE Befehle ans Auto (Regel A).
+def einstellungen_lesen(p, sprache="de"):
+    sprache = sprache if sprache in ("de", "en", "fr", "it", "nl") else "de"
+    return {"schema": p._get("/api/einstellungen/schema?sprache=" + sprache), "werte": p._get("/api/einstellungen")}
+
+
+def einstellungen_schreiben(p, body):
+    """PUT /api/einstellungen mit {etag, werte, bestaetigt?}. Liefert die Antwort des Kerns (409 -> _status 409)."""
+    if not p.jwt:
+        p._anmelden()
+    try:
+        return p.http(p.url + "/api/einstellungen", daten=body, jwt=p.jwt, methode="PUT")
+    except NichtAngemeldet:
+        p._anmelden()
+        return p.http(p.url + "/api/einstellungen", daten=body, jwt=p.jwt, methode="PUT")

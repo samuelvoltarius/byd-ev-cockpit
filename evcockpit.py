@@ -396,6 +396,20 @@ def _ha_quelle_runde(cache):
     return True                       # bewusst KEIN _ha_publish: was aus HA kommt, nicht nach HA zurueck
 
 
+def _panoptes_verbindung():
+    """Gekoppeltes Panoptes oder None (JWT bleibt auf diesem Rechner)."""
+    if not (_CFG.get("panoptes") and _CFG.get("panoptes_url") and _CFG.get("panoptes_code")):
+        return None
+    from panoptes_source import Panoptes
+    key = (_CFG.get("panoptes_url"), _CFG.get("panoptes_code"))
+    if _PANOPTES["key"] != key:
+        def merken(jwt):
+            _CFG["panoptes_jwt"] = jwt
+            save_cfg(_CFG)
+        _PANOPTES.update(key=key, obj=Panoptes(key[0], key[1], _CFG.get("panoptes_jwt", ""), jwt_gespeichert=merken))
+    return _PANOPTES["obj"]
+
+
 def _panoptes_runde(cache):
     """Eine Abfrage bei Panoptes im Auto. True = Daten kamen von dort (dann keine BYD-Cloud-Abfrage)."""
     if not (_CFG.get("panoptes") and _CFG.get("panoptes_url") and _CFG.get("panoptes_code")):
@@ -1310,6 +1324,77 @@ small{color:var(--mut)}
  Kartendaten © OpenStreetMap-Mitwirkende.
 </div>
 </div></body></html>"""
+
+
+# ---------------------------------------------------------------- Panoptes-Einstellungen (HTML)
+# Generisch aus GET /api/einstellungen/schema (Vertrag EINSTELLUNGEN_SCHEMA.md) - keine eigene Feldliste.
+PANOPTES_SEITE = r"""<!doctype html><html lang=de><head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1"><title>EV-Cockpit — Panoptes-Einstellungen</title>
+<style>
+body{margin:0;color:#EAF6F8;font:15px/1.5 system-ui,sans-serif}.w{max-width:760px;margin:0 auto;padding:22px 16px 80px}
+a{color:#5FD6E6}.card{background:rgba(255,255,255,.04);border:1px solid rgba(160,230,240,.16);border-radius:16px;padding:14px 16px;margin:14px 0}
+h1{font-size:24px;margin:.2em 0}h2{font-size:17px;margin:0 0 8px}.f{padding:10px 0;border-top:1px solid rgba(160,230,240,.08)}
+.f:first-of-type{border-top:0}.t{font-weight:600}.h{color:#A9C7CE;font-size:13px;margin-top:2px}
+input,select{background:rgba(0,0,0,.25);color:#EAF6F8;border:1px solid rgba(160,230,240,.22);border-radius:8px;padding:7px 9px;font-size:14px;margin-top:6px}
+input[type=checkbox]{width:20px;height:20px}.lock{color:#A9C7CE;font-size:12.5px}.err{color:#FFC266;font-size:13px}
+.ok{color:#B5F23D}.leiste{position:sticky;bottom:0;background:#071a2b;padding:12px 0;display:flex;gap:10px;align-items:center}
+button{background:#B5F23D;color:#1d2a00;font-weight:700;border:0;border-radius:12px;padding:10px 16px;cursor:pointer}
+.best{background:rgba(255,194,102,.08);border:1px solid rgba(255,194,102,.35);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px}
+</style></head><body><div class=w>
+<a href="/">← Cockpit</a>
+<h1>📡 Panoptes-Einstellungen</h1>
+<div class=h>Direkt aus Panoptes in deinem Auto. Hier ändern sich nur gespeicherte Einstellungen — am Auto wird dadurch nichts ausgelöst.
+Fernzugang, Login, Ports und adb siehst du hier nur; ändern lassen sie sich aus Sicherheitsgründen nur im Auto.</div>
+<div id=inhalt><div class=card>⏳ Frage Panoptes …</div></div>
+<div class=leiste><button id=speichern onclick="speichern()" disabled>Speichern</button><span id=msg class=h></span></div>
+</div>
+<script>
+const SPR=(window.__LANG__==='en')?'en':'de';let STAND=null,AEND={},BEST=new Set();
+const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const wert=k=>((STAND.werte||{}).werte||{})[k]||{};
+function sichtbar(f){const n=f.nurWenn;if(!n)return true;if(n.key)return (k=>k in AEND?AEND[k]:wert(k).wert)(n.key)===n.gleich;
+ if('sichtbar' in f)return !!f.sichtbar;return false;}
+function feldHtml(f){const w=wert(f.key),v=(f.key in AEND)?AEND[f.key]:w.wert,lock=!!f.nurLesendExtern,
+ id='f_'+f.key.replace(/[^a-zA-Z0-9]/g,'_'),dis=lock?' disabled':'';let e='';
+ if(f.typ==='bool')e='<input type=checkbox id='+id+(v?' checked':'')+dis+' onchange="setze(\''+f.key+'\',this.checked)">';
+ else if(f.typ==='int'||f.typ==='zahl')e='<input type=number id='+id+' value="'+esc(v??f.standard??'')+'"'+(f.min!=null?' min='+f.min:'')+(f.max!=null?' max='+f.max:'')+
+  (f.schritt?' step='+f.schritt:(f.typ==='int'?' step=1':' step=any'))+dis+' onchange="setze(\''+f.key+'\',this.value===\'\'?null:Number(this.value))"> '+esc(f.einheit||'');
+ else if(f.typ==='auswahl')e='<select id='+id+dis+' onchange="setze(\''+f.key+'\',this.value)">'+(v==null?'<option value="">— bitte wählen —</option>':'')+
+  (f.optionen||[]).map(o=>'<option value="'+esc(o.wert)+'"'+(o.wert===v?' selected':'')+(o.gesperrt?' disabled':'')+'>'+esc(o.titel||o.wert)+(o.gesperrt&&o.gesperrtGrund?' ('+esc(o.gesperrtGrund)+')':'')+'</option>').join('')+'</select>';
+ else if(f.typ==='zeit')e='<input type=time id='+id+' value="'+esc(v||'')+'"'+dis+' onchange="setze(\''+f.key+'\',this.value)">';
+ else if(f.typ==='farbe')e='<input type=color id='+id+' value="'+esc(v||'#000000')+'"'+dis+' onchange="setze(\''+f.key+'\',this.value)">';
+ else if(f.typ==='text')e='<input id='+id+' value="'+esc(v??'')+'"'+dis+' onchange="setze(\''+f.key+'\',this.value)">';
+ else if(f.typ==='geheim')e='<input type=password id='+id+' placeholder="'+(w.gesetzt?'••••••• (gesetzt — leer lassen zum Behalten)':'nicht gesetzt')+'"'+dis+' onchange="if(this.value)setze(\''+f.key+'\',this.value)">';
+ else e='<div class=h>'+(Array.isArray(v)?v.length+' Einträge':'')+' — bearbeiten im Auto oder im Panoptes-Web.</div>';
+ const best=f.bestaetigung&&(f.key in AEND)?'<div class=best><label><input type=checkbox onchange="this.checked?BEST.add(\''+f.key+'\'):BEST.delete(\''+f.key+'\')"> '+
+  esc(f.bestaetigungText||'Ich habe den Hinweis zu dieser Einstellung gelesen und bestätige ihn.')+'</label></div>':'';
+ return '<div class=f><div class=t>'+esc(f.titel||f.key)+(f.gefahr?' ⚠️':'')+'</div>'+(f.hilfe?'<div class=h>'+esc(f.hilfe)+'</div>':'')+e+
+  (lock?'<div class=lock>🔒 nur im Auto änderbar</div>':'')+(f.neustartNoetig?'<div class=lock>↻ wirkt nach einem Neustart von Panoptes</div>':'')+best+
+  '<div class=err id=e_'+id+'></div></div>';}
+function zeichne(){const g=(STAND.schema||{}).gruppen||[];
+ document.getElementById('inhalt').innerHTML=g.slice().sort((a,b)=>(a.reihenfolge||0)-(b.reihenfolge||0)).map(x=>{
+  const ff=(x.felder||[]).filter(sichtbar);if(!ff.length)return '';
+  return '<div class=card><h2>'+esc(x.titel||x.id)+'</h2>'+ff.map(feldHtml).join('')+'</div>';}).join('')||'<div class=card>Keine Einstellungen.</div>';
+ document.getElementById('speichern').disabled=!Object.keys(AEND).length;}
+function setze(k,v){const f=((STAND.schema.gruppen||[]).flatMap(g=>g.felder||[])).find(x=>x.key===k);
+ if(f&&f.gefahr&&!confirm('Diese Einstellung verändert sichtbares Verhalten am Auto. Wirklich ändern?')){zeichne();return;}
+ AEND[k]=v;zeichne();}
+async function laden(){try{const d=await (await fetch('/panoptes/einstellungen?sprache='+SPR,{cache:'no-store'})).json();
+ if(!d.gekoppelt){document.getElementById('inhalt').innerHTML='<div class=card>Panoptes ist nicht gekoppelt. Koppeln: Einstellungen → Datenquelle → Panoptes im Auto.</div>';return;}
+ if(d.fehler){document.getElementById('inhalt').innerHTML='<div class=card>⚠️ '+esc(d.fehler)+'</div>';return;}
+ STAND=d;AEND={};BEST=new Set();zeichne();}catch(e){document.getElementById('inhalt').innerHTML='<div class=card>⚠️ '+esc(e)+'</div>';}}
+async function speichern(){const m=document.getElementById('msg');m.textContent='⏳ Speichere …';
+ try{const r=await (await fetch('/panoptes/einstellungen',{method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({sprache:SPR,etag:(STAND.werte||{}).etag,werte:AEND,bestaetigt:[...BEST]})})).json();
+  if(r.grund==='veraltet'){m.textContent='⚠️ Inzwischen wurde im Auto etwas geändert — neu geladen, bitte nochmal.';await laden();return;}
+  const fe=r.fehler||{};if(r.neu){STAND=Object.assign({},r.neu,{gekoppelt:true});}
+  AEND=Object.fromEntries(Object.entries(AEND).filter(([k])=>k in fe));zeichne();
+  Object.entries(fe).forEach(([k,g])=>{const el=document.getElementById('e_f_'+k.replace(/[^a-zA-Z0-9]/g,'_'));if(el)el.textContent='⚠️ '+g;});
+  const n=Object.keys(r.gespeichert||{}).length;
+  m.innerHTML=(n?'<span class=ok>✅ '+n+' gespeichert und im Auto nachgelesen.</span> ':'')+(Object.keys(fe).length?'⚠️ '+Object.keys(fe).length+' nicht übernommen.':'');
+ }catch(e){m.textContent='⚠️ '+e;}}
+laden();
+</script></body></html>"""
 
 
 # ---------------------------------------------------------------- Assistent (HTML)
@@ -2244,6 +2329,7 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
   </div>
  </div>
 
+ <a id=panoptes-link href="/panoptes" style="display:none;margin:6px 0 12px;font-weight:600;color:var(--blue)">📡 Panoptes-Einstellungen</a>
  <div id=planerbox style="display:none">
   <div class=sect>ROUTENPLANER</div>
   <div class=tile style="padding:14px 16px">
@@ -2646,6 +2732,7 @@ async function load(){
       esc(c.name)+'</a></div>'+(d?'<div class=sub>'+esc(d)+'</div>':'')+'</div><div class=km>'+c.km+' km</div></div>';
    }).join('');}
  }
+ const pl=document.getElementById('panoptes-link');if(pl)pl.style.display=s.panoptes_an?'inline-block':'none';
  // Routenplaner
  if(s.planer&&s.planer.an){
   document.getElementById('planerbox').style.display='block';
@@ -3227,6 +3314,21 @@ class H(BaseHTTPRequestHandler):
                 self._send(Path(modell3d.datei(m, str(MODELL_DIR))).read_bytes(), "model/gltf-binary")
             except Exception:
                 self._send(b"", "text/plain", 404)
+        elif p == "/panoptes":
+            self._send(_i18n(PANOPTES_SEITE))
+        elif p == "/panoptes/einstellungen":
+            # Alle Panoptes-Einstellungen, generisch aus dem Schema des Kerns (nur mit Kopplung)
+            pv = _panoptes_verbindung()
+            if pv is None:
+                return self._send(json.dumps({"gekoppelt": False}), "application/json")
+            try:
+                from panoptes_source import einstellungen_lesen
+                q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+                d = einstellungen_lesen(pv, (q.get("sprache") or ["de"])[0])
+                self._send(json.dumps(dict(d, gekoppelt=True)), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"gekoppelt": True, "fehler": "Panoptes im Auto nicht erreichbar (%s)" % type(e).__name__}),
+                           "application/json")
         elif p == "/about":
             self._send(_i18n(ABOUT.replace("__VERSION__", VERSION)))
         elif p == "/local/capabilities":
@@ -3338,6 +3440,7 @@ class H(BaseHTTPRequestHandler):
                 d["silhouette"] = BODY_TYPE.get(_CFG.get("model") or "", "klein")
             d["lan_url"] = ("http://%s:%d" % (lan_ip(), WEBPORT)) if _CFG.get("lan") else ""
             d["sentry_on"] = bool(_CFG.get("sentry"))
+            d["panoptes_an"] = bool(_CFG.get("panoptes") and _CFG.get("panoptes_url"))
             d["planer"] = dict(_PLANER.status if _PLANER else {},
                                an=bool(_CFG.get("planer") and _CFG.get("planer_token")))
             if _MSG["text"] and time.time() - _MSG["ts"] < 120:
@@ -3407,6 +3510,34 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": True, "farbe": _CFG["lackfarbe"]}), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "error": str(e)[:120]}), "application/json")
+        elif u.path == "/panoptes/einstellungen":
+            # Speichern: nur geaenderte, erlaubte Felder (nurLesendExtern NIE), dann zuruecklesen.
+            pv = _panoptes_verbindung()
+            try:
+                if pv is None:
+                    raise ValueError("Panoptes ist nicht gekoppelt")
+                import einstellungen
+                from panoptes_source import einstellungen_lesen, einstellungen_schreiben
+                b = json.loads(raw)
+                sprache = b.get("sprache") or "de"
+                stand = einstellungen_lesen(pv, sprache)
+                body, lokal = einstellungen.vorbereiten(stand["schema"], stand["werte"], b.get("werte") or {},
+                                                        b.get("bestaetigt") or [])
+                antwort = {"ok": not lokal, "fehler": dict(lokal), "gespeichert": {}}
+                if body["werte"]:
+                    if b.get("etag") and b["etag"] != (stand["werte"] or {}).get("etag"):
+                        antwort = {"ok": False, "grund": "veraltet", "fehler": dict(lokal), "gespeichert": {}}
+                    else:
+                        r = einstellungen_schreiben(pv, body)
+                        if r.get("_status") == 409:
+                            antwort = {"ok": False, "grund": "veraltet", "fehler": dict(lokal), "gespeichert": {}}
+                        else:
+                            antwort = {"ok": bool(r.get("ok")) and not lokal, "gespeichert": r.get("gespeichert") or {},
+                                       "fehler": dict(lokal, **(r.get("fehler") or {}))}
+                antwort["neu"] = einstellungen_lesen(pv, sprache)        # zuruecklesen
+                self._send(json.dumps(antwort), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "grund": str(e)[:160]}), "application/json")
         elif u.path == "/live/umkreis":
             # Live-Belegung fuer die Community-Karte: nur mit Haekchen "Ladesaeulen" und Community-Karte.
             # Der Planer bekommt nur den auf ~5 km gerundeten Kartenmittelpunkt, per POST (kein Log).
