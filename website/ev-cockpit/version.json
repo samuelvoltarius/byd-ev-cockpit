@@ -1,5 +1,5 @@
 {
-  "version": "1.9.8",
-  "was_neu": "Abfrage-Takt beim Auto einstellbar (Minuten oder nur von Hand), Pause bei verborgenem Tab, Akkugröße vom Auto",
+  "version": "1.10.0",
+  "was_neu": "Routenplaner im Cockpit: Start an deinem Auto, Ladestopps, Ankunft mit X %, Daten nur auf Klick",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }

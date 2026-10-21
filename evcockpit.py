@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.9.8"
+VERSION = "1.10.0"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -848,6 +848,21 @@ _ROUTE = {"t": 0.0, "d": None, "fehler": ""}
 _PAN_ID = {"t": 0.0, "auto": ""}
 
 
+_RPLAN = {}                    # letzte berechnete Route, nur im Arbeitsspeicher (fuer "Ins Auto schicken")
+_PROFIL = {"t": 0.0, "name": ""}
+
+
+def _planer_profil(tok):
+    """Fahrzeugprofil fuer den Planer: im Assistenten gewaehlt, sonst das zum Modell passende (stuendlich neu)."""
+    if _CFG.get("planer_fahrzeug"):
+        return _CFG["planer_fahrzeug"]
+    if not _PROFIL["name"] or time.time() - _PROFIL["t"] > 3600:
+        import planer_bridge as pb
+        _PROFIL.update(t=time.time(), name=pb.passendes_profil(pb.fahrzeuge(tok), _CFG.get("model"),
+                                                              float(_CFG.get("battery_kwh") or 0)))
+    return _PROFIL["name"]
+
+
 def _planer_kennung():
     """Welche auto-Kennung beim Planer gilt: mit Panoptes gekoppelt die von Panoptes (dieselbe Route und
     Rueckmeldung wie im Auto, stuendlich nachgefragt), sonst die eigene des Cockpits."""
@@ -1301,7 +1316,7 @@ _I18N.update({
     "FAHRZEUGE & LADEPUNKTE": "VEHICLES & CHARGE POINTS", "PV-Erzeugung": "Solar production",
     "Netz": "Grid", "Speicher": "Battery", "Hausverbrauch": "Home consumption",
     "Netzpreis": "Grid tariff", "Grünstromanteil": "Green energy share",
-    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette", "Wie oft beim Auto nachfragen?": "How often to ask the car?", "Geparkt": "Parked", "Bei Fahrt bzw. Laden": "While driving or charging", "nur manuell": "manual only", "Jede Abfrage weckt die App im Auto. Ist dieser Tab verborgen, wird pausiert.": "Every query wakes the app in the car. While this tab is hidden, queries pause.", "Nach jedem Antippen kurz alle 5 s (höchstens 60 s), dann wieder der gewählte Takt.": "After each tap briefly every 5 s (at most 60 s), then back to the chosen interval.", "Akku nutzbar in kWh": "Usable battery in kWh", "vom Auto": "from the car", "von dir eingetragen": "entered by you", "Mit Panoptes wird der Wert vom Auto übernommen.": "With Panoptes the value is taken from the car.", "lernt aus deinen Fahrten": "learns from your trips", "liefert diese Datenquelle nicht": "not provided by this data source", "Ich habe den Hinweis gelesen und verstanden.": "I have read and understood the notice.", "Deine Passwörter und Schlüssel liegen unverschlüsselt in der Einstellungsdatei (nur für deinen Benutzer lesbar), weil hier kein Schlüsselbund verfügbar ist. Unter Linux hilft das Paket „libsecret-tools“ (secret-tool) mit einem laufenden Schlüsselbund.": "Your passwords and keys are stored unencrypted in the settings file (readable only by your user) because no keyring is available here. On Linux, the package “libsecret-tools” (secret-tool) with a running keyring helps.", "Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust. Du entscheidest:": "Whoever delivers the map images sees your IP address and the area you look at. You decide:", "Keine Karte": "No map", "Es werden keine Kartenbilder geladen.": "No map images are loaded.", "Kartenbilder von OpenStreetMap (fremder Dienst).": "Map images from OpenStreetMap (third-party service).", "Community-Karte": "Community map", "Dieselbe Karte wie im Planer und in der Panoptes-App, vom Server der BYD-Community (byd.serveone.at). Nur damit gibt es die Live-Belegung der Ladesäulen.": "The same map as in the planner and the Panoptes app, from the BYD community server (byd.serveone.at). Live charger availability only works with it.", "Karte anzeigen?": "Show the map?", "Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust.": "Whoever delivers the map images sees your IP address and the area you look at.", "Neu: Karte und 3D-Modell sind freiwillig": "New: map and 3D model are optional", "Beides lädt Daten von fremden Servern; die sehen dabei deine IP-Adresse (und bei der Karte die Gegend, beim 3D-Modell dein Automodell). Ohne deine Wahl bleibt beides aus.": "Both load data from other servers, which see your IP address (and the area for the map, your car model for the 3D model). Without your choice both stay off.", "Karte": "Map", "Dein Auto in 3D (vom Community-Server)": "Your car in 3D (from the community server)", "Speichern": "Save", "Dieselbe Karte wie im Planer und in der Panoptes-App. Die Kartenkacheln deiner Gegend lädt dann der Server der BYD-Community (byd.serveone.at); er sieht dabei deine IP-Adresse und den Kartenausschnitt. Ohne Haken lädt sie OpenStreetMap.": "The same map as in the planner and the Panoptes app. The map tiles for your area are then loaded from the BYD community server (byd.serveone.at); it sees your IP address and the map area. Without the tick, OpenStreetMap loads them.", "🚗 Dein Auto in 3D": "🚗 Your car in 3D", "Lädt einmal das 3D-Modell deines Autos vom Server der BYD-Community (byd.serveone.at). Der Server sieht dabei deine IP-Adresse und welches Modell du fährst. Ohne Haken: neutrale Silhouette oder dein Foto.": "Loads your car's 3D model once from the BYD community server (byd.serveone.at). The server sees your IP address and which model you drive. Without the tick: a neutral silhouette or your photo.", "Zeigt öffentliche Ladestationen am Standort deines Autos mit Entfernung und Steckertyp. Dafür geht die Position deines Autos an OpenStreetMap (Overpass-Dienst) oder an deinen eigenen OpenGlance-Server, wenn du ihn unten einträgst. Mit der Community-Karte kommt die Live-Belegung dazu: dafür geht nur die Kartenmitte, auf etwa 5 km gerundet, an den Server der BYD-Community.": "Shows public chargers at your car's location with distance and connector type. For this, your car's position is sent to OpenStreetMap (Overpass service) or to your own OpenGlance server if you enter it below. With the community map, live availability is added: only the map centre, rounded to about 5 km, goes to the BYD community server.", "Kurz vorab": "Quick note first", "Das EV-Cockpit ist ein privates Freizeitprojekt, kostenlos und ohne Gewähr. Du nutzt es auf eigenes Risiko, nur privat. Es verwendet dein BYD-Konto, Home Assistant oder deine Wallbox so, wie du es einstellst. Für Fernbefehle (z. B. Klima, Zusperren) und Ladebefehle an die Wallbox bist du selbst verantwortlich. Werte wie Ladestand, Reichweite und Preise können abweichen. Das EV-Cockpit ist nicht mit BYD verbunden.": "EV-Cockpit is a private hobby project, free and without warranty. You use it at your own risk, for private use only. It uses your BYD account, Home Assistant or your wallbox as you configure it. You are responsible for remote commands (e.g. climate, locking) and charging commands to your wallbox. Values such as charge level, range and prices may be inaccurate. EV-Cockpit is not affiliated with BYD.", "Alle Hinweise lesen": "Read all notes", "Gelesen und einverstanden": "Read and agreed", "Bitte bestätige die Hinweise, um fortzufahren.": "Please confirm the notes to continue.", "Freizeitprojekt.": "Hobby project.", "Panoptes, das EV-Cockpit und der Routenplaner sind ein privates Freizeitprojekt von Alfred Aigner. Sie werden kostenlos und ohne Gewähr angeboten.": "Panoptes, EV-Cockpit and the route planner are a private hobby project by Alfred Aigner. They are provided free of charge and without warranty.", "Ohne Gewähr.": "No warranty.", "Es gibt keine Garantie, dass alles fehlerfrei, vollständig oder jederzeit verfügbar ist. Das gilt auch für Ladestände, Reichweiten, Preise, Belegung von Ladesäulen, Routen, Blitzer- und Gefahrenhinweise. Prüfe Wichtiges selbst; im Straßenverkehr gilt immer, was du siehst und was die Schilder sagen.": "There is no guarantee that everything is correct, complete or always available. This includes charge levels, range, prices, charger availability, routes, speed camera and hazard warnings. Check anything important yourself; on the road, what you see and the road signs always come first.", "Eigenes Risiko.": "Your own risk.", "Du nutzt alles auf eigenes Risiko. Soweit gesetzlich zulässig, übernimmt Alfred Aigner keine Haftung für Schäden, die aus der Nutzung entstehen, auch nicht für Schäden am Fahrzeug, an Daten oder durch Fernbefehle.": "You use everything at your own risk. To the extent permitted by law, Alfred Aigner accepts no liability for any damage resulting from its use, including damage to your vehicle, to data, or caused by remote commands.", "Du bist verantwortlich.": "You are responsible.", "Du allein entscheidest, wie du die Funktionen einsetzt, und bist dafür verantwortlich, dass das erlaubt ist. Das betrifft vor allem Datenschutz, Kamera-Aufnahmen, Fernbefehle über das BYD-Konto und die Regeln im Straßenverkehr.": "You alone decide how you use the features, and you are responsible for making sure that use is legal. This applies especially to data protection, camera recordings, remote commands via your BYD account, and traffic rules.", "Nur privat.": "Private use only.", "Gedacht ist alles nur für die private Nutzung mit deinem eigenen Fahrzeug. Ein gewerblicher Einsatz (z. B. Flotten, Vermietung, Taxi, Firmenwagen-Überwachung) ist nicht vorgesehen.": "Everything is intended for private use with your own vehicle only. Commercial use (e.g. fleets, rental, taxi, monitoring company cars) is not intended.", "Wächter nur auf eigenem Grund.": "Guardian on your own property only.", "Kamera-Aufnahmen des Wächters sind für deinen eigenen Privatgrund gedacht (z. B. Garage, Einfahrt). Richte die Kameras so aus, dass weder öffentlicher Raum (Straße, Gehweg, öffentlicher Parkplatz) noch das Grundstück der Nachbarn erfasst wird. Aufnahmen nicht veröffentlichen.": "Guardian recordings are intended for your own private property (e.g. garage, driveway). Point the cameras so that neither public space (street, pavement, public car park) nor your neighbours' property is captured. Do not publish recordings.", "Nicht von BYD.": "Not BYD.", "Dieses Projekt ist nicht mit BYD verbunden und wird von BYD weder unterstützt noch geprüft. „BYD“, „DiLink“ und alle anderen genannten Namen und Marken gehören ihren jeweiligen Inhabern.": "This project is not affiliated with BYD and is not supported or reviewed by BYD. “BYD”, “DiLink” and all other names and trademarks mentioned belong to their respective owners.", "Gesetzliche Rechte bleiben.": "Your legal rights remain.", "Die Haftung für Vorsatz und grobe Fahrlässigkeit, für Personenschäden sowie zwingende Rechte von Verbraucherinnen und Verbrauchern werden durch diese Hinweise nicht eingeschränkt.": "Liability for intent and gross negligence, for personal injury, and mandatory consumer rights are not limited by these notes.", "🔗 Mit Panoptes verbinden": "🔗 Connect to Panoptes", "Bestätige in Telegram oder hier:": "Confirm in Telegram or here:", "will sich verbinden. Prüfzahl:": "wants to connect. Check number:", "Panoptes öffnen („Gekoppelte Geräte“)": "Open Panoptes (“Paired devices”)", "Vergleiche die Prüfzahl und tippe auf „Erlauben“. Die Anfrage gilt 2 Minuten.": "Compare the check number and tap “Allow”. The request is valid for 2 minutes.", "Erweitert: mit Kopplungs-Code oder Link": "Advanced: with pairing code or link", "Kopplungs-Code oder Link aus Panoptes („Neues Gerät koppeln“, 10 min gültig, einmal verwendbar)": "Pairing code or link from Panoptes (“Pair new device”, valid 10 min, single use)", "482913 oder https://…/system.html#koppeln=…": "482913 or https://…/system.html#koppeln=…", "🔗 Mit Routenplaner verbinden": "🔗 Connect to route planner", "Im Browser bestätigen:": "Confirm in your browser:", "Code": "Code", "Routenplaner öffnen und erlauben": "Open route planner and allow", "Melde dich dort als Mitglied an und tippe auf „Erlauben“. Der Code gilt 10 Minuten.": "Sign in there as a member and tap “Allow”. The code is valid for 10 minutes.", "Erweitert: mit persönlichem Planer-Link": "Advanced: with your personal planner link", "Warte auf „Erlauben“ …": "Waiting for “Allow” …", "Verbunden": "Connected", "Ladestand ": "charge level ", "Mit dem Routenplaner verbunden": "Connected to the route planner", "Schon gekoppelt. Nur neu verbinden, wenn die Kopplung in Panoptes entfernt wurde.": "Already paired. Only connect again if the pairing was removed in Panoptes.", "3D-Modell nicht geladen": "3D model not loaded", "Erneut versuchen": "Try again", "3D-Modell wird geladen …": "Loading 3D model …", "Laden fehlgeschlagen": "Loading failed", "Dieser Browser kann kein WebGL": "This browser has no WebGL",
+    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette", "Start": "Start", "Ziel": "Destination", "Akku jetzt": "Battery now", "Ankunft mind.": "Arrive with at least", "Wie": "How", "ausgewogen": "balanced", "günstig": "cheap", "schnell": "fast", "🗺️ Route berechnen": "🗺️ Calculate route", "Start und Ziel gehen nur beim Klick auf „Route berechnen“ an den Routenplaner (byd.serveone.at) – das ist die Anfrage selbst. Kein Dauerversand, nichts im Hintergrund. Die Ortssuche fragt nur, während du tippst.": "Start and destination are sent to the route planner (byd.serveone.at) only when you click “Calculate route” – that is the request itself. Nothing is sent continuously or in the background. Place search only asks while you type.", "📤 Ins Auto schicken": "📤 Send to car", "„Ins Auto schicken“ legt nur die Route beim Routenplaner ab; Panoptes im Auto holt sie dort ab. Am Fahrzeug wird nichts ausgelöst – kein Befehl, keine Navigation startet von selbst.": "“Send to car” only stores the route with the route planner; Panoptes in the car picks it up there. Nothing is triggered on the vehicle – no command, no navigation starts by itself.", "Nichts gefunden": "Nothing found", "Bitte ein Ziel aus der Liste wählen": "Please choose a destination from the list", "Bitte einen Start aus der Liste wählen oder das Feld leeren (dann gilt dein Auto)": "Please choose a start from the list or clear the field (then your car is used)", "⏳ Frage den Routenplaner …": "⏳ Asking the route planner …", "vom Auto": "from the car", "Fahrt": "driving", "Ladestopp": "charging stop", "Ladestopps": "charging stops", "Ankunft mit": "Arrival with", "Deine Ladevorlieben gelten": "Your charging preferences apply", "Ladevorlieben (z. B. nur bestimmte Ladenetze) stellst du im Planer-Konto ein": "Charging preferences (e.g. only certain networks) are set in your planner account", "Konto-Einstellungen": "Account settings", "Profil": "Profile", "nach": "after", "Kein Ladestopp nötig.": "No charging stop needed.", "nur": "only", "bevorzugt": "preferred", "Umweg bis": "detour up to", "nur wenn bei Ankunft geöffnet": "only if open on arrival", "ohne Kartenbilder (keine Kartenquelle gewählt)": "without map images (no map source chosen)", "⚪ Start · 🟢 Ladestopp · 🟠 Ziel": "⚪ start · 🟢 charging stop · 🟠 destination", "Route liegt im Planer bereit – Panoptes im Auto holt sie ab.": "Route is ready in the planner – Panoptes in the car picks it up.", "Öffnungszeit unbekannt": "opening hours unknown", "rund um die Uhr geöffnet": "open 24/7", "offen bis": "open until", "bei Ankunft geschlossen": "closed on arrival", "ROUTE": "ROUTE", "Route": "Route", "📍 Mein Auto": "📍 My car", "Ort, Adresse, Link oder Plus Code": "Place, address, link or Plus Code", "Keine Autoposition bekannt – bitte einen Start eingeben": "No car position known – please enter a start", "Bitte zuerst eine Route berechnen": "Please calculate a route first", "Wie oft beim Auto nachfragen?": "How often to ask the car?", "Geparkt": "Parked", "Bei Fahrt bzw. Laden": "While driving or charging", "nur manuell": "manual only", "Jede Abfrage weckt die App im Auto. Ist dieser Tab verborgen, wird pausiert.": "Every query wakes the app in the car. While this tab is hidden, queries pause.", "Nach jedem Antippen kurz alle 5 s (höchstens 60 s), dann wieder der gewählte Takt.": "After each tap briefly every 5 s (at most 60 s), then back to the chosen interval.", "Akku nutzbar in kWh": "Usable battery in kWh", "vom Auto": "from the car", "von dir eingetragen": "entered by you", "Mit Panoptes wird der Wert vom Auto übernommen.": "With Panoptes the value is taken from the car.", "lernt aus deinen Fahrten": "learns from your trips", "liefert diese Datenquelle nicht": "not provided by this data source", "Ich habe den Hinweis gelesen und verstanden.": "I have read and understood the notice.", "Deine Passwörter und Schlüssel liegen unverschlüsselt in der Einstellungsdatei (nur für deinen Benutzer lesbar), weil hier kein Schlüsselbund verfügbar ist. Unter Linux hilft das Paket „libsecret-tools“ (secret-tool) mit einem laufenden Schlüsselbund.": "Your passwords and keys are stored unencrypted in the settings file (readable only by your user) because no keyring is available here. On Linux, the package “libsecret-tools” (secret-tool) with a running keyring helps.", "Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust. Du entscheidest:": "Whoever delivers the map images sees your IP address and the area you look at. You decide:", "Keine Karte": "No map", "Es werden keine Kartenbilder geladen.": "No map images are loaded.", "Kartenbilder von OpenStreetMap (fremder Dienst).": "Map images from OpenStreetMap (third-party service).", "Community-Karte": "Community map", "Dieselbe Karte wie im Planer und in der Panoptes-App, vom Server der BYD-Community (byd.serveone.at). Nur damit gibt es die Live-Belegung der Ladesäulen.": "The same map as in the planner and the Panoptes app, from the BYD community server (byd.serveone.at). Live charger availability only works with it.", "Karte anzeigen?": "Show the map?", "Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust.": "Whoever delivers the map images sees your IP address and the area you look at.", "Neu: Karte und 3D-Modell sind freiwillig": "New: map and 3D model are optional", "Beides lädt Daten von fremden Servern; die sehen dabei deine IP-Adresse (und bei der Karte die Gegend, beim 3D-Modell dein Automodell). Ohne deine Wahl bleibt beides aus.": "Both load data from other servers, which see your IP address (and the area for the map, your car model for the 3D model). Without your choice both stay off.", "Karte": "Map", "Dein Auto in 3D (vom Community-Server)": "Your car in 3D (from the community server)", "Speichern": "Save", "Dieselbe Karte wie im Planer und in der Panoptes-App. Die Kartenkacheln deiner Gegend lädt dann der Server der BYD-Community (byd.serveone.at); er sieht dabei deine IP-Adresse und den Kartenausschnitt. Ohne Haken lädt sie OpenStreetMap.": "The same map as in the planner and the Panoptes app. The map tiles for your area are then loaded from the BYD community server (byd.serveone.at); it sees your IP address and the map area. Without the tick, OpenStreetMap loads them.", "🚗 Dein Auto in 3D": "🚗 Your car in 3D", "Lädt einmal das 3D-Modell deines Autos vom Server der BYD-Community (byd.serveone.at). Der Server sieht dabei deine IP-Adresse und welches Modell du fährst. Ohne Haken: neutrale Silhouette oder dein Foto.": "Loads your car's 3D model once from the BYD community server (byd.serveone.at). The server sees your IP address and which model you drive. Without the tick: a neutral silhouette or your photo.", "Zeigt öffentliche Ladestationen am Standort deines Autos mit Entfernung und Steckertyp. Dafür geht die Position deines Autos an OpenStreetMap (Overpass-Dienst) oder an deinen eigenen OpenGlance-Server, wenn du ihn unten einträgst. Mit der Community-Karte kommt die Live-Belegung dazu: dafür geht nur die Kartenmitte, auf etwa 5 km gerundet, an den Server der BYD-Community.": "Shows public chargers at your car's location with distance and connector type. For this, your car's position is sent to OpenStreetMap (Overpass service) or to your own OpenGlance server if you enter it below. With the community map, live availability is added: only the map centre, rounded to about 5 km, goes to the BYD community server.", "Kurz vorab": "Quick note first", "Das EV-Cockpit ist ein privates Freizeitprojekt, kostenlos und ohne Gewähr. Du nutzt es auf eigenes Risiko, nur privat. Es verwendet dein BYD-Konto, Home Assistant oder deine Wallbox so, wie du es einstellst. Für Fernbefehle (z. B. Klima, Zusperren) und Ladebefehle an die Wallbox bist du selbst verantwortlich. Werte wie Ladestand, Reichweite und Preise können abweichen. Das EV-Cockpit ist nicht mit BYD verbunden.": "EV-Cockpit is a private hobby project, free and without warranty. You use it at your own risk, for private use only. It uses your BYD account, Home Assistant or your wallbox as you configure it. You are responsible for remote commands (e.g. climate, locking) and charging commands to your wallbox. Values such as charge level, range and prices may be inaccurate. EV-Cockpit is not affiliated with BYD.", "Alle Hinweise lesen": "Read all notes", "Gelesen und einverstanden": "Read and agreed", "Bitte bestätige die Hinweise, um fortzufahren.": "Please confirm the notes to continue.", "Freizeitprojekt.": "Hobby project.", "Panoptes, das EV-Cockpit und der Routenplaner sind ein privates Freizeitprojekt von Alfred Aigner. Sie werden kostenlos und ohne Gewähr angeboten.": "Panoptes, EV-Cockpit and the route planner are a private hobby project by Alfred Aigner. They are provided free of charge and without warranty.", "Ohne Gewähr.": "No warranty.", "Es gibt keine Garantie, dass alles fehlerfrei, vollständig oder jederzeit verfügbar ist. Das gilt auch für Ladestände, Reichweiten, Preise, Belegung von Ladesäulen, Routen, Blitzer- und Gefahrenhinweise. Prüfe Wichtiges selbst; im Straßenverkehr gilt immer, was du siehst und was die Schilder sagen.": "There is no guarantee that everything is correct, complete or always available. This includes charge levels, range, prices, charger availability, routes, speed camera and hazard warnings. Check anything important yourself; on the road, what you see and the road signs always come first.", "Eigenes Risiko.": "Your own risk.", "Du nutzt alles auf eigenes Risiko. Soweit gesetzlich zulässig, übernimmt Alfred Aigner keine Haftung für Schäden, die aus der Nutzung entstehen, auch nicht für Schäden am Fahrzeug, an Daten oder durch Fernbefehle.": "You use everything at your own risk. To the extent permitted by law, Alfred Aigner accepts no liability for any damage resulting from its use, including damage to your vehicle, to data, or caused by remote commands.", "Du bist verantwortlich.": "You are responsible.", "Du allein entscheidest, wie du die Funktionen einsetzt, und bist dafür verantwortlich, dass das erlaubt ist. Das betrifft vor allem Datenschutz, Kamera-Aufnahmen, Fernbefehle über das BYD-Konto und die Regeln im Straßenverkehr.": "You alone decide how you use the features, and you are responsible for making sure that use is legal. This applies especially to data protection, camera recordings, remote commands via your BYD account, and traffic rules.", "Nur privat.": "Private use only.", "Gedacht ist alles nur für die private Nutzung mit deinem eigenen Fahrzeug. Ein gewerblicher Einsatz (z. B. Flotten, Vermietung, Taxi, Firmenwagen-Überwachung) ist nicht vorgesehen.": "Everything is intended for private use with your own vehicle only. Commercial use (e.g. fleets, rental, taxi, monitoring company cars) is not intended.", "Wächter nur auf eigenem Grund.": "Guardian on your own property only.", "Kamera-Aufnahmen des Wächters sind für deinen eigenen Privatgrund gedacht (z. B. Garage, Einfahrt). Richte die Kameras so aus, dass weder öffentlicher Raum (Straße, Gehweg, öffentlicher Parkplatz) noch das Grundstück der Nachbarn erfasst wird. Aufnahmen nicht veröffentlichen.": "Guardian recordings are intended for your own private property (e.g. garage, driveway). Point the cameras so that neither public space (street, pavement, public car park) nor your neighbours' property is captured. Do not publish recordings.", "Nicht von BYD.": "Not BYD.", "Dieses Projekt ist nicht mit BYD verbunden und wird von BYD weder unterstützt noch geprüft. „BYD“, „DiLink“ und alle anderen genannten Namen und Marken gehören ihren jeweiligen Inhabern.": "This project is not affiliated with BYD and is not supported or reviewed by BYD. “BYD”, “DiLink” and all other names and trademarks mentioned belong to their respective owners.", "Gesetzliche Rechte bleiben.": "Your legal rights remain.", "Die Haftung für Vorsatz und grobe Fahrlässigkeit, für Personenschäden sowie zwingende Rechte von Verbraucherinnen und Verbrauchern werden durch diese Hinweise nicht eingeschränkt.": "Liability for intent and gross negligence, for personal injury, and mandatory consumer rights are not limited by these notes.", "🔗 Mit Panoptes verbinden": "🔗 Connect to Panoptes", "Bestätige in Telegram oder hier:": "Confirm in Telegram or here:", "will sich verbinden. Prüfzahl:": "wants to connect. Check number:", "Panoptes öffnen („Gekoppelte Geräte“)": "Open Panoptes (“Paired devices”)", "Vergleiche die Prüfzahl und tippe auf „Erlauben“. Die Anfrage gilt 2 Minuten.": "Compare the check number and tap “Allow”. The request is valid for 2 minutes.", "Erweitert: mit Kopplungs-Code oder Link": "Advanced: with pairing code or link", "Kopplungs-Code oder Link aus Panoptes („Neues Gerät koppeln“, 10 min gültig, einmal verwendbar)": "Pairing code or link from Panoptes (“Pair new device”, valid 10 min, single use)", "482913 oder https://…/system.html#koppeln=…": "482913 or https://…/system.html#koppeln=…", "🔗 Mit Routenplaner verbinden": "🔗 Connect to route planner", "Im Browser bestätigen:": "Confirm in your browser:", "Code": "Code", "Routenplaner öffnen und erlauben": "Open route planner and allow", "Melde dich dort als Mitglied an und tippe auf „Erlauben“. Der Code gilt 10 Minuten.": "Sign in there as a member and tap “Allow”. The code is valid for 10 minutes.", "Erweitert: mit persönlichem Planer-Link": "Advanced: with your personal planner link", "Warte auf „Erlauben“ …": "Waiting for “Allow” …", "Verbunden": "Connected", "Ladestand ": "charge level ", "Mit dem Routenplaner verbunden": "Connected to the route planner", "Schon gekoppelt. Nur neu verbinden, wenn die Kopplung in Panoptes entfernt wurde.": "Already paired. Only connect again if the pairing was removed in Panoptes.", "3D-Modell nicht geladen": "3D model not loaded", "Erneut versuchen": "Try again", "3D-Modell wird geladen …": "Loading 3D model …", "Laden fehlgeschlagen": "Loading failed", "Dieser Browser kann kein WebGL": "This browser has no WebGL",
     "Eigenes Foto verwenden": "Use your own photo", "Reichweite": "Range",
     "Verbunden": "Connected", "Nicht verbunden": "Not connected",
     "Kompakt": "Compact", "Limousine": "Sedan", "Kombi": "Estate", "SUV": "SUV", "Van": "Van",
@@ -2435,6 +2450,19 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
 .taktbox label{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
 .taktbox select{padding:6px 8px;border-radius:10px;border:1px solid var(--border);background:var(--soft);color:var(--txt);font:inherit}
 .taktbox p{margin:10px 0 0;color:var(--mut)}.wrap{position:relative}
+.rrow{display:grid;grid-template-columns:70px 1fr;gap:10px;align-items:start;margin:0 0 10px}.rrow label{padding-top:10px;color:var(--mut);font-size:13px}
+.rfeld{position:relative}.rfeld input,.rrow3 input,.rrow3 select{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--soft);color:var(--txt);font:inherit}
+.rvor{position:absolute;left:0;right:0;top:100%;z-index:60;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-top:4px;display:none;overflow:hidden}
+.rvor div{padding:9px 12px;cursor:pointer;font-size:13.5px}.rvor div:hover{background:var(--soft)}
+.rrow3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 12px}.rrow3 label{display:flex;flex-direction:column;gap:5px;color:var(--mut);font-size:12.5px}
+.rin{display:flex;align-items:center;gap:6px;color:var(--txt)}.rmut{color:var(--blue);font-size:11px;white-space:nowrap}
+.rgo{background:#B5F23D;color:#1d2a00;font-weight:700;border:0;cursor:pointer;padding:11px 18px;border-radius:12px;font:inherit;font-weight:700}
+.rsec{margin-top:12px;background:var(--soft);color:var(--txt);border:1px solid var(--border);cursor:pointer;padding:10px 16px;border-radius:12px;font:inherit;font-weight:600}
+.rhint{color:var(--mut);font-size:12px;line-height:1.45;margin-top:8px}.rmsg{font-size:13px;margin-top:8px}
+.rsum{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:14px}.rsum b{font-size:20px;color:var(--txt)}
+.rstopp{border-top:1px solid var(--line);padding:10px 2px;font-size:13.5px}.rstopp .sub{color:var(--mut);font-size:12.5px;margin-top:3px}
+@media(max-width:460px){.rrow3{grid-template-columns:1fr 1fr}.rrow{grid-template-columns:1fr}.rrow label{padding-top:0}}
+
 .iconbtn{min-width:40px;height:40px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--txt);cursor:pointer;
  transition:background var(--fast),border-color var(--fast),transform var(--fast)}
 .iconbtn:hover{background:var(--soft);border-color:#2a5566}.iconbtn:active{transform:scale(.96)}
@@ -2487,7 +2515,7 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
   <p id=taktheute></p>
  </div>
  <nav class=quicknav aria-label="Schnellnavigation"><a href="#overview">Übersicht</a><a href="#climate">Klima</a>
-  <a href="#charging">Laden</a><a href="#energy-panel">Energie</a><a href="#prices">Preise</a><a href="#location">Standort</a></nav>
+  <a href="#charging">Laden</a><a href="#energy-panel">Energie</a><a href="#prices">Preise</a><a href="#route" id=navroute style="display:none">Route</a><a href="#location">Standort</a></nav>
  <div class=err id=err></div>
  <div class=hero id=overview>
   <div>
@@ -2621,8 +2649,8 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
   <div class=sect>ROUTENPLANER</div>
   <div class=tile style="padding:14px 16px">
    <div id=routebox style="display:none;margin:0 0 12px"></div>
-   <button type=button onclick="planerAuf()"
-      style="display:inline-block;background:#B5F23D;color:#1d2a00;font-weight:700;border:0;cursor:pointer;padding:10px 16px;border-radius:12px">🗺️ Route planen</button>
+   <a href="#route"
+      style="display:inline-block;background:#B5F23D;color:#1d2a00;font-weight:700;text-decoration:none;padding:10px 16px;border-radius:12px">🗺️ Route planen</a>
    <a href="/planer/oeffnen" target="_blank" rel="noopener" style="margin-left:10px;font-size:12.5px;color:var(--mut)">↗ im eigenen Fenster</a>
    <div id=planerstat style="color:var(--mut);font-size:12.5px;margin-top:10px"></div>
    <details id=kartenbox style="margin-top:12px" ontoggle="if(this.open)kartenLaden()">
@@ -2639,6 +2667,37 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
    <button type=button onclick="planerZu()" style="background:rgba(255,255,255,.08);color:#EAF6F8;border:1px solid rgba(160,230,240,.22);border-radius:999px;padding:7px 14px;cursor:pointer">✕ Schließen</button>
   </div>
   <iframe id=planerframe title="Routenplaner" style="width:100%;height:calc(100% - 44px);border:0;border-radius:14px;background:#071a2b"></iframe>
+ </div>
+
+ <div id=routesect style="display:none">
+  <div class=sect id=route>ROUTE</div>
+  <div class=tile style="padding:14px 16px" id=routetile>
+   <div class=rrow><label for=rstart>Start</label>
+    <div class=rfeld><input id=rstart placeholder="📍 Mein Auto" autocomplete=off oninput="rSuche('start')">
+     <div class=rvor id=rvor_start></div></div></div>
+   <div class=rrow><label for=rziel>Ziel</label>
+    <div class=rfeld><input id=rziel placeholder="Ort, Adresse, Link oder Plus Code" autocomplete=off oninput="rSuche('ziel')"
+      onkeydown="if(event.key==='Enter')rSuche('ziel',true)">
+     <div class=rvor id=rvor_ziel></div></div></div>
+   <div class=rrow3>
+    <label>Akku jetzt<span class=rin><input id=rsoc type=number min=1 max=100 oninput="this.dataset.hand=1;document.getElementById('rsocq').textContent=''"> % <span class=rmut id=rsocq></span></span></label>
+    <label>Ankunft mind.<span class=rin><input id=rsocmin type=number min=0 max=80 value=15> %</span></label>
+    <label>Wie<select id=rmodus><option value=kompromiss>ausgewogen</option><option value=billig>günstig</option><option value=schnell>schnell</option></select></label>
+   </div>
+   <button type=button id=rbtn onclick="rPlanen()" class=rgo>🗺️ Route berechnen</button>
+   <div class=rhint>Start und Ziel gehen nur beim Klick auf „Route berechnen“ an den Routenplaner (byd.serveone.at) – das ist die Anfrage selbst. Kein Dauerversand, nichts im Hintergrund. Die Ortssuche fragt nur, während du tippst.</div>
+   <div id=rmsg class=rmsg></div>
+   <div id=rerg style="display:none">
+    <div class=rsum id=rsum></div>
+    <div id=rvorl class=rhint></div>
+    <div class=map style="margin:12px 0;height:300px"><div id=rmap style="height:100%"></div></div>
+    <div id=rstopps></div>
+    <div id=rwarn class=rhint></div>
+    <button type=button id=rauto onclick="rAnAuto()" class=rsec>📤 Ins Auto schicken</button>
+    <div class=rhint>„Ins Auto schicken“ legt nur die Route beim Routenplaner ab; Panoptes im Auto holt sie dort ab. Am Fahrzeug wird nichts ausgelöst – kein Befehl, keine Navigation startet von selbst.</div>
+    <div id=rautomsg class=rmsg></div>
+   </div>
+  </div>
  </div>
 
  <div class=sect id=location>STANDORT</div>
@@ -2755,6 +2814,73 @@ function liveSaeulen(m){
 
 // Routenplaner: eingebettet (gleiche Seite wie byd.serveone.at/ev/ mit Login) + Route/Rueckmeldung aus dem Auto
 let ROUTE_T=0;
+
+// --- Route (1.10): Planer ueber den Cockpit-Server; Start = Autoposition, Daten gehen nur beim Klick raus
+const RW={start:null,ziel:null,start_name:'',ziel_name:''};let RT={},RMAP=null,RLAYER=null,RERG=null;
+function rSuche(feld,sofort){const el=document.getElementById('r'+feld),box=document.getElementById('rvor_'+feld);
+ RW[feld]=null;RW[feld+'_name']='';const q=el.value.trim();clearTimeout(RT[feld]);
+ if(q.length<3){box.style.display='none';return;}
+ RT[feld]=setTimeout(async()=>{try{const d=await (await fetch('/route/orte',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q:q})})).json();
+  const o=d.orte||[];if(!o.length){box.innerHTML='<div style="color:var(--mut);cursor:default">'+esc(d.error||__T('Nichts gefunden'))+'</div>';box.style.display='block';return;}
+  box.innerHTML=o.map((x,i)=>'<div data-i='+i+'>'+esc(x.name)+'</div>').join('');box.style.display='block';
+  [...box.children].forEach(c=>c.onclick=()=>{const x=o[+c.dataset.i];RW[feld]=[x.lat,x.lon];RW[feld+'_name']=x.name;el.value=x.name;box.style.display='none';});
+ }catch(e){}},sofort?0:450);}
+function rDauer(m){m=Math.round(m||0);return m>=60?Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')+' min':m+' min';}
+function rSocVomAuto(s){const f=document.getElementById('rsoc');if(document.activeElement!==f&&!f.dataset.hand&&s.soc!=null){f.value=Math.round(s.soc);
+ document.getElementById('rsocq').textContent=__T('vom Auto');}}
+async function rPlanen(){const m=document.getElementById('rmsg'),b=document.getElementById('rbtn');
+ if(!RW.ziel){m.textContent='⚠️ '+__T('Bitte ein Ziel aus der Liste wählen');return;}
+ if(document.getElementById('rstart').value.trim()&&!RW.start){m.textContent='⚠️ '+__T('Bitte einen Start aus der Liste wählen oder das Feld leeren (dann gilt dein Auto)');return;}
+ b.disabled=true;m.textContent=__T('⏳ Frage den Routenplaner …');
+ try{const r=await fetch('/route/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+   start:RW.start,ziel:RW.ziel,start_name:RW.start_name,ziel_name:RW.ziel_name,
+   soc_start:document.getElementById('rsoc').dataset.hand?document.getElementById('rsoc').value:'',
+   soc_ziel_min:document.getElementById('rsocmin').value,modus:document.getElementById('rmodus').value})});
+  const d=await r.json();if(!d.ok)throw Error(d.error||'Fehler');m.textContent='';RERG=d.route;rZeigen(d.route);
+ }catch(e){m.textContent='⚠️ '+__T(e.message);}finally{b.disabled=false;}}
+function rZeigen(k){document.getElementById('rerg').style.display='block';document.getElementById('rautomsg').textContent='';
+ const en=window.__LANG__==='en';
+ document.getElementById('rsum').innerHTML='<span><b>'+Math.round(k.km||0)+'</b> km</span><span><b>'+rDauer(k.minuten)+'</b> '+__T('Fahrt')+'</span>'+
+  '<span><b>'+(k.stopps.length)+'</b> '+(k.stopps.length===1?__T('Ladestopp'):__T('Ladestopps'))+(k.lade_min?' · '+rDauer(k.lade_min):'')+'</span>'+
+  '<span>'+__T('Ankunft mit')+' <b>'+Math.round(k.soc_ankunft||0)+' %</b></span>'+(k.kosten!=null?'<span>≈ <b>'+Number(k.kosten).toFixed(2).replace('.',en?'.':',')+' €</b></span>':'');
+ const v=k.vorlieben,vl=document.getElementById('rvorl');
+ vl.innerHTML=(v?'⚡ '+__T('Deine Ladevorlieben gelten')+': '+esc(rVorlieben(v))+' · ':'⚡ '+__T('Ladevorlieben (z. B. nur bestimmte Ladenetze) stellst du im Planer-Konto ein')+' · ')+
+  '<a href="https://byd.serveone.at/ev/" target=_blank rel=noopener style="color:var(--blue)">'+__T('Konto-Einstellungen')+' ↗</a>'+
+  (k.fahrzeug?' · '+__T('Profil')+': '+esc(k.fahrzeug):'');
+ document.getElementById('rstopps').innerHTML=k.stopps.map((s,i)=>'<div class=rstopp><b>'+(i+1)+'. '+esc(s.name)+'</b>'+
+  (s.eigene_karte?' 💳':'')+'<div class=sub>'+[s.km!=null?__T('nach')+' '+Math.round(s.km)+' km':'',s.kw?Math.round(s.kw)+' kW':'',
+  (s.soc_an!=null&&s.soc_ab!=null)?Math.round(s.soc_an)+' → '+Math.round(s.soc_ab)+' %':'',s.dauer_min?rDauer(s.dauer_min):'',
+  s.preis!=null?'≈ '+Number(s.preis).toFixed(2).replace('.',en?'.':',')+' €':'',rOeff(s.oeffnung)].filter(Boolean).map(esc).join(' · ')+'</div></div>').join('')||
+  '<div class=rhint>'+__T('Kein Ladestopp nötig.')+'</div>';
+ document.getElementById('rwarn').innerHTML=(k.warnungen||[]).map(w=>'⚠️ '+esc(w)).join('<br>');
+ rKarte(k);}
+function rOeff(t){t=String(t||'');return t.indexOf('offen bis ')===0?__T('offen bis')+' '+t.slice(10):__T(t);}
+function rVorlieben(v){if(typeof v==='string')return v;const t=[];
+ if(v.netze&&v.netze.length)t.push((v.modus==='nur'?__T('nur'):__T('bevorzugt'))+' '+v.netze.join(', '));
+ if(v.umweg_min)t.push(__T('Umweg bis')+' '+v.umweg_min+' min');if(v.nur_offen)t.push(__T('nur wenn bei Ankunft geöffnet'));
+ return t.join(' · ')||JSON.stringify(v).slice(0,120);}
+function rKarte(k){const el=document.getElementById('rmap'),g=k.geometrie||[];if(g.length<2){el.parentNode.style.display='none';return;}
+ el.parentNode.style.display='';
+ if(EINW.kartenquelle==='keine'||typeof L==='undefined'){       // ohne Kartenquelle: nur die Linie, keine Kacheln
+  let a=90,b=-90,c=180,d=-180;g.forEach(p=>{a=Math.min(a,p[0]);b=Math.max(b,p[0]);c=Math.min(c,p[1]);d=Math.max(d,p[1]);});
+  const W=600,H=300,sx=W/Math.max(d-c,1e-6),sy=H/Math.max(b-a,1e-6),s=Math.min(sx,sy)*.9,ox=(W-(d-c)*s)/2,oy=(H-(b-a)*s)/2;
+  const P=p=>[(ox+(p[1]-c)*s).toFixed(1),(H-oy-(p[0]-a)*s).toFixed(1)];
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:100%"><polyline fill=none stroke="#5FD6E6" stroke-width=3 points="'+
+   g.map(p=>P(p).join(',')).join(' ')+'"/>'+k.stopps.filter(s=>s.lat!=null).map(s=>{const q=P([s.lat,s.lon]);
+   return '<circle cx='+q[0]+' cy='+q[1]+' r=7 fill="#B5F23D"/>';}).join('')+
+   '<circle cx='+P(g[0])[0]+' cy='+P(g[0])[1]+' r=6 fill="#fff"/><circle cx='+P(g[g.length-1])[0]+' cy='+P(g[g.length-1])[1]+' r=6 fill="#FF8A65"/></svg>'+
+   '<div class=rhint style="position:relative;margin-top:-26px;padding:0 10px">'+__T('⚪ Start · 🟢 Ladestopp · 🟠 Ziel')+' – '+__T('ohne Kartenbilder (keine Kartenquelle gewählt)')+'</div>';return;}
+ if(!RMAP){RMAP=L.map('rmap',{scrollWheelZoom:false});basiskarte(RMAP);}
+ if(RLAYER)RMAP.removeLayer(RLAYER);
+ const lin=L.polyline(g,{color:'#5FD6E6',weight:4});
+ const ic=L.divIcon({className:'',html:'<div class=mk-chg>⚡</div>',iconSize:[18,18],iconAnchor:[9,9]});
+ RLAYER=L.featureGroup([lin].concat(k.stopps.filter(s=>s.lat!=null).map(s=>L.marker([s.lat,s.lon],{icon:ic}).bindPopup('<b>'+esc(s.name)+'</b><br>'+esc(rOeff(s.oeffnung))))))
+  .addTo(RMAP);setTimeout(()=>{RMAP.invalidateSize();RMAP.fitBounds(lin.getBounds().pad(.08));},50);}
+async function rAnAuto(){const m=document.getElementById('rautomsg'),b=document.getElementById('rauto');b.disabled=true;m.textContent='⏳ …';
+ try{const d=await (await fetch('/route/an-auto',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).json();
+  if(!d.ok)throw Error(d.error||'Fehler');m.textContent='✓ '+__T('Route liegt im Planer bereit – Panoptes im Auto holt sie ab.');ROUTE_T=0;routeLaden();
+ }catch(e){m.textContent='⚠️ '+__T(e.message);}finally{b.disabled=false;}}
+document.addEventListener('click',e=>{if(!e.target.closest||!e.target.closest('.rfeld'))document.querySelectorAll('.rvor').forEach(x=>x.style.display='none');});
 function planerAuf(){const f=document.getElementById('planerframe');if(!f.src)f.src='/planer/oeffnen';
  document.getElementById('planerlayer').style.display='block';document.body.style.overflow='hidden';}
 function planerZu(){document.getElementById('planerlayer').style.display='none';document.body.style.overflow='';ROUTE_T=0;routeLaden();}
@@ -3082,7 +3208,9 @@ async function load(){
  }
  const pl=document.getElementById('panoptes-link');if(pl)pl.style.display=s.panoptes_an?'inline-block':'none';
  // Routenplaner
- if(s.planer&&s.planer.an){
+ document.getElementById('routesect').style.display=(s.planer&&s.planer.an)?'block':'none';
+ document.getElementById('navroute').style.display=(s.planer&&s.planer.an)?'':'none';
+ if(s.planer&&s.planer.an){rSocVomAuto(s);
   document.getElementById('planerbox').style.display='block';
   routeLaden();
   const p=s.planer, t=[], vor=ts=>Math.max(0,Math.round((Date.now()/1000-ts)/60));
@@ -3879,6 +4007,36 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(r), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json")
+        elif u.path in ("/route/plan", "/route/orte", "/route/an-auto"):
+            # Route-Reiter: Schluessel bleibt hier; Koordinaten nur im Body, nie im Log (Regel 2: nur auf Klick)
+            try:
+                if not (_CFG.get("planer") and _CFG.get("planer_token")):
+                    raise ValueError("Erst mit dem Routenplaner verbinden (Einstellungen → Extras)")
+                import route_planer as rp
+                tok, w = _CFG["planer_token"], json.loads(raw or "{}")
+                if u.path == "/route/orte":
+                    return self._send(json.dumps({"ok": True, "orte": rp.orte(tok, w.get("q"))}), "application/json")
+                if u.path == "/route/plan":
+                    pos = (_STATE.get("latitude"), _STATE.get("longitude")) if _STATE.get("latitude") else None
+                    body = rp.anfrage_body(w, pos, _STATE.get("soc"), _planer_profil(tok), _planer_kennung())
+                    k = rp.planen(tok, body)
+                    _RPLAN.clear()
+                    _RPLAN.update(k=k, start=body["start"], ziel=body["ziel"], fahrzeug=body["fahrzeug"],
+                                  start_name=(str(w.get("start_name") or "") if w.get("start") else "Mein Auto")[:80],
+                                  ziel_name=str(w.get("ziel_name") or "")[:80], t=time.time())
+                    return self._send(json.dumps({"ok": True, "route": k}), "application/json")
+                if not _RPLAN.get("k") or time.time() - _RPLAN["t"] > 3600:
+                    raise ValueError("Bitte zuerst eine Route berechnen")
+                plan = rp.fuer_auto(_RPLAN["k"], _RPLAN["start"], _RPLAN["ziel"], _RPLAN["start_name"],
+                                    _RPLAN["ziel_name"], _RPLAN["fahrzeug"])
+                d = rp.an_auto(tok, plan, _planer_kennung())
+                _ROUTE["t"] = 0
+                self._send(json.dumps({"ok": True, "gueltig_bis": d.get("gueltig_bis")}), "application/json")
+            except ValueError as e:
+                self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "error": "Routenplaner nicht erreichbar (%s)" % type(e).__name__}),
+                           "application/json")
         elif u.path == "/karten":
             try:
                 if not (_CFG.get("planer") and _CFG.get("planer_token")):
