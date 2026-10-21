@@ -12,7 +12,8 @@ import sys
 HIER = os.path.dirname(os.path.abspath(__file__))
 ZIEL = os.path.join(HIER, "panoptes")
 VORSCHAU = ""                   # mit --vorschau: noindex (Vorschau unter nicht verlinktem Pfad)
-NAME = "Alfred Aigner"          # laut Impressum (Medieninhaber), fuer den Haftungstext
+NAME = "Alfred Aigner"
+QUELLE = ""                      # Ordner mit den Screenshots (aus main())          # laut Impressum (Medieninhaber), fuer den Haftungstext
 
 T = {
     "de": {
@@ -24,45 +25,48 @@ T = {
         "h1a": "Panoptes", "h1b": "dein BYD, wach und vernetzt",
         "sub": "Eine App, die direkt am Bildschirm in deinem Auto läuft. Dazu eine Oberfläche, die du am Handy oder PC öffnest: Wächter mit Kamera, Fernzugang, Meldungen über Telegram, eine eigene Karte mit Ladesäulen und die Verbindung zum Routenplaner.",
         "wichtig": "<b>Wichtig:</b> Panoptes ist ein privates Freizeitprojekt und nicht von BYD. Bitte lies die <a href=\"hinweise.html\">Hinweise</a>, bevor du es installierst.",
-        "hero_alt_pc": "Panoptes-Startseite am PC: Ladestand 68 %, 236 km Reichweite, Karte und Ladekosten",
+        "hero_alt_pc": "Panoptes-Startseite am PC: Ladestand, Reichweite, Karte und Ladekosten",
         "hero_alt_handy": "Panoptes-Startseite am Handy: Ladestand und Reichweite",
         "h_kann": "Was Panoptes kann",
         "kann": [
+            ("🚗", "Am Bildschirm im Auto", "Panoptes läuft als eigene App im Vollbild, mit großen Tasten. Während der Fahrt sind Einstellungen gesperrt; Start, Karte und Wächter bleiben erreichbar."),
             ("🛡️", "Wächter mit KI-Erkennung", "Steht dein Auto, achten die Kameras auf das Umfeld. Du entscheidest selbst, wann aufgenommen wird: nur bei Erschütterung, mit KI-Erkennung überall oder nur an deinen privaten Orten wie Garage oder Einfahrt. Damit die Batterien geschont werden, legt sich der Wächter auf Wunsch schlafen."),
             ("🌍", "Fernzugang", "Über Tailscale erreichst du dein Auto von überall. Eingerichtet wird das mit einem QR-Code am Bildschirm im Auto und deinem eigenen Tailscale-Konto."),
             ("💬", "Meldungen über Telegram", "Dein eigener Bot meldet Wächter-Ereignisse, Laden, schwache Starterbatterie, Reifendruck und Updates. Jede Meldung einzeln schaltbar, mit Ruhezeit für die Nacht. Bilder und Videos nur, wenn du das einschaltest."),
-            ("🗺️", "Karte mit Ladesäulen", "Eine eigene Karte mit Ladesäulen in der Nähe. Wo Betreiber Daten liefern, siehst du, ob gerade ein Platz frei ist."),
+            ("🗺️", "Karte mit Ladesäulen", "Du wählst selbst, woher die Karte kommt: vom Community-Server (mit Gelände und freien Ladeplätzen, wo Betreiber Daten liefern), von OpenStreetMap oder gar nicht. Solange du nichts wählst, bleibt die Karte leer."),
             ("🔋", "„Reicht es noch?“", "Mit einer Route aus dem Routenplaner sagt dir Panoptes unterwegs, ob der Akku bis zum nächsten Stopp reicht, und schlägt bei Bedarf einen Ladestopp vor."),
+            ("📊", "Monatsbericht", "Gefahrene Kilometer, Verbrauch, Laden und Kosten, Standverlust und Wächter-Ereignisse eines Monats auf einen Blick, auch zum Drucken. Gerechnet wird im Auto."),
+            ("📒", "Fahrten und Laden", "Fahrten, Verbrauch und Ladekosten werden im Auto mitgeschrieben und übersichtlich angezeigt."),
             ("🧭", "Verbindung zum Routenplaner", "Panoptes lässt sich mit deinem Konto auf <a href=\"/ev/\">byd.serveone.at/ev/</a> verbinden: Code am Auto anzeigen, am Handy bestätigen, fertig. Jederzeit trennbar."),
             ("🖥️", "EV-Cockpit am PC", "Das <a href=\"/ev-cockpit/\">EV-Cockpit</a> zeigt die Daten von Panoptes am PC und kann die Einstellungen ändern. Koppeln bestätigst du mit einem Tipp und einer vierstelligen Prüfzahl."),
-            ("📒", "Fahrten und Laden", "Fahrten, Verbrauch und Ladekosten werden im Auto mitgeschrieben und übersichtlich angezeigt."),
-            ("🌐", "Fünf Sprachen", "Deutsch, Englisch, Französisch, Italienisch und Niederländisch."),
-            ("🏠", "Home Assistant", "Kommt bald."),
+            ("⬆️", "Updates in der App", "Panoptes sucht auf Wunsch selbst nach neuen Versionen. Installiert wird nur, wenn das Auto steht und die Zündung aus ist."),
+            ("🌐", "Fünf Sprachen", "Deutsch, Englisch, Französisch, Italienisch und Niederländisch. Home Assistant kommt bald."),
         ],
         "h_bilder": "So sieht Panoptes aus",
-        "bilder_lead": "Die Bilder passen sich deinem Gerät an: hell oder dunkel, wie bei dir eingestellt. Klick auf ein Bild zum Vergrößern. Alle Bilder zeigen Musterdaten.",
+        "bilder_lead": "Panoptes 0.1.8 am Bildschirm im Auto, am PC und am Handy. Wo es beide Fassungen gibt, folgen die Bilder hell oder dunkel deinem Gerät. Klick auf ein Bild zum Vergrößern. Alle Bilder zeigen Musterdaten (Musterstandort Wien).",
         "bilder": [
-            ("waechter", "Wächter: Du wählst selbst, wann aufgenommen wird.", "Wächter mit der Wahl, wann aufgenommen wird"),
-            ("karte", "Karte mit Ladesäulen in der Nähe.", "Karte mit Ladesäulen und freien Plätzen"),
-            ("waechter-einstellungen", "Einstellungen: Abschreckung und wann der Wächter stoppt.", "Wächter-Einstellungen mit Abschreckung und Stopp-Bedingungen"),
-            ("telegram", "Telegram: jede Meldungsart einzeln.", "Telegram-Meldungen, jede Art einzeln schaltbar"),
-            ("geraete", "Gerät koppeln: erlauben mit Prüfzahl.", "Gerät koppeln: das EV-Cockpit möchte sich verbinden, Prüfzahl 4711"),
-            ("start", "Start: Ladestand, Reichweite, Karte, Ladekosten.", "Startseite mit Ladestand, Reichweite und Karte"),
+            ("Am Bildschirm im Auto: Start mit Ladestand, Reichweite und Schnellzugriffen.", [("start", "display", "Panoptes am Bildschirm im Auto: Start mit Ladestand und Reichweite")]),
+            ("Wächter: Du wählst selbst, wann aufgenommen wird.", [("waechter", "display", "Wächter am Bildschirm im Auto mit der Wahl, wann aufgenommen wird"), ("waechter", "handy", "Wächter am Handy")]),
+            ("Karte mit Ladesäulen und freien Plätzen, aus der Quelle, die du gewählt hast.", [("karte", "pc", "Karte mit Ladesäulen am PC"), ("karte", "display", "Karte am Bildschirm im Auto")]),
+            ("Kartenquelle: Community-Server, OpenStreetMap oder keine. Ohne Wahl bleibt die Karte leer.", [("kartenquelle", "display", "Auswahl der Kartenquelle: Community-Server, OpenStreetMap oder keine")]),
+            ("Monatsbericht: Kilometer, Verbrauch, Laden, Standverlust und Wächter eines Monats.", [("monatsbericht", "pc", "Monatsbericht am PC"), ("monatsbericht", "display", "Monatsbericht am Bildschirm im Auto")]),
+            ("Gerät koppeln: das EV-Cockpit mit Prüfzahl erlauben.", [("geraete", "pc", "Gerät koppeln: das EV-Cockpit möchte sich verbinden, Prüfzahl 4711")]),
+            ("Telegram: jede Meldungsart einzeln.", [("telegram", "handy", "Telegram-Meldungen am Handy, jede Art einzeln schaltbar")]),
         ],
         "handy": "am Handy", "pc": "am PC",
         "h_zus": "Wie alles zusammenhängt",
         "zus_lead": "Panoptes läuft im Auto. Alles andere ist freiwillig und lässt sich einzeln verbinden und wieder trennen.",
         "svg": {"auto": "Panoptes", "auto2": "im Auto", "cockpit": "EV-Cockpit", "cockpit2": "am PC", "planer": "Routenplaner", "planer2": "byd.serveone.at/ev/",
                 "karte": "Community-Karte", "karte2": "Kacheln, Ladesäulen", "tg": "Telegram-Bot", "tg2": "dein eigener", "ha": "Home Assistant", "ha2": "bald",
-                "t1": "Kopplung", "t2": "Konto, Ziel, Fahrtenbuch E2E", "t3": "Karte", "t4": "Meldungen", "t5": "bald", "t6": "Route, Ladekarten",
+                "t1": "Kopplung", "t2": "Konto, Ziel, Fahrtenbuch E2E", "t3": "Karte (wenn gewählt)", "t4": "Meldungen", "t5": "bald", "t6": "Route, Ladekarten",
                 "aria": "Grafik: Panoptes im Auto in der Mitte, verbunden mit EV-Cockpit am PC, Routenplaner, Community-Karte, Telegram-Bot und bald Home Assistant"},
         "verb": [
             ("1", "Panoptes ↔ EV-Cockpit (Kopplung)", "Du erlaubst das Cockpit einmal mit einer Prüfzahl, in Telegram oder auf der Panoptes-Seite. Dann holt das Cockpit Fahrzeugwerte, Einstellungen und das Fahrtenbuch direkt aus dem Auto, über dein Heimnetz oder Tailscale.",
              "Nicht dabei: Fernzugang, Passwort und Anschlüsse. Nichts davon läuft über unsere Server, das Fahrtenbuch bleibt auf deinem PC. Den Zugang hebt das Cockpit im Schlüsselbund deines Rechners auf. Was es sonst an Server schickt (Karte, 3D-Modell, Routenplaner, Zählung), entscheidest du mit eigenen Häkchen; ohne Häkchen nichts."),
             ("2", "Panoptes ↔ Routenplaner", "Nach dem Verbinden kommt dein Ziel mit Ladestopps ins Auto. Panoptes meldet Ladestand, Verbrauchsfaktor und Fahrstatus, damit der Plan stimmt. Rufst du auf /ev/ dein Fahrtenbuch ab, kommt es Ende-zu-Ende verschlüsselt direkt vom Auto in deinen Browser.",
              "Nicht dabei: Der Server kann das Fahrtenbuch nicht lesen und speichert es nie (nur kurz im Arbeitsspeicher, höchstens 2 Minuten). Die ungefähre Position geht nur mit, wenn Panoptes unterwegs einen neuen Ladestopp vorschlägt."),
-            ("3", "Panoptes ↔ Community-Karte", "Kartenkacheln und Ladesäulen-Daten kommen von byd.serveone.at, mit Live-Belegung, wo es offene Daten gibt.",
-             "Nicht dabei: Deine Position bleibt im Auto. Geteilte Regeln gehen nur an den Community-Server, wenn du sie selbst teilst (standardmäßig aus)."),
+            ("3", "Panoptes ↔ Community-Karte", "Wenn du sie als Kartenquelle wählst, kommen Kartenkacheln und Ladesäulen-Daten von byd.serveone.at, mit Live-Belegung, wo es offene Daten gibt. Ohne Wahl lädt Panoptes keine Karte.",
+             "Nicht dabei: Fahrten und Aufnahmen. Der Server sieht nur deine IP-Adresse und den Kartenausschnitt. Geteilte Regeln gehen nur an den Community-Server, wenn du sie selbst teilst (standardmäßig aus)."),
             ("4", "Panoptes → Telegram", "Dein eigener Bot schickt dir Meldungstexte. Bilder und Videos nur, wenn du das ausdrücklich einschaltest; dann liegen sie auf den Servern von Telegram.",
              "Nicht dabei: Keine Videos auf unseren Servern, kein Umweg über das Projekt."),
             ("5", "Panoptes ↔ Home Assistant (bald)", "Geplant ist eine direkte Verbindung zwischen deinem Auto und deinem eigenen Home Assistant.",
@@ -72,16 +76,17 @@ T = {
         ],
         "nicht": "Was nicht fließt",
         "h_ds": "Datenschutz: was wohin geht",
-        "ds_lead": "Grundsatz: Deine Aufnahmen, Fahrten und Positionen bleiben im Auto. Panoptes schickt keine Kamera-Aufnahmen an die Server des Projekts. Es gibt keine Werbung und kein Tracking.",
+        "ds_lead": "Grundsatz: Deine Aufnahmen, Fahrten und Positionen bleiben im Auto. Panoptes schickt keine Kamera-Aufnahmen an die Server des Projekts. Was Daten nach außen schickt, ist standardmäßig aus; du schaltest es einzeln ein, und Panoptes sagt dir vorher, wohin die Daten gehen. Es gibt keine Werbung und kein Tracking.",
         "ds_kopf": ("Wohin", "Was", "Wann"),
         "ds": [
-            ("Im Auto (USB-Stick, App)", "Wächter-Aufnahmen, Fahrtenbuch, Ladeverlauf, Einstellungen", "immer. Bei neuer Einrichtung löscht Panoptes Aufnahmen nach 72 Stunden, einzelne kannst du behalten."),
+            ("Im Auto (USB-Stick, App)", "Wächter-Aufnahmen, Fahrtenbuch, Ladeverlauf, Monatsbericht, Einstellungen", "immer. Bei neuer Einrichtung löscht Panoptes Aufnahmen nach 72 Stunden, einzelne kannst du behalten."),
+            ("Kartenquelle (Community-Server byd.serveone.at oder OpenStreetMap Deutschland)", "Deine IP-Adresse und der Kartenausschnitt, also ungefähr, wo dein Auto steht. Beim Community-Server zusätzlich die Abfrage freier Ladeplätze für den Ausschnitt.", "erst, wenn du unter System → Kartenquelle eine Quelle wählst. Am Bildschirm im Auto gilt die Wahl fürs ganze Auto; Handy und PC fragen getrennt."),
             ("Telegram", "Meldungstexte; Bilder und Videos nur, wenn du das einschaltest (dann liegen sie bei Telegram)", "nur mit eigenem Bot"),
             ("Tailscale", "Verbindung für den Fernzugang", "nur mit eingerichtetem Fernzugang"),
-            ("byd.serveone.at (Server des Projekts)", "Kartenkacheln, Ladesäulen-Daten. Mit verbundenem Routenplaner: Ladestand, Verbrauchsfaktor, Fahrstatus; die ungefähre Position nur für einen neu vorgeschlagenen Ladestopp. Das Fahrtenbuch nur Ende-zu-Ende verschlüsselt, wenn du es selbst abrufst, und nie gespeichert.", "Karte immer, Routenplaner nur nach dem Verbinden"),
+            ("Routenplaner (byd.serveone.at/ev)", "Ladestand, Verbrauchsfaktor, Fahrstatus; die ungefähre Position nur für einen neu vorgeschlagenen Ladestopp. Das Fahrtenbuch nur Ende-zu-Ende verschlüsselt, wenn du es selbst abrufst, und nie gespeichert.", "nur nach dem Verbinden, jederzeit trennbar"),
             ("Community-Server (byd.serveone.at/community)", "geteilte Regeln, nur wenn du sie teilst", "standardmäßig aus"),
-            ("OpenStreetMap-Dienste, Open-Meteo", "Adresssuche, Kartendaten, Wetter für deine Gegend", "bei Nutzung der Funktionen"),
-            ("Weitere Dienste (BYD-Konto, MQTT/Smart Home, ABRP, Stadia Maps, KI-Assistent)", "je nach Dienst", "nur, wenn du sie selbst einrichtest; der KI-Assistent ist standardmäßig aus"),
+            ("Open-Meteo", "ungefähre Position für das Wetter", "nur mit deiner Einwilligung, standardmäßig aus"),
+            ("Weitere Dienste (BYD-Konto, MQTT/Smart Home, ABRP, Stadia Maps, KI-Assistent)", "je nach Dienst; an der Eingabe steht, wohin deine Anfragen gehen", "nur, wenn du sie selbst einrichtest"),
         ],
         "h_brauch": "Was du brauchst",
         "brauch": [
@@ -127,45 +132,48 @@ T = {
         "h1a": "Panoptes", "h1b": "your BYD, awake and connected",
         "sub": "An app that runs right on your car's screen, plus an interface you open on your phone or PC: a camera guard, remote access, Telegram notifications, its own map with chargers and a link to the route planner.",
         "wichtig": "<b>Important:</b> Panoptes is a private hobby project and not made by BYD. Please read the <a href=\"hinweise.html\">notes</a> before installing it.",
-        "hero_alt_pc": "Panoptes home on a PC: 68 % charge, 236 km range, map and charging costs",
+        "hero_alt_pc": "Panoptes home on a PC: charge level, range, map and charging costs",
         "hero_alt_handy": "Panoptes home on a phone: charge level and range",
         "h_kann": "What Panoptes does",
         "kann": [
+            ("🚗", "On the car screen", "Panoptes runs as its own full-screen app with large buttons. While driving, settings are locked; home, map and guard stay available."),
             ("🛡️", "Guard with AI detection", "While your car is parked, the cameras watch its surroundings. You decide when it records: only on impact, with AI detection everywhere, or only at your own private places such as your garage or driveway. To protect the batteries, the guard can go to sleep."),
             ("🌍", "Remote access", "Reach your car from anywhere via Tailscale. Setup uses a QR code on the car screen and your own Tailscale account."),
             ("💬", "Telegram notifications", "Your own bot reports guard events, charging, a weak starter battery, tyre pressure and updates. Each kind can be switched on its own, with quiet hours for the night. Pictures and videos only if you turn that on."),
-            ("🗺️", "Map with chargers", "Its own map shows chargers nearby. Where operators provide data, you see whether a spot is free right now."),
-            ("🔋", "“Will it make it?”", "With a route from the route planner, Panoptes tells you on the road whether the battery will last to the next stop and suggests a charging stop if needed."),
+            ("🗺️", "Map with chargers", "You choose where the map comes from: the community server (with terrain and free charging spots where operators provide data), OpenStreetMap, or none. Until you choose, the map stays empty."),
+            ("🔋", "\u201cWill it make it?\u201d", "With a route from the route planner, Panoptes tells you on the road whether the battery will last to the next stop and suggests a charging stop if needed."),
+            ("📊", "Monthly report", "Distance, consumption, charging and costs, standby loss and guard events of a month at a glance, also for printing. Calculated in the car."),
+            ("📒", "Trips and charging", "Trips, consumption and charging costs are recorded in the car and shown clearly."),
             ("🧭", "Route planner link", "Connect Panoptes to your account on <a href=\"/ev/\">byd.serveone.at/ev/</a>: show a code in the car, confirm on your phone, done. Disconnect at any time."),
             ("🖥️", "EV Cockpit on your PC", "The <a href=\"/ev-cockpit/\">EV Cockpit</a> shows Panoptes data on your PC and can change its settings. You confirm the pairing with one tap and a four-digit check number."),
-            ("📒", "Trips and charging", "Trips, consumption and charging costs are recorded in the car and shown clearly."),
-            ("🌐", "Five languages", "German, English, French, Italian and Dutch."),
-            ("🏠", "Home Assistant", "Coming soon."),
+            ("⬆️", "Updates in the app", "If you like, Panoptes looks for new versions itself. Installing only happens while the car is parked with the ignition off."),
+            ("🌐", "Five languages", "German, English, French, Italian and Dutch. Home Assistant is coming soon."),
         ],
         "h_bilder": "What Panoptes looks like",
-        "bilder_lead": "The pictures follow your device: light or dark, as you have set it. Click a picture to enlarge it. All pictures show sample data and the German interface.",
+        "bilder_lead": "Panoptes 0.1.8 on the car screen, on a PC and on a phone. Where both versions exist, the pictures follow your device's light or dark setting. Click a picture to enlarge it. All pictures show sample data (sample location Vienna) and the German interface.",
         "bilder": [
-            ("waechter", "Guard: you choose when it records.", "Guard with the choice of when it records"),
-            ("karte", "Map with chargers nearby.", "Map with chargers and free spots"),
-            ("waechter-einstellungen", "Settings: deterrence and when the guard stops.", "Guard settings with deterrence and stop conditions"),
-            ("telegram", "Telegram: every kind of message on its own.", "Telegram notifications, each kind switchable"),
-            ("geraete", "Pair a device: allow with a check number.", "Pairing: the EV Cockpit wants to connect, check number 4711"),
-            ("start", "Home: charge level, range, map, charging costs.", "Home with charge level, range and map"),
+            ("On the car screen: home with charge level, range and quick actions.", [("start", "display", "Panoptes on the car screen: home with charge level and range")]),
+            ("Guard: you choose when it records.", [("waechter", "display", "Guard on the car screen with the choice of when it records"), ("waechter", "handy", "Guard on a phone")]),
+            ("Map with chargers and free spots, from the source you chose.", [("karte", "pc", "Map with chargers on a PC"), ("karte", "display", "Map on the car screen")]),
+            ("Map source: community server, OpenStreetMap or none. Without a choice the map stays empty.", [("kartenquelle", "display", "Choosing the map source: community server, OpenStreetMap or none")]),
+            ("Monthly report: distance, consumption, charging, standby loss and guard events of a month.", [("monatsbericht", "pc", "Monthly report on a PC"), ("monatsbericht", "display", "Monthly report on the car screen")]),
+            ("Pair a device: allow the EV Cockpit with a check number.", [("geraete", "pc", "Pairing: the EV Cockpit wants to connect, check number 4711")]),
+            ("Telegram: every kind of message on its own.", [("telegram", "handy", "Telegram notifications on a phone, each kind switchable")]),
         ],
         "handy": "on a phone", "pc": "on a PC",
         "h_zus": "How it all fits together",
         "zus_lead": "Panoptes runs in the car. Everything else is optional and can be connected and disconnected one by one.",
         "svg": {"auto": "Panoptes", "auto2": "in the car", "cockpit": "EV Cockpit", "cockpit2": "on your PC", "planer": "Route planner", "planer2": "byd.serveone.at/ev/",
                 "karte": "Community map", "karte2": "tiles, chargers", "tg": "Telegram bot", "tg2": "your own", "ha": "Home Assistant", "ha2": "soon",
-                "t1": "pairing", "t2": "account, destination, trip log E2E", "t3": "map", "t4": "notifications", "t5": "soon", "t6": "route, charge cards",
+                "t1": "pairing", "t2": "account, destination, trip log E2E", "t3": "map (if chosen)", "t4": "notifications", "t5": "soon", "t6": "route, charge cards",
                 "aria": "Diagram: Panoptes in the car in the middle, connected to the EV Cockpit on a PC, the route planner, the community map, a Telegram bot and, soon, Home Assistant"},
         "verb": [
             ("1", "Panoptes ↔ EV Cockpit (pairing)", "You allow the cockpit once with a check number, in Telegram or on the Panoptes page. The cockpit then fetches vehicle data, settings and the trip log straight from the car, over your home network or Tailscale.",
              "Not included: remote access, password and ports. None of this goes through our servers; the trip log stays on your PC. The cockpit keeps the access key in your computer's keyring. Anything else it sends to servers (map, 3D model, route planner, usage count) needs its own tick; without a tick, nothing."),
             ("2", "Panoptes ↔ route planner", "Once linked, your destination with charging stops goes into the car. Panoptes reports charge level, consumption factor and driving status so the plan is right. When you fetch your trip log on /ev/, it comes end-to-end encrypted straight from the car to your browser.",
              "Not included: the server cannot read the trip log and never stores it (only briefly in memory, 2 minutes at most). Your approximate position is only sent when Panoptes suggests a new charging stop on the road."),
-            ("3", "Panoptes ↔ community map", "Map tiles and charger data come from byd.serveone.at, with live availability where open data exists.",
-             "Not included: your position stays in the car. Shared rules only go to the community server if you share them yourself (off by default)."),
+            ("3", "Panoptes ↔ community map", "If you choose it as map source, map tiles and charger data come from byd.serveone.at, with live availability where open data exists. Without a choice Panoptes loads no map.",
+             "Not included: trips and recordings. The server only sees your IP address and the map area. Shared rules only go to the community server if you share them yourself (off by default)."),
             ("4", "Panoptes → Telegram", "Your own bot sends you message texts. Pictures and videos only if you explicitly turn that on; they are then stored on Telegram's servers.",
              "Not included: no videos on our servers, no detour through the project."),
             ("5", "Panoptes ↔ Home Assistant (soon)", "A direct connection between your car and your own Home Assistant is planned.",
@@ -175,16 +183,17 @@ T = {
         ],
         "nicht": "What does not flow",
         "h_ds": "Privacy: what goes where",
-        "ds_lead": "Principle: your recordings, trips and positions stay in the car. Panoptes does not send camera recordings to the project's servers. No ads, no tracking.",
+        "ds_lead": "Principle: your recordings, trips and positions stay in the car. Panoptes does not send camera recordings to the project's servers. Anything that sends data out is off by default; you turn each item on separately, and Panoptes tells you beforehand where the data goes. No ads, no tracking.",
         "ds_kopf": ("Where", "What", "When"),
         "ds": [
-            ("In the car (USB stick, app)", "guard recordings, trip log, charging history, settings", "always. On a new setup Panoptes deletes recordings after 72 hours; you can keep individual ones."),
+            ("In the car (USB stick, app)", "guard recordings, trip log, charging history, monthly report, settings", "always. On a new setup Panoptes deletes recordings after 72 hours; you can keep individual ones."),
+            ("Map source (community server byd.serveone.at or OpenStreetMap Germany)", "your IP address and the map area, so roughly where your car is. With the community server also the query for free charging spots in that area.", "only once you choose a source under System → Map source. On the car screen the choice applies to the whole car; phone and PC ask separately."),
             ("Telegram", "message texts; pictures and videos only if you turn that on (they are then stored at Telegram)", "only with your own bot"),
             ("Tailscale", "connection for remote access", "only with remote access set up"),
-            ("byd.serveone.at (the project's server)", "map tiles, charger data. With a linked route planner: charge level, consumption factor, driving status; your approximate position only for a newly suggested charging stop. The trip log only end-to-end encrypted when you fetch it yourself, and never stored.", "map always, route planner only after linking"),
+            ("Route planner (byd.serveone.at/ev)", "charge level, consumption factor, driving status; your approximate position only for a newly suggested charging stop. The trip log only end-to-end encrypted when you fetch it yourself, and never stored.", "only after linking, can be disconnected at any time"),
             ("Community server (byd.serveone.at/community)", "shared rules, only if you share them", "off by default"),
-            ("OpenStreetMap services, Open-Meteo", "address search, map data, weather for your area", "when you use these features"),
-            ("Other services (BYD account, MQTT/smart home, ABRP, Stadia Maps, AI assistant)", "depends on the service", "only if you set them up yourself; the AI assistant is off by default"),
+            ("Open-Meteo", "approximate position for the weather", "only with your consent, off by default"),
+            ("Other services (BYD account, MQTT/smart home, ABRP, Stadia Maps, AI assistant)", "depends on the service; the input field tells you where your requests go", "only if you set them up yourself"),
         ],
         "h_brauch": "What you need",
         "brauch": [
@@ -251,6 +260,7 @@ h2{font-size:26px;margin:46px 0 6px}
 .galerie{display:grid;grid-template-columns:1fr;gap:30px}
 .galerie figure{margin:0}
 .paar{display:grid;grid-template-columns:3fr 1fr;gap:10px;align-items:end}
+.zwei{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
 .galerie figcaption{color:var(--mut);font-size:14.5px;margin-top:8px}
 .galerie figcaption b{color:var(--txt)}
 .diagramm{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px;margin:8px 0 14px}
@@ -274,18 +284,19 @@ ul.liste{margin:.2em 0;padding-left:1.2em}ul.liste li{margin:.35em 0}
 .foot{color:var(--mut);font-size:13.5px;text-align:center;margin-top:46px;border-top:1px solid var(--line);padding-top:18px}
 .foot a{color:var(--mut);text-decoration:underline}
 ol.hw{padding-left:1.3em}ol.hw li{margin:.7em 0}
-@media(max-width:720px){.hero,.galerie,.paar{grid-template-columns:1fr}.hero .handy,.paar .handy{max-width:260px;margin:0 auto}h2{font-size:23px}}
+@media(max-width:720px){.hero,.galerie,.paar,.zwei{grid-template-columns:1fr}.hero .handy,.paar .handy{max-width:260px;margin:0 auto}h2{font-size:23px}}
 """
 
 
 def bild(name, art, alt, pfad, klasse="", sofort=False):
-    """<picture>: hell im hellen Modus, sonst dunkel."""
+    """<picture>: hell im hellen Modus (wenn es die Fassung gibt), sonst dunkel."""
     b = pfad + "bilder/" + name + "-" + art
-    w, h = (1440, 900) if art == "desktop" else (780, 1688)
-    return ('<a href="%s-dunkel.webp" target="_blank" rel="noopener"%s><picture>'
-            '<source media="(prefers-color-scheme: light)" srcset="%s-hell.webp">'
-            '<img src="%s-dunkel.webp" alt="%s" width="%d" height="%d" %s></picture></a>'
-            % (b, (' class="%s"' % klasse) if klasse else "", b, b, html.escape(alt), w, h,
+    w, h = {"pc": (1440, 900), "handy": (780, 1688), "display": (1280, 720)}[art]
+    hell = os.path.exists(os.path.join(QUELLE, name + "-" + art + "-hell.webp"))
+    quelle = ('<source media="(prefers-color-scheme: light)" srcset="%s-hell.webp">' % b) if hell else ""
+    return ('<a href="%s-dunkel.webp" target="_blank" rel="noopener"%s><picture>%s'
+            '<img src="%s-dunkel.webp" alt="%s" width="%d" height="%d"%s></picture></a>'
+            % (b, (' class="%s"' % klasse) if klasse else "", quelle, b, html.escape(alt), w, h,
                ' loading="eager" fetchpriority="high"' if sofort else ' loading="lazy" decoding="async"'))
 
 
@@ -402,7 +413,7 @@ def seite(t):
     o.append('  <header><div class="eyebrow">%s</div><h1>%s — <span class="grad">%s</span></h1><p class="sub">%s</p></header>'
              % (t["eyebrow"], t["h1a"], t["h1b"], t["sub"]))
     o.append('  <div class="hero">%s<div class="handy">%s</div></div>'
-             % (bild("start", "desktop", t["hero_alt_pc"], p, sofort=True), bild("start", "handy", t["hero_alt_handy"], p, sofort=True)))
+             % (bild("start", "pc", t["hero_alt_pc"], p, sofort=True), bild("start", "handy", t["hero_alt_handy"], p, sofort=True)))
     o.append('  <div class="note">%s</div>' % t["wichtig"])
     # Funktionen
     o.append('  <h2 id="funktionen">%s</h2>\n  <div class="raster">' % t["h_kann"])
@@ -411,11 +422,16 @@ def seite(t):
     o.append("  </div>")
     # Galerie
     o.append('  <h2 id="bilder">%s</h2><p class="lead">%s</p>\n  <div class="galerie">' % (t["h_bilder"], t["bilder_lead"]))
-    for name, cap, alt in t["bilder"]:
-        if name == "start":
-            continue
-        o.append('    <figure><div class="paar">%s<div class="handy">%s</div></div><figcaption><b>%s</b></figcaption></figure>'
-                 % (bild(name, "desktop", alt + " (" + t["pc"] + ")", p), bild(name, "handy", alt + " (" + t["handy"] + ")", p), html.escape(cap)))
+    for cap, bilder in t["bilder"]:
+        breit = [x for x in bilder if x[1] != "handy"]
+        hoch = [x for x in bilder if x[1] == "handy"]
+        teile = "".join(bild(n, a, alt, p) for n, a, alt in breit)
+        if hoch:
+            teile = '<div class="paar">%s<div class="handy">%s</div></div>' % (
+                "".join(bild(n, a, alt, p) for n, a, alt in breit) or "<div></div>", "".join(bild(n, a, alt, p) for n, a, alt in hoch))
+        elif len(breit) == 2:
+            teile = '<div class="zwei">%s</div>' % teile
+        o.append('    <figure>%s<figcaption><b>%s</b></figcaption></figure>' % (teile, html.escape(cap)))
     o.append("  </div>")
     # Zusammenhang
     o.append('  <h2 id="zusammenhang">%s</h2><p class="lead">%s</p>' % (t["h_zus"], t["zus_lead"]))
@@ -459,6 +475,11 @@ def hinweise(t):
 
 
 def main(bilder_quelle):
+    global QUELLE
+    QUELLE = bilder_quelle
+    alt = os.path.join(ZIEL, "bilder")
+    if os.path.isdir(alt):
+        shutil.rmtree(alt)                 # alte Bilder (0.1.7) nicht mitschleppen
     os.makedirs(os.path.join(ZIEL, "en"), exist_ok=True)
     os.makedirs(os.path.join(ZIEL, "bilder"), exist_ok=True)
     n = 0
