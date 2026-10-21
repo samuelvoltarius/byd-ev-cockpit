@@ -1,5 +1,5 @@
 {
-  "version": "1.10.3",
-  "was_neu": "Keine leere Anzeige mehr nach dem Speichern, ehrliches Alter, Route ohne Autoposition",
+  "version": "1.10.4",
+  "was_neu": "Home Assistant findet sich von selbst, Anmelden statt Token abtippen",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }
