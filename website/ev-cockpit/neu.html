@@ -40,6 +40,17 @@ footer a{color:var(--mut)}
   <p class=lead>Alle Änderungen am EV-Cockpit — das Neueste zuerst.</p>
 
     <section class="ver">
+      <div class="verhead"><h2>Version 1.10.2</h2><span class="datum">21.10.2026</span></div>
+      <p class="titel">Ehrlicher mit Panoptes</p>
+      <ul>
+        <li><b>🎥 Kein adb mehr mit Panoptes</b> — Ist Panoptes gekoppelt, verschwindet der adb-Abschnitt. Die Wächter-Aufnahmen kommen dann direkt von Panoptes (ab Panoptes 0.1.9). Der alte Weg über adb steht nur noch unter „Erweitert“.</li>
+        <li><b>❔ Keine alten Werte</b> — Was Panoptes nicht liefert (Türen, Fenster, Angesteckt, Klima, Restzeit), zeigt das Cockpit als „–“ mit Hinweis, statt alte Werte stehen zu lassen.</li>
+        <li><b>📏 „Reichweite (geschätzt)“</b> — Die eigene Reichweite heißt jetzt so; sie ist eine Rechnung (Akku × Ladestand ÷ Verbrauch), kein Messwert.</li>
+        <li><b>🗺️ Routenplaner geduldiger</b> — Das Cockpit wartet jetzt bis zu 90 Sekunden auf den Planer und sagt bei Problemen den echten Grund (zu langsam, Neustart, keine Verbindung).</li>
+      </ul>
+    </section>
+
+    <section class="ver">
       <div class="verhead"><h2>Version 1.10.1</h2><span class="datum">21.10.2026</span></div>
       <p class="titel">Route zuverlässiger, Akku ehrlich</p>
       <ul>

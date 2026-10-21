@@ -1,5 +1,5 @@
 {
-  "version": "1.10.1",
-  "was_neu": "Route hängt nicht mehr still, deine Ladenetze und Öffnungszeiten, Akkugröße ehrlich als Schätzung",
+  "version": "1.10.2",
+  "was_neu": "Kein adb mehr mit Panoptes, keine alten Werte, Reichweite (geschätzt), Routenplaner geduldiger",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }
