@@ -4,6 +4,9 @@ Regel 2: Start und Ziel verlassen den Rechner NUR bei "Route berechnen" (das ist
 "Ins Auto schicken" - kein Dauerversand, nichts im Hintergrund. Koordinaten nur im POST-Body, nie in URL oder Log.
 Der Schluessel bleibt im Cockpit-Prozess; der Browser sieht ihn nie.
 """
+import socket
+import urllib.error
+
 import planer_bridge as pb
 
 MODI = ("kompromiss", "billig", "schnell")
@@ -48,7 +51,9 @@ def anfrage_body(w, auto_pos, auto_soc, fahrzeug, auto_kennung=""):
 
 
 def _oeffnung(s):
-    """Oeffnungszeit eines Stopps als Text; ohne Angabe ehrlich 'unbekannt'."""
+    """Oeffnungszeit eines Stopps als Text; ohne Angabe ehrlich 'unbekannt'. Vertrag §10: oeffnung_text je Stopp."""
+    if isinstance(s.get("oeffnung_text"), str) and s["oeffnung_text"].strip():
+        return s["oeffnung_text"].strip()[:60]
     o = s.get("offen") or (s.get("saeule") or {}).get("offen")
     if isinstance(o, dict):
         if o.get("rund_um_die_uhr") or o.get("immer"):
@@ -76,15 +81,25 @@ def kurz(d):
                        "km": sa.get("km_auf_route"), "soc_an": s.get("soc_vorher"), "soc_ab": s.get("soc_nachher"),
                        "dauer_min": s.get("ladedauer_min"), "kwh": s.get("kwh"),
                        "preis": s.get("kosten_beste_option"), "eigene_karte": bool(s.get("mit_eigener_karte")),
-                       "oeffnung": _oeffnung(s)})
+                       "oeffnung": _oeffnung(s), "geschlossen": s.get("geoeffnet_bei_ankunft") is False,
+                       "bevorzugt": bool(s.get("bevorzugtes_netz"))})
     kosten = ((d.get("kosten") or {}).get("basis") or {}).get("gesamt")
     return {"km": r.get("km"), "minuten": r.get("minuten"), "geometrie": r.get("geometrie") or [],
             "soc_start": d.get("soc_start"), "soc_ankunft": d.get("soc_ankunft"), "stopps": stopps,
             "lade_min": round(sum(float(x["dauer_min"] or 0) for x in stopps)),
             "kosten": kosten, "fahrzeug": (d.get("fahrzeug") or {}).get("name") or "",
             "modus": d.get("modus") or "", "warnungen": [str(w)[:200] for w in (d.get("warnungen") or [])][:6],
-            "vorlieben": d.get("vorlieben") or d.get("bevorzugte_netze") or None,
+            "vorlieben": _vorlieben(d.get("filter") or {}),
             "meine_karten": d.get("meine_karten") or None}
+
+
+def _vorlieben(f):
+    """Tatsaechlich angewandte Ladenetz-Vorlieben aus plan.filter (Vertrag §10); nichts gesetzt -> None."""
+    netze = [str(x)[:60] for x in (f.get("bevorzugt") or [])][:20]
+    if not netze and not f.get("nur_offen"):
+        return None
+    return {"netze": netze, "modus": "nur" if f.get("netze_modus") == "nur" else "bevorzugen",
+            "umweg_min": f.get("umweg_max_min") or 0, "nur_offen": bool(f.get("nur_offen"))}
 
 
 def fuer_auto(k, start, ziel, start_name, ziel_name, fahrzeug=""):
@@ -104,10 +119,22 @@ def fuer_auto(k, start, ziel, start_name, ziel_name, fahrzeug=""):
             "fahrzeug": fahrzeug}
 
 
+PLAN_TIMEOUT = 50          # der Browser bricht nach 60 s ab; der Server muss vorher mit Klartext antworten
+
+
 def planen(token, body, anfrage=pb._anfrage):
-    code, d = anfrage("plan", token, body, timeout=45)
+    try:
+        code, d = anfrage("plan", token, body, timeout=PLAN_TIMEOUT)
+    except (socket.timeout, TimeoutError):
+        raise ValueError("Der Routenplaner hat nach %d s nicht geantwortet – bitte gleich noch einmal versuchen" % PLAN_TIMEOUT)
+    except urllib.error.URLError as e:
+        if isinstance(getattr(e, "reason", None), (socket.timeout, TimeoutError)):
+            raise ValueError("Der Routenplaner hat nach %d s nicht geantwortet – bitte gleich noch einmal versuchen" % PLAN_TIMEOUT)
+        raise ValueError("Routenplaner nicht erreichbar – Internetverbindung prüfen")
     if code == 429:
         raise ValueError("Zu viele Anfragen – bitte eine Minute warten")
+    if code in (502, 503, 504):
+        raise ValueError("Der Routenplaner wird gerade neu gestartet oder ist ausgelastet (HTTP %d) – bitte in einer Minute erneut" % code)
     if code != 200:
         raise ValueError((d or {}).get("fehler") or "Planer antwortet %s" % code)
     return kurz(d)
