@@ -27,6 +27,22 @@ class Fake:
         return a
 
 
+class TestIdentitaet(unittest.TestCase):
+    def test_kennung(self):
+        self.assertEqual(ps.kennung_aus({"auto": "pan-3f9a2c", "fahrzeug": "X", "quelle": "panoptes"}), "pan-3f9a2c")
+        self.assertEqual(ps.kennung_aus({"auto": "LGXC1234567890123"}), "LGXC1234567890123")  # Format ok
+        self.assertEqual(ps.kennung_aus({"auto": "a b/../c"}), "")      # nichts Unsauberes in URLs
+        self.assertEqual(ps.kennung_aus({}), "")
+
+    def test_noch_nicht_da(self):
+        p = ps.Panoptes("http://100.1.2.3:8180", "byd-1-geheim",
+                        http=Fake({"/api/planer/identitaet": RuntimeError("404")}))
+        self.assertEqual(ps.identitaet(p), "")
+        p2 = ps.Panoptes("http://100.1.2.3:8180", "byd-1-geheim",
+                         http=Fake({"/api/planer/identitaet": {"auto": "pan-1"}}))
+        self.assertEqual(ps.identitaet(p2), "pan-1")
+
+
 class TestUmrechnung(unittest.TestCase):
     def test_telemetrie(self):
         st = ps.aus_telemetrie({"soc": 63.5, "odometer": 18342, "ev_range_km": 205, "ext_temp": 8,

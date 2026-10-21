@@ -173,3 +173,19 @@ class Panoptes:
             return st
         except Exception:
             return None
+
+
+def kennung_aus(d):
+    """GET /api/planer/identitaet -> sichere auto-Kennung oder "" (Format wie beim Planer: 1-32 Zeichen [A-Za-z0-9_-])."""
+    import re
+    a = str((d or {}).get("auto") or "")
+    return a if re.fullmatch(r"[A-Za-z0-9_-]{1,32}", a) else ""
+
+
+def identitaet(p):
+    """Die Planer-Kennung von Panoptes (planner.autoId), damit Cockpit und Auto dieselbe Route/Rueckmeldung sehen.
+    "" solange Panoptes den Endpunkt noch nicht hat (404) oder das Auto nicht erreichbar ist."""
+    try:
+        return kennung_aus(p._get("/api/planer/identitaet"))
+    except Exception:
+        return ""

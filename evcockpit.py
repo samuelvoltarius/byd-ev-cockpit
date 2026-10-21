@@ -687,6 +687,19 @@ def _charger_loop():
 # ---------------------------------------------------------------- Routenplaner der BYD-Community (optional)
 _PLANER = None
 _ROUTE = {"t": 0.0, "d": None, "fehler": ""}
+_PAN_ID = {"t": 0.0, "auto": ""}
+
+
+def _planer_kennung():
+    """Welche auto-Kennung beim Planer gilt: mit Panoptes gekoppelt die von Panoptes (dieselbe Route und
+    Rueckmeldung wie im Auto, stuendlich nachgefragt), sonst die eigene des Cockpits."""
+    if _CFG.get("panoptes") and _PANOPTES.get("obj") is not None:
+        if time.time() - _PAN_ID["t"] > 3600:
+            from panoptes_source import identitaet
+            _PAN_ID.update(t=time.time(), auto=identitaet(_PANOPTES["obj"]))
+        if _PAN_ID["auto"]:
+            return _PAN_ID["auto"]
+    return _CFG.get("planer_auto") or ""
 
 
 class _ManifestLazy:
@@ -3323,7 +3336,7 @@ class H(BaseHTTPRequestHandler):
                 jetzt = time.time()
                 if jetzt - _ROUTE["t"] > 30:
                     from planer_bridge import route_kurz
-                    _ROUTE.update(t=jetzt, d=route_kurz(_CFG["planer_token"], _CFG.get("planer_auto") or ""), fehler="")
+                    _ROUTE.update(t=jetzt, d=route_kurz(_CFG["planer_token"], _planer_kennung()), fehler="")
                 self._send(json.dumps({"an": True, "route": _ROUTE["d"], "fehler": _ROUTE["fehler"]}), "application/json")
             except Exception as e:
                 _ROUTE.update(t=time.time(), fehler="Planer nicht erreichbar (%s)" % type(e).__name__)
