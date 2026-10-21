@@ -68,7 +68,7 @@ Then open <http://127.0.0.1:8099> in your browser.
 
 Instead of a silhouette the cockpit shows your model in 3D: the same models as in Panoptes, in your paint colour
 (colour buttons below the car). The model (~1 MB) is downloaded once from the community server, checked by checksum
-and stored on your computer. Your own photo takes precedence. Models by Nazh Design (CC BY 4.0), details under "About".
+and stored on your computer. Your own photo takes precedence. Models partly by Nazh Design (CC BY 4.0), partly built by the Panoptes project (CC0); details under "About".
 
 ## Where does the data come from? You choose
 

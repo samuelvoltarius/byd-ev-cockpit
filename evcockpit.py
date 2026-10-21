@@ -1299,10 +1299,12 @@ small{color:var(--mut)}
 </div>
 <div class=card>
  <h2 style="margin-top:0">Lizenzen</h2>
- <b>3D-Automodelle</b> (dieselben wie in Panoptes): von <a href="https://sketchfab.com/NazhDesign" target=_blank rel=noopener>Nazh Design</a>,
- Lizenz <a href="https://creativecommons.org/licenses/by/4.0/" target=_blank rel=noopener>CC BY 4.0</a>, für Panoptes angepasst
- (Herstellerlogos entfernt, Netz reduziert, Lack als eigenes Material).
- Alle Modelle mit Quelle: <a href="https://byd.serveone.at/tiles/models/MODELLE_LIZENZEN.md" target=_blank rel=noopener>Modell-Lizenzen</a>.<br>
+ <b>3D-Automodelle</b> (dieselben wie in Panoptes, Manifest live vom Community-Server): teils von
+ <a href="https://sketchfab.com/NazhDesign" target=_blank rel=noopener>Nazh Design</a> unter
+ <a href="https://creativecommons.org/licenses/by/4.0/" target=_blank rel=noopener>CC BY 4.0</a> (für Panoptes angepasst:
+ Herstellerlogos entfernt, Netz reduziert, Lack als eigenes Material), teils Eigenbauten des Panoptes-Projekts unter CC0.
+ Die Angabe zum gezeigten Modell steht direkt unter dem Auto. Alle Modelle mit Quelle:
+ <a href="https://byd.serveone.at/tiles/models/MODELLE_LIZENZEN.md" target=_blank rel=noopener>Modell-Lizenzen</a>.<br>
  <b>three.js</b> (3D-Darstellung, im Paket): MIT-Lizenz, © three.js authors.<br>
  <b>Leaflet</b>, <b>MapLibre GL</b>, <b>PMTiles</b>: BSD/MIT-Lizenzen. Schriften <b>Sora</b> und <b>Manrope</b>: SIL Open Font License.<br>
  Kartendaten © OpenStreetMap-Mitwirkende.
