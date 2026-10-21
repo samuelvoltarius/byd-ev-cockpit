@@ -59,6 +59,24 @@ class TestWaechter(unittest.TestCase):
             self.assertNotIn('"/api/recordings/' + verboten, q)
         self.assertNotIn("method=\"DELETE\"", q)
 
+    def test_vorschau_202_wird_abgewartet(self):
+        class R:
+            def __init__(self, st): self.status = st
+            def close(self): pass
+        antworten = [R(202), R(202), R(200)]
+        import urllib.request as ur
+        alt = ur.urlopen
+        ur.urlopen = lambda req, timeout=20: antworten.pop(0)
+        try:
+            gewartet = []
+            r = w.oeffnen(Pv({}), "thumb", "a" * 32, warte=gewartet.append)
+            self.assertEqual((r.status, len(gewartet)), (200, 2))
+            antworten[:] = [R(202)] * 5
+            with self.assertRaises(urllib.error.HTTPError):
+                w.oeffnen(Pv({}), "thumb", "a" * 32, warte=lambda s: None)
+        finally:
+            ur.urlopen = alt
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,5 @@
 {
-  "version": "1.10.5",
-  "was_neu": "Fahrtenbuch im Cockpit (aus Panoptes, mit CSV)",
+  "version": "1.11.0",
+  "was_neu": "Wächter-Aufnahmen im Cockpit (mit Panoptes ab 0.1.9)",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }

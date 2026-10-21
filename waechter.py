@@ -63,7 +63,7 @@ def tage(pv):
     return out[:120]
 
 
-def oeffnen(pv, art, rid, bereich=""):
+def oeffnen(pv, art, rid, bereich="", warte=None):
     """Clip ('video') oder Vorschaubild ('thumb') als offene Antwort (der Aufrufer reicht sie durch und schliesst sie).
     Range wird weitergegeben, damit der Browser im Clip springen kann."""
     if art not in ("video", "thumb") or not ID.fullmatch(rid or ""):
@@ -77,9 +77,20 @@ def oeffnen(pv, art, rid, bereich=""):
             kopf["Range"] = bereich
         return urllib.request.urlopen(urllib.request.Request(pv.url + "/%s/id/%s" % (art, rid), headers=kopf), timeout=20)
     try:
-        return _auf()
+        r = _auf()
     except urllib.error.HTTPError as e:
         if e.code != 401:
             raise
         pv._anmelden()                                   # Token abgelaufen: einmal neu
-        return _auf()
+        r = _auf()
+    # Panoptes erzeugt ein Vorschaubild beim ersten Abruf und antwortet solange 202 (JSON) - kurz warten, neu fragen
+    for _ in range(4):
+        if art != "thumb" or r.status != 202:
+            break
+        r.close()
+        (warte or __import__("time").sleep)(1.5)
+        r = _auf()
+    if art == "thumb" and r.status != 200:
+        r.close()
+        raise urllib.error.HTTPError(pv.url, 503, "Vorschau wird noch erstellt", {}, None)
+    return r
