@@ -58,7 +58,7 @@ T = {
                 "aria": "Grafik: Panoptes im Auto in der Mitte, verbunden mit EV-Cockpit am PC, Routenplaner, Community-Karte, Telegram-Bot und bald Home Assistant"},
         "verb": [
             ("1", "Panoptes ↔ EV-Cockpit (Kopplung)", "Du erlaubst das Cockpit einmal mit einer Prüfzahl, in Telegram oder auf der Panoptes-Seite. Dann holt das Cockpit Fahrzeugwerte, Einstellungen und das Fahrtenbuch direkt aus dem Auto, über dein Heimnetz oder Tailscale.",
-             "Nicht dabei: Fernzugang, Passwort und Anschlüsse. Nichts davon läuft über unsere Server, das Fahrtenbuch bleibt auf deinem PC."),
+             "Nicht dabei: Fernzugang, Passwort und Anschlüsse. Nichts davon läuft über unsere Server, das Fahrtenbuch bleibt auf deinem PC. Den Zugang hebt das Cockpit im Schlüsselbund deines Rechners auf. Was es sonst an Server schickt (Karte, 3D-Modell, Routenplaner, Zählung), entscheidest du mit eigenen Häkchen; ohne Häkchen nichts."),
             ("2", "Panoptes ↔ Routenplaner", "Nach dem Verbinden kommt dein Ziel mit Ladestopps ins Auto. Panoptes meldet Ladestand, Verbrauchsfaktor und Fahrstatus, damit der Plan stimmt. Rufst du auf /ev/ dein Fahrtenbuch ab, kommt es Ende-zu-Ende verschlüsselt direkt vom Auto in deinen Browser.",
              "Nicht dabei: Der Server kann das Fahrtenbuch nicht lesen und speichert es nie (nur kurz im Arbeitsspeicher, höchstens 2 Minuten). Die ungefähre Position geht nur mit, wenn Panoptes unterwegs einen neuen Ladestopp vorschlägt."),
             ("3", "Panoptes ↔ Community-Karte", "Kartenkacheln und Ladesäulen-Daten kommen von byd.serveone.at, mit Live-Belegung, wo es offene Daten gibt.",
@@ -161,7 +161,7 @@ T = {
                 "aria": "Diagram: Panoptes in the car in the middle, connected to the EV Cockpit on a PC, the route planner, the community map, a Telegram bot and, soon, Home Assistant"},
         "verb": [
             ("1", "Panoptes ↔ EV Cockpit (pairing)", "You allow the cockpit once with a check number, in Telegram or on the Panoptes page. The cockpit then fetches vehicle data, settings and the trip log straight from the car, over your home network or Tailscale.",
-             "Not included: remote access, password and ports. None of this goes through our servers; the trip log stays on your PC."),
+             "Not included: remote access, password and ports. None of this goes through our servers; the trip log stays on your PC. The cockpit keeps the access key in your computer's keyring. Anything else it sends to servers (map, 3D model, route planner, usage count) needs its own tick; without a tick, nothing."),
             ("2", "Panoptes ↔ route planner", "Once linked, your destination with charging stops goes into the car. Panoptes reports charge level, consumption factor and driving status so the plan is right. When you fetch your trip log on /ev/, it comes end-to-end encrypted straight from the car to your browser.",
              "Not included: the server cannot read the trip log and never stores it (only briefly in memory, 2 minutes at most). Your approximate position is only sent when Panoptes suggests a new charging stop on the road."),
             ("3", "Panoptes ↔ community map", "Map tiles and charger data come from byd.serveone.at, with live availability where open data exists.",
