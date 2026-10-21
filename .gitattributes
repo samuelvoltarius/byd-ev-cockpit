@@ -1,0 +1,4 @@
+# Gepruefte Fremddateien (sha256/SRI) byte-genau lassen - keine Zeilenend-Umwandlung
+static/** -text
+pruefdaten/** -text
+*.sh text eol=lf
