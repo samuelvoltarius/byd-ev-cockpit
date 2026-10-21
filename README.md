@@ -208,9 +208,10 @@ count (random ID, version, car model; untick it and the entry is deleted on the 
 3D model, chargers nearby, electricity price, route planner and "learn real consumption". Pairing with Panoptes
 stays in your home network or Tailscale.
 
-**Passwords and keys on your computer:** on Windows the cockpit encrypts them in its settings file with the
-Windows data protection (DPAPI) of your user account; only you on this computer can read them. On Linux and macOS
-they are stored in the settings file readable only by your user (0600).
+**Passwords and keys on your computer** go into your operating system's keyring: on Windows encrypted with the
+data protection (DPAPI) of your user account, on macOS in the Keychain, on Linux in the Secret Service (GNOME keyring,
+KWallet; needs `secret-tool`). The settings file then only holds a reference. Without a keyring (e.g. a Raspberry
+without desktop) they stay in the settings file readable only by your user (0600), and the cockpit shows a warning.
 
 ## Notes / liability
 

@@ -210,9 +210,11 @@ Nutzungszählung (Zufalls-ID, Version, Automodell; Häkchen weg = Eintrag wird b
 Kartenquelle, 3D-Modell, Ladesäulen in der Nähe, Strompreis, Routenplaner und „Echten Verbrauch lernen“. Die Kopplung
 mit Panoptes bleibt in deinem Heimnetz bzw. Tailscale.
 
-**Passwörter und Schlüssel auf deinem Rechner:** Unter Windows verschlüsselt das Cockpit sie in seiner
-Einstellungsdatei mit dem Windows-Datenschutz (DPAPI) deines Benutzerkontos; nur du an diesem Rechner kannst sie
-lesen. Unter Linux und macOS liegen sie in der Einstellungsdatei, die nur dein Benutzer lesen darf (0600).
+**Passwörter und Schlüssel auf deinem Rechner** kommen in den Schlüsselbund deines Betriebssystems: unter Windows
+verschlüsselt mit dem Datenschutz (DPAPI) deines Benutzerkontos, unter macOS in den Schlüsselbund, unter Linux in den
+Secret Service (GNOME-Schlüsselbund, KWallet; braucht `secret-tool`). In der Einstellungsdatei steht dann nur ein
+Verweis. Ohne Schlüsselbund (z. B. Raspberry ohne Desktop) bleiben sie in der Einstellungsdatei, die nur dein Benutzer
+lesen darf (0600), und das Cockpit zeigt einen Warnhinweis.
 
 ## Hinweise / Haftung
 
