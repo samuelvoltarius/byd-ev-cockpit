@@ -180,7 +180,7 @@ class TestRoute(unittest.TestCase):
             return 404, {}
         r = pb.route_kurz(TOK, "evc-1a2b3c4d", anfrage=anfrage)
         self.assertEqual(calls, ["meine-route?auto=evc-1a2b3c4d"])
-        self.assertEqual(r, {"titel": "Salzburg → Wien", "km": 302.7, "minuten": 161, "stopps": 2, "soc_ankunft": 18,
+        self.assertEqual(r, {"titel": "Salzburg → Wien", "km": 302.7, "minuten": 161, "kosten": None, "stopps": 2, "soc_ankunft": 18,
                              "erstellt": "2026-10-21T08:00:00Z", "abgeholt": True, "status": "Navigation läuft", "stopp": 1})
         self.assertNotIn("geometrie", r)                 # nur das Noetige fuer die Startseite
 

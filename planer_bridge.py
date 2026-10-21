@@ -318,7 +318,9 @@ def route_kurz(token, auto="", anfrage=_anfrage):
         c2, s2 = anfrage("auto-status" + q, token)
         st = (s2.get("status") or {}) if c2 == 200 else {}
     stopps = plan.get("stopps") or []
-    return {"titel": plan.get("titel") or "", "km": plan.get("km"), "minuten": plan.get("minuten"),
+    preise = [s.get("preis") for s in stopps]
+    kosten = round(sum(preise), 2) if stopps and all(isinstance(p, (int, float)) for p in preise) else None
+    return {"titel": plan.get("titel") or "", "km": plan.get("km"), "minuten": plan.get("minuten"), "kosten": kosten,
             "stopps": len(stopps), "soc_ankunft": plan.get("soc_ankunft"), "erstellt": plan.get("erstellt"),
             "abgeholt": bool(plan.get("schon_abgeholt")),
             "status": STATUS_TEXT.get(st.get("status"), ""), "stopp": st.get("stopp")}

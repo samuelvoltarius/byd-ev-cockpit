@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.11.8"
+VERSION = "1.12.0"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -491,6 +491,11 @@ def _waechter_letztes(pv):
     if jetzt - _LETZT["t"] < 60 or jetzt < _LETZT["zu_alt_bis"]:
         return
     _LETZT["t"] = jetzt
+    try:
+        z = ((pv._get("/api/surveillance/status") or {}).get("status") or {}).get("zustand")
+        _STATE["waechter_zustand"] = z if z in ("scharf", "startet", "unterdrueckt", "aus", "nicht_gewaehlt") else None
+    except Exception:
+        _STATE["waechter_zustand"] = None
     try:
         import waechter
         a = waechter.letztes(pv)
@@ -1379,7 +1384,7 @@ _I18N.update({
     "FAHRZEUGE & LADEPUNKTE": "VEHICLES & CHARGE POINTS", "PV-Erzeugung": "Solar production",
     "Netz": "Grid", "Speicher": "Battery", "Hausverbrauch": "Home consumption",
     "Netzpreis": "Grid tariff", "Grünstromanteil": "Green energy share",
-    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette", "Abfahrt": "Departure", "jetzt": "now", "Uhrzeit wählen": "choose time", "+ Zwischenstopp": "+ Stopover", "Zwischenstopp": "Stopover", "Ort oder Adresse": "Place or address", "Aufenthalt in Minuten": "Stay in minutes", "entfernen": "remove", "Bitte jeden Zwischenstopp aus der Liste wählen oder entfernen": "Please choose each stopover from the list or remove it", "Bitte eine Abfahrtszeit wählen": "Please choose a departure time", "ab": "dep.", "an": "arr.", "gesamt": "total", "Aufenthalt": "stay", "Community-Karte gerade nicht erreichbar": "Community map not reachable right now", "Es werden keine Kartenbilder von anderswo geladen.": "No map images are loaded from anywhere else.", "Stattdessen OpenStreetMap verwenden": "Use OpenStreetMap instead", "LETZTES WÄCHTER-EREIGNIS": "LATEST GUARD EVENT", "Noch kein Ereignis": "No event yet", "Aufnahmen gibt es im Cockpit ab Panoptes 0.1.9.": "Recordings are available in the cockpit from Panoptes 0.1.9.", "Liefert Panoptes gerade nicht": "Not provided by Panoptes right now", "Türen": "Doors", "Fenster": "Windows", "Angesteckt": "Plugged in", "Klima": "Climate", "Restzeit": "Time left", "Batterieheizung": "Battery heating", "gerade unbekannt": "unknown right now", "Preis": "Price", "Vorschau folgt": "Preview pending", "geschätzt von Panoptes": "estimated by Panoptes", "Nennkapazität × Akku-Gesundheit": "nominal capacity × battery health", "Mit Panoptes übernimmt das Cockpit die Schätzung von Panoptes (höchstens die Nennkapazität des Modells).": "With Panoptes the cockpit uses Panoptes' estimate (at most the model's nominal capacity).", "Unerwartete Antwort vom Cockpit-Server": "Unexpected answer from the cockpit server", "Keine Antwort nach 60 s – der Routenplaner ist gerade zu langsam. Bitte gleich noch einmal.": "No answer after 60 s – the route planner is too slow right now. Please try again shortly.", "Ladenetze einstellen (Planer → Route → Erweitert)": "Set charging networks (planner → Route → Advanced)", "Der Routenplaner hat nach 50 s nicht geantwortet – bitte gleich noch einmal versuchen": "The route planner did not answer within 50 s – please try again shortly", "Routenplaner nicht erreichbar – Internetverbindung prüfen": "Route planner not reachable – check your internet connection", "Der Routenplaner wird gerade neu gestartet oder ist ausgelastet (HTTP 503) – bitte in einer Minute erneut": "The route planner is restarting or busy (HTTP 503) – please try again in a minute", "Der Routenplaner wird gerade neu gestartet oder ist ausgelastet (HTTP 502) – bitte in einer Minute erneut": "The route planner is restarting or busy (HTTP 502) – please try again in a minute", "Der Routenplaner wird gerade neu gestartet oder ist ausgelastet (HTTP 504) – bitte in einer Minute erneut": "The route planner is restarting or busy (HTTP 504) – please try again in a minute", "Zu viele Anfragen – bitte eine Minute warten": "Too many requests – please wait a minute", "Öffnungszeit unbekannt": "opening hours unknown", "24 h geöffnet": "open 24 h", "WÄCHTER-AUFNAHMEN": "GUARD RECORDINGS", "🎥 Aufnahmen aus Panoptes ansehen": "🎥 View recordings from Panoptes", "Die Liste und die Vorschaubilder lädt das Cockpit nur, wenn du diesen Bereich öffnest, einen Clip nur, wenn du ihn antippst. Kein Live-Bild. Die Aufnahmen bleiben im Auto; das Cockpit speichert nichts.": "The cockpit loads the list and thumbnails only when you open this section, and a clip only when you tap it. No live view. Recordings stay in the car; the cockpit stores nothing.", "Alle Tage": "All days", "Alle Arten": "All types", "Wächter": "Guard", "Annäherung": "Approach", "Fahrtaufnahme": "Drive recording", "Rückblick": "Replay", "Dashcam": "Dashcam", "Weitere laden": "Load more", "⏳ Frage Panoptes …": "⏳ Asking Panoptes …", "Aufnahmen gibt es im Cockpit ab Panoptes 0.1.9. Dein Panoptes ist älter – nach dem Update hier erneut öffnen.": "Recordings are available in the cockpit from Panoptes 0.1.9. Your Panoptes is older – open this again after the update.", "Panoptes antwortet nicht": "Panoptes is not responding", "Panoptes baut die Liste gerade auf": "Panoptes is building the list", "bitte gleich noch einmal ↻.": "please press ↻ again shortly.", "Keine Aufnahmen gefunden.": "No recordings found.", "Datenträger fehlt": "Storage missing", "Erweitert: Wächter-Kamera ohne Panoptes (Overdrive-Altweg, für Fortgeschrittene)": "Advanced: guard camera without Panoptes (legacy Overdrive route, for experts)", "Mit Panoptes brauchst du das nicht: Die Aufnahmen siehst du dann im Cockpit unter „Wächter-Aufnahmen“.": "With Panoptes you don't need this: you'll see the recordings in the cockpit under “Guard recordings”.", "🎥 Wächter-Kamera per adb (optional)": "🎥 Guard camera via adb (optional)", "Start": "Start", "Ziel": "Destination", "Akku jetzt": "Battery now", "Ankunft mind.": "Arrive with at least", "Wie": "How", "ausgewogen": "balanced", "günstig": "cheap", "schnell": "fast", "🗺️ Route berechnen": "🗺️ Calculate route", "Start und Ziel gehen nur beim Klick auf „Route berechnen“ an den Routenplaner (byd.serveone.at) – das ist die Anfrage selbst. Kein Dauerversand, nichts im Hintergrund. Die Ortssuche fragt nur, während du tippst.": "Start and destination are sent to the route planner (byd.serveone.at) only when you click “Calculate route” – that is the request itself. Nothing is sent continuously or in the background. Place search only asks while you type.", "📤 Ins Auto schicken": "📤 Send to car", "„Ins Auto schicken“ legt nur die Route beim Routenplaner ab; Panoptes im Auto holt sie dort ab. Am Fahrzeug wird nichts ausgelöst – kein Befehl, keine Navigation startet von selbst.": "“Send to car” only stores the route with the route planner; Panoptes in the car picks it up there. Nothing is triggered on the vehicle – no command, no navigation starts by itself.", "Nichts gefunden": "Nothing found", "Bitte ein Ziel aus der Liste wählen": "Please choose a destination from the list", "Bitte einen Start aus der Liste wählen oder das Feld leeren (dann gilt dein Auto)": "Please choose a start from the list or clear the field (then your car is used)", "⏳ Frage den Routenplaner …": "⏳ Asking the route planner …", "vom Auto": "from the car", "Fahrt": "driving", "Ladestopp": "charging stop", "Ladestopps": "charging stops", "Ankunft mit": "Arrival with", "Deine Ladevorlieben gelten": "Your charging preferences apply", "Ladevorlieben (z. B. nur bestimmte Ladenetze) stellst du im Planer-Konto ein": "Charging preferences (e.g. only certain networks) are set in your planner account", "Konto-Einstellungen": "Account settings", "Profil": "Profile", "nach": "after", "Kein Ladestopp nötig.": "No charging stop needed.", "nur": "only", "bevorzugt": "preferred", "Umweg bis": "detour up to", "nur wenn bei Ankunft geöffnet": "only if open on arrival", "ohne Kartenbilder (keine Kartenquelle gewählt)": "without map images (no map source chosen)", "⚪ Start · 🟢 Ladestopp · 🟠 Ziel": "⚪ start · 🟢 charging stop · 🟠 destination", "Route liegt im Planer bereit – Panoptes im Auto holt sie ab.": "Route is ready in the planner – Panoptes in the car picks it up.", "rund um die Uhr geöffnet": "open 24/7", "offen bis": "open until", "bei Ankunft geschlossen": "closed on arrival", "ROUTE": "ROUTE", "Route": "Route", "📍 Mein Auto": "📍 My car", "Ort, Adresse, Link oder Plus Code": "Place, address, link or Plus Code", "Keine Autoposition bekannt – bitte einen Start eingeben": "No car position known – please enter a start", "Bitte zuerst eine Route berechnen": "Please calculate a route first", "Wie oft beim Auto nachfragen?": "How often to ask the car?", "Geparkt": "Parked", "Bei Fahrt bzw. Laden": "While driving or charging", "nur manuell": "manual only", "Jede Abfrage weckt die App im Auto. Ist dieser Tab verborgen, wird pausiert.": "Every query wakes the app in the car. While this tab is hidden, queries pause.", "Nach jedem Antippen kurz alle 5 s (höchstens 60 s), dann wieder der gewählte Takt.": "After each tap briefly every 5 s (at most 60 s), then back to the chosen interval.", "Akku nutzbar in kWh": "Usable battery in kWh", "von dir eingetragen": "entered by you", "Mit Panoptes wird der Wert vom Auto übernommen.": "With Panoptes the value is taken from the car.", "lernt aus deinen Fahrten": "learns from your trips", "liefert diese Datenquelle nicht": "not provided by this data source", "Ich habe den Hinweis gelesen und verstanden.": "I have read and understood the notice.", "Deine Passwörter und Schlüssel liegen unverschlüsselt in der Einstellungsdatei (nur für deinen Benutzer lesbar), weil hier kein Schlüsselbund verfügbar ist. Unter Linux hilft das Paket „libsecret-tools“ (secret-tool) mit einem laufenden Schlüsselbund.": "Your passwords and keys are stored unencrypted in the settings file (readable only by your user) because no keyring is available here. On Linux, the package “libsecret-tools” (secret-tool) with a running keyring helps.", "Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust. Du entscheidest:": "Whoever delivers the map images sees your IP address and the area you look at. You decide:", "Keine Karte": "No map", "Es werden keine Kartenbilder geladen.": "No map images are loaded.", "Kartenbilder von OpenStreetMap (fremder Dienst).": "Map images from OpenStreetMap (third-party service).", "Community-Karte": "Community map", "Dieselbe Karte wie im Planer und in der Panoptes-App, vom Server der BYD-Community (byd.serveone.at). Nur damit gibt es die Live-Belegung der Ladesäulen.": "The same map as in the planner and the Panoptes app, from the BYD community server (byd.serveone.at). Live charger availability only works with it.", "Karte anzeigen?": "Show the map?", "Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust.": "Whoever delivers the map images sees your IP address and the area you look at.", "Neu: Karte und 3D-Modell sind freiwillig": "New: map and 3D model are optional", "Beides lädt Daten von fremden Servern; die sehen dabei deine IP-Adresse (und bei der Karte die Gegend, beim 3D-Modell dein Automodell). Ohne deine Wahl bleibt beides aus.": "Both load data from other servers, which see your IP address (and the area for the map, your car model for the 3D model). Without your choice both stay off.", "Karte": "Map", "Dein Auto in 3D (vom Community-Server)": "Your car in 3D (from the community server)", "Speichern": "Save", "Dieselbe Karte wie im Planer und in der Panoptes-App. Die Kartenkacheln deiner Gegend lädt dann der Server der BYD-Community (byd.serveone.at); er sieht dabei deine IP-Adresse und den Kartenausschnitt. Ohne Haken lädt sie OpenStreetMap.": "The same map as in the planner and the Panoptes app. The map tiles for your area are then loaded from the BYD community server (byd.serveone.at); it sees your IP address and the map area. Without the tick, OpenStreetMap loads them.", "🚗 Dein Auto in 3D": "🚗 Your car in 3D", "Lädt einmal das 3D-Modell deines Autos vom Server der BYD-Community (byd.serveone.at). Der Server sieht dabei deine IP-Adresse und welches Modell du fährst. Ohne Haken: neutrale Silhouette oder dein Foto.": "Loads your car's 3D model once from the BYD community server (byd.serveone.at). The server sees your IP address and which model you drive. Without the tick: a neutral silhouette or your photo.", "Zeigt öffentliche Ladestationen am Standort deines Autos mit Entfernung und Steckertyp. Dafür geht die Position deines Autos an OpenStreetMap (Overpass-Dienst) oder an deinen eigenen OpenGlance-Server, wenn du ihn unten einträgst. Mit der Community-Karte kommt die Live-Belegung dazu: dafür geht nur die Kartenmitte, auf etwa 5 km gerundet, an den Server der BYD-Community.": "Shows public chargers at your car's location with distance and connector type. For this, your car's position is sent to OpenStreetMap (Overpass service) or to your own OpenGlance server if you enter it below. With the community map, live availability is added: only the map centre, rounded to about 5 km, goes to the BYD community server.", "Kurz vorab": "Quick note first", "Das EV-Cockpit ist ein privates Freizeitprojekt, kostenlos und ohne Gewähr. Du nutzt es auf eigenes Risiko, nur privat. Es verwendet dein BYD-Konto, Home Assistant oder deine Wallbox so, wie du es einstellst. Für Fernbefehle (z. B. Klima, Zusperren) und Ladebefehle an die Wallbox bist du selbst verantwortlich. Werte wie Ladestand, Reichweite und Preise können abweichen. Das EV-Cockpit ist nicht mit BYD verbunden.": "EV-Cockpit is a private hobby project, free and without warranty. You use it at your own risk, for private use only. It uses your BYD account, Home Assistant or your wallbox as you configure it. You are responsible for remote commands (e.g. climate, locking) and charging commands to your wallbox. Values such as charge level, range and prices may be inaccurate. EV-Cockpit is not affiliated with BYD.", "Alle Hinweise lesen": "Read all notes", "Gelesen und einverstanden": "Read and agreed", "Bitte bestätige die Hinweise, um fortzufahren.": "Please confirm the notes to continue.", "Freizeitprojekt.": "Hobby project.", "Panoptes, das EV-Cockpit und der Routenplaner sind ein privates Freizeitprojekt von Alfred Aigner. Sie werden kostenlos und ohne Gewähr angeboten.": "Panoptes, EV-Cockpit and the route planner are a private hobby project by Alfred Aigner. They are provided free of charge and without warranty.", "Ohne Gewähr.": "No warranty.", "Es gibt keine Garantie, dass alles fehlerfrei, vollständig oder jederzeit verfügbar ist. Das gilt auch für Ladestände, Reichweiten, Preise, Belegung von Ladesäulen, Routen, Blitzer- und Gefahrenhinweise. Prüfe Wichtiges selbst; im Straßenverkehr gilt immer, was du siehst und was die Schilder sagen.": "There is no guarantee that everything is correct, complete or always available. This includes charge levels, range, prices, charger availability, routes, speed camera and hazard warnings. Check anything important yourself; on the road, what you see and the road signs always come first.", "Eigenes Risiko.": "Your own risk.", "Du nutzt alles auf eigenes Risiko. Soweit gesetzlich zulässig, übernimmt Alfred Aigner keine Haftung für Schäden, die aus der Nutzung entstehen, auch nicht für Schäden am Fahrzeug, an Daten oder durch Fernbefehle.": "You use everything at your own risk. To the extent permitted by law, Alfred Aigner accepts no liability for any damage resulting from its use, including damage to your vehicle, to data, or caused by remote commands.", "Du bist verantwortlich.": "You are responsible.", "Du allein entscheidest, wie du die Funktionen einsetzt, und bist dafür verantwortlich, dass das erlaubt ist. Das betrifft vor allem Datenschutz, Kamera-Aufnahmen, Fernbefehle über das BYD-Konto und die Regeln im Straßenverkehr.": "You alone decide how you use the features, and you are responsible for making sure that use is legal. This applies especially to data protection, camera recordings, remote commands via your BYD account, and traffic rules.", "Nur privat.": "Private use only.", "Gedacht ist alles nur für die private Nutzung mit deinem eigenen Fahrzeug. Ein gewerblicher Einsatz (z. B. Flotten, Vermietung, Taxi, Firmenwagen-Überwachung) ist nicht vorgesehen.": "Everything is intended for private use with your own vehicle only. Commercial use (e.g. fleets, rental, taxi, monitoring company cars) is not intended.", "Wächter nur auf eigenem Grund.": "Guardian on your own property only.", "Kamera-Aufnahmen des Wächters sind für deinen eigenen Privatgrund gedacht (z. B. Garage, Einfahrt). Richte die Kameras so aus, dass weder öffentlicher Raum (Straße, Gehweg, öffentlicher Parkplatz) noch das Grundstück der Nachbarn erfasst wird. Aufnahmen nicht veröffentlichen.": "Guardian recordings are intended for your own private property (e.g. garage, driveway). Point the cameras so that neither public space (street, pavement, public car park) nor your neighbours' property is captured. Do not publish recordings.", "Nicht von BYD.": "Not BYD.", "Dieses Projekt ist nicht mit BYD verbunden und wird von BYD weder unterstützt noch geprüft. „BYD“, „DiLink“ und alle anderen genannten Namen und Marken gehören ihren jeweiligen Inhabern.": "This project is not affiliated with BYD and is not supported or reviewed by BYD. “BYD”, “DiLink” and all other names and trademarks mentioned belong to their respective owners.", "Gesetzliche Rechte bleiben.": "Your legal rights remain.", "Die Haftung für Vorsatz und grobe Fahrlässigkeit, für Personenschäden sowie zwingende Rechte von Verbraucherinnen und Verbrauchern werden durch diese Hinweise nicht eingeschränkt.": "Liability for intent and gross negligence, for personal injury, and mandatory consumer rights are not limited by these notes.", "🔗 Mit Panoptes verbinden": "🔗 Connect to Panoptes", "Bestätige in Telegram oder hier:": "Confirm in Telegram or here:", "will sich verbinden. Prüfzahl:": "wants to connect. Check number:", "Panoptes öffnen („Gekoppelte Geräte“)": "Open Panoptes (“Paired devices”)", "Vergleiche die Prüfzahl und tippe auf „Erlauben“. Die Anfrage gilt 2 Minuten.": "Compare the check number and tap “Allow”. The request is valid for 2 minutes.", "Erweitert: mit Kopplungs-Code oder Link": "Advanced: with pairing code or link", "Kopplungs-Code oder Link aus Panoptes („Neues Gerät koppeln“, 10 min gültig, einmal verwendbar)": "Pairing code or link from Panoptes (“Pair new device”, valid 10 min, single use)", "482913 oder https://…/system.html#koppeln=…": "482913 or https://…/system.html#koppeln=…", "🔗 Mit Routenplaner verbinden": "🔗 Connect to route planner", "Im Browser bestätigen:": "Confirm in your browser:", "Code": "Code", "Routenplaner öffnen und erlauben": "Open route planner and allow", "Melde dich dort als Mitglied an und tippe auf „Erlauben“. Der Code gilt 10 Minuten.": "Sign in there as a member and tap “Allow”. The code is valid for 10 minutes.", "Erweitert: mit persönlichem Planer-Link": "Advanced: with your personal planner link", "Warte auf „Erlauben“ …": "Waiting for “Allow” …", "Verbunden": "Connected", "Ladestand ": "charge level ", "Mit dem Routenplaner verbunden": "Connected to the route planner", "Schon gekoppelt. Nur neu verbinden, wenn die Kopplung in Panoptes entfernt wurde.": "Already paired. Only connect again if the pairing was removed in Panoptes.", "3D-Modell nicht geladen": "3D model not loaded", "Erneut versuchen": "Try again", "3D-Modell wird geladen …": "Loading 3D model …", "Laden fehlgeschlagen": "Loading failed", "Dieser Browser kann kein WebGL": "This browser has no WebGL", "Keine Route bereit. Plane eine unter „Route“ und schick sie mit „Ins Auto schicken“.": "No route ready. Plan one under “Route” and send it with “Send to car”.", "Routenplaner antwortet gerade zu langsam": "Route planner is responding too slowly right now", "Routenplaner startet gerade neu oder ist ausgelastet": "Route planner is restarting or busy", "Keine Verbindung zum Routenplaner – Internet prüfen": "No connection to the route planner – check the internet", "Keine Antwort nach 100 s – der Routenplaner ist gerade zu langsam. Bitte gleich noch einmal.": "No answer after 100 s – the route planner is too slow right now. Please try again shortly.", "Der Routenplaner hat nach 90 s nicht geantwortet – bitte gleich noch einmal versuchen": "The route planner did not answer within 90 s – please try again shortly", "Route liegt im Planer bereit. Im Auto zeigt Panoptes sie ab Version 0.1.9 an.": "Route is ready in the planner. In the car, Panoptes shows it from version 0.1.9.", "liegt bereit – wird in Panoptes ab 0.1.9 angezeigt": "ready – shown in Panoptes from 0.1.9", "liefert Panoptes nicht": "not provided by Panoptes", "Türen, Fenster, Angesteckt, Klima und Restzeit liefert Panoptes (noch) nicht.": "Doors, windows, plugged-in, climate and remaining time are not provided by Panoptes (yet).", "REICHWEITE (GESCHÄTZT)": "RANGE (ESTIMATED)", "Wächter-Aufnahmen": "Guard recordings", "Wächter-Aufnahmen kommen direkt von Panoptes (ab Panoptes 0.1.9).": "Guard recordings come directly from Panoptes (from Panoptes 0.1.9).", "noch keine Daten vom Auto": "no data from the car yet", "Autoposition gerade nicht verfügbar – Start eingeben": "Car position not available right now – enter a start", "🔎 Home Assistant im Netz suchen": "🔎 Find Home Assistant on the network", "🔐 Mit Home Assistant anmelden": "🔐 Sign in with Home Assistant", "Es öffnet sich die Anmeldeseite deines Home Assistant. Kein Token abtippen; das Cockpit bekommt nur Lesezugriff über deine Anmeldung und speichert sie verschlüsselt auf diesem Rechner.": "Your Home Assistant login page opens. No token to type; the cockpit uses your login only to read and stores it encrypted on this computer.", "Erweitert: Zugriffs-Token von Hand": "Advanced: access token by hand", "Bitte zuerst Home Assistant suchen oder die Adresse eintragen.": "Please search for Home Assistant first or enter its address.", "Suche Home Assistant in deinem Netz …": "Searching for Home Assistant on your network …", "Kein Home Assistant gefunden. Läuft er gerade, und ist dieser Rechner im selben Netz? Sonst die Adresse unten eintragen (auch Nabu Casa).": "No Home Assistant found. Is it running, and is this computer on the same network? Otherwise enter the address below (Nabu Casa works too).", "Gefunden:": "Found:", "Gefunden – bitte wählen:": "Found – please choose:", "Suche nicht möglich": "Search not possible", "warte auf die Anmeldung …": "waiting for sign-in …", "angemeldet": "signed in", "FAHRTENBUCH": "TRIP LOG", "🧾 Fahrten aus Panoptes": "🧾 Trips from Panoptes", "Die Fahrten kommen direkt von Panoptes im Auto, nur wenn du diesen Bereich öffnest. Nichts geht an einen fremden Server, das Cockpit speichert nichts. Orte zeigt das Cockpit nicht.": "Trips come directly from Panoptes in the car, only when you open this section. Nothing goes to an outside server and the cockpit stores nothing. Places are not shown.", "Das Fahrtenbuch gibt es im Cockpit ab Panoptes 0.1.9. Dein Panoptes erlaubt es noch nicht.": "The trip log is available in the cockpit from Panoptes 0.1.9. Your Panoptes does not allow it yet.", "Keine Fahrten in diesem Monat.": "No trips this month.", "Datum": "Date", "Zeit": "Time", "Dauer": "Duration", "Ladestand": "Charge", "Kosten": "Cost", "Summe": "Total",
+    "FAHRZEUG": "VEHICLE", "Rechtlich neutrale Silhouette": "Legally neutral silhouette", "🌡️ Klima & Komfort": "🌡️ Climate & comfort", "🗺️ Karte & Ladesäulen in der Nähe": "🗺️ Map & chargers nearby", "⚡ Energie & Ladepunkte": "⚡ Energy & charge points", "Heizen · Kühlen · Batterie vorheizen · Finden · Zusperren": "Heat · Cool · Precondition battery · Find · Lock", "evcc · Solar": "evcc · solar", "Ladestand": "Charge", "Reichweite (geschätzt)": "Range (estimated)", "Auto": "Car", "verriegelt": "locked", "offen": "open", "Wächter": "Guard", "scharf": "armed", "startet": "starting", "pausiert (sicherer Ort)": "paused (safe place)", "aus": "off", "Bitte wählen": "Please choose", "lädt": "charging", "angesteckt": "plugged in", "lädt nicht": "not charging", "Reifen": "Tyres", "prüfen": "check", "(geschätzt)": "(estimated)", "ENERGIE": "ENERGY", "Laden": "Charging", "lädt gerade": "charging now", "nicht angesteckt": "not plugged in", "Ladekarten": "Charging cards", "mit dem Routenplaner verbinden (Einstellungen)": "connect the route planner (settings)", "Deine Ladekarten": "Your charging cards", "keine gewählt": "none chosen", "ändern": "change", "Bereitliegende Route": "Route ready", "keine Kartenquelle gewählt": "no map source chosen", "Community-Karte": "Community map", "MEIN AUTO": "MY CAR", "ROUTE": "ROUTE", "LADEN & KOSTEN": "CHARGING & COSTS", "alle Aufnahmen ›": "all recordings ›", "Wallbox & Solar ›": "Wallbox & solar ›", "Klima & Komfort": "Climate & comfort", "Karte & Ladesäulen in der Nähe": "Map & chargers nearby", "Energie & Ladepunkte": "Energy & charge points", "Ladevorgang": "Charging session", "Strompreis (Börse)": "Electricity price (exchange)", "↗ Routenplaner im Browser": "↗ Route planner in browser", "Abfahrt": "Departure", "jetzt": "now", "Uhrzeit wählen": "choose time", "+ Zwischenstopp": "+ Stopover", "Zwischenstopp": "Stopover", "Ort oder Adresse": "Place or address", "Aufenthalt in Minuten": "Stay in minutes", "entfernen": "remove", "Bitte jeden Zwischenstopp aus der Liste wählen oder entfernen": "Please choose each stopover from the list or remove it", "Bitte eine Abfahrtszeit wählen": "Please choose a departure time", "ab": "dep.", "an": "arr.", "gesamt": "total", "Aufenthalt": "stay", "Community-Karte gerade nicht erreichbar": "Community map not reachable right now", "Es werden keine Kartenbilder von anderswo geladen.": "No map images are loaded from anywhere else.", "Stattdessen OpenStreetMap verwenden": "Use OpenStreetMap instead", "LETZTES WÄCHTER-EREIGNIS": "LATEST GUARD EVENT", "Noch kein Ereignis": "No event yet", "Aufnahmen gibt es im Cockpit ab Panoptes 0.1.9.": "Recordings are available in the cockpit from Panoptes 0.1.9.", "Liefert Panoptes gerade nicht": "Not provided by Panoptes right now", "Türen": "Doors", "Fenster": "Windows", "Angesteckt": "Plugged in", "Klima": "Climate", "Restzeit": "Time left", "Batterieheizung": "Battery heating", "gerade unbekannt": "unknown right now", "Preis": "Price", "Vorschau folgt": "Preview pending", "geschätzt von Panoptes": "estimated by Panoptes", "Nennkapazität × Akku-Gesundheit": "nominal capacity × battery health", "Mit Panoptes übernimmt das Cockpit die Schätzung von Panoptes (höchstens die Nennkapazität des Modells).": "With Panoptes the cockpit uses Panoptes' estimate (at most the model's nominal capacity).", "Unerwartete Antwort vom Cockpit-Server": "Unexpected answer from the cockpit server", "Keine Antwort nach 60 s – der Routenplaner ist gerade zu langsam. Bitte gleich noch einmal.": "No answer after 60 s – the route planner is too slow right now. Please try again shortly.", "Ladenetze einstellen (Planer → Route → Erweitert)": "Set charging networks (planner → Route → Advanced)", "Der Routenplaner hat nach 50 s nicht geantwortet – bitte gleich noch einmal versuchen": "The route planner did not answer within 50 s – please try again shortly", "Routenplaner nicht erreichbar – Internetverbindung prüfen": "Route planner not reachable – check your internet connection", "Der Routenplaner wird gerade neu gestartet oder ist ausgelastet (HTTP 503) – bitte in einer Minute erneut": "The route planner is restarting or busy (HTTP 503) – please try again in a minute", "Der Routenplaner wird gerade neu gestartet oder ist ausgelastet (HTTP 502) – bitte in einer Minute erneut": "The route planner is restarting or busy (HTTP 502) – please try again in a minute", "Der Routenplaner wird gerade neu gestartet oder ist ausgelastet (HTTP 504) – bitte in einer Minute erneut": "The route planner is restarting or busy (HTTP 504) – please try again in a minute", "Zu viele Anfragen – bitte eine Minute warten": "Too many requests – please wait a minute", "Öffnungszeit unbekannt": "opening hours unknown", "24 h geöffnet": "open 24 h", "WÄCHTER-AUFNAHMEN": "GUARD RECORDINGS", "🎥 Aufnahmen aus Panoptes ansehen": "🎥 View recordings from Panoptes", "Die Liste und die Vorschaubilder lädt das Cockpit nur, wenn du diesen Bereich öffnest, einen Clip nur, wenn du ihn antippst. Kein Live-Bild. Die Aufnahmen bleiben im Auto; das Cockpit speichert nichts.": "The cockpit loads the list and thumbnails only when you open this section, and a clip only when you tap it. No live view. Recordings stay in the car; the cockpit stores nothing.", "Alle Tage": "All days", "Alle Arten": "All types", "Wächter": "Guard", "Annäherung": "Approach", "Fahrtaufnahme": "Drive recording", "Rückblick": "Replay", "Dashcam": "Dashcam", "Weitere laden": "Load more", "⏳ Frage Panoptes …": "⏳ Asking Panoptes …", "Aufnahmen gibt es im Cockpit ab Panoptes 0.1.9. Dein Panoptes ist älter – nach dem Update hier erneut öffnen.": "Recordings are available in the cockpit from Panoptes 0.1.9. Your Panoptes is older – open this again after the update.", "Panoptes antwortet nicht": "Panoptes is not responding", "Panoptes baut die Liste gerade auf": "Panoptes is building the list", "bitte gleich noch einmal ↻.": "please press ↻ again shortly.", "Keine Aufnahmen gefunden.": "No recordings found.", "Datenträger fehlt": "Storage missing", "Erweitert: Wächter-Kamera ohne Panoptes (Overdrive-Altweg, für Fortgeschrittene)": "Advanced: guard camera without Panoptes (legacy Overdrive route, for experts)", "Mit Panoptes brauchst du das nicht: Die Aufnahmen siehst du dann im Cockpit unter „Wächter-Aufnahmen“.": "With Panoptes you don't need this: you'll see the recordings in the cockpit under “Guard recordings”.", "🎥 Wächter-Kamera per adb (optional)": "🎥 Guard camera via adb (optional)", "Start": "Start", "Ziel": "Destination", "Akku jetzt": "Battery now", "Ankunft mind.": "Arrive with at least", "Wie": "How", "ausgewogen": "balanced", "günstig": "cheap", "schnell": "fast", "🗺️ Route berechnen": "🗺️ Calculate route", "Start und Ziel gehen nur beim Klick auf „Route berechnen“ an den Routenplaner (byd.serveone.at) – das ist die Anfrage selbst. Kein Dauerversand, nichts im Hintergrund. Die Ortssuche fragt nur, während du tippst.": "Start and destination are sent to the route planner (byd.serveone.at) only when you click “Calculate route” – that is the request itself. Nothing is sent continuously or in the background. Place search only asks while you type.", "📤 Ins Auto schicken": "📤 Send to car", "„Ins Auto schicken“ legt nur die Route beim Routenplaner ab; Panoptes im Auto holt sie dort ab. Am Fahrzeug wird nichts ausgelöst – kein Befehl, keine Navigation startet von selbst.": "“Send to car” only stores the route with the route planner; Panoptes in the car picks it up there. Nothing is triggered on the vehicle – no command, no navigation starts by itself.", "Nichts gefunden": "Nothing found", "Bitte ein Ziel aus der Liste wählen": "Please choose a destination from the list", "Bitte einen Start aus der Liste wählen oder das Feld leeren (dann gilt dein Auto)": "Please choose a start from the list or clear the field (then your car is used)", "⏳ Frage den Routenplaner …": "⏳ Asking the route planner …", "vom Auto": "from the car", "Fahrt": "driving", "Ladestopp": "charging stop", "Ladestopps": "charging stops", "Ankunft mit": "Arrival with", "Deine Ladevorlieben gelten": "Your charging preferences apply", "Ladevorlieben (z. B. nur bestimmte Ladenetze) stellst du im Planer-Konto ein": "Charging preferences (e.g. only certain networks) are set in your planner account", "Konto-Einstellungen": "Account settings", "Profil": "Profile", "nach": "after", "Kein Ladestopp nötig.": "No charging stop needed.", "nur": "only", "bevorzugt": "preferred", "Umweg bis": "detour up to", "nur wenn bei Ankunft geöffnet": "only if open on arrival", "ohne Kartenbilder (keine Kartenquelle gewählt)": "without map images (no map source chosen)", "⚪ Start · 🟢 Ladestopp · 🟠 Ziel": "⚪ start · 🟢 charging stop · 🟠 destination", "Route liegt im Planer bereit – Panoptes im Auto holt sie ab.": "Route is ready in the planner – Panoptes in the car picks it up.", "rund um die Uhr geöffnet": "open 24/7", "offen bis": "open until", "bei Ankunft geschlossen": "closed on arrival", "ROUTE": "ROUTE", "Route": "Route", "📍 Mein Auto": "📍 My car", "Ort, Adresse, Link oder Plus Code": "Place, address, link or Plus Code", "Keine Autoposition bekannt – bitte einen Start eingeben": "No car position known – please enter a start", "Bitte zuerst eine Route berechnen": "Please calculate a route first", "Wie oft beim Auto nachfragen?": "How often to ask the car?", "Geparkt": "Parked", "Bei Fahrt bzw. Laden": "While driving or charging", "nur manuell": "manual only", "Jede Abfrage weckt die App im Auto. Ist dieser Tab verborgen, wird pausiert.": "Every query wakes the app in the car. While this tab is hidden, queries pause.", "Nach jedem Antippen kurz alle 5 s (höchstens 60 s), dann wieder der gewählte Takt.": "After each tap briefly every 5 s (at most 60 s), then back to the chosen interval.", "Akku nutzbar in kWh": "Usable battery in kWh", "von dir eingetragen": "entered by you", "Mit Panoptes wird der Wert vom Auto übernommen.": "With Panoptes the value is taken from the car.", "lernt aus deinen Fahrten": "learns from your trips", "liefert diese Datenquelle nicht": "not provided by this data source", "Ich habe den Hinweis gelesen und verstanden.": "I have read and understood the notice.", "Deine Passwörter und Schlüssel liegen unverschlüsselt in der Einstellungsdatei (nur für deinen Benutzer lesbar), weil hier kein Schlüsselbund verfügbar ist. Unter Linux hilft das Paket „libsecret-tools“ (secret-tool) mit einem laufenden Schlüsselbund.": "Your passwords and keys are stored unencrypted in the settings file (readable only by your user) because no keyring is available here. On Linux, the package “libsecret-tools” (secret-tool) with a running keyring helps.", "Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust. Du entscheidest:": "Whoever delivers the map images sees your IP address and the area you look at. You decide:", "Keine Karte": "No map", "Es werden keine Kartenbilder geladen.": "No map images are loaded.", "Kartenbilder von OpenStreetMap (fremder Dienst).": "Map images from OpenStreetMap (third-party service).", "Community-Karte": "Community map", "Dieselbe Karte wie im Planer und in der Panoptes-App, vom Server der BYD-Community (byd.serveone.at). Nur damit gibt es die Live-Belegung der Ladesäulen.": "The same map as in the planner and the Panoptes app, from the BYD community server (byd.serveone.at). Live charger availability only works with it.", "Karte anzeigen?": "Show the map?", "Wer die Kartenbilder liefert, sieht deine IP-Adresse und die Gegend, die du anschaust.": "Whoever delivers the map images sees your IP address and the area you look at.", "Neu: Karte und 3D-Modell sind freiwillig": "New: map and 3D model are optional", "Beides lädt Daten von fremden Servern; die sehen dabei deine IP-Adresse (und bei der Karte die Gegend, beim 3D-Modell dein Automodell). Ohne deine Wahl bleibt beides aus.": "Both load data from other servers, which see your IP address (and the area for the map, your car model for the 3D model). Without your choice both stay off.", "Karte": "Map", "Dein Auto in 3D (vom Community-Server)": "Your car in 3D (from the community server)", "Speichern": "Save", "Dieselbe Karte wie im Planer und in der Panoptes-App. Die Kartenkacheln deiner Gegend lädt dann der Server der BYD-Community (byd.serveone.at); er sieht dabei deine IP-Adresse und den Kartenausschnitt. Ohne Haken lädt sie OpenStreetMap.": "The same map as in the planner and the Panoptes app. The map tiles for your area are then loaded from the BYD community server (byd.serveone.at); it sees your IP address and the map area. Without the tick, OpenStreetMap loads them.", "🚗 Dein Auto in 3D": "🚗 Your car in 3D", "Lädt einmal das 3D-Modell deines Autos vom Server der BYD-Community (byd.serveone.at). Der Server sieht dabei deine IP-Adresse und welches Modell du fährst. Ohne Haken: neutrale Silhouette oder dein Foto.": "Loads your car's 3D model once from the BYD community server (byd.serveone.at). The server sees your IP address and which model you drive. Without the tick: a neutral silhouette or your photo.", "Zeigt öffentliche Ladestationen am Standort deines Autos mit Entfernung und Steckertyp. Dafür geht die Position deines Autos an OpenStreetMap (Overpass-Dienst) oder an deinen eigenen OpenGlance-Server, wenn du ihn unten einträgst. Mit der Community-Karte kommt die Live-Belegung dazu: dafür geht nur die Kartenmitte, auf etwa 5 km gerundet, an den Server der BYD-Community.": "Shows public chargers at your car's location with distance and connector type. For this, your car's position is sent to OpenStreetMap (Overpass service) or to your own OpenGlance server if you enter it below. With the community map, live availability is added: only the map centre, rounded to about 5 km, goes to the BYD community server.", "Kurz vorab": "Quick note first", "Das EV-Cockpit ist ein privates Freizeitprojekt, kostenlos und ohne Gewähr. Du nutzt es auf eigenes Risiko, nur privat. Es verwendet dein BYD-Konto, Home Assistant oder deine Wallbox so, wie du es einstellst. Für Fernbefehle (z. B. Klima, Zusperren) und Ladebefehle an die Wallbox bist du selbst verantwortlich. Werte wie Ladestand, Reichweite und Preise können abweichen. Das EV-Cockpit ist nicht mit BYD verbunden.": "EV-Cockpit is a private hobby project, free and without warranty. You use it at your own risk, for private use only. It uses your BYD account, Home Assistant or your wallbox as you configure it. You are responsible for remote commands (e.g. climate, locking) and charging commands to your wallbox. Values such as charge level, range and prices may be inaccurate. EV-Cockpit is not affiliated with BYD.", "Alle Hinweise lesen": "Read all notes", "Gelesen und einverstanden": "Read and agreed", "Bitte bestätige die Hinweise, um fortzufahren.": "Please confirm the notes to continue.", "Freizeitprojekt.": "Hobby project.", "Panoptes, das EV-Cockpit und der Routenplaner sind ein privates Freizeitprojekt von Alfred Aigner. Sie werden kostenlos und ohne Gewähr angeboten.": "Panoptes, EV-Cockpit and the route planner are a private hobby project by Alfred Aigner. They are provided free of charge and without warranty.", "Ohne Gewähr.": "No warranty.", "Es gibt keine Garantie, dass alles fehlerfrei, vollständig oder jederzeit verfügbar ist. Das gilt auch für Ladestände, Reichweiten, Preise, Belegung von Ladesäulen, Routen, Blitzer- und Gefahrenhinweise. Prüfe Wichtiges selbst; im Straßenverkehr gilt immer, was du siehst und was die Schilder sagen.": "There is no guarantee that everything is correct, complete or always available. This includes charge levels, range, prices, charger availability, routes, speed camera and hazard warnings. Check anything important yourself; on the road, what you see and the road signs always come first.", "Eigenes Risiko.": "Your own risk.", "Du nutzt alles auf eigenes Risiko. Soweit gesetzlich zulässig, übernimmt Alfred Aigner keine Haftung für Schäden, die aus der Nutzung entstehen, auch nicht für Schäden am Fahrzeug, an Daten oder durch Fernbefehle.": "You use everything at your own risk. To the extent permitted by law, Alfred Aigner accepts no liability for any damage resulting from its use, including damage to your vehicle, to data, or caused by remote commands.", "Du bist verantwortlich.": "You are responsible.", "Du allein entscheidest, wie du die Funktionen einsetzt, und bist dafür verantwortlich, dass das erlaubt ist. Das betrifft vor allem Datenschutz, Kamera-Aufnahmen, Fernbefehle über das BYD-Konto und die Regeln im Straßenverkehr.": "You alone decide how you use the features, and you are responsible for making sure that use is legal. This applies especially to data protection, camera recordings, remote commands via your BYD account, and traffic rules.", "Nur privat.": "Private use only.", "Gedacht ist alles nur für die private Nutzung mit deinem eigenen Fahrzeug. Ein gewerblicher Einsatz (z. B. Flotten, Vermietung, Taxi, Firmenwagen-Überwachung) ist nicht vorgesehen.": "Everything is intended for private use with your own vehicle only. Commercial use (e.g. fleets, rental, taxi, monitoring company cars) is not intended.", "Wächter nur auf eigenem Grund.": "Guardian on your own property only.", "Kamera-Aufnahmen des Wächters sind für deinen eigenen Privatgrund gedacht (z. B. Garage, Einfahrt). Richte die Kameras so aus, dass weder öffentlicher Raum (Straße, Gehweg, öffentlicher Parkplatz) noch das Grundstück der Nachbarn erfasst wird. Aufnahmen nicht veröffentlichen.": "Guardian recordings are intended for your own private property (e.g. garage, driveway). Point the cameras so that neither public space (street, pavement, public car park) nor your neighbours' property is captured. Do not publish recordings.", "Nicht von BYD.": "Not BYD.", "Dieses Projekt ist nicht mit BYD verbunden und wird von BYD weder unterstützt noch geprüft. „BYD“, „DiLink“ und alle anderen genannten Namen und Marken gehören ihren jeweiligen Inhabern.": "This project is not affiliated with BYD and is not supported or reviewed by BYD. “BYD”, “DiLink” and all other names and trademarks mentioned belong to their respective owners.", "Gesetzliche Rechte bleiben.": "Your legal rights remain.", "Die Haftung für Vorsatz und grobe Fahrlässigkeit, für Personenschäden sowie zwingende Rechte von Verbraucherinnen und Verbrauchern werden durch diese Hinweise nicht eingeschränkt.": "Liability for intent and gross negligence, for personal injury, and mandatory consumer rights are not limited by these notes.", "🔗 Mit Panoptes verbinden": "🔗 Connect to Panoptes", "Bestätige in Telegram oder hier:": "Confirm in Telegram or here:", "will sich verbinden. Prüfzahl:": "wants to connect. Check number:", "Panoptes öffnen („Gekoppelte Geräte“)": "Open Panoptes (“Paired devices”)", "Vergleiche die Prüfzahl und tippe auf „Erlauben“. Die Anfrage gilt 2 Minuten.": "Compare the check number and tap “Allow”. The request is valid for 2 minutes.", "Erweitert: mit Kopplungs-Code oder Link": "Advanced: with pairing code or link", "Kopplungs-Code oder Link aus Panoptes („Neues Gerät koppeln“, 10 min gültig, einmal verwendbar)": "Pairing code or link from Panoptes (“Pair new device”, valid 10 min, single use)", "482913 oder https://…/system.html#koppeln=…": "482913 or https://…/system.html#koppeln=…", "🔗 Mit Routenplaner verbinden": "🔗 Connect to route planner", "Im Browser bestätigen:": "Confirm in your browser:", "Code": "Code", "Routenplaner öffnen und erlauben": "Open route planner and allow", "Melde dich dort als Mitglied an und tippe auf „Erlauben“. Der Code gilt 10 Minuten.": "Sign in there as a member and tap “Allow”. The code is valid for 10 minutes.", "Erweitert: mit persönlichem Planer-Link": "Advanced: with your personal planner link", "Warte auf „Erlauben“ …": "Waiting for “Allow” …", "Verbunden": "Connected", "Ladestand ": "charge level ", "Mit dem Routenplaner verbunden": "Connected to the route planner", "Schon gekoppelt. Nur neu verbinden, wenn die Kopplung in Panoptes entfernt wurde.": "Already paired. Only connect again if the pairing was removed in Panoptes.", "3D-Modell nicht geladen": "3D model not loaded", "Erneut versuchen": "Try again", "3D-Modell wird geladen …": "Loading 3D model …", "Laden fehlgeschlagen": "Loading failed", "Dieser Browser kann kein WebGL": "This browser has no WebGL", "Keine Route bereit. Plane eine unter „Route“ und schick sie mit „Ins Auto schicken“.": "No route ready. Plan one under “Route” and send it with “Send to car”.", "Routenplaner antwortet gerade zu langsam": "Route planner is responding too slowly right now", "Routenplaner startet gerade neu oder ist ausgelastet": "Route planner is restarting or busy", "Keine Verbindung zum Routenplaner – Internet prüfen": "No connection to the route planner – check the internet", "Keine Antwort nach 100 s – der Routenplaner ist gerade zu langsam. Bitte gleich noch einmal.": "No answer after 100 s – the route planner is too slow right now. Please try again shortly.", "Der Routenplaner hat nach 90 s nicht geantwortet – bitte gleich noch einmal versuchen": "The route planner did not answer within 90 s – please try again shortly", "Route liegt im Planer bereit. Im Auto zeigt Panoptes sie ab Version 0.1.9 an.": "Route is ready in the planner. In the car, Panoptes shows it from version 0.1.9.", "liegt bereit – wird in Panoptes ab 0.1.9 angezeigt": "ready – shown in Panoptes from 0.1.9", "liefert Panoptes nicht": "not provided by Panoptes", "Türen, Fenster, Angesteckt, Klima und Restzeit liefert Panoptes (noch) nicht.": "Doors, windows, plugged-in, climate and remaining time are not provided by Panoptes (yet).", "REICHWEITE (GESCHÄTZT)": "RANGE (ESTIMATED)", "Wächter-Aufnahmen": "Guard recordings", "Wächter-Aufnahmen kommen direkt von Panoptes (ab Panoptes 0.1.9).": "Guard recordings come directly from Panoptes (from Panoptes 0.1.9).", "noch keine Daten vom Auto": "no data from the car yet", "Autoposition gerade nicht verfügbar – Start eingeben": "Car position not available right now – enter a start", "🔎 Home Assistant im Netz suchen": "🔎 Find Home Assistant on the network", "🔐 Mit Home Assistant anmelden": "🔐 Sign in with Home Assistant", "Es öffnet sich die Anmeldeseite deines Home Assistant. Kein Token abtippen; das Cockpit bekommt nur Lesezugriff über deine Anmeldung und speichert sie verschlüsselt auf diesem Rechner.": "Your Home Assistant login page opens. No token to type; the cockpit uses your login only to read and stores it encrypted on this computer.", "Erweitert: Zugriffs-Token von Hand": "Advanced: access token by hand", "Bitte zuerst Home Assistant suchen oder die Adresse eintragen.": "Please search for Home Assistant first or enter its address.", "Suche Home Assistant in deinem Netz …": "Searching for Home Assistant on your network …", "Kein Home Assistant gefunden. Läuft er gerade, und ist dieser Rechner im selben Netz? Sonst die Adresse unten eintragen (auch Nabu Casa).": "No Home Assistant found. Is it running, and is this computer on the same network? Otherwise enter the address below (Nabu Casa works too).", "Gefunden:": "Found:", "Gefunden – bitte wählen:": "Found – please choose:", "Suche nicht möglich": "Search not possible", "warte auf die Anmeldung …": "waiting for sign-in …", "angemeldet": "signed in", "FAHRTENBUCH": "TRIP LOG", "🧾 Fahrten aus Panoptes": "🧾 Trips from Panoptes", "Die Fahrten kommen direkt von Panoptes im Auto, nur wenn du diesen Bereich öffnest. Nichts geht an einen fremden Server, das Cockpit speichert nichts. Orte zeigt das Cockpit nicht.": "Trips come directly from Panoptes in the car, only when you open this section. Nothing goes to an outside server and the cockpit stores nothing. Places are not shown.", "Das Fahrtenbuch gibt es im Cockpit ab Panoptes 0.1.9. Dein Panoptes erlaubt es noch nicht.": "The trip log is available in the cockpit from Panoptes 0.1.9. Your Panoptes does not allow it yet.", "Keine Fahrten in diesem Monat.": "No trips this month.", "Datum": "Date", "Zeit": "Time", "Dauer": "Duration", "Ladestand": "Charge", "Kosten": "Cost", "Summe": "Total",
     "Eigenes Foto verwenden": "Use your own photo", "Reichweite": "Range",
     "Verbunden": "Connected", "Nicht verbunden": "Not connected",
     "Kompakt": "Compact", "Limousine": "Sedan", "Kombi": "Estate", "SUV": "SUV", "Van": "Van",
@@ -2598,6 +2603,37 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
 .pill:hover{background:var(--soft);border-color:#2a5566;color:var(--txt)}.pill.busy{opacity:.55;pointer-events:none}
 .chip{border-color:var(--border);border-radius:999px;padding:8px 13px;font-size:12px;font-weight:650;background:var(--surface)}
 .bars{height:118px;background:var(--surface);border-color:var(--border);border-radius:14px}.map{border-color:var(--border);border-radius:20px;height:380px}
+/* 1.12: Status-Zeile, 4 Kacheln, Rest einklappbar */
+.statuszeile{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 16px}
+.spill{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:14px;white-space:nowrap}
+.spill b{font-size:16px}.spill .m{color:var(--mut);font-size:12px}.spill.ok{border-color:rgba(181,242,61,.35)}.spill.warn{border-color:rgba(255,194,102,.55)}
+.kgrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;align-items:start}
+.ktile{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px;min-width:0}
+.khead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;color:var(--mut);letter-spacing:1.8px;font-size:11px;font-weight:800;margin:0 2px 10px;scroll-margin-top:20px}
+.khead a{letter-spacing:0;font-weight:600;font-size:12.5px;color:var(--blue);text-decoration:none}
+.ktile .hero{grid-template-columns:200px minmax(0,1fr);gap:14px;padding:0;margin:0 0 10px;background:none;border:0}
+.ktile .ring{width:190px;height:190px}.ktile svg.ring{width:190px;height:190px}
+.ktile .overview-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important;margin-top:4px}
+.ktile .tile{padding:12px 14px}.ktile .tile .v{font-size:21px}.ktile .chips{margin-top:10px}
+.ktile .sect{margin:12px 2px 8px}.ktile>div>.tile,.ktile #routetile{background:none;border:0;padding:4px 2px}
+.ksub{color:var(--mut);letter-spacing:1.4px;font-size:10.5px;font-weight:800;text-transform:uppercase;margin:12px 2px 6px}
+.lkz{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding:9px 2px;font-size:14px}.lkz:first-child{border-top:0}
+.lkz .m{color:var(--mut);font-size:12.5px;text-align:right}
+.akk{display:grid;gap:10px;margin-top:16px}
+.akkd{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:0 16px}
+.akkd>summary{list-style:none;cursor:pointer;padding:15px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:700}
+.akkd>summary span{color:var(--mut);font-weight:400;font-size:13px;text-align:right}.akkd>summary::after{content:"▾";color:var(--mut)}
+.akkd[open]>summary::after{content:"▴"}.akkd[open]{padding-bottom:14px}
+.akk>div>.sect{display:none}
+.ktile .ring .pct{font-size:46px}.ktile .ring .pct small{font-size:16px}.ktile .ring .lbl{font-size:10.5px;text-align:center;line-height:1.35}
+.akk #aufndet,.akk #fbdet{border-radius:16px;padding:0 16px;margin:0}.akk #aufndet>summary,.akk #fbdet>summary{list-style:none;padding:15px 0;display:flex;justify-content:space-between;gap:12px;font-weight:700}
+.akk #aufndet>summary::after,.akk #fbdet>summary::after{content:"▾";color:var(--mut)}.akk #aufndet[open]>summary::after,.akk #fbdet[open]>summary::after{content:"▴"}
+.akk #aufndet[open],.akk #fbdet[open]{padding-bottom:14px}
+#rabfart,#rtagwahl{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--soft);color:var(--txt);font:inherit}
+@media(max-width:900px){.kgrid{grid-template-columns:1fr}}
+@media(max-width:520px){.ktile .hero{grid-template-columns:1fr}.ktile .ring,.ktile svg.ring{width:170px;height:170px}.spill{padding:7px 10px;font-size:13px}.spill b{font-size:14px}
+ .akkd>summary span{display:none}}
+
 .err{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.45);border-radius:14px;color:#FFB4A0}
 @media(max-width:760px){body{padding:14px}.hero{grid-template-columns:1fr;padding:18px}.grid[style]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  .overview-kpis{margin-top:0}
@@ -2624,24 +2660,24 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
   <span>Nach jedem Antippen kurz alle 5 s (höchstens 60 s), dann wieder der gewählte Takt.</span></p>
   <p id=taktheute></p>
  </div>
- <nav class=quicknav aria-label="Schnellnavigation"><a href="#overview">Übersicht</a><a href="#climate">Klima</a>
-  <a href="#charging">Laden</a><a href="#energy-panel">Energie</a><a href="#prices">Preise</a><a href="#route" id=navroute style="display:none">Route</a><a href="#location">Standort</a></nav>
  <div class=err id=err></div>
- <div class=hero id=overview>
+ <div id=statuszeile class=statuszeile aria-label="Status"></div>
+ <div class=kgrid>
+  <section class="ktile kt-auto" id=overview><div class=khead><span>MEIN AUTO</span><a id=panoptes-link href="/panoptes" style="display:none;font-weight:600;color:var(--blue)">📡 Panoptes-Einstellungen</a></div>
+ <div class=hero>
   <div>
    <div class=ring><svg class=ring width=250 height=250 viewBox="0 0 250 250">
-    <circle cx=125 cy=125 r=112 fill=none stroke="#16243f" stroke-width=14/>
-    <circle id=arc cx=125 cy=125 r=112 fill=none stroke="#5FD6E6" stroke-width=14 stroke-linecap=round stroke-dasharray=703 stroke-dashoffset=703/>
+    <circle cx=125 cy=125 r=112 fill=none stroke="#16243f" stroke-width="14"/>
+    <circle id=arc cx=125 cy=125 r=112 fill=none stroke="#5FD6E6" stroke-width=14 stroke-linecap=round stroke-dasharray=703 stroke-dashoffset="703"/>
     <defs><linearGradient id=g x1=0 y1=0 x2=1 y2=1><stop offset=0% stop-color="#5FD6E6"/><stop offset=100% stop-color="#43c9db"/></linearGradient></defs>
-   </svg><div class=val><div class=pct><span id=soc>–</span><small>%</small></div><div class=lbl>AKKU</div></div></div>
-   <div class=range><b><span id=range>–</span><small> km</small></b><div class=lbl title="Nutzbare Akkukapazität × Ladestand ÷ Verbrauch Ø – eine Rechnung, kein Messwert">REICHWEITE (GESCHÄTZT)</div>
+   </svg><div class=val><div class=pct><span id=ekwh>–</span><small> kWh</small></div><div class=lbl id=ekap>ENERGIE</div><span id=soc hidden></span></div></div>
+   <div class=range hidden><b><span id=range>–</span><small> km</small></b><div class=lbl title="Nutzbare Akkukapazität × Ladestand ÷ Verbrauch Ø – eine Rechnung, kein Messwert">REICHWEITE (GESCHÄTZT)</div>
     <div class=lbl style="margin-top:3px">BYD sagt: <span id=bydrange>–</span> km</div>
     <div id=rangehint class=lbl style="margin-top:3px;display:none;text-transform:none;letter-spacing:0">lernt aus deinen Fahrten</div></div>
   </div>
   <div class=car id=car><div class=ph>Kein Foto hinterlegt<br><small>⚙︎ → Foto-URL</small></div></div>
  </div>
  <input id=car-photo-input type=file accept="image/*" hidden onchange="uploadCarPhoto(this)">
-
  <div class="grid overview-kpis" aria-label="Fahrzeugübersicht" style="grid-template-columns:repeat(4,1fr)">
   <div class=tile><div class=k>KILOMETERSTAND</div><div class=v><span id=odo>–</span><small> km</small></div></div>
   <div class=tile><div class=k>AUSSEN</div><div class=v><span id=tout>–</span><small> °C</small></div></div>
@@ -2650,72 +2686,6 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
   <div class=tile id=tyrebox><div class=k>REIFEN</div><div class=v><span id=tyre>–</span><small> kPa</small></div>
    <div id=tyremsg style="font-size:11px;margin-top:4px;line-height:1.35;display:none"></div></div>
  </div>
-
- <div id=pvbox style="display:none">
-  <div class=sect>DEINE PV-ANLAGE</div>
-  <div class=grid style="grid-template-columns:1fr">
-   <div class=tile><div class=k>ERZEUGT GERADE</div>
-    <div class=v><span id=pvw>–</span><small> W</small></div>
-    <div style="color:var(--mut);font-size:11.5px;margin-top:4px">
-     <span>Quelle: dein Home Assistant</span> · <span id=pvsrc>–</span></div>
-    <div id=pverr style="display:none;color:#FFC266;font-size:12px;margin-top:6px"></div>
-   </div>
-  </div>
- </div>
-
- <div class=sect id=climate>KLIMA &amp; KOMFORT</div>
- <div class=klima>
-  <div class="pill heat" onclick="cmd('heat')">🔥&nbsp; Heizen</div>
-  <div class="pill cool" onclick="cmd('cool')">❄&nbsp; Kühlen</div>
-  <div class="pill" onclick="cmd('off')">◼&nbsp; Aus</div>
-  <div class="pill batt" id=p_batt onclick="battUm()">🔋&nbsp; Batterie vorheizen</div>
- </div>
- <div style="color:var(--mut);font-size:12px;margin-top:8px">🛡️ Aus Sicherheitsgründen nur bei ausgeschaltetem Auto.</div>
- <div class=klima id=extras style="margin-top:10px">
-  <div class="pill" id=p_find onclick="cmd('find')">🔍&nbsp; Auto finden</div>
-  <div class="pill" id=p_lock onclick="zusperren()">🔒&nbsp; Zusperren</div>
- </div>
- <div id=seatbox style="display:none;margin-top:10px">
-  <div style="color:var(--mut);font-size:11px;letter-spacing:2px;margin:0 4px 6px">SITZE (FAHRER + BEIFAHRER)</div>
-  <div class=klima>
-   <div class="pill" onclick="cmd('seat_off')">💺&nbsp; Aus</div>
-   <div class="pill" onclick="cmd('seat_lo')">💺&nbsp; Stufe 1</div>
-   <div class="pill" onclick="cmd('seat_hi')">💺&nbsp; Stufe 2</div>
-  </div>
- </div>
- <div id=ventbox style="display:none;margin-top:10px">
-  <div class=klima>
-   <div class="pill" onclick="cmd('vent_off')">💨&nbsp; Belüftung aus</div>
-   <div class="pill" onclick="cmd('vent_lo')">💨&nbsp; Stufe 1</div>
-   <div class="pill" onclick="cmd('vent_hi')">💨&nbsp; Stufe 2</div>
-  </div>
- </div>
- <div class=msg id=msg></div>
- <div style="color:var(--mut);font-size:11.5px;text-align:center;margin-top:2px">
-  Heizen zielt auf 26 °C, Kühlen auf 19 °C. <b>Batterie vorheizen</b> hilft im Winter vor dem Schnellladen — eine warme Batterie lädt deutlich schneller. Das geht auch bei geparktem Auto.
- </div>
-
- <div id=ladebox style="display:none">
-  <div class=sect id=charging>LADEN</div>
-  <div class=grid style="grid-template-columns:repeat(3,1fr)">
-   <div class=tile><div class=k>LEISTUNG</div><div class=v><span id=l_kw>–</span><small> kW</small></div>
-    <div style="color:var(--mut);font-size:11px;margin-top:2px" id=l_art>–</div></div>
-   <div class=tile><div class=k>FERTIG IN</div><div class=v style="font-size:22px"><span id=l_rest>–</span></div>
-    <div style="color:var(--mut);font-size:11px;margin-top:2px">laut Auto</div></div>
-   <div class=tile id=l_preisbox style="display:none"><div class=k>STROM GERADE</div>
-    <div class=v><span id=l_preis>–</span><small> ct/kWh</small></div>
-    <div style="color:var(--mut);font-size:11px;margin-top:2px">Börse, ohne Netz &amp; Steuern</div></div>
-  </div>
- </div>
-
- <div id=wletztbox style="display:none">
-  <div class=sect>LETZTES WÄCHTER-EREIGNIS</div>
-  <div class=tile id=wletzt style="padding:12px;display:flex;gap:14px;align-items:center;cursor:pointer" onclick="wletztOeffnen()">
-   <div id=wletztbild style="flex:0 0 160px;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#071a2b;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:12px"></div>
-   <div><div id=wletzttxt style="font-weight:700">Noch kein Ereignis</div><div id=wletztsub class=rhint style="margin-top:4px"></div></div>
-  </div>
- </div>
- <div class=sect>STATUS</div>
  <div class=chips>
   <span class=chip>Verriegelt <span id=s_lock class=cm>–</span></span>
   <span class=chip>Türen <span id=s_door class=cm>–</span></span>
@@ -2725,58 +2695,14 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
   <span class=chip>Gang <span id=s_gear class=cm>–</span></span>
  </div>
  <div id=fehlthint style="display:none;color:var(--mut);font-size:12px;margin:6px 2px 0"></div>
-
- <div id=pricebox style="display:none">
-  <div class=sect id=prices>STROMPREIS (BÖRSE)</div>
-  <div class=grid style="grid-template-columns:repeat(3,1fr)">
-   <div class=tile><div class=k>JETZT</div><div class=v><span id=p_now>–</span><small> ct/kWh</small></div></div>
-   <div class=tile><div class=k>GÜNSTIGSTE STUNDE</div><div class=v><span id=p_cheap>–</span><small> ct</small></div>
-    <div style="color:var(--mut);font-size:12px;margin-top:2px">um <span id=p_cheapt>–</span> Uhr</div></div>
-   <div class=tile><div class=k>TEUERSTE</div><div class=v><span id=p_max>–</span><small> ct</small></div></div>
-  </div>
-  <div class=bars id=bars></div>
-  <div style="color:var(--mut);font-size:11.5px;margin:8px 2px 0;line-height:1.5">
-   <span>Börsenpreis ohne Netz &amp; Steuern — dein Rechnungspreis nur bei einem Börsentarif.</span>
-   <span>Zone:</span> <span id=p_zone>–</span> · <span>Quelle:</span> <span id=p_src>–</span><span id=p_lic></span>
+  </section>
+  <section class="ktile kt-waechter" id=kt_waechter><div class=khead><span>LETZTES WÄCHTER-EREIGNIS</span><a href="#aufnahmen" onclick="return akkAuf('aufndet')">alle Aufnahmen ›</a></div>
+ <div id=wletztbox style="display:none">
+  <div class=tile id=wletzt style="padding:12px;display:flex;gap:14px;align-items:center;cursor:pointer" onclick="wletztOeffnen()">
+   <div id=wletztbild style="flex:0 0 160px;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#071a2b;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:12px"></div>
+   <div><div id=wletzttxt style="font-weight:700">Noch kein Ereignis</div><div id=wletztsub class=rhint style="margin-top:4px"></div></div>
   </div>
  </div>
-
- <div id=aufnbox style="display:none">
-  <div class=sect id=aufnahmen>WÄCHTER-AUFNAHMEN</div>
-  <details class=tile id=aufndet style="padding:14px 16px" ontoggle="if(this.open)aufnLaden(1)">
-   <summary style="cursor:pointer;font-weight:600">🎥 Aufnahmen aus Panoptes ansehen <span id=aufnsum style="color:var(--mut);font-weight:400"></span></summary>
-   <div class=rhint>Die Liste und die Vorschaubilder lädt das Cockpit nur, wenn du diesen Bereich öffnest, einen Clip nur, wenn du ihn antippst. Kein Live-Bild. Die Aufnahmen bleiben im Auto; das Cockpit speichert nichts.</div>
-   <div class=aufnfilter>
-    <select id=aufntag onchange="aufnLaden(1)"><option value="">Alle Tage</option></select>
-    <select id=aufnart onchange="aufnLaden(1)"><option value="">Alle Arten</option><option value=sentry>Wächter</option>
-     <option value=proximity>Annäherung</option><option value=normal>Fahrtaufnahme</option><option value=replay>Rückblick</option></select>
-    <button type=button class=rsec style="margin:0" onclick="aufnLaden(1)">↻</button>
-   </div>
-   <div id=aufnmsg class=rmsg></div>
-   <div id=aufnplayer style="display:none;margin:10px 0">
-    <video id=aufnvideo controls playsinline preload=none style="width:100%;max-height:460px;background:#000;border-radius:14px"></video>
-    <div id=aufnclip class=rhint></div>
-   </div>
-   <div id=aufnliste class=aufngrid></div>
-   <button type=button id=aufnmehr class=rsec style="display:none" onclick="aufnLaden(AUFN.seite+1)">Weitere laden</button>
-  </details>
- </div>
-
- <div id=fbbox style="display:none">
-  <div class=sect id=fahrtenbuch>FAHRTENBUCH</div>
-  <details class=tile id=fbdet style="padding:14px 16px" ontoggle="if(this.open&&!FB.geladen)fbLaden(true)">
-   <summary style="cursor:pointer;font-weight:600">🧾 Fahrten aus Panoptes <span id=fbsum style="color:var(--mut);font-weight:400"></span></summary>
-   <div class=rhint>Die Fahrten kommen direkt von Panoptes im Auto, nur wenn du diesen Bereich öffnest. Nichts geht an einen fremden Server, das Cockpit speichert nichts. Orte zeigt das Cockpit nicht.</div>
-   <div class=aufnfilter style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px">
-    <select id=fbmonat onchange="fbLaden(true)" style="padding:8px 10px;border-radius:12px;border:1px solid var(--border);background:var(--soft);color:var(--txt);font:inherit"></select>
-    <a id=fbcsv class=rsec style="margin:0;text-decoration:none;display:inline-block" href="#" download>⬇️ CSV</a>
-   </div>
-   <div id=fbmsg class=rmsg></div>
-   <div style="overflow-x:auto"><table id=fbtab class=fbtab></table></div>
-   <button type=button id=fbmehr class=rsec style="display:none" onclick="fbLaden(false)">Weitere laden</button>
-  </details>
- </div>
-
  <div id=sentrybox style="display:none">
   <div class=sect>WÄCHTER-KAMERA</div>
   <div class=tile style="padding:14px">
@@ -2789,42 +2715,9 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
     background:#071a2b;border:1px solid var(--line);border-radius:14px;margin-top:10px">
   </div>
  </div>
-
- <div id=chgbox style="display:none">
-  <div class=sect>LADESÄULEN IN DER NÄHE</div>
-  <div class=tile style="padding:6px 4px"><div id=chglist></div></div>
-  <div style="color:var(--mut);font-size:11.5px;margin:8px 2px 0">
-   Quelle: <b id=chgsrc>OpenStreetMap</b> · Angaben ohne Gewähr
-  </div>
- </div>
-
- <a id=panoptes-link href="/panoptes" style="display:none;margin:6px 0 12px;font-weight:600;color:var(--blue)">📡 Panoptes-Einstellungen</a>
- <div id=planerbox style="display:none">
-  <div class=sect>ROUTENPLANER</div>
-  <div class=tile style="padding:14px 16px">
-   <div id=routebox style="display:none;margin:0 0 12px"></div>
-   <a href="#route"
-      style="display:inline-block;background:#B5F23D;color:#1d2a00;font-weight:700;text-decoration:none;padding:10px 16px;border-radius:12px">🗺️ Route planen</a>
-   <a href="/planer/oeffnen" target="_blank" rel="noopener" style="margin-left:10px;font-size:12.5px;color:var(--mut)">↗ im eigenen Fenster</a>
-   <div id=planerstat style="color:var(--mut);font-size:12.5px;margin-top:10px"></div>
-   <details id=kartenbox style="margin-top:12px" ontoggle="if(this.open)kartenLaden()">
-    <summary style="cursor:pointer;font-weight:600">💳 Meine Ladekarten <span id=kartensum style="color:var(--mut);font-weight:400"></span></summary>
-    <div id=kartenliste style="margin-top:8px;font-size:13.5px"></div>
-    <div id=kartenmsg style="font-size:12.5px;margin-top:6px;color:var(--mut)"></div>
-   </details>
-  </div>
- </div>
-
- <div id=planerlayer style="display:none;position:fixed;inset:0;z-index:2000;background:#071a2b;padding:12px">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 8px">
-   <b style="font-family:Sora,system-ui">🗺️ Routenplaner</b>
-   <button type=button onclick="planerZu()" style="background:rgba(255,255,255,.08);color:#EAF6F8;border:1px solid rgba(160,230,240,.22);border-radius:999px;padding:7px 14px;cursor:pointer">✕ Schließen</button>
-  </div>
-  <iframe id=planerframe title="Routenplaner" style="width:100%;height:calc(100% - 44px);border:0;border-radius:14px;background:#071a2b"></iframe>
- </div>
-
+  </section>
+  <section class="ktile kt-route" id=kt_route><div class=khead id=route><span>ROUTE</span></div>
  <div id=routesect style="display:none">
-  <div class=sect id=route>ROUTE</div>
   <div class=tile style="padding:14px 16px" id=routetile>
    <div class=rrow><label for=rstart>Start</label>
     <div class=rfeld><input id=rstart placeholder="📍 Mein Auto" autocomplete=off oninput="rSuche('start')">
@@ -2859,16 +2752,149 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
    </div>
   </div>
  </div>
-
- <div class=sect id=location>STANDORT</div>
+ <div id=planerbox style="display:none">
+  <div class=tile style="padding:14px 16px">
+   <div id=routebox style="display:none;margin:0 0 12px"></div>
+   <a href="https://byd.serveone.at/ev/" target="_blank" rel="noopener" style="font-size:12.5px;color:var(--mut)">↗ Routenplaner im Browser</a>
+   <div id=planerstat style="color:var(--mut);font-size:12.5px;margin-top:10px"></div>
+   <details id=kartenbox style="margin-top:12px" ontoggle="if(this.open)kartenLaden()">
+    <summary style="cursor:pointer;font-weight:600">💳 Meine Ladekarten <span id=kartensum style="color:var(--mut);font-weight:400"></span></summary>
+    <div id=kartenliste style="margin-top:8px;font-size:13.5px"></div>
+    <div id=kartenmsg style="font-size:12.5px;margin-top:6px;color:var(--mut)"></div>
+   </details>
+  </div>
+ </div>
+  </section>
+  <section class="ktile kt-laden" id=kt_laden><div class=khead><span>LADEN &amp; KOSTEN</span><a href="#d_energie" onclick="return akkAuf('d_energie')">Wallbox &amp; Solar ›</a></div>
+ <div id=lk_status class=lkz></div>
+ <div id=lk_karten class=lkz></div>
+ <div id=lk_route class=lkz style="display:none"></div>
+ <div id=ladebox style="display:none">
+  <div class=ksub id=charging>Ladevorgang</div>
+  <div class=grid style="grid-template-columns:repeat(3,1fr)">
+   <div class=tile><div class=k>LEISTUNG</div><div class=v><span id=l_kw>–</span><small> kW</small></div>
+    <div style="color:var(--mut);font-size:11px;margin-top:2px" id=l_art>–</div></div>
+   <div class=tile><div class=k>FERTIG IN</div><div class=v style="font-size:22px"><span id=l_rest>–</span></div>
+    <div style="color:var(--mut);font-size:11px;margin-top:2px">laut Auto</div></div>
+   <div class=tile id=l_preisbox style="display:none"><div class=k>STROM GERADE</div>
+    <div class=v><span id=l_preis>–</span><small> ct/kWh</small></div>
+    <div style="color:var(--mut);font-size:11px;margin-top:2px">Börse, ohne Netz &amp; Steuern</div></div>
+  </div>
+ </div>
+ <div id=pricebox style="display:none">
+  <div class=ksub id=prices>Strompreis (Börse)</div>
+  <div class=grid style="grid-template-columns:repeat(3,1fr)">
+   <div class=tile><div class=k>JETZT</div><div class=v><span id=p_now>–</span><small> ct/kWh</small></div></div>
+   <div class=tile><div class=k>GÜNSTIGSTE STUNDE</div><div class=v><span id=p_cheap>–</span><small> ct</small></div>
+    <div style="color:var(--mut);font-size:12px;margin-top:2px">um <span id=p_cheapt>–</span> Uhr</div></div>
+   <div class=tile><div class=k>TEUERSTE</div><div class=v><span id=p_max>–</span><small> ct</small></div></div>
+  </div>
+  <div class=bars id=bars></div>
+  <div style="color:var(--mut);font-size:11.5px;margin:8px 2px 0;line-height:1.5">
+   <span>Börsenpreis ohne Netz &amp; Steuern — dein Rechnungspreis nur bei einem Börsentarif.</span>
+   <span>Zone:</span> <span id=p_zone>–</span> · <span>Quelle:</span> <span id=p_src>–</span><span id=p_lic></span>
+  </div>
+ </div>
+ <div id=pvbox style="display:none">
+  <div class=sect>DEINE PV-ANLAGE</div>
+  <div class=grid style="grid-template-columns:1fr">
+   <div class=tile><div class=k>ERZEUGT GERADE</div>
+    <div class=v><span id=pvw>–</span><small> W</small></div>
+    <div style="color:var(--mut);font-size:11.5px;margin-top:4px">
+     <span>Quelle: dein Home Assistant</span> · <span id=pvsrc>–</span></div>
+    <div id=pverr style="display:none;color:#FFC266;font-size:12px;margin-top:6px"></div>
+   </div>
+  </div>
+ </div>
+  </section>
+ </div>
+ <div class=akk>
+  <details class=akkd id=d_klima><summary>🌡️ Klima &amp; Komfort <span>Heizen · Kühlen · Batterie vorheizen · Finden · Zusperren</span></summary>
+ <div class=klima>
+  <div class="pill heat" onclick="cmd('heat')">🔥&nbsp; Heizen</div>
+  <div class="pill cool" onclick="cmd('cool')">❄&nbsp; Kühlen</div>
+  <div class="pill" onclick="cmd('off')">◼&nbsp; Aus</div>
+  <div class="pill batt" id=p_batt onclick="battUm()">🔋&nbsp; Batterie vorheizen</div>
+ </div>
+ <div style="color:var(--mut);font-size:12px;margin-top:8px">🛡️ Aus Sicherheitsgründen nur bei ausgeschaltetem Auto.</div>
+ <div class=klima id=extras style="margin-top:10px">
+  <div class="pill" id=p_find onclick="cmd('find')">🔍&nbsp; Auto finden</div>
+  <div class="pill" id=p_lock onclick="zusperren()">🔒&nbsp; Zusperren</div>
+ </div>
+ <div id=seatbox style="display:none;margin-top:10px">
+  <div style="color:var(--mut);font-size:11px;letter-spacing:2px;margin:0 4px 6px">SITZE (FAHRER + BEIFAHRER)</div>
+  <div class=klima>
+   <div class="pill" onclick="cmd('seat_off')">💺&nbsp; Aus</div>
+   <div class="pill" onclick="cmd('seat_lo')">💺&nbsp; Stufe 1</div>
+   <div class="pill" onclick="cmd('seat_hi')">💺&nbsp; Stufe 2</div>
+  </div>
+ </div>
+ <div id=ventbox style="display:none;margin-top:10px">
+  <div class=klima>
+   <div class="pill" onclick="cmd('vent_off')">💨&nbsp; Belüftung aus</div>
+   <div class="pill" onclick="cmd('vent_lo')">💨&nbsp; Stufe 1</div>
+   <div class="pill" onclick="cmd('vent_hi')">💨&nbsp; Stufe 2</div>
+  </div>
+ </div>
+ <div class=msg id=msg></div>
+ <div style="color:var(--mut);font-size:11.5px;text-align:center;margin-top:2px">
+  Heizen zielt auf 26 °C, Kühlen auf 19 °C. <b>Batterie vorheizen</b> hilft im Winter vor dem Schnellladen — eine warme Batterie lädt deutlich schneller. Das geht auch bei geparktem Auto.
+ </div>
+  </details>
+  <details class=akkd id=d_karte ontoggle="if(this.open)karteAuf()"><summary>🗺️ Karte &amp; Ladesäulen in der Nähe <span id=d_karte_sub></span></summary>
  <div class=map><div id=lmap></div></div>
  <div style="color:var(--mut);font-size:11.5px;margin:8px 2px 0">
   🔵 dein Auto · 🟢 Ladesäulen (anklickbar) — Karte © OpenStreetMap-Mitwirkende
  </div>
+ <div id=chgbox style="display:none">
+  <div class=sect>LADESÄULEN IN DER NÄHE</div>
+  <div class=tile style="padding:6px 4px"><div id=chglist></div></div>
+  <div style="color:var(--mut);font-size:11.5px;margin:8px 2px 0">
+   Quelle: <b id=chgsrc>OpenStreetMap</b> · Angaben ohne Gewähr
+  </div>
+ </div>
  <div id=lanhint style="display:none;margin:16px 2px 0;color:var(--mut);font-size:13px;text-align:center">
   📱 Auf Tablet/Handy im selben WLAN erreichbar unter <b id=lanurl style="color:var(--blue)"></b>
  </div>
+  </details>
+  <details class=akkd id=d_energie><summary>⚡ Energie &amp; Ladepunkte <span>evcc · Solar</span></summary>
  <!--ENERGIE-PANEL-->
+  </details>
+ <div id=aufnbox style="display:none">
+  <div class=sect id=aufnahmen>WÄCHTER-AUFNAHMEN</div>
+  <details class=tile id=aufndet style="padding:14px 16px" ontoggle="if(this.open)aufnLaden(1)">
+   <summary style="cursor:pointer;font-weight:600">🎥 Aufnahmen aus Panoptes ansehen <span id=aufnsum style="color:var(--mut);font-weight:400"></span></summary>
+   <div class=rhint>Die Liste und die Vorschaubilder lädt das Cockpit nur, wenn du diesen Bereich öffnest, einen Clip nur, wenn du ihn antippst. Kein Live-Bild. Die Aufnahmen bleiben im Auto; das Cockpit speichert nichts.</div>
+   <div class=aufnfilter>
+    <select id=aufntag onchange="aufnLaden(1)"><option value="">Alle Tage</option></select>
+    <select id=aufnart onchange="aufnLaden(1)"><option value="">Alle Arten</option><option value=sentry>Wächter</option>
+     <option value=proximity>Annäherung</option><option value=normal>Fahrtaufnahme</option><option value=replay>Rückblick</option></select>
+    <button type=button class=rsec style="margin:0" onclick="aufnLaden(1)">↻</button>
+   </div>
+   <div id=aufnmsg class=rmsg></div>
+   <div id=aufnplayer style="display:none;margin:10px 0">
+    <video id=aufnvideo controls playsinline preload=none style="width:100%;max-height:460px;background:#000;border-radius:14px"></video>
+    <div id=aufnclip class=rhint></div>
+   </div>
+   <div id=aufnliste class=aufngrid></div>
+   <button type=button id=aufnmehr class=rsec style="display:none" onclick="aufnLaden(AUFN.seite+1)">Weitere laden</button>
+  </details>
+ </div>
+ <div id=fbbox style="display:none">
+  <div class=sect id=fahrtenbuch>FAHRTENBUCH</div>
+  <details class=tile id=fbdet style="padding:14px 16px" ontoggle="if(this.open&&!FB.geladen)fbLaden(true)">
+   <summary style="cursor:pointer;font-weight:600">🧾 Fahrten aus Panoptes <span id=fbsum style="color:var(--mut);font-weight:400"></span></summary>
+   <div class=rhint>Die Fahrten kommen direkt von Panoptes im Auto, nur wenn du diesen Bereich öffnest. Nichts geht an einen fremden Server, das Cockpit speichert nichts. Orte zeigt das Cockpit nicht.</div>
+   <div class=aufnfilter style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px">
+    <select id=fbmonat onchange="fbLaden(true)" style="padding:8px 10px;border-radius:12px;border:1px solid var(--border);background:var(--soft);color:var(--txt);font:inherit"></select>
+    <a id=fbcsv class=rsec style="margin:0;text-decoration:none;display:inline-block" href="#" download>⬇️ CSV</a>
+   </div>
+   <div id=fbmsg class=rmsg></div>
+   <div style="overflow-x:auto"><table id=fbtab class=fbtab></table></div>
+   <button type=button id=fbmehr class=rsec style="display:none" onclick="fbLaden(false)">Weitere laden</button>
+  </details>
+ </div>
+ </div>
  <div style="text-align:center;margin:18px 0 4px">
   <a href="/about" style="color:var(--mut);font-size:12px;text-decoration:none">Impressum · Haftungsausschluss · Datenschutz</a>
  </div>
@@ -3144,14 +3170,48 @@ async function fbLaden(neu){fbMonate();const m=document.getElementById('fbmsg'),
    '</tbody><tfoot><tr><td>'+__T('Summe')+'</td><td></td><td>'+fbZ(km,1)+'</td><td>'+rDauer(dauer/60)+'</td><td>'+fbZ(kwh,1)+'</td><td>'+(km>0.5?fbZ(kwh/km*100,1):'–')+'</td><td></td><td></td></tr></tfoot>':'';
   document.getElementById('fbmehr').style.display=d.mehr?'inline-block':'none';
  }catch(e){m.textContent='⚠️ '+__T('Panoptes antwortet nicht');}}
-function planerAuf(){const f=document.getElementById('planerframe');if(!f.src)f.src='/planer/oeffnen';
- document.getElementById('planerlayer').style.display='block';document.body.style.overflow='hidden';}
-function planerZu(){document.getElementById('planerlayer').style.display='none';document.body.style.overflow='';ROUTE_T=0;routeLaden();}
+
+// --- 1.12: Status-Zeile und Kacheln (Begriffe wie im Glossar; unbekannt = "–")
+const WZ={scharf:['scharf','ok'],startet:['startet',''],unterdrueckt:['pausiert (sicherer Ort)',''],aus:['aus','warn'],nicht_gewaehlt:['Bitte wählen','warn']};
+function akkAuf(id){const d=document.getElementById(id);if(!d)return true;if(d.tagName==='DETAILS'&&!d.open)d.open=true;
+ const b=id==='aufndet'?document.getElementById('aufnbox'):d;setTimeout(()=>b.scrollIntoView({behavior:'smooth',block:'start'}),60);return false;}
+function karteAuf(){setTimeout(()=>{try{if(MAP)MAP.invalidateSize();}catch(e){}},80);}
+function zeilen(s){const en=window.__LANG__==='en',P=[],n=v=>v==null||v===''?'–':v;
+ P.push('<span class=spill>🔋 '+__T('Ladestand')+' <b>'+(s.soc!=null?Math.round(s.soc)+' %':'–')+'</b></span>');
+ P.push('<span class=spill title="'+esc(__T('Nutzbare Akkukapazität × Ladestand ÷ Verbrauch Ø – eine Rechnung, kein Messwert'))+'">📏 '+__T('Reichweite (geschätzt)')+' <b>'+(s.real_range_km!=null?Math.round(s.real_range_km)+' km':'–')+'</b>'+
+  (s.range_km!=null?' <span class=m>'+__T('Auto')+': '+Math.round(s.range_km)+' km</span>':'')+'</span>');
+ P.push(s.locked==null?'<span class=spill>🔒 <b>–</b></span>':'<span class="spill '+(s.locked==='ON'?'ok':'warn')+'">'+(s.locked==='ON'?'🔒 <b>'+__T('verriegelt')+'</b>':'🔓 <b>'+__T('offen')+'</b>')+'</span>');
+ if(s.panoptes_an){const z=WZ[s.waechter_zustand]||null;P.push('<span class="spill '+(z?z[1]:'')+'">👁️ '+__T('Wächter')+' <b>'+(z?__T(z[0]):'–')+'</b></span>');}
+ const lt=s.charging==='ON'?__T('lädt')+(s.charge_power!=null?' '+(Math.round(Math.abs(s.charge_power)*10)/10).toString().replace('.',en?'.':',')+' kW':''):s.plugged==='ON'?__T('angesteckt'):(s.charging==='OFF'?__T('lädt nicht'):'–');
+ P.push('<span class=spill>🔌 <b>'+lt+'</b></span>');
+ if(s.reifen&&s.reifen.stufe)P.push('<span class="spill '+(s.reifen.stufe==='gruen'?'ok':'warn')+'">🛞 '+__T('Reifen')+' <b>'+(s.reifen.stufe==='gruen'?'ok':__T('prüfen'))+'</b></span>');
+ document.getElementById('statuszeile').innerHTML=P.join('');}
+function energieRing(s){const kwh=s.battery_kwh,e=document.getElementById('ekwh'),k=document.getElementById('ekap'),en=window.__LANG__==='en';
+ if(s.soc!=null&&kwh){e.textContent=(Math.round(kwh*s.soc/10)/10).toString().replace('.',en?'.':',');
+  k.innerHTML=(en?'of ':'von ')+String(kwh).replace('.',en?'.':',')+' kWh'+(String(s.battery_quelle||'').indexOf('Panoptes')===0?'<br>'+esc(__T('(geschätzt)')):'');}
+ else{e.textContent=s.soc!=null?Math.round(s.soc):'–';k.textContent=s.soc!=null?'%':__T('ENERGIE');}}
+let LK_T=0;
+async function ladenKachel(s){const st=document.getElementById('lk_status');const en=window.__LANG__==='en';
+ st.innerHTML='<span>'+__T('Laden')+'</span><span class=m>'+(s.charging==='ON'?__T('lädt gerade'):s.plugged==='ON'?__T('angesteckt, lädt nicht'):s.plugged==='OFF'?__T('nicht angesteckt'):'–')+'</span>';
+ const pl=s.planer&&s.planer.an,kz=document.getElementById('lk_karten');
+ if(!pl){kz.innerHTML='<span>'+__T('Ladekarten')+'</span><span class=m>'+__T('mit dem Routenplaner verbinden (Einstellungen)')+'</span>';return;}
+ if(Date.now()-LK_T<600000)return;LK_T=Date.now();
+ try{const d=await (await fetch('/karten',{cache:'no-store'})).json();const t={};(d.tarife||[]).forEach(x=>t[x.id]=x);
+  const m=(d.meine||[]).map(i=>t[i]?(t[i].msp+' '+t[i].name):('#'+i));
+  kz.innerHTML='<span>'+__T('Deine Ladekarten')+'</span><span class=m>'+(m.length?esc(m.join(', ')):__T('keine gewählt'))+' · <a href="#" onclick="return akkAuf(\'kartenbox\')">'+__T('ändern')+'</a></span>';
+ }catch(e){kz.innerHTML='<span>'+__T('Ladekarten')+'</span><span class=m>–</span>';}}
+function routeKosten(r){const z=document.getElementById('lk_route');if(!r||r.kosten==null){z.style.display='none';return;}
+ z.style.display='';z.innerHTML='<span>'+__T('Bereitliegende Route')+'</span><span class=m>≈ '+Number(r.kosten).toFixed(2).replace('.',window.__LANG__==='en'?'.':',')+' € · '+esc(r.titel||'')+'</span>';}
+function kacheln(s){zeilen(s);energieRing(s);ladenKachel(s);
+ const w=document.getElementById('kt_waechter');w.style.display=(document.getElementById('wletztbox').style.display!=='none'||document.getElementById('sentrybox').style.display!=='none')?'':'none';
+ const r=document.getElementById('kt_route');r.style.display=(s.planer&&s.planer.an)?'':'none';
+ const ks=document.getElementById('d_karte_sub');if(ks)ks.textContent=EINW.kartenquelle==='keine'?__T('keine Kartenquelle gewählt'):EINW.kartenquelle==='community'?__T('Community-Karte'):'OpenStreetMap';}
+
 async function routeLaden(){if(Date.now()-ROUTE_T<30000)return;ROUTE_T=Date.now();
  try{const d=await (await fetch('/planer/route',{cache:'no-store'})).json(), b=document.getElementById('routebox');
   if(!d.an){b.style.display='none';return;}
   if(!d.route){b.style.display='block';b.innerHTML='<small style="color:var(--mut)">'+esc(__T('Keine Route bereit. Plane eine unter „Route“ und schick sie mit „Ins Auto schicken“.'))+'</small>';return;}
-  const r=d.route,h=r.minuten?Math.floor(r.minuten/60)+' h '+String(r.minuten%60).padStart(2,'0')+' min':'';
+  routeKosten(d.route);const r=d.route,h=r.minuten?Math.floor(r.minuten/60)+' h '+String(r.minuten%60).padStart(2,'0')+' min':'';
   const st=r.status?(__T(r.status)+(r.status==='Navigation läuft'&&r.stopp!=null?' · '+__T('nächster Ladestopp')+' '+(r.stopp+1):'')):
    (r.abgeholt?__T('vom Auto abgeholt'):__T('liegt bereit – wird in Panoptes ab 0.1.9 angezeigt'));
   b.style.display='block';
@@ -3481,7 +3541,6 @@ async function load(){
  const pl=document.getElementById('panoptes-link');if(pl)pl.style.display=s.panoptes_an?'inline-block':'none';
  // Routenplaner
  document.getElementById('routesect').style.display=(s.planer&&s.planer.an)?'block':'none';
- document.getElementById('navroute').style.display=(s.planer&&s.planer.an)?'':'none';
  if(s.planer&&s.planer.an){rSocVomAuto(s);
   document.getElementById('planerbox').style.display='block';
   routeLaden();
@@ -3495,6 +3554,7 @@ async function load(){
  // Waechter
  document.getElementById('aufnbox').style.display=s.panoptes_an?'block':'none';
  wletzt(s);
+ kacheln(s);
  document.getElementById('fbbox').style.display=s.panoptes_an?'block':'none';
  if(s.sentry_on&&!s.panoptes_an){
   document.getElementById('sentrybox').style.display='block';
@@ -4362,6 +4422,8 @@ class H(BaseHTTPRequestHandler):
             import geheim
             d["geheim_warnung"] = geheim.WARNUNG              # Rueckfall ohne Schluesselbund: ehrlich sagen
             d["model"] = _CFG.get("model") or "Elektrofahrzeug"
+            d["battery_kwh"] = _CFG.get("battery_kwh") or MODELS.get(_CFG.get("model") or "")
+            d["battery_quelle"] = _CFG.get("battery_quelle") or ""
             d["reifen"] = _reifen_urteil(_STATE)
             d["features"] = _CFG.get("features") or {}
             # Kein eigenes Foto -> welche Silhouette passt zum Modell?

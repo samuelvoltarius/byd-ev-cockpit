@@ -18,6 +18,21 @@ class TestHtmlBalance(unittest.TestCase):
             for tag in ("div", "details", "table", "select"):
                 self.assertEqual(len(re.findall(r"<%s\b" % tag, h)), h.count("</%s>" % tag), "%s: <%s> offen/zu ungleich" % (name, tag))
 
+    def test_js_ids_gibt_es_im_html(self):
+        """Jede getElementById('x') im Cockpit muss es als Element geben (sonst bricht load() ab: 1.12-Umbau)."""
+        h = vorlage("COCKPIT")
+        i = QUELLE.index("ENERGY_PANEL = r\'\'\'")
+        ep = QUELLE[i:QUELLE.index("\'\'\'", i + 20)]
+        alles = h + ep
+        ids = set(re.findall(r"\bid=([A-Za-z_][\w-]*)", alles)) | set(re.findall(r'\bid="([A-Za-z_][\w-]*)"', alles))
+        js = set(re.findall(r"getElementById\('([\w-]+)'\)", alles))
+        dynamisch = {"geheimwarn", "einwhinweis"}
+        self.assertEqual(sorted(js - ids - dynamisch), [])
+
+    def test_keine_unquotierten_werte_vor_schraegstrich(self):
+        """stroke-width=14/> wird im HTML zu '14/' und schliesst das Element nicht (Ring-Bogen fehlte jahrelang)."""
+        self.assertEqual(re.findall(r"=[^\s\"'>=]+/>", QUELLE), [])
+
 
 if __name__ == "__main__":
     unittest.main()

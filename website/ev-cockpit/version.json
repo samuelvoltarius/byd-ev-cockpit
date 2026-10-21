@@ -1,5 +1,5 @@
 {
-  "version": "1.11.8",
-  "was_neu": "Route mit Abfahrtszeit, Zwischenstopps und Fahrtplan",
+  "version": "1.12.0",
+  "was_neu": "Übersichtlicher: Status-Zeile, vier Kacheln, Rest einklappbar, Wächter-Status",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }
