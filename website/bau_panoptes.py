@@ -312,10 +312,14 @@ def bild(name, art, alt, pfad, klasse="", sofort=False, stil=""):
     b = pfad + "bilder/" + name + "-" + art
     w, h = GROESSE[art]
     hell = os.path.exists(os.path.join(QUELLE, name + "-" + art + "-hell.webp"))
-    quelle = ('<source media="(prefers-color-scheme: light)" srcset="%s-hell.webp">' % b) if hell else ""
-    return ('<a href="%s-dunkel.webp" target="_blank" rel="noopener"%s%s><picture>%s'
-            '<img src="%s-dunkel.webp" alt="%s" width="%d" height="%d"%s></picture></a>'
-            % (b, (' class="%s"' % klasse) if klasse else "", (' style="%s"' % stil) if stil else "", quelle, b, html.escape(alt), w, h,
+    def v(datei):                          # Inhalts-Kennung: neues Bild -> neue Adresse (Bilder sind 24 h im Cache)
+        import hashlib
+        return "?v=" + hashlib.sha256(open(os.path.join(QUELLE, datei), "rb").read()).hexdigest()[:8]
+    dunkel = b + "-dunkel.webp" + v(name + "-" + art + "-dunkel.webp")
+    quelle = ('<source media="(prefers-color-scheme: light)" srcset="%s-hell.webp%s">' % (b, v(name + "-" + art + "-hell.webp"))) if hell else ""
+    return ('<a href="%s" target="_blank" rel="noopener"%s%s><picture>%s'
+            '<img src="%s" alt="%s" width="%d" height="%d"%s></picture></a>'
+            % (dunkel, (' class="%s"' % klasse) if klasse else "", (' style="%s"' % stil) if stil else "", quelle, dunkel, html.escape(alt), w, h,
                ' loading="eager" fetchpriority="high"' if sofort else ' loading="lazy" decoding="async"'))
 
 
