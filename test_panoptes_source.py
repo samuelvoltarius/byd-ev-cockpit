@@ -169,5 +169,33 @@ class TestSchloss(unittest.TestCase):
         self.assertEqual(p.lies()["locked"], "ON")                                       # zuletzt bekannter Wert bleibt
 
 
+class TestStatusFelder(unittest.TestCase):
+    """Bedeutungen laut Panoptes-Code; unbekannt -> Feld fehlt (Anzeige '–'), nie 'Nein'."""
+    def test_angesteckt(self):
+        self.assertEqual(ps.aus_telemetrie({"soc": 1, "charging_gun": 1})["plugged"], "OFF")
+        for g in (2, 3, 4, 5):
+            self.assertEqual(ps.aus_telemetrie({"soc": 1, "charging_gun": g})["plugged"], "ON")
+        for g in (0, -1, 255, None):
+            self.assertNotIn("plugged", ps.aus_telemetrie({"soc": 1, "charging_gun": g}))
+
+    def test_klima(self):
+        self.assertEqual(ps.aus_telemetrie({"soc": 1, "ac_on": 0})["klima_on"], "OFF")
+        self.assertEqual(ps.aus_telemetrie({"soc": 1, "ac_on": 1})["klima_on"], "ON")
+        self.assertNotIn("klima_on", ps.aus_telemetrie({"soc": 1, "ac_on": 2}))
+
+    def test_fenster(self):
+        self.assertEqual(ps.aus_telemetrie({"soc": 1, "window_open": [0, 0, 0, 0, 0, 0]})["windows_open"], "OFF")
+        self.assertEqual(ps.aus_telemetrie({"soc": 1, "window_open": [0, 30, -1, 0, 0, 0]})["windows_open"], "ON")
+        self.assertNotIn("windows_open", ps.aus_telemetrie({"soc": 1, "window_open": [0, 0, -1, 0, 0, 0]}))   # eins ungemessen
+
+    def test_tueren_aus_vehicle_state(self):
+        tel = {"success": True, "telemetry": {"soc": 71, "lat": 47.8, "lon": 13.0, "odometer": 1}}
+        for offen, erwartet in (({"lf": False, "rf": False}, "OFF"), ({"lf": False, "rf": True}, "ON"), ({}, None)):
+            f = Fake({"/api/mqtt/telemetry": tel, "/api/vehicle/state": {"doors": {"overall": 1}, "doorOpen": offen},
+                      "/api/launcher/v1/summary": {}})
+            st = ps.Panoptes("http://100.1.2.3:8180", "", jwt="jwt-1", http=f).lies()
+            self.assertEqual(st.get("doors_open"), erwartet)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

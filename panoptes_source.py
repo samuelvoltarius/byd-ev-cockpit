@@ -90,6 +90,20 @@ def aus_telemetrie(t):
         st["speed"] = _zahl(t["speed"])
     if t.get("is_charging") is not None:
         st["charging"] = _an(t["is_charging"])
+    # Bedeutungen laut Panoptes-Code (BydDataCollector/AbrpTelemetryService), unbekannt -> Feld weglassen:
+    gun = _zahl(t.get("charging_gun"))            # 1 = getrennt, 2/3/4 = angesteckt, 5 = V2L-Adapter steckt
+    if gun is not None and int(gun) in (1, 2, 3, 4, 5):
+        st["plugged"] = "OFF" if int(gun) == 1 else "ON"
+    ac = _zahl(t.get("ac_on"))                    # 0 = aus, 1 = an
+    if ac is not None and int(ac) in (0, 1):
+        st["klima_on"] = "ON" if int(ac) == 1 else "OFF"
+    fe = t.get("window_open")                     # je Fenster 0..100 % offen, -1 = keine Messung
+    if isinstance(fe, list) and fe:
+        werte = [_zahl(x) for x in fe]
+        if any(x is not None and 0 < x <= 100 for x in werte):
+            st["windows_open"] = "ON"
+        elif all(x == 0 for x in werte):
+            st["windows_open"] = "OFF"            # nur "zu", wenn JEDES Fenster gemessen zu ist
     # door_lock aus der Telemetrie NICHT verwenden: meist -1 (unbekannt) je Tuer - daraus wurde frueher "OFF"
     # (Alfred, 21.10.: Cockpit zeigte "Verriegelt: Nein", Auto war verriegelt). Schloss kommt aus /api/vehicle/state.
     for ecke in ("fl", "fr", "rl", "rr"):                 # Reifendruck in kPa (wie die BYD-Cloud)
@@ -145,7 +159,7 @@ class Panoptes:
         self.jwt_gespeichert = jwt_gespeichert or (lambda j, code_verbraucht=False: None)
         self.odo_t = 0.0
         self.akku_t = 0.0
-        self.schloss, self.schloss_t = None, 0.0
+        self.schloss, self.schloss_t, self.tueren = None, 0.0, None
         self.code_verbraucht = False
         self.letzter_fehler = ""
 
@@ -215,15 +229,19 @@ class Panoptes:
                     fz = self._get("/api/vehicle/state") or {}
                     # API-Bedeutung (VehicleControlApiHandler): 1 = verriegelt, 2 = offen, -1/0 = unbekannt
                     self.schloss = {1: "ON", 2: "OFF"}.get(((fz.get("doors") or {}).get("overall")))
+                    offen = [v for v in (fz.get("doorOpen") or {}).values() if isinstance(v, bool)]
+                    self.tueren = ("ON" if any(offen) else "OFF") if offen else None
                     odo = (fz.get("odometer") or {}).get("totalKm")
                     if "odometer" not in st and _zahl(odo):
                         st["odometer"] = _zahl(odo)
                 except NichtAngemeldet:
                     raise
                 except Exception:
-                    self.schloss = None
+                    self.schloss = self.tueren = None
             if self.schloss:
                 st["locked"] = self.schloss
+            if self.tueren:
+                st["doors_open"] = self.tueren
             if "usable_kwh" not in st and self.uhr() - self.akku_t >= AKKU_TAKT_S:
                 self.akku_t = self.uhr()
                 try:
