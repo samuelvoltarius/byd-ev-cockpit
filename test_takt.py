@@ -119,6 +119,14 @@ class TestAkkuGeschaetzt(unittest.TestCase):
             self.assertNotIn(k, ev._STATE)
         self.assertIn("doors_open", ev._STATE["fehlt"])
 
+    def test_speichern_laesst_seite_nicht_leer(self):
+        q = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "evcockpit.py"), encoding="utf-8").read()
+        i = q.index("gleiches_auto = c.get(\"vin\") == _CFG.get(\"vin\")")
+        teil = q[i:i + 600]
+        self.assertIn("load_cache()", teil)                                 # letzte bekannte Werte statt leer
+        self.assertIn("nutzer_aktion()", teil)                              # und sofort neu fragen
+        self.assertGreaterEqual(q.count('cache["_poll_ts"] = time.time()'), 3)   # Alter ueberlebt den Neustart
+
     def test_handeintrag_gewinnt(self):
         self.assertEqual(self.runde(44.1, "BYD Dolphin Surf / Seagull (Comfort/Design)", "manuell")["battery_kwh"], 10.0)
 
