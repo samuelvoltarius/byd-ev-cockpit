@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.11.5"
+VERSION = "1.11.6"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -502,8 +502,13 @@ def _waechter_letztes(pv):
         _LETZT["zu_alt_bis"] = jetzt + 6 * 3600       # Panoptes vor 0.1.9: nicht staendig nachfragen
         _STATE["waechter_letzt"] = {"zu_alt": True}
         return
-    _STATE["waechter_letzt"] = {k: a.get(k) for k in ("id", "type", "timestamp", "dateFormatted", "timeFormatted",
-                                                        "available", "place")} if a else {"keins": True}
+    if not a:
+        _STATE["waechter_letzt"] = {"keins": True}
+        return
+    ort = a.get("place")
+    ort = ort if isinstance(ort, str) else ((ort or {}).get("short") if isinstance(ort, dict) else "")
+    _STATE["waechter_letzt"] = dict({k: a.get(k) for k in ("id", "type", "timestamp", "dateFormatted", "timeFormatted",
+                                                             "available")}, place=str(ort or "")[:60])
 
 
 def _panoptes_runde(cache):
@@ -3058,7 +3063,7 @@ function wletzt(s){const box=document.getElementById('wletztbox');box.style.disp
  if(!w.id){t.textContent=__T('Noch kein Ereignis');u.textContent='';b.textContent='🎥';return;}
  const min=Math.max(0,Math.round((Date.now()-(w.timestamp||0))/60000)),en=window.__LANG__==='en';
  const alt=min<1?__T('gerade eben'):min<120?(en?min+' min ago':'vor '+min+' min'):min<2880?(en?Math.round(min/60)+' h ago':'vor '+Math.round(min/60)+' h'):aufnZeit(w);
- t.textContent=alt;u.textContent=[__T(AUFN_ART[w.type]||w.type||''),aufnZeit(w),w.place||''].filter(Boolean).join(' · ');
+ t.textContent=alt;u.textContent=[__T(AUFN_ART[w.type]||w.type||''),aufnZeit(w),(typeof w.place==='string'?w.place:(w.place&&(w.place.short||w.place.medium))||'')].filter(Boolean).join(' · ');
  if(b.dataset.id!==w.id){b.dataset.id=w.id;b.innerHTML=w.available?'<img alt="" style="width:100%;height:100%;object-fit:cover" src="/waechter/bild/'+esc(w.id)+'" onerror="aufnBildFehler(this)">':esc(__T('Datenträger fehlt'));}}
 function wletztOeffnen(){const w=(LAST_STATE||{}).waechter_letzt||{};const d=document.getElementById('aufndet');if(!d)return;
  if(!d.open)d.open=true;document.getElementById('aufnbox').scrollIntoView({behavior:'smooth',block:'start'});
