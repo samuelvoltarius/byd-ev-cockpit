@@ -22,7 +22,13 @@ ENTITAET = re.compile(r"[a-z_]{1,32}\.[a-z0-9_]{1,128}\Z")
 UHRZEIT = re.compile(r"([01][0-9]|2[0-3]):[0-5][0-9]\Z")
 DOMAENEN = {"laedt": ("binary_sensor", "sensor", "switch", "input_boolean"), "leistung": ("sensor",),
             "modus": ("select", "input_select", "switch"), "ziel": ("number", "input_number"),
-            "strom": ("number", "input_number"), "startzeit": ("time", "input_datetime")}
+            "strom": ("number", "input_number"), "startzeit": ("time", "input_datetime"),
+            "start": ("button",), "stop": ("button",)}
+# Nie als Wallbox-Steuerung nehmen (Sicherheits-/Geraete-Einstellungen) und nie Fahrzeug-Entitaeten als Wallbox anzeigen.
+NIE_STEUERN = re.compile(r"unearth|earth|erdung|lock|sperre|child|kinder|led|_led|light|licht|display|sound|beep|phase|rcd|"
+                         r"reset|restart|neu_starten|reboot|update|firmware|maximum_current|max_current|max_strom|calibrat")
+FAHRZEUG = re.compile(r"(^|[._ ])(byd|overdrive|surfmate|panoptes|vehicle|fahrzeug)")
+STEUER_ROLLEN = ("modus", "ziel", "strom", "start", "stop")
 TABELLE = Path(__file__).with_name("static") / "wallbox-tuya-modelle.json"
 
 
@@ -116,6 +122,21 @@ def pruefe_ha_zuordnung(z):
     return o
 
 
+def ha_bereinigen(z):
+    """Gespeicherte Zuordnung entschaerfen (1.17.1): Fahrzeug-Entitaeten raus, nie steuerbare Schalter raus.
+    Fall Alfred 23.10.: 1.15 hatte switch.ev_charger_unearthed als 'Modus' und das Ladelimit des Autos als 'Ziel' vorgeschlagen."""
+    o, weg = dict(z), []
+    for rolle in DOMAENEN:
+        e = o.get(rolle)
+        if not e:
+            continue
+        if FAHRZEUG.search(e) or (rolle in STEUER_ROLLEN and NIE_STEUERN.search(e)):
+            o[rolle] = None
+            weg.append(e)
+    o["entfernt"] = weg
+    return o
+
+
 def _gueltig(s):
     return isinstance(s, dict) and str(s.get("state") or "") not in ("", "unavailable", "unknown")
 
@@ -124,6 +145,17 @@ def _laedt(s):
     if not _gueltig(s):
         return None
     return str(s["state"]).strip().lower() in ("on", "true", "charging", "laedt", "lädt", "laden", "charger_charging")
+
+
+def _knopf_da(s):
+    """HA-Knoepfe melden 'unknown', bis sie einmal gedrueckt wurden; nur 'unavailable' heisst: nicht nutzbar."""
+    return isinstance(s, dict) and str(s.get("state") or "") not in ("", "unavailable")
+
+
+def _erreichbar(e):
+    """False nur, wenn ALLE zugeordneten Entitaeten 'unavailable' melden (HA erreicht das Geraet nicht)."""
+    werte = [x for x in e.values() if isinstance(x, dict)]
+    return None if not werte else not all(str(x.get("state")) == "unavailable" for x in werte)
 
 
 def _leistung_w(s):
@@ -156,6 +188,9 @@ def ha_ladepunkt(z, e):
                     modi.append(k)
                     if opt == roh:
                         modus = k
+    if not modi and z.get("start") and z.get("stop") and _knopf_da(e.get("start")) and _knopf_da(e.get("stop")):
+        modi = ["aus", "sofort"]                   # Knoepfe Laden starten/stoppen (z. B. tuya_local): Zustand = laedt
+        modus = {True: "sofort", False: "aus"}.get(o["laedt"])
     o.update(modus=modus, modusRoh=roh)
     zi = e.get("ziel")
     zmin, zmax = 20, 100
@@ -177,6 +212,8 @@ def ha_ladepunkt(z, e):
     zeit = str(sz["state"])[:5] if nur_uhr else ""
     o["plan"] = {"art": "start_um", "zeit": zeit} if nur_uhr and UHRZEIT.match(zeit) else None
     o["faehigkeiten"] = {"modus": modi, "ziel": _gueltig(zi), "strom": strom_f, "plan": "start_um" if nur_uhr else None}
+    o["erreichbar"] = _erreichbar(e)
+    o["entfernt"] = list(z.get("entfernt") or [])
     return o
 
 
@@ -228,8 +265,20 @@ def ha_vorschlag(alle):
 
 def _rolle(s, a, eid, name):
     """Welche Rolle passt zu einer Entitaet (generisch, kein Code je Modell) -> (rolle, punkte) oder (None, 0)."""
+    if FAHRZEUG.search(eid) or FAHRZEUG.search(name):
+        return None, 0
     wort = 2 if any(w in name for w in WALLBOX_WOERTER) else 0
     einheit, klasse, st, dom = str(a.get("unit_of_measurement") or ""), str(a.get("device_class") or ""), str(s.get("state") or ""), eid.split(".")[0]
+    if dom in ("switch", "select", "input_select", "number", "input_number", "button") and NIE_STEUERN.search(eid + " " + name):
+        return None, 0
+    if dom == "button" and wort:
+        if re.search(r"stop|halt|beend", name):
+            return "stop", wort + 1
+        if re.search(r"charge|start|laden", name):
+            return "start", wort + 1
+        return None, 0
+    if dom == "sensor" and wort and "charging" in [str(x).lower() for x in (a.get("options") or [])]:
+        return "laedt", wort + 3
     if dom == "switch" and wort:
         return "modus", wort
     if dom in ("select", "input_select") and wort and any(m in name for m in ("mode", "modus", "lademodus")):
@@ -279,14 +328,14 @@ def ha_geraete(alle, geraet=None):
         if not rolle:
             continue
         did, dname = (geraet or {}).get(eid) or ("", "")
-        key = did or "obj:" + eid.split(".")[1].split("_")[0]
+        key = did or "obj:" + "_".join(eid.split(".")[1].split("_")[:2])
         g = gruppen.setdefault(key, {"name": dname, "rollen": {}})
         if rolle not in g["rollen"] or p > g["rollen"][rolle][1]:
             g["rollen"][rolle] = (eid, p)
     aus = []
     for key, g in gruppen.items():
         r = g["rollen"]
-        if not (("modus" in r or "strom" in r) and ("leistung" in r or "laedt" in r)):
+        if not (("modus" in r or "strom" in r or ("start" in r and "stop" in r)) and ("leistung" in r or "laedt" in r)):
             continue
         name = g["name"] or str((states[(r.get("leistung") or r.get("modus") or next(iter(r.values())))[0]].get("attributes") or {}).get("friendly_name") or key.split(":")[-1])
         z = {"schluessel": "wallbox", "titel": name.strip()[:40] or "Wallbox", "modusOptionen": {}}
@@ -317,7 +366,8 @@ TUYA_DOMAENEN = ("localtuya", "tuya_local", "tuya")
 
 class HaQuelle:
     def __init__(self, url, token, zuordnungen, http=_ha_http, schlaf=time.sleep):
-        self.basis, self.token, self.zu, self.http, self.schlaf = basis_url(url), token, list(zuordnungen or []), http, schlaf
+        self.basis, self.token, self.http, self.schlaf = basis_url(url), token, http, schlaf
+        self.zu = [ha_bereinigen(z) for z in (zuordnungen or [])]
         if not token:
             raise WallboxFehler("anmeldung", 502)
 
@@ -377,7 +427,16 @@ class HaQuelle:
         if aktion == "modus":
             if wert not in f["modus"]:
                 raise WallboxFehler("nicht_unterstuetzt")
-            eid = z["modus"]
+            eid = z.get("modus") or ""
+            if not eid and z.get("start") and z.get("stop"):
+                self._dienst("button", "press", {"entity_id": z["stop"] if wert == "aus" else z["start"]})
+                for i in range(4):
+                    self.schlaf(0.4 if i == 0 else 1.0)
+                    nach = ha_ladepunkt(z, self._states(z))
+                    if nach["laedt"] is (wert == "sofort"):
+                        return {"uebernommen": True, "ladepunkt": nach}
+                # Knopf gedrueckt, Zustand nicht (sicher) zurueckzulesen -> ehrlich "unbekannt" (§0 Regel 6)
+                return {"uebernommen": None if nach["laedt"] is None else False, "ladepunkt": nach}
             if eid.startswith("switch."):
                 self._dienst("switch", "turn_off" if wert == "aus" else "turn_on", {"entity_id": eid})
             else:
@@ -598,6 +657,8 @@ class TuyaQuelle:
 def pruefe_wert(lp, aktion, wert):
     """Werte VOR der Rueckfrage pruefen (§5.2.4) - gegen die Faehigkeiten des Ladepunkts. -> bereinigter Wert."""
     f = lp.get("faehigkeiten") or {}
+    if lp.get("erreichbar") is False:
+        raise WallboxFehler("ha_nicht_erreichbar", 502)
     if lp.get("art") != "wallbox":
         raise WallboxFehler("keine_wallbox")
     if lp.get("zuordnung") == "unbekannt":

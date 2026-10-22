@@ -44,6 +44,17 @@ footer a{color:var(--mut)}
   <p class=lead>Alle Änderungen am EV-Cockpit — das Neueste zuerst.</p>
 
     <section class="ver">
+      <div class="verhead"><h2>Version 1.17.1</h2><span class="datum">23.10.2026</span></div>
+      <p class="titel">Fehler behoben</p>
+      <ul>
+        <li><b>MQTT-Server</b> — die automatische Suche hat die Adresse von Home Assistant in das Feld für den MQTT-Server geschrieben; das ergab „Verbindung verweigert“. Jetzt fragt das Cockpit Home Assistant nach dem richtigen MQTT-Server, und Fehler stehen verständlich auf Deutsch da.</li>
+        <li><b>Wallbox</b> — Sicherheits- und Geräte-Schalter (z. B. Erdungsüberwachung) und Werte des Autos werden nie mehr als Wallbox-Steuerung genommen; alte Zuordnungen werden entschärft. Wallboxen mit „Laden starten/stoppen“-Knöpfen gehen jetzt. Erreicht Home Assistant die Wallbox nicht, sagt das Cockpit das.</li>
+        <li><b>Route</b> — ein nur getipptes Ziel wird beim Berechnen selbst gesucht; gibt es mehrere gleichnamige Orte, geht die Liste auf. Hinweise stehen gut sichtbar direkt am Knopf.</li>
+        <li><b>Home Assistant</b> — überall „Mit Home Assistant anmelden“ statt Token abtippen; die Wallbox nutzt die bestehende Anmeldung.</li>
+      </ul>
+    </section>
+
+    <section class="ver">
       <div class="verhead"><h2>Version 1.17</h2><span class="datum">23.10.2026</span></div>
       <p class="titel">Wallbox automatisch einrichten</p>
       <ul>
