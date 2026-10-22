@@ -1,5 +1,5 @@
 {
-  "version": "1.14.0",
-  "was_neu": "Wallbox über evcc steuern: Lademodus und Ziel-Ladestand, je Ladepunkt freigeben, mit Rückfrage",
+  "version": "1.15.0",
+  "was_neu": "Wallbox auch über Home Assistant oder Tuya (im Heimnetz): anzeigen und steuern, je Ladepunkt freigeben, mit Rückfrage",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }

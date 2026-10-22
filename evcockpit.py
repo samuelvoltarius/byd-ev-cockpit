@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.14.0"
+VERSION = "1.15.0"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -3866,6 +3866,154 @@ def _ha_token(url, token=""):
     raise ValueError("Bitte zuerst „Mit Home Assistant anmelden“ (oder unter „Erweitert“ einen Token eintragen)")
 
 
+# ---------------------------------------------------------------- Wallbox ueber Home Assistant / Tuya (WALLBOX_VERTRAG v1.1)
+def _wb_cfg():
+    c = _CFG.get("wallbox")
+    return c if isinstance(c, dict) else {"quelle": None}
+
+
+def _wb_fingerabdruck(c):
+    """Woran Freigaben haengen (§2): Quelle + HA-Adresse bzw. Tuya-Geraete (ID + IP). Wechsel loescht alle Freigaben."""
+    import ha_finden
+    q = c.get("quelle")
+    if q == "ha":
+        return "ha|" + ha_finden.normal((c.get("ha") or {}).get("url") or "")
+    if q == "tuya":
+        return "tuya|" + ";".join(sorted("%s=%s@%s" % (g.get("schluessel"), g.get("geraeteId"), g.get("ip"))
+                                          for g in (c.get("tuya") or {}).get("geraete") or []))
+    return ""
+
+
+def _wb_tuya_keys():
+    try:
+        d = json.loads(_CFG.get("wallbox_tuya_keys") or "{}")
+        return d if isinstance(d, dict) else {}
+    except ValueError:
+        return {}
+
+
+def _wb_ha_token(url):
+    import ha_finden
+    c = _wb_cfg()
+    if _CFG.get("wallbox_ha_token") and ha_finden.normal(url) == ha_finden.normal((c.get("ha") or {}).get("url") or ""):
+        return _CFG["wallbox_ha_token"]
+    try:
+        return _ha_token(url)                     # „Mit Home Assistant anmelden“ aus den Einstellungen (gleiche Adresse)
+    except Exception:
+        import wallbox_quellen as wq
+        raise wq.WallboxFehler("anmeldung", 502)
+
+
+def _wb_quelle():
+    import wallbox_quellen as wq
+    c = _wb_cfg()
+    if c.get("quelle") == "ha":
+        h = c.get("ha") or {}
+        return wq.HaQuelle(h.get("url"), _wb_ha_token(h.get("url")), h.get("ladepunkte"))
+    if c.get("quelle") == "tuya":
+        import tuya_lan
+        from network_safety import private_ziel
+        keys, geraete = _wb_tuya_keys(), []
+        for g in (c.get("tuya") or {}).get("geraete") or []:
+            try:
+                ip = private_ziel(g.get("ip"), "Tuya")[1]
+            except ValueError:
+                raise wq.WallboxFehler("adresse_gesperrt")
+            try:
+                lan = tuya_lan.TuyaLan(ip, g.get("geraeteId"), (keys.get(g.get("schluessel")) or "").encode("latin-1"), g.get("version"))
+            except tuya_lan.TuyaFehler as e:
+                raise wq.WallboxFehler(e.code)
+            geraete.append((g, lan))
+        return wq.TuyaQuelle(geraete)
+    raise wq.WallboxFehler("nicht_eingerichtet")
+
+
+def _wb_status():
+    q = _wb_quelle()
+    frei = set(_CFG.get("wallbox_frei") or [])
+    lps = q.ladepunkte()
+    for lp in lps:
+        lp["steuernFrei"] = lp["id"] in frei
+    return lps
+
+
+def _wb_einstellungen_speichern(b):
+    """Pruefen und speichern. Geheimnisse: fehlt = behalten (nur gleiche Adresse/Geraete-ID), "" = loeschen, Text = neu."""
+    import ha_finden
+    import tuya_lan
+    import wallbox_quellen as wq
+    from network_safety import private_ziel
+    alt = _wb_cfg()
+    q = b.get("quelle") or None
+    if q not in (None, "ha", "tuya"):
+        raise wq.WallboxFehler("einstellung_ungueltig")
+    neu = {"quelle": q, "ha": dict(alt.get("ha") or {}), "tuya": dict(alt.get("tuya") or {})}
+    ha_token = _CFG.get("wallbox_ha_token") or ""
+    keys = _wb_tuya_keys()
+    if isinstance(b.get("ha"), dict):
+        h = b["ha"]
+        url = str(h.get("url") or "").strip()[:200]
+        if url:
+            wq.basis_url(url)                                        # nur private Adressen (§2)
+        zu = [wq.pruefe_ha_zuordnung(z) for z in (h.get("ladepunkte") or [])[:4]]
+        if len({z["schluessel"] for z in zu}) != len(zu):
+            raise wq.WallboxFehler("einstellung_ungueltig")
+        if "token" in h:
+            ha_token = str(h.get("token") or "").strip()[:400]
+        elif ha_finden.normal(url) != ha_finden.normal((alt.get("ha") or {}).get("url") or ""):
+            ha_token = ""                                            # andere Adresse: altes Token verwerfen
+        neu["ha"] = {"url": url, "ladepunkte": zu}
+    if isinstance(b.get("tuya"), dict):
+        alte_ids = {g.get("schluessel"): g.get("geraeteId") for g in (alt.get("tuya") or {}).get("geraete") or []}
+        geraete, nkeys = [], {}
+        for g in (b["tuya"].get("geraete") or [])[:4]:
+            s = str(g.get("schluessel") or "")
+            gid = str(g.get("geraeteId") or "").strip()
+            ip = str(g.get("ip") or "").strip()
+            v = str(g.get("version") or "3.3")
+            if not wq.SCHLUESSEL.match(s) or not re.fullmatch(r"[A-Za-z0-9]{6,40}", gid) or v not in tuya_lan.VERSIONEN:
+                raise wq.WallboxFehler("einstellung_ungueltig")
+            try:
+                private_ziel(ip, "Tuya")
+            except ValueError:
+                raise wq.WallboxFehler("adresse_gesperrt")
+            modell = str(g.get("modell") or "")
+            if modell and not wq.modell_zuordnung(wq.tabelle_laden(), modell):
+                raise wq.WallboxFehler("einstellung_ungueltig")
+            geraete.append({"schluessel": s, "titel": str(g.get("titel") or "").strip()[:40], "geraeteId": gid, "ip": ip,
+                            "version": v, "modell": modell or None, "zuordnung": wq.pruefe_tuya_zuordnung(g.get("zuordnung"))})
+            if "localKey" in g:
+                k = str(g.get("localKey") or "")
+                if k and (len(k) != 16 or not all(32 < ord(ch) < 127 for ch in k)):
+                    raise wq.WallboxFehler("tuya_schluessel_format")
+                if k:
+                    nkeys[s] = k
+            elif keys.get(s) and alte_ids.get(s) == gid:
+                nkeys[s] = keys[s]                                   # gleiches Geraet: Schluessel behalten
+        if len({g["schluessel"] for g in geraete}) != len(geraete):
+            raise wq.WallboxFehler("einstellung_ungueltig")
+        neu["tuya"] = {"geraete": geraete}
+        keys = nkeys
+    if _wb_fingerabdruck(neu) != _wb_fingerabdruck(alt):
+        _CFG["wallbox_frei"] = []                                     # Quelle/Adresse/Geraet gewechselt: Freigaben weg
+    _CFG["wallbox"] = neu
+    _CFG["wallbox_ha_token"] = ha_token
+    _CFG["wallbox_tuya_keys"] = json.dumps(keys) if keys else ""
+    save_cfg(_CFG)
+
+
+def _wb_einstellungen_lesen():
+    import wallbox_quellen as wq
+    c, keys = _wb_cfg(), _wb_tuya_keys()
+    h = c.get("ha") or {}
+    return {"quelle": c.get("quelle"),
+            "ha": {"url": h.get("url") or "", "tokenGesetzt": bool(_CFG.get("wallbox_ha_token")), "ladepunkte": h.get("ladepunkte") or []},
+            "tuya": {"geraete": [dict(g, localKeyGesetzt=bool(keys.get(g.get("schluessel")))) for g in (c.get("tuya") or {}).get("geraete") or []]},
+            "freigaben": list(_CFG.get("wallbox_frei") or []),
+            "ha_vorschlag_url": _CFG.get("ha_oauth_url") or _CFG.get("pv_url") or "", "ha_angemeldet": bool(_CFG.get("ha_refresh")),
+            "modelle": [{"id": m.get("id"), "name": m.get("name")} for m in wq.tabelle_laden().get("modelle") or []]}
+
+
 def _ha_power_entities(url, token):
     """Fuer den Auswahl-Dialog: alle Sensoren, die nach Leistung aussehen.
     Filter wie HA selbst: device_class=power ODER Einheit W/kW."""
@@ -4093,7 +4241,13 @@ ENERGY_PANEL = r'''<style>
 .vehicle-art{height:52px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#0A2238}.vehicle-art svg{width:88px;height:44px}
 .vehicle-copy{min-width:0}.vehicle-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.vehicle-copy small{display:block;color:#A9C7CE;margin-top:3px;font-weight:500}
 .vehicle-soc{font:750 19px/1 Inter,"Segoe UI Variable",Segoe UI,sans-serif;color:#EAF6F8;white-space:nowrap}.vehicle-legal{color:#A9C7CE;font-size:11px;margin:8px 2px 0}
-.energy-sub{margin:22px 0 9px;font-size:11px;letter-spacing:1.5px;color:#A9C7CE}.energy-discovery{margin-top:12px;color:#A9C7CE;font-size:12px}
+.energy-sub{margin:22px 0 9px;font-size:11px;letter-spacing:1.5px;color:#A9C7CE}
+.wb-form{display:grid;gap:9px;margin:12px 0 4px;max-width:640px}.wb-form label{display:flex;flex-wrap:wrap;align-items:center;gap:8px;color:#A9C7CE;font-size:12.5px}
+.wb-form input,.wb-form select{min-height:38px;padding:8px 10px;border-radius:10px;border:1px solid #1d4152;background:#0f2c40;color:#EAF6F8;font:inherit;min-width:0;flex:1 1 200px}
+.wb-form input[type=number]{flex:0 0 80px}.wb-form button{min-height:40px;padding:9px 14px;border-radius:10px;border:1px solid #1d4152;background:#0f2c40;color:#EAF6F8;font-weight:700;cursor:pointer;justify-self:start}
+.wb-form button.primary{background:#B5F23D;color:#1d2a00;border:0}.wb-hinweis{color:#A9C7CE;font-size:11.5px}.wb-rollen{display:grid;gap:8px}
+.wb-eigen{border:1px dashed #1d4152;border-radius:10px;padding:6px 10px}.wb-eigen summary{cursor:pointer;color:#A9C7CE;font-size:12px}.wb-eigen label{margin-top:7px}
+.wb-roh{grid-column:1/-1;color:#A9C7CE;font-size:12px;overflow-wrap:anywhere}.energy-discovery{margin-top:12px;color:#A9C7CE;font-size:12px}
 @media(max-width:600px){.energy-shell{margin:20px 14px;padding:16px}.energy-form input{width:100%}.energy-form button{flex:1}.vehicle-select{grid-template-columns:76px minmax(0,1fr) auto}.vehicle-art svg{width:70px}}
 </style><section id="energy-panel" class="energy-shell">
 <div class="energy-head"><div><h2>⚡ Energie &amp; Ladepunkte</h2>
@@ -4108,6 +4262,38 @@ ENERGY_PANEL = r'''<style>
 <details id="evcc-protdet" style="margin-top:10px;display:none"><summary style="cursor:pointer;color:var(--mut);font-size:13px">Steuer-Protokoll</summary><div id="evcc-prot" style="font-size:12.5px;color:var(--mut);margin-top:6px"></div></details>
 <div class="vehicle-legal">Fahrzeugformen sind neutrale Illustrationen, keine Herstellerlogos oder exakten Modellabbildungen.</div>
 <div id="evcc-discovery" class="energy-discovery"></div>
+<h3 class="energy-sub">WALLBOX ÜBER HOME ASSISTANT ODER TUYA</h3>
+<div id="wb-msg" class="energy-message">Optional – eine Wallbox ohne evcc lässt sich über Home Assistant oder direkt (Tuya, im Heimnetz) einbinden.</div>
+<div id="wb-points" class="energy-grid"></div>
+<details id="wb-setup" class="energy-advanced"><summary>Wallbox einrichten (Home Assistant oder Tuya)</summary>
+<div class="wb-form">
+ <label>Quelle <select id="wb-quelle"><option value="">keine</option><option value="ha">Home Assistant</option><option value="tuya">Tuya (direkt im Heimnetz)</option></select></label>
+ <div id="wb-ha" style="display:none">
+  <label>Home-Assistant-Adresse <input id="wb-ha-url" placeholder="http://homeassistant.local:8123"></label>
+  <label>Token (optional) <input id="wb-ha-token" type="password" autocomplete="off" placeholder="leer = Anmeldung aus den Einstellungen nutzen"></label>
+  <label>Name <input id="wb-ha-titel" placeholder="Wallbox" maxlength="40"></label>
+  <button type="button" id="wb-ha-suchen">⌕ Wallbox in Home Assistant suchen</button>
+  <div id="wb-ha-rollen" class="wb-rollen"></div>
+ </div>
+ <div id="wb-tuya" style="display:none">
+  <label>Name <input id="wb-t-titel" placeholder="Garage" maxlength="40"></label>
+  <label>Geräte-ID <input id="wb-t-id" autocomplete="off"></label>
+  <label>IP im Heimnetz <input id="wb-t-ip" inputmode="decimal" placeholder="192.168.1.50"></label>
+  <label>Protokoll <select id="wb-t-version"><option>3.3</option><option>3.4</option><option>3.5</option></select></label>
+  <label>local_key <input id="wb-t-key" type="password" autocomplete="off" maxlength="16"></label>
+  <label>Modell <select id="wb-t-modell"><option value="">automatisch erkennen</option></select></label>
+  <details class="wb-eigen"><summary>Eigene Zuordnung (nur wenn das Modell nicht erkannt wird)</summary>
+   <label>DP Laden ein/aus <input id="wb-t-dp-schalter" inputmode="numeric" maxlength="3"></label>
+   <label>DP Ladestrom (A) <input id="wb-t-dp-strom" inputmode="numeric" maxlength="3"></label>
+   <label>Strom von–bis (A) <input id="wb-t-smin" type="number" min="1" max="80" value="6"> <input id="wb-t-smax" type="number" min="1" max="80" value="16"></label>
+   <label>DP Status <input id="wb-t-dp-status" inputmode="numeric" maxlength="3"> Wert für „lädt“ <input id="wb-t-laedt" maxlength="40"></label>
+   <label>DP Leistung (W) <input id="wb-t-dp-leistung" inputmode="numeric" maxlength="3"></label>
+  </details>
+  <div class="wb-hinweis">Der local_key bleibt verschlüsselt auf diesem PC und wird nie gesendet. Die Tuya-Cloud wird nicht benutzt.</div>
+ </div>
+ <button type="button" id="wb-speichern" class="primary">Speichern</button> <span id="wb-setup-msg" class="wb-hinweis"></span>
+</div>
+</details>
 </section>
 <script>
 (function(){
@@ -4230,6 +4416,103 @@ ENERGY_PANEL = r'''<style>
   finally{button.disabled=false;button.textContent='⌕  '+__T('Geräte automatisch finden');}
  };
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();else schedule();});if(h.value)refresh();
+})();
+</script>
+<script>
+(function(){
+ // Wallbox ueber Home Assistant oder Tuya (WALLBOX_VERTRAG v1.1): Freigabe je Ladepunkt, Rueckfrage kommt vom Server
+ const el=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const ROLLEN=[['modus','Laden ein/aus bzw. Lademodus'],['strom','Ladestrom (A)'],['ziel','Ziel-Ladestand (%)'],['leistung','Ladeleistung'],['laedt','Status „lädt“'],['startzeit','Startzeit']];
+ const MN={aus:'Aus',sofort:'Sofort',minpv:'Min+PV',pv:'PV'};
+ const FEHLER={nicht_eingerichtet:'Noch nicht eingerichtet',adresse_gesperrt:'Adresse nicht erlaubt (nur Heimnetz/eigener VPN)',nicht_erreichbar:'Wallbox bzw. Home Assistant nicht erreichbar',
+  anmeldung:'Home Assistant: bitte anmelden (Einstellungen) oder Token eintragen',antwort_ungueltig:'Unerwartete Antwort',tuya_keine_antwort:'Tuya antwortet nicht – local_key oder Protokoll-Version prüfen',
+  tuya_schluessel:'Tuya: local_key passt nicht',tuya_schluessel_fehlt:'Tuya: local_key fehlt',tuya_variante:'Tuya: diese Geräte-Variante wird noch nicht unterstützt',
+  tuya_zuordnung_fehlt:'Modell nicht erkannt – erst unter „Wallbox einrichten“ zuordnen',einstellung_ungueltig:'Eingabe ungültig',tuya_schluessel_format:'local_key muss 16 Zeichen haben',
+  nicht_unterstuetzt:'Das kann diese Wallbox nicht',wert_ungueltig:'Wert außerhalb des erlaubten Bereichs',nicht_freigegeben:'Steuern ist für diesen Ladepunkt nicht freigegeben',keine_wallbox:'Kein Ladepunkt einer Wallbox'};
+ const fe=c=>__T(FEHLER[c]||c||'Fehler');
+ let E=null,KAND=null,MSG_T=0;
+ async function post(url,b){const o=x=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(x)});
+  let r=await fetch(url,o(b)),d=await r.json();
+  if(r.status===409&&d.grund==='bestaetigung_noetig'){if(!confirm(__T(d.frage&&d.frage.text||'Wirklich?')))return null;
+   r=await fetch(url,o(Object.assign({},b,{bestaetigung:d.bestaetigung})));d=await r.json();}
+  return d;}
+ function karte(lp){const kw=typeof lp.leistungW==='number'?(lp.leistungW/1000).toLocaleString('de-DE',{maximumFractionDigits:2})+' kW':'–';
+  const t=[lp.laedt===true?__T('lädt'):lp.laedt===false?__T('lädt nicht'):null,lp.modus?__T('Modus')+' '+__T(MN[lp.modus]||lp.modus):null,
+   typeof lp.stromA==='number'?lp.stromA+' A':null,typeof lp.zielSoc==='number'?__T('Ziel')+' '+lp.zielSoc+' %':null,
+   lp.zuordnung==='erkannt'?__T('Modell erkannt'):null].filter(Boolean).join(' · ');
+  let h='<div class="energy-card"><div class="ek">'+esc(__T('Wallbox'))+' · '+esc(lp.titel)+'</div><div class="ev">'+kw+'</div><div class="es">'+esc(t||'–')+'</div></div>';
+  if(lp.zuordnung==='unbekannt'){h+='<div class="wb-roh">'+esc(__T('Modell nicht erkannt – nur Anzeige. Rohe Datenpunkte zum Zuordnen:'))+' '+esc(JSON.stringify(lp.rohDps||{}))+'</div>';return h;}
+  const f=lp.faehigkeiten||{},a='data-lp="'+esc(lp.id)+'"';
+  if(!(f.modus||[]).length&&!f.strom&&!f.ziel)return h;
+  if(!lp.steuernFrei)return h+'<div class="lp-ctl"><button type="button" class="lp-off" '+a+' data-tun="frei">⚙ '+esc(__T('Steuern erlauben'))+'</button></div>';
+  h+='<div class="lp-ctl">'+(f.modus||[]).map(m=>'<button type="button" class="'+(lp.modus===m?'lp-on':'')+'" '+a+' data-aktion="modus" data-wert="'+m+'">'+esc(__T(MN[m]))+'</button>').join('');
+  if(f.strom){h+='<select '+a+' data-aktion="strom" aria-label="'+esc(__T('Ladestrom'))+'">';for(let i=f.strom.min;i<=f.strom.max;i++)h+='<option value="'+i+'"'+(lp.stromA===i?' selected':'')+'>'+i+' A</option>';h+='</select>';}
+  if(f.ziel){h+='<select '+a+' data-aktion="ziel" aria-label="'+esc(__T('Ziel-Ladestand'))+'">';for(let i=Math.max(20,lp.zielMin||20);i<=(lp.zielMax||100);i+=10)h+='<option value="'+i+'"'+(lp.zielSoc===i?' selected':'')+'>'+esc(__T('Ziel'))+' '+i+' %</option>';h+='</select>';}
+  return h+'<button type="button" class="lp-off" '+a+' data-tun="sperren">'+esc(__T('Steuern aus'))+'</button></div>';}
+ async function status(){
+  try{const d=await (await fetch('/wallbox/status',{cache:'no-store'})).json();
+   if(!d.quelle){el('wb-points').innerHTML='';return;}
+   el('evcc-protdet').style.display='';
+   if(!d.ok){el('wb-points').innerHTML='';el('wb-msg').textContent='⚠️ '+fe(d.fehler);return;}
+   if(Date.now()-MSG_T>8000)el('wb-msg').textContent=(d.quelle==='ha'?'Home Assistant':'Tuya')+' · '+new Date().toLocaleTimeString()+' · '+
+    (d.ladepunkte.some(x=>x.steuernFrei)?__T('Steuern für freigegebene Ladepunkte, jedes Mal mit Rückfrage'):__T('nur lesend'));
+   el('wb-points').innerHTML=d.ladepunkte.map(karte).join('');
+   el('wb-points').querySelectorAll('button[data-lp]').forEach(b=>b.addEventListener('click',()=>aktion(b.dataset)));
+   el('wb-points').querySelectorAll('select[data-lp]').forEach(s=>s.addEventListener('change',()=>aktion({lp:s.dataset.lp,aktion:s.dataset.aktion,wert:+s.value})));
+  }catch(e){el('wb-msg').textContent='⚠️ '+e.message;}}
+ async function aktion(ds){const m=el('wb-msg');
+  try{let r;
+   if(ds.tun)r=await post('/wallbox/freigabe',{ladepunkt:ds.lp,an:ds.tun==='frei'});
+   else{m.textContent='⏳ '+__T('Sende an die Wallbox …');r=await post('/wallbox/steuern',{ladepunkt:ds.lp,aktion:ds.aktion,wert:ds.wert});}
+   if(!r){m.textContent=__T('Abgebrochen');return status();}
+   if(!r.ok){MSG_T=Date.now();m.textContent='⚠️ '+fe(r.grund);return status();}
+   MSG_T=Date.now();if('uebernommen' in r)m.textContent=r.uebernommen?'✅ '+__T('Die Wallbox hat übernommen'):'⚠️ '+__T('Die Wallbox meldet einen anderen Wert – bitte prüfen');
+   setTimeout(status,800);
+  }catch(e){m.textContent='⚠️ '+e.message;}}
+ function zeig(){const q=el('wb-quelle').value;el('wb-ha').style.display=q==='ha'?'':'none';el('wb-tuya').style.display=q==='tuya'?'':'none';}
+ function rollen(z){const k=KAND||{};el('wb-ha-rollen').innerHTML=ROLLEN.map(([r,n])=>{const opt=(k[r]||[]).map(x=>x.entity_id);if(z&&z[r]&&!opt.includes(z[r]))opt.unshift(z[r]);
+   return '<label>'+esc(__T(n))+' <select data-rolle="'+r+'"><option value="">—</option>'+opt.map(o=>'<option'+(z&&z[r]===o?' selected':'')+'>'+esc(o)+'</option>').join('')+'</select></label>';}).join('')+
+   '<div id="wb-ha-opt"></div>';
+  el('wb-ha-rollen').querySelector('[data-rolle=modus]').addEventListener('change',()=>optionen(z));optionen(z);}
+ function optionen(z){const s=el('wb-ha-rollen').querySelector('[data-rolle=modus]'),id=s?s.value:'',box=el('wb-ha-opt');
+  if(!id||!/^(select|input_select)\./.test(id)){box.innerHTML='';return;}
+  const k=((KAND||{}).modus||[]).find(x=>x.entity_id===id),opts=(k&&k.optionen)||[],mo=(z&&z.modusOptionen)||{};
+  box.innerHTML='<div class="wb-hinweis">'+esc(__T('Welche Option von Home Assistant bedeutet welchen Lademodus?'))+'</div>'+Object.keys(MN).map(m=>'<label>'+esc(__T(MN[m]))+
+   ' <select data-modus="'+m+'"><option value="">—</option>'+opts.map(o=>'<option'+(mo[m]===o?' selected':'')+'>'+esc(o)+'</option>').join('')+'</select></label>').join('');}
+ async function laden(){
+  try{E=await (await fetch('/wallbox/einstellungen',{cache:'no-store'})).json();}catch(e){return;}
+  el('wb-quelle').value=E.quelle||'';const z=(E.ha.ladepunkte||[])[0]||null,g=(E.tuya.geraete||[])[0]||null;
+  el('wb-ha-url').value=E.ha.url||E.ha_vorschlag_url||'';el('wb-ha-titel').value=z?z.titel:'';
+  el('wb-ha-token').placeholder=E.ha.tokenGesetzt?'••••••• '+__T('(gespeichert – leer lassen zum Behalten)'):(E.ha_angemeldet?__T('leer = Anmeldung aus den Einstellungen nutzen'):__T('Langzeit-Token aus Home Assistant'));
+  el('wb-t-modell').innerHTML='<option value="">'+esc(__T('automatisch erkennen'))+'</option>'+(E.modelle||[]).map(m=>'<option value="'+esc(m.id)+'">'+esc(m.name)+'</option>').join('');
+  if(g){el('wb-t-titel').value=g.titel||'';el('wb-t-id').value=g.geraeteId||'';el('wb-t-ip').value=g.ip||'';el('wb-t-version').value=g.version||'3.3';el('wb-t-modell').value=g.modell||'';
+   el('wb-t-key').placeholder=g.localKeyGesetzt?'••••••• '+__T('(gespeichert)'):'';const zu=g.zuordnung||{};
+   el('wb-t-dp-schalter').value=(zu.schalter||{}).dp||'';el('wb-t-dp-strom').value=(zu.strom||{}).dp||'';el('wb-t-smin').value=(zu.strom||{}).min||6;el('wb-t-smax').value=(zu.strom||{}).max||16;
+   el('wb-t-dp-status').value=(zu.status||{}).dp||'';el('wb-t-laedt').value=((zu.status||{}).laedt||[])[0]||'';el('wb-t-dp-leistung').value=(zu.leistung||{}).dp||'';}
+  rollen(z);zeig();status();}
+ el('wb-quelle').addEventListener('change',zeig);
+ el('wb-ha-suchen').addEventListener('click',async()=>{const m=el('wb-setup-msg');m.textContent='⌛ '+__T('Suche …');
+  try{const b={url:el('wb-ha-url').value.trim()};if(el('wb-ha-token').value.trim())b.token=el('wb-ha-token').value.trim();
+   const r=await fetch('/wallbox/ha/vorschlag',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}),d=await r.json();
+   if(!d.ok){m.textContent='⚠️ '+fe(d.grund);return;}KAND=d.kandidaten;rollen(d.vorschlag);
+   m.textContent=Object.values(d.kandidaten).some(x=>x.length)?'✓ '+__T('Vorschlag eingetragen – bitte prüfen und speichern'):__T('Nichts gefunden, das nach Wallbox aussieht');
+  }catch(e){m.textContent='⚠️ '+e.message;}});
+ el('wb-speichern').addEventListener('click',async()=>{const m=el('wb-setup-msg'),q=el('wb-quelle').value||null,b={quelle:q};
+  if(q==='ha'){const z={schluessel:'wallbox',titel:el('wb-ha-titel').value.trim()||'Wallbox',modusOptionen:{}};
+   el('wb-ha-rollen').querySelectorAll('[data-rolle]').forEach(s=>z[s.dataset.rolle]=s.value||null);
+   el('wb-ha-rollen').querySelectorAll('[data-modus]').forEach(s=>z.modusOptionen[s.dataset.modus]=s.value||null);
+   b.ha={url:el('wb-ha-url').value.trim(),ladepunkte:[z]};if(el('wb-ha-token').value.trim())b.ha.token=el('wb-ha-token').value.trim();}
+  if(q==='tuya'){const dp=id=>el(id).value.trim(),g={schluessel:'wallbox',titel:el('wb-t-titel').value.trim()||'Wallbox',geraeteId:dp('wb-t-id'),ip:dp('wb-t-ip'),
+    version:el('wb-t-version').value,modell:el('wb-t-modell').value||null,zuordnung:null};
+   const zu={};if(dp('wb-t-dp-schalter'))zu.schalter={dp:dp('wb-t-dp-schalter')};
+   if(dp('wb-t-dp-strom'))zu.strom={dp:dp('wb-t-dp-strom'),min:+el('wb-t-smin').value,max:+el('wb-t-smax').value,faktor:1};
+   if(dp('wb-t-dp-status'))zu.status={dp:dp('wb-t-dp-status'),laedt:dp('wb-t-laedt')?[dp('wb-t-laedt')]:[]};
+   if(dp('wb-t-dp-leistung'))zu.leistung={dp:dp('wb-t-dp-leistung'),faktorW:1};
+   if(Object.keys(zu).length)g.zuordnung=zu;if(el('wb-t-key').value)g.localKey=el('wb-t-key').value;b.tuya={geraete:[g]};}
+  try{const r=await fetch('/wallbox/einstellungen',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}),d=await r.json();
+   if(!d.ok){m.textContent='⚠️ '+fe(d.grund);return;}m.textContent='✓ '+__T('Gespeichert');el('wb-ha-token').value='';el('wb-t-key').value='';laden();
+  }catch(e){m.textContent='⚠️ '+e.message;}});
+ laden();setInterval(()=>{if(document.visibilityState==='visible'&&el('wb-quelle').value)status();},30000);
 })();
 </script>'''
 
@@ -4507,6 +4790,19 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(result), "application/json")
             except Exception as e:
                 self._send(json.dumps({"error": str(e)[:160]}), "application/json", 400)
+        elif p == "/wallbox/einstellungen":
+            self._send(json.dumps(_wb_einstellungen_lesen()), "application/json")
+        elif p == "/wallbox/status":
+            # Nur lesend; Tuya: eine kurze LAN-Verbindung je Geraet. Wallbox-Daten gehen an keinen unserer Server (Regel 2).
+            import wallbox_quellen as wq
+            try:
+                if not _wb_cfg().get("quelle"):
+                    return self._send(json.dumps({"ok": True, "quelle": None, "ladepunkte": []}), "application/json")
+                self._send(json.dumps({"ok": True, "quelle": _wb_cfg()["quelle"], "ladepunkte": _wb_status()}), "application/json")
+            except wq.WallboxFehler as e:
+                self._send(json.dumps({"ok": False, "quelle": _wb_cfg().get("quelle"), "fehler": e.code}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "quelle": _wb_cfg().get("quelle"), "fehler": "nicht_erreichbar"}), "application/json")
         elif p == "/energy/protokoll":
             import wallbox_steuern as ws
             self._send(json.dumps({"eintraege": ws.protokoll_lesen(CFG_DIR / "wallbox_protokoll.jsonl")}), "application/json")
@@ -4675,6 +4971,67 @@ class H(BaseHTTPRequestHandler):
                 return self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json")
             except Exception:
                 return self._send(json.dumps({"ok": False, "error": "Panoptes gerade nicht erreichbar"}), "application/json")
+        if u.path in ("/wallbox/einstellungen", "/wallbox/ha/vorschlag", "/wallbox/freigabe", "/wallbox/steuern"):
+            # WALLBOX_VERTRAG v1.1 §5 (wie evcc): Freigabe je Ladepunkt, Bestaetigung serverseitig (409 + Einmal-Kennung),
+            # Werte vor der Rueckfrage geprueft (400), Zuruecklesen, Protokoll ohne Adressen/Schluessel.
+            import wallbox_quellen as wq
+            import wallbox_steuern as ws
+            prot = CFG_DIR / "wallbox_protokoll.jsonl"
+            try:
+                b = json.loads(raw or "{}")
+                if u.path == "/wallbox/einstellungen":
+                    _wb_einstellungen_speichern(b)
+                    return self._send(json.dumps(dict(_wb_einstellungen_lesen(), ok=True)), "application/json")
+                if u.path == "/wallbox/ha/vorschlag":
+                    url = str(b.get("url") or "")
+                    tok = str(b.get("token") or "") or _wb_ha_token(url)
+                    return self._send(json.dumps(wq.HaQuelle(url, tok, []).vorschlag()), "application/json")
+                lid, quelle = str(b.get("ladepunkt") or "")[:80], _wb_cfg().get("quelle") or ""
+                frei = list(_CFG.get("wallbox_frei") or [])
+                if u.path == "/wallbox/freigabe" and not b.get("an"):
+                    _CFG["wallbox_frei"] = [x for x in frei if x != lid]
+                    save_cfg(_CFG)
+                    ws.protokoll(prot, quelle, lid, "freigabe", False, "uebernommen")
+                    return self._send(json.dumps({"ok": True, "freigaben": _CFG["wallbox_frei"]}), "application/json")
+                if u.path == "/wallbox/steuern" and lid not in frei:
+                    return self._send(json.dumps({"ok": False, "grund": "nicht_freigegeben",
+                                                  "error": "Steuern ist für diesen Ladepunkt nicht freigeschaltet"}), "application/json", 403)
+                q = _wb_quelle()
+                lp = next((x for x in q.ladepunkte() if x["id"] == lid), None)
+                if lp is None:
+                    raise wq.WallboxFehler("ladepunkt_unbekannt", 404)
+                if u.path == "/wallbox/freigabe":
+                    if lp.get("art") != "wallbox":
+                        raise wq.WallboxFehler("keine_wallbox")
+                    if lp.get("zuordnung") == "unbekannt":
+                        raise wq.WallboxFehler("tuya_zuordnung_fehlt")
+                    aktion, wert = "freigeben", True
+                else:
+                    aktion = str(b.get("aktion") or "")
+                    wert = wq.pruefe_wert(lp, aktion, b.get("wert"))
+                k = ws.schluessel(lid, lp["titel"], aktion, wert)
+                if not ws.einloesen(b.get("bestaetigung"), k):
+                    return self._send(json.dumps({"ok": False, "grund": "bestaetigung_noetig", "bestaetigung": ws.frage(k),
+                                                  "gueltigMs": ws.GUELTIG_S * 1000,
+                                                  "frage": {"ladepunkt": lid, "titel": lp["titel"], "aktion": aktion, "wert": wert,
+                                                            "text": ws.frage_text(lp["titel"], aktion, wert)}}), "application/json", 409)
+                if aktion == "freigeben":
+                    _CFG["wallbox_frei"] = [x for x in frei if x != lid] + [lid]
+                    save_cfg(_CFG)
+                    ws.protokoll(prot, quelle, lid, "freigabe", True, "uebernommen")
+                    return self._send(json.dumps({"ok": True, "freigaben": _CFG["wallbox_frei"]}), "application/json")
+                try:
+                    r = q.steuern(lid, aktion, wert)
+                except wq.WallboxFehler as e:
+                    ws.protokoll(prot, quelle, lid, aktion, wert, "fehler:" + e.code)
+                    raise
+                ws.protokoll(prot, quelle, lid, aktion, wert, "uebernommen" if r["uebernommen"] else "abweichend")
+                r["ladepunkt"]["steuernFrei"] = True
+                return self._send(json.dumps(dict(r, ok=True)), "application/json")
+            except wq.WallboxFehler as e:
+                return self._send(json.dumps({"ok": False, "grund": e.code, "error": e.code}), "application/json", e.status)
+            except Exception as e:
+                return self._send(json.dumps({"ok": False, "grund": "fehler", "error": str(e)[:160]}), "application/json", 400)
         if u.path == "/preis":
             try:
                 an = bool(json.loads(raw or "{}").get("an"))

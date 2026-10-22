@@ -108,7 +108,7 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
 _LAN_OPENER = urllib.request.build_opener(_NoRedirect())
 
 
-def open_lan_url(url: str, timeout: float, method: str = "GET"):
+def open_lan_url(url: str, timeout: float, method: str = "GET", headers=None, data=None):
     """Open an RFC 1918 HTTP URL without following redirects (GET, or POST for evcc control)."""
     if method not in ("GET", "POST"):
         raise ValueError("Only GET and POST are allowed for LAN requests")
@@ -127,6 +127,8 @@ def open_lan_url(url: str, timeout: float, method: str = "GET"):
         raise ValueError("Invalid LAN URL port") from exc
     if port is not None and not 1 <= port <= 65535:
         raise ValueError("Invalid LAN URL port")
-    request = urllib.request.Request(url, headers={"Accept": "application/json"}, method=method,
-                                     data=b"" if method == "POST" else None)
+    kopf = {"Accept": "application/json"}
+    kopf.update(headers or {})
+    request = urllib.request.Request(url, headers=kopf, method=method,
+                                     data=(data if data is not None else b"") if method == "POST" else None)
     return _LAN_OPENER.open(request, timeout=timeout)

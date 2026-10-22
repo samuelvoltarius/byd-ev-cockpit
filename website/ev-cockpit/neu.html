@@ -40,6 +40,16 @@ footer a{color:var(--mut)}
   <p class=lead>Alle Änderungen am EV-Cockpit — das Neueste zuerst.</p>
 
     <section class="ver">
+      <div class="verhead"><h2>Version 1.15</h2><span class="datum">22.10.2026</span></div>
+      <p class="titel">Jede Wallbox: auch über Home Assistant oder Tuya</p>
+      <ul>
+        <li><b>🏠 Home Assistant</b> — „Wallbox in Home Assistant suchen“ findet Schalter, Ladestrom, Leistung und Status selbst, ohne Liste einzelner Modelle. Du prüfst den Vorschlag und speicherst. Die Anmeldung aus den Einstellungen wird mitbenutzt.</li>
+        <li><b>🔌 Tuya direkt im Heimnetz</b> — viele günstige Wallboxen laufen über Tuya bzw. Smart Life. Das Cockpit spricht direkt mit der Wallbox (Protokoll 3.3, 3.4 und 3.5), ohne Tuya-Cloud. Das Tuya-Standardladegerät wird erkannt; andere Modelle zeigt das Cockpit zuerst nur an, bis du die Datenpunkte zuordnest.</li>
+        <li><b>🔒 Gleiche Regeln wie bei evcc</b> — nur lesen, bis du einen Ladepunkt freigibst; jede Änderung fragt nach; jede Aktion steht im Steuer-Protokoll. Schlüssel und Token bleiben verschlüsselt auf deinem PC. Wechselt die Adresse oder das Gerät, sind Freigaben und gespeicherte Schlüssel weg.</li>
+      </ul>
+    </section>
+
+    <section class="ver">
       <div class="verhead"><h2>Version 1.14</h2><span class="datum">22.10.2026</span></div>
       <p class="titel">Wallbox steuern über evcc</p>
       <ul>

@@ -11,7 +11,7 @@ _OFFEN = {}          # kennung -> (ablauf, schluessel); nur im Speicher
 
 def schluessel(lp, titel, aktion, wert):
     """Genau diese Aktion + Wert + Ladepunkt (§5.2.3)."""
-    return json.dumps([int(lp), str(titel or "")[:60], str(aktion), wert], sort_keys=True)
+    return json.dumps([str(lp), str(titel or "")[:60], str(aktion), wert], sort_keys=True)
 
 
 def frage(sch, uhr=time.time):
@@ -35,10 +35,12 @@ def einloesen(kennung, sch, uhr=time.time):
 def frage_text(titel, aktion, wert):
     t = str(titel or "Ladepunkt")[:60]
     if aktion == "freigeben":
-        return t + ": Steuern erlauben? Das Cockpit darf dann über evcc den Lademodus und den Ziel-Ladestand ändern. Mehr nicht."
+        return t + ": Steuern erlauben? Das Cockpit darf dann den Lademodus, den Ladestrom bzw. das Ladeziel dieser Wallbox ändern, jedes Mal mit Rückfrage. Mehr nicht."
     if aktion == "modus":
-        n = {"off": "Aus", "now": "Sofort", "minpv": "Min+PV", "pv": "PV"}.get(wert, str(wert))
+        n = {"off": "Aus", "now": "Sofort", "minpv": "Min+PV", "pv": "PV", "aus": "Aus", "sofort": "Sofort"}.get(wert, str(wert))
         return t + ": Lademodus auf „" + n + "“ stellen?"
+    if aktion == "strom":
+        return t + ": Ladestrom auf " + str(wert) + " A stellen?"
     return t + ": Ziel-Ladestand auf " + str(wert) + " % stellen?"
 
 
