@@ -24,7 +24,7 @@ T = {
         "eyebrow": "Kostenlos · für BYD mit DiLink 3, 4 und 5 · in Erprobung",
         "h1a": "Panoptes", "h1b": "dein BYD, wach und vernetzt",
         "sub": "Eine App, die direkt am Bildschirm in deinem Auto läuft. Dazu eine Oberfläche, die du am Handy oder PC öffnest: Wächter mit Kamera, Fahrten und Laden mit Kosten, deine Wallbox, Fernzugang, Meldungen über Telegram, eine eigene Karte mit Ladesäulen und die Verbindung zum Routenplaner.",
-        "wichtig": "<b>Stand Oktober 2026:</b> Panoptes wird gerade im Alltag erprobt. Es gibt noch <b>keinen öffentlichen Download</b>; die App kommt nach dem Testtag, zusammen mit einer Installationsanleitung. Panoptes ist ein privates Freizeitprojekt und nicht von BYD. Bitte lies die <a href=\"hinweise.html\">Hinweise</a>.",
+        "wichtig": "<b>Neu, Oktober 2026:</b> Panoptes gibt es jetzt öffentlich als <b>Erprobungsversion 0.1.14.1</b>, mit Quellcode und <a href=\"#installieren\">Schritt-für-Schritt-Anleitung</a>. Getestet ist es bisher vor allem auf einem BYD Dolphin Surf (DiLink 3). Panoptes ist ein privates Freizeitprojekt und nicht von BYD. Bitte lies vor der Installation die <a href=\"hinweise.html\">Hinweise</a>.",
         "hero_alt_pc": "Panoptes-Startseite am PC: Ladestand, Reichweite, Karte und Ladekosten",
         "hero_alt_handy": "Panoptes-Startseite am Handy: Ladestand und Reichweite",
         "h_kann": "Was Panoptes kann",
@@ -121,9 +121,34 @@ T = {
             "Für den Fernzugang ein kostenloses Tailscale-Konto, für Meldungen einen eigenen Telegram-Bot. Panoptes zeigt dir, wie das geht.",
         ],
         "h_dl": "Herunterladen und installieren",
-        "dl_bald": "Noch nicht öffentlich",
-        "dl_text": "Panoptes wird gerade im Alltag erprobt. Den Download gibt es erst nach dem Testtag, zusammen mit einer Schritt-für-Schritt-Anleitung, wie die App auf die verschiedenen BYD-Modelle kommt. Je nach Modell und Software-Stand ist der Weg unterschiedlich. Bis dahin gibt es hier keinen Download.",
-        "dl_code": "Mit der Freigabe wird der Quellcode vollständig öffentlich: der eigene Code unter der MIT-Lizenz. Die App enthält Teile unter anderen Lizenzen, darunter das Erkennungsmodell YOLO (AGPL-3.0) und sing-box (GPL-3.0); die vollständige Liste steht dann in den Lizenzhinweisen.",
+        "dl_anker": "installieren",
+        "dl_bald": "Erprobungsversion 0.1.14.1",
+        "dl_text": "Panoptes 0.1.14.1 ist eine <b>Erprobungsversion</b>: Sie läuft im Alltag in einem Testauto (BYD Dolphin Surf, DiLink 3). Auf anderen Modellen kann manches fehlen oder anders sein. Die Installation ist nichts für jeden: Du brauchst etwas Geduld, einen PC und musst am Auto eine Entwickler-Freigabe einschalten. Nutzung auf eigenes Risiko, siehe <a href=\"hinweise.html\">Hinweise</a>.",
+        "dl_knopf": "⬇️ Panoptes 0.1.14.1 herunterladen (APK, 79 MB)",
+        "dl_release": "Release auf GitHub", "dl_quelle": "Quellcode",
+        "dl_pruef": "Prüfsumme (SHA-256)", "dl_zert": "Signaturzertifikat (SHA-256)",
+        "dl_update": "<b>Wichtig zu Updates:</b> 0.1.14.1 aktualisiert sich <b>nicht</b> von selbst. Unter System → App-Updates steht bei dieser Version „Update-Server nicht erreichbar“. Das ist normal und schadet nicht. Ab <b>0.1.15</b> kommen Updates automatisch. 0.1.15 installierst du einmal von Hand, genau wie beim ersten Mal (Schritt 4); deine Einstellungen und Daten bleiben dabei erhalten.",
+        "h_anl": "Schritt für Schritt",
+        "anl": [
+            ("Vorher lesen.", "Panoptes ist für dein eigenes Auto gedacht, privat und auf eigenes Risiko. Lies die <a href=\"hinweise.html\">Hinweise</a>. Für die Installation schaltest du am Auto Entwickler-Funktionen ein. Ob das für deine Garantie eine Rolle spielt, klärst du im Zweifel mit deinem Händler."),
+            ("Herunterladen und prüfen.", "Lade die Datei <code>panoptes-0.1.14.1-dfad145.apk</code> mit dem Knopf oben auf deinen PC. Vergleiche dann die Prüfsumme. Unter Windows tippst du in der Eingabeaufforderung <code>certutil -hashfile panoptes-0.1.14.1-dfad145.apk SHA256</code>, am Mac oder unter Linux <code>shasum -a 256 panoptes-0.1.14.1-dfad145.apk</code>. Die Ausgabe muss genau die Prüfsumme oben ergeben. Weicht sie ab, installiere die Datei <b>nicht</b>."),
+            ("Entwickler-Freigabe (ADB) am Auto einschalten.", "Panoptes startet seine Hintergrunddienste, zum Beispiel für die Kameras, über die ADB-Schnittstelle des Autos. Diese Verbindung bleibt im Auto (127.0.0.1). Ab Werk ist die Schnittstelle aus. Eingeschaltet wird sie im BYD-Entwicklermenü, mit den Schaltern für USB-Debugging bzw. kabelloses ADB. Wie du in dieses Menü kommst, hängt stark von Modell und Software-Stand ab; bei neuerer BYD-Software ist es mit einem Code gesperrt. Geprüft haben wir diesen Schritt bisher nur am Dolphin Surf (DiLink 3). Ohne diese Freigabe läuft Panoptes nicht vollständig."),
+            ("App aufs Auto bringen.", "<b>Geprüfter Weg, mit PC:</b> Installiere am PC die Android-Plattform-Tools von Google (darin ist <code>adb</code>). PC und Auto müssen im selben Netz sein, zum Beispiel im WLAN-Hotspot deines Handys. Tippe dann <code>adb connect &lt;Adresse-des-Autos&gt;:5555</code> und <code>adb install -r panoptes-0.1.14.1-dfad145.apk</code>. Die Adresse des Autos siehst du in den WLAN-Einstellungen am Auto oder in der Geräteliste deines Hotspots. Am Ende muss <code>Success</code> erscheinen. <b>Ohne PC (Community-Berichte, von uns nicht geprüft):</b> Manche BYD-Software-Stände installieren APK-Dateien direkt vom USB-Stick über den eingebauten Installationsdialog. Ordnername und Ablauf unterscheiden sich je nach Region und Software. Fragt Android nach „Installation aus unbekannten Quellen“, erlaubst du das nur für diese Installation."),
+            ("Erster Start mit der Einrichtungshilfe.", "Öffne Panoptes am Bildschirm im Auto. Der Assistent führt dich Schritt für Schritt durch alles Nötige: Sprache, Hinweise bestätigen, <b>Autostart</b>, Anzeige über anderen Apps, Berechtigungen, <b>USB-Freigabe</b>, dein Auto und die Kameras, Wächter, Betriebsart, Kartenquelle, Daten teilen, Blitzer und Updates. Danach kommen freiwillige Extras: Telegram, Routenplaner, EV-Cockpit und Fernzugang. Nichts ist vorausgewählt. Was Daten nach außen schickt, bleibt aus, bis du es selbst einschaltest."),
+            ("Autostart freigeben.", "Damit Panoptes nach dem Einsteigen von selbst läuft, muss es in der BYD-App-Verwaltung erlaubt sein. Die Einrichtungshilfe öffnet die richtige Seite; dort nimmst du bei Panoptes den Haken bei der Autostart-Sperre weg. <b>BYD setzt diesen Schalter nach jeder Installation und jedem Update zurück.</b> Panoptes erinnert dich dann. Auf DiLink 5 gibt es diese Verwaltung nicht, der Schritt entfällt."),
+            ("USB-Freigabe bestätigen.", "Android fragt einmal „USB-Debugging zulassen?“. Setze den Haken bei <b>„Immer von diesem Computer zulassen“</b> und tippe auf <b>Zulassen</b>. Der „Computer“ ist dabei Panoptes selbst im Auto. Ohne Haken fragt Android nach jedem Neustart wieder."),
+            ("Am Handy oder PC öffnen (freiwillig).", "Mit eingerichtetem Fernzugang (Tailscale) öffnest du die Adresse deines Autos im Browser. Zum Anmelden brauchst du den <b>Zugangscode</b>, den du in der App am Auto unter <b>Start → Zugangscode</b> findest. Weitere Geräte, etwa das EV-Cockpit, erlaubst du unter <b>System → Gerät koppeln</b>."),
+        ],
+        "h_stolper": "Wenn etwas hakt",
+        "stolper": [
+            "<b>Panoptes startet nach einem Update nicht von selbst:</b> Autostart wieder freigeben (Schritt 6). BYD setzt ihn nach jeder Installation zurück.",
+            "<b>Panoptes hat kein Internet:</b> Der eingebaute BYD-Verkehrsmonitor kann das Internet anderer Apps blockieren. Panoptes bietet dir an, ihn auszuschalten. Danach ist ein Neustart des Bildschirms nötig.",
+            "<b>Kameras oder Wächter laufen nicht:</b> Prüfe, ob die USB-Freigabe mit „Immer zulassen“ bestätigt ist (Schritt 7) und die ADB-Freigabe noch an ist; ein BYD-Software-Update kann sie zurücksetzen.",
+            "<b>Wohin mit den Aufnahmen?</b> Am besten auf einen USB-Stick im Auto.",
+            "<b>Wieder entfernen:</b> In den Android-Einstellungen am Auto unter Apps deinstallieren. Daten in der App gehen dabei verloren; Aufnahmen auf dem USB-Stick bleiben.",
+        ],
+        "dl_code": "<b>Quellcode und Lizenz:</b> Der vollständige Quellcode genau dieser Version steht öffentlich auf <a href=\"https://github.com/samuelvoltarius/panoptes\">GitHub (samuelvoltarius/panoptes)</a>. Der eigene Code steht unter der MIT-Lizenz. Die APK enthält Teile unter anderen Lizenzen, darunter das Programm fast_cam_capture (GPL-3.0) und die Erkennungsmodelle YOLO (AGPL-3.0). Die vollständige Liste steht in den <a href=\"https://github.com/samuelvoltarius/panoptes/blob/main/THIRD_PARTY_NOTICES.md\">Lizenzhinweisen</a>. Fehler und Vorschläge meldest du dort unter Issues.",
+        "dl_ds": "<b>Datenschutz:</b> Panoptes schickt nur dann Daten nach außen, wenn du es selbst einschaltest (siehe <a href=\"#datenschutz\">Datenschutz</a>). Die App enthält keine Werbung und kein Tracking. Der Download selbst kommt von GitHub; dafür gelten die Datenschutzregeln von GitHub.",
         "h_hinweise": "Hinweise",
         "hinweise_kurz": "Privates Freizeitprojekt, kostenlos und ohne Gewähr. Nutzung auf eigenes Risiko und nur privat mit dem eigenen Fahrzeug. Für eine rechtmäßige Nutzung (Datenschutz, Kamera-Aufnahmen, Fernbefehle, Straßenverkehr) sind allein die Nutzer verantwortlich. Wächter-Aufnahmen sind nur für den eigenen Privatgrund gedacht, ohne öffentlichen Raum oder Nachbargrund. Soweit gesetzlich zulässig, übernimmt der Entwickler keine Haftung; Haftung für Vorsatz, grobe Fahrlässigkeit, Personenschäden und zwingende Verbraucherrechte bleiben unberührt. Nicht mit BYD verbunden; alle Marken gehören ihren Inhabern.",
         "alle_hinweise": "Alle Hinweise lesen",
@@ -156,7 +181,7 @@ T = {
         "eyebrow": "Free · for BYD with DiLink 3, 4 and 5 · in testing",
         "h1a": "Panoptes", "h1b": "your BYD, awake and connected",
         "sub": "An app that runs right on your car's screen, plus an interface you open on your phone or PC: a camera guard, trips and charging with costs, your wallbox, remote access, Telegram notifications, its own map with chargers and a link to the route planner.",
-        "wichtig": "<b>Status October 2026:</b> Panoptes is currently being tested in everyday use. There is <b>no public download yet</b>; the app will follow after the test day, together with installation instructions. Panoptes is a private hobby project and not made by BYD. Please read the <a href=\"hinweise.html\">notes</a>.",
+        "wichtig": "<b>New, October 2026:</b> Panoptes is now publicly available as <b>test version 0.1.14.1</b>, with source code and a <a href=\"#install\">step-by-step guide</a>. So far it has mainly been tested on a BYD Dolphin Surf (DiLink 3). Panoptes is a private hobby project and not made by BYD. Please read the <a href=\"hinweise.html\">notes</a> before installing.",
         "hero_alt_pc": "Panoptes home on a PC: charge level, range, map and charging costs",
         "hero_alt_handy": "Panoptes home on a phone: charge level and range",
         "h_kann": "What Panoptes does",
@@ -253,9 +278,34 @@ T = {
             "A free Tailscale account for remote access and your own Telegram bot for notifications. Panoptes shows you how.",
         ],
         "h_dl": "Download and install",
-        "dl_bald": "Not public yet",
-        "dl_text": "Panoptes is currently being tested in everyday use. The download will only be available after the test day, together with step-by-step instructions for getting the app onto the various BYD models. The way differs by model and software version. Until then there is no download here.",
-        "dl_code": "With the release, the complete source code becomes public: our own code under the MIT licence. The app contains parts under other licences, including the YOLO detection model (AGPL-3.0) and sing-box (GPL-3.0); the full list will be in the licence notices.",
+        "dl_anker": "install",
+        "dl_bald": "Test version 0.1.14.1",
+        "dl_text": "Panoptes 0.1.14.1 is a <b>test version</b>: it runs in everyday use in a test car (BYD Dolphin Surf, DiLink 3). On other models some things may be missing or work differently. Installing it is not for everyone: you need some patience, a PC, and you have to turn on a developer setting in the car. Use at your own risk, see the <a href=\"hinweise.html\">notes</a>.",
+        "dl_knopf": "⬇️ Download Panoptes 0.1.14.1 (APK, 79 MB)",
+        "dl_release": "Release on GitHub", "dl_quelle": "Source code",
+        "dl_pruef": "Checksum (SHA-256)", "dl_zert": "Signing certificate (SHA-256)",
+        "dl_update": "<b>Important about updates:</b> 0.1.14.1 does <b>not</b> update itself. Under System → App updates this version shows “update server not reachable”. That is expected and harmless. From <b>0.1.15</b> updates come automatically. Install 0.1.15 once by hand, just like the first time (step 4); your settings and data are kept.",
+        "h_anl": "Step by step",
+        "anl": [
+            ("Read first.", "Panoptes is meant for your own car, for private use and at your own risk. Read the <a href=\"hinweise.html\">notes</a>. To install it you turn on developer functions in the car. If in doubt whether this matters for your warranty, ask your dealer."),
+            ("Download and check.", "Download <code>panoptes-0.1.14.1-dfad145.apk</code> to your PC with the button above, then compare the checksum. On Windows type <code>certutil -hashfile panoptes-0.1.14.1-dfad145.apk SHA256</code> in a command prompt, on a Mac or Linux <code>shasum -a 256 panoptes-0.1.14.1-dfad145.apk</code>. The output must match the checksum above exactly. If it differs, do <b>not</b> install the file."),
+            ("Turn on developer access (ADB) in the car.", "Panoptes starts its background services, for example for the cameras, through the car's ADB interface. This connection stays inside the car (127.0.0.1). It is off by default. You turn it on in the BYD developer menu, with the switches for USB debugging or wireless ADB. How to reach this menu depends a lot on model and software version; on newer BYD software it is locked with a code. So far we have only tested this step on the Dolphin Surf (DiLink 3). Without it Panoptes will not fully work."),
+            ("Get the app onto the car.", "<b>Tested way, with a PC:</b> install Google's Android platform tools on your PC (they contain <code>adb</code>). PC and car must be on the same network, for example your phone's Wi-Fi hotspot. Then type <code>adb connect &lt;car-address&gt;:5555</code> and <code>adb install -r panoptes-0.1.14.1-dfad145.apk</code>. You find the car's address in its Wi-Fi settings or in your hotspot's device list. At the end it must say <code>Success</code>. <b>Without a PC (community reports, not tested by us):</b> some BYD software versions install APK files straight from a USB stick through the built-in installer. Folder name and procedure differ by region and software. If Android asks about “installing from unknown sources”, allow it only for this installation."),
+            ("First start with the setup assistant.", "Open Panoptes on the car screen. The assistant guides you step by step through everything needed: language, confirming the notes, <b>autostart</b>, display over other apps, permissions, <b>USB access</b>, your car and cameras, guard, operating mode, map source, data sharing, speed cameras and updates. Then optional extras: Telegram, route planner, EV Cockpit and remote access. Nothing is preselected. Anything that sends data out stays off until you turn it on yourself."),
+            ("Allow autostart.", "For Panoptes to start by itself when you get in, it has to be allowed in BYD's app management. The setup assistant opens the right page; untick the autostart block for Panoptes there. <b>BYD resets this switch after every installation and update.</b> Panoptes will remind you. DiLink 5 has no such app management, so the step is skipped."),
+            ("Confirm USB access.", "Android asks once “Allow USB debugging?”. Tick <b>“Always allow from this computer”</b> and tap <b>Allow</b>. The “computer” is Panoptes itself in the car. Without the tick Android asks again after every restart."),
+            ("Open on your phone or PC (optional).", "With remote access (Tailscale) set up, open your car's address in a browser. To log in you need the <b>access code</b>, found in the app in the car under <b>Home → Access code</b>. You allow other devices, such as the EV Cockpit, under <b>System → Pair a device</b>."),
+        ],
+        "h_stolper": "If something goes wrong",
+        "stolper": [
+            "<b>Panoptes does not start by itself after an update:</b> allow autostart again (step 6). BYD resets it after every installation.",
+            "<b>Panoptes has no internet:</b> BYD's built-in traffic monitor can block the internet for other apps. Panoptes offers to switch it off; the screen then needs a restart.",
+            "<b>Cameras or guard do not run:</b> check that USB access was confirmed with “Always allow” (step 7) and that ADB access is still on; a BYD software update can reset it.",
+            "<b>Where to store recordings?</b> Ideally on a USB stick in the car.",
+            "<b>Removing it again:</b> uninstall in the car's Android settings under Apps. Data inside the app is lost; recordings on the USB stick stay.",
+        ],
+        "dl_code": "<b>Source code and licence:</b> the complete source code of exactly this version is public on <a href=\"https://github.com/samuelvoltarius/panoptes\">GitHub (samuelvoltarius/panoptes)</a>. Our own code is under the MIT licence. The APK contains parts under other licences, including the program fast_cam_capture (GPL-3.0) and the YOLO detection models (AGPL-3.0). The full list is in the <a href=\"https://github.com/samuelvoltarius/panoptes/blob/main/THIRD_PARTY_NOTICES.md\">licence notices</a>. Report bugs and ideas there under Issues.",
+        "dl_ds": "<b>Privacy:</b> Panoptes only sends data out if you turn it on yourself (see <a href=\"#datenschutz\">privacy</a>). The app has no ads and no tracking. The download itself is served by GitHub; GitHub's privacy rules apply to it.",
         "h_hinweise": "Notes",
         "hinweise_kurz": "Private hobby project, free and without warranty. Use at your own risk, for private use with your own vehicle only. Users alone are responsible for lawful use (data protection, camera recordings, remote commands, traffic rules). Guardian recordings are intended for your own private property only, without capturing public space or neighbouring property. To the extent permitted by law, the developer accepts no liability; liability for intent, gross negligence, personal injury and mandatory consumer rights remains unaffected. Not affiliated with BYD; all trademarks belong to their owners.",
         "alle_hinweise": "Read all notes",
@@ -340,6 +390,11 @@ ul.liste{margin:.2em 0;padding-left:1.2em}ul.liste li{margin:.35em 0}
 .foot{color:var(--mut);font-size:13.5px;text-align:center;margin-top:46px;border-top:1px solid var(--line);padding-top:18px}
 .foot a{color:var(--mut);text-decoration:underline}
 ol.hw{padding-left:1.3em}ol.hw li{margin:.7em 0}
+ol.anl{padding-left:1.4em;margin:.2em 0}ol.anl li{margin:.8em 0}
+.anl-h{font-size:19px;margin:26px 0 4px}
+code{background:var(--card2);border:1px solid var(--line);border-radius:6px;padding:1px 5px;font-size:.9em;overflow-wrap:anywhere}
+.hash{font-size:14px;color:var(--mut);overflow-wrap:anywhere;margin:12px 0}
+.btn.dl{background:var(--grn);color:#04110a;border-color:var(--grn)}.btn.dl:hover{background:var(--grn2);text-decoration:none}
 @media(max-width:720px){.reihe{flex-direction:column;align-items:center}.reihe>a{flex:none!important;width:100%}.reihe>a.hoch{max-width:260px}.hero,.galerie,.paar,.zwei{grid-template-columns:1fr}.hero .handy,.paar .handy{max-width:260px;margin:0 auto}h2{font-size:23px}}
 """
 
@@ -477,6 +532,12 @@ def fuss(t, pfad):
 
 
 BASIS = "https://byd.serveone.at/panoptes/"
+# Download: oeffentliches Repo samuelvoltarius/panoptes (Quellcode + Release 1:1, Koordination 23.10.2026)
+DL_APK = "https://github.com/samuelvoltarius/panoptes/releases/download/v0.1.14.1/panoptes-0.1.14.1-dfad145.apk"
+DL_RELEASE = "https://github.com/samuelvoltarius/panoptes/releases/tag/v0.1.14.1"
+DL_QUELLE = "https://github.com/samuelvoltarius/panoptes"
+DL_SHA = "2ba49ff5f69e28447c6410130d9b8dc02afa194445b29bc1d14c800c246b5463"
+DL_CERT = "02d5a37bf0c1e334f56277af5669efc536fa96921fde0138d7e88dea7d7d8006"
 
 
 def seite(t):
@@ -523,8 +584,19 @@ def seite(t):
     # Was du brauchst + Download
     o.append('  <h2 id="brauchst">%s</h2>\n  <div class="card"><ul class="liste">%s</ul></div>'
              % (t["h_brauch"], "".join("<li>%s</li>" % x for x in t["brauch"])))
-    o.append('  <h2 id="download">%s<span class="bald">%s</span></h2>\n  <div class="card"><p style="margin-top:0">%s</p><p style="margin-bottom:0;color:var(--mut)">%s</p></div>'
-             % (t["h_dl"], t["dl_bald"], t["dl_text"], t["dl_code"]))
+    o.append('  <span id="download"></span><h2 id="%s">%s<span class="bald">%s</span></h2>' % (t["dl_anker"], t["h_dl"], t["dl_bald"]))
+    o.append('  <div class="card"><p style="margin-top:0">%s</p>' % t["dl_text"])
+    o.append('    <div class="btns"><a class="btn dl" href="%s">%s</a><a class="btn" href="%s">%s</a><a class="btn" href="%s">%s</a></div>'
+             % (DL_APK, t["dl_knopf"], DL_RELEASE, t["dl_release"], DL_QUELLE, t["dl_quelle"]))
+    o.append('    <p class="hash">%s: <code>%s</code><br>%s: <code>%s</code></p>' % (t["dl_pruef"], DL_SHA, t["dl_zert"], DL_CERT))
+    o.append('    <div class="note" style="margin-bottom:0">%s</div></div>' % t["dl_update"])
+    o.append('  <h3 class="anl-h">%s</h3>\n  <div class="card"><ol class="anl">' % t["h_anl"])
+    for h, txt in t["anl"]:
+        o.append("    <li><b>%s</b> %s</li>" % (h, txt))
+    o.append("  </ol></div>")
+    o.append('  <h3 class="anl-h">%s</h3>\n  <div class="card"><ul class="liste">%s</ul></div>'
+             % (t["h_stolper"], "".join("<li>%s</li>" % x for x in t["stolper"])))
+    o.append('  <div class="card"><p style="margin-top:0">%s</p><p style="margin-bottom:0">%s</p></div>' % (t["dl_code"], t["dl_ds"]))
     # Hinweise
     o.append('  <h2 id="hinweise">%s</h2>\n  <div class="card"><p style="margin-top:0">%s</p><p style="margin-bottom:0"><a href="%shinweise.html">%s →</a></p></div>'
              % (t["h_hinweise"], html.escape(t["hinweise_kurz"]), "", t["alle_hinweise"]))
