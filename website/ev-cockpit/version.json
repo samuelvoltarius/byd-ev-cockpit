@@ -1,5 +1,5 @@
 {
-  "version": "1.15.0",
-  "was_neu": "Wallbox auch über Home Assistant oder Tuya (im Heimnetz): anzeigen und steuern, je Ladepunkt freigeben, mit Rückfrage",
+  "version": "1.16.0",
+  "was_neu": "Das Panoptes-Logo im Cockpit, im Browser-Tab und auf Wunsch als Desktop-Verknüpfung",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }
