@@ -190,8 +190,8 @@
     <div class="card">
       <b>Was du dann siehst:</b>
       <ul>
-        <li><b>Ladestand &amp; ehrliche Reichweite</b> — aus deinem <i>tatsächlichen</i> Verbrauch
-            gerechnet, daneben BYDs eigene Zahl. Du siehst den Unterschied.</li>
+        <li><b>Ladestand groß in %</b>, darunter die kWh, dazu die <b>ehrliche Reichweite</b> — aus deinem
+            <i>tatsächlichen</i> Verbrauch gerechnet, daneben BYDs eigene Zahl. Du siehst den Unterschied.</li>
         <li><b>Vorklimatisieren</b> — Heizen oder Kühlen per Knopf. <small>Aus Sicherheitsgründen nur, wenn das Auto
             <b>ausgeschaltet</b> ist: Das Cockpit prüft das vor jedem Befehl und sendet sonst nichts.</small></li>
         <li><b>Auf einen Blick:</b> verriegelt, Türen, Fenster, angesteckt, lädt, Gang</li>
@@ -205,7 +205,8 @@
       <b>Dazuschaltbar (alles freiwillig, alles abschaltbar):</b>
       <ul>
         <li><b>💶 Strompreis</b> — „wann ist Laden am billigsten?" Der Börsenpreis deines Landes als
-            Stundenbalken, inklusive morgen, mit der günstigsten Stunde.
+            Stundenbalken, inklusive morgen, mit der günstigsten Stunde. Jederzeit ein- und ausschaltbar, auch direkt
+            in der Kachel „Laden &amp; Kosten“; aus heißt: es wird nichts abgerufen.
             <br><small><b>Ehrlich:</b> Das ist der <b>Börsenpreis</b>, nicht deine Rechnung (Netz und
             Steuern fehlen). Nur mit einem Börsentarif (Tibber, aWATTar, smartENERGY) ist das dein
             echter Verlauf — bei Fixtarif bloß interessant.</small></li>
@@ -219,21 +220,41 @@
             passenden Preis. <small>Deine Fahrten bleiben auf deinem Rechner, an den Planer geht nur eine einzige
             Zahl (dein Korrekturfaktor).</small></li>
         <li><b>📱 Aufs Tablet holen</b> — ein Häkchen, dann geht es auch am Küchen-Tablet im eigenen WLAN</li>
-        <li><b>🎥 Wächter-Kamera</b> <small>(nur für Bastler)</small> — die letzte Auslöse-Aufnahme der
-            360°-Kameras.
-            <br><small>Braucht <b>adb</b> am Rechner, <b>kabelloses adb am Auto</b>, die Panoptes-App
-            und einen USB-Stick. Sagt dir das nichts: einfach weglassen, alles andere läuft trotzdem.</small></li>
+        <li><b>💶 Was kostet dich das Fahren?</b> <small>(mit Panoptes)</small> — groß <b>Ø € je 100 km</b> für Monat,
+            30 Tage oder Jahr, dazu kWh je 100 km und die <b>Liste deiner Ladungen</b> mit Monatssummen. Gerechnet wird im
+            Auto; fehlen Preise, steht das dabei.
+            <br><small>„<b>Wo hast du geladen?</b>“ — Ladungen ohne Preis beantwortest du direkt im Cockpit (Ladekarte, ad hoc,
+            zuhause oder gratis); auf Wunsch merkt sich das Auto den Ort. Braucht Panoptes 0.1.10 bzw. 0.1.10.1, sonst bleibt
+            der Bereich ausgeblendet.</small></li>
+        <li><b>⚡ Wallbox steuern</b> — über <b>evcc</b>, <b>Home Assistant</b> oder <b>Tuya</b> (direkt im Heimnetz, ohne
+            Tuya-Cloud): Lademodus, Ladestrom bzw. Ladeziel.
+            <br><small><b>Sicher:</b> Standard ist nur lesen. Jeder Ladepunkt muss einzeln freigegeben werden, jede Änderung fragt
+            nach, jede Aktion steht im Steuer-Protokoll. Schlüssel und Token bleiben verschlüsselt auf deinem PC.
+            Wärmepumpen und Heizstäbe werden nie gesteuert.</small></li>
+        <li><b>👁️ Wächter</b> <small>(mit Panoptes)</small> — das letzte Ereignis und alle Aufnahmen der 360°-Kameras direkt
+            im Cockpit, ohne Zusatzprogramm.
+            <br><small>Ohne Panoptes gibt es für Bastler noch den alten Weg über <b>adb</b> und einen USB-Stick im Auto.
+            Sagt dir das nichts: einfach weglassen, alles andere läuft trotzdem.</small></li>
       </ul>
     </div>
 
 
     <div class="card">
       <b>So sieht das Cockpit aus</b>
-      <p style="margin:.5em 0 1em;color:#9fb3c8">Version 1.9.5. Klick auf ein Bild zum Vergrößern.</p>
+      <p style="margin:.5em 0 1em;color:#9fb3c8">Version 1.15, mit Musterdaten. Klick auf ein Bild zum Vergrößern.</p>
       <div class="wizshots">
         <figure class="breit"><a href="bilder/cockpit-uebersicht.webp" target="_blank" rel="noopener">
-          <img src="bilder/cockpit-uebersicht.webp" alt="Startseite des EV-Cockpits: 72 % Akku, 213 km echte Reichweite, ein rotes BYD Seagull in 3D" loading="lazy" width="1440" height="900"></a>
-          <figcaption><b>Übersicht</b> — Ladestand, ehrliche Reichweite und dein Auto in 3D</figcaption></figure>
+          <img src="bilder/cockpit-uebersicht.webp" alt="Startseite des EV-Cockpits mit Musterdaten: Ladestand 72 % groß im Ring, darunter 31,1 von 43,2 kWh, Status-Zeile mit Reichweite, verriegelt und Wächter, ein rotes BYD Seagull in 3D, rechts Route und Laden &amp; Kosten" loading="lazy" width="1440" height="900"></a>
+          <figcaption><b>Übersicht</b> — Ladestand in %, ehrliche Reichweite, dein Auto in 3D, Route und Kosten auf einen Blick</figcaption></figure>
+        <figure><a href="bilder/cockpit-laden-kosten.webp" target="_blank" rel="noopener">
+          <img src="bilder/cockpit-laden-kosten.webp" alt="Kachel Laden und Kosten: 3,88 Euro im Schnitt je 100 km in diesem Monat, 16,1 kWh je 100 km, Hinweis auf 2 Ladungen ohne Preis" loading="lazy" width="525" height="346"></a>
+          <figcaption><b>Laden &amp; Kosten</b> — Ø € je 100 km, Zeitraum wählbar; fehlende Preise stehen dabei</figcaption></figure>
+        <figure><a href="bilder/cockpit-ladenachfrage.webp" target="_blank" rel="noopener">
+          <img src="bilder/cockpit-ladenachfrage.webp" alt="Wo hast du geladen: zwei Ladungen ohne Preis mit Auswahl, wie bezahlt wurde, Preis je kWh und Ort merken" loading="lazy" width="491" height="308"></a>
+          <figcaption><b>„Wo hast du geladen?“</b> — Preis nachtragen, das Auto bleibt die Quelle</figcaption></figure>
+        <figure class="breit"><a href="bilder/cockpit-ladungen.webp" target="_blank" rel="noopener">
+          <img src="bilder/cockpit-ladungen.webp" alt="Liste der Ladungen mit Datum, AC oder DC, kWh, Preis, Preisquelle und Ort, je Monat mit Summe" loading="lazy" width="1176" height="414"></a>
+          <figcaption><b>Ladungen</b> — jede Ladung mit Preis und Herkunft des Preises, Monatssummen</figcaption></figure>
         <figure class="breit"><a href="bilder/cockpit-karte-live.webp" target="_blank" rel="noopener">
           <img src="bilder/cockpit-karte-live.webp" alt="Community-Karte mit Ladesäulen und Live-Belegung, unten die Quellenangabe" loading="lazy" width="1238" height="458"></a>
           <figcaption><b>Karte</b> — Ladesäulen rundum mit Live-Belegung (nur wenn du die Community-Karte wählst)</figcaption></figure>
@@ -250,14 +271,14 @@
           <img src="bilder/cockpit-panoptes-einstellungen.webp" alt="Panoptes-Einstellungen im gekoppelten Cockpit, nach Abschnitten gegliedert" loading="lazy" width="1440" height="900"></a>
           <figcaption><b>Panoptes-Einstellungen</b> — alles aus dem Auto am PC, Fernzugang bleibt im Auto</figcaption></figure>
         <figure><a href="bilder/cockpit-schmal-uebersicht.webp" target="_blank" rel="noopener">
-          <img src="bilder/cockpit-schmal-uebersicht.webp" alt="Das Cockpit am Handy: Ladestand, Reichweite und das 3D-Auto" loading="lazy" width="780" height="1688"></a>
+          <img src="bilder/cockpit-schmal-uebersicht.webp" alt="Das Cockpit am Handy mit Musterdaten: Status-Zeile, Ladestand 72 % und das 3D-Auto" loading="lazy" width="780" height="1688"></a>
           <figcaption><b>Am Handy</b> — dieselbe Seite, schmal</figcaption></figure>
         <figure><a href="bilder/cockpit-schmal-pflichttext.webp" target="_blank" rel="noopener">
           <img src="bilder/cockpit-schmal-pflichttext.webp" alt="Wächter-Einstellung am Handy mit dem vollständigen rechtlichen Hinweis zum Bestätigen" loading="lazy" width="780" height="1688"></a>
           <figcaption><b>Wächter</b> — der rechtliche Hinweis steht vollständig da und wird bestätigt</figcaption></figure>
-        <figure class="breit"><a href="bilder/cockpit-evcc-lesend.webp" target="_blank" rel="noopener">
-          <img src="bilder/cockpit-evcc-lesend.webp" alt="Energie und Ladepunkte über evcc, nur lesend" loading="lazy" width="1208" height="668"></a>
-          <figcaption><b>Wallbox und PV</b> — über evcc, nur lesend</figcaption></figure>
+        <figure><a href="bilder/cockpit-wallbox-steuern.webp" target="_blank" rel="noopener">
+          <img src="bilder/cockpit-wallbox-steuern.webp" alt="Wallbox-Karte mit Musterdaten: 3,7 kW, lädt, Modus Sofort, 10 A, darunter Knöpfe Aus, Sofort, Ladestrom und Steuern aus" loading="lazy" width="620" height="223"></a>
+          <figcaption><b>Wallbox</b> — über evcc, Home Assistant oder Tuya; steuern erst nach deiner Freigabe, jedes Mal mit Rückfrage</figcaption></figure>
         <figure class="breit"><a href="bilder/cockpit-karte-waehlen.webp" target="_blank" rel="noopener">
           <img src="bilder/cockpit-karte-waehlen.webp" alt="Ohne Wahl lädt das Cockpit keine Karte und fragt nach OpenStreetMap oder Community-Karte" loading="lazy" width="1220" height="440"></a>
           <figcaption><b>Deine Wahl</b> — ohne dein Häkchen lädt das Cockpit nicht einmal Kartenbilder</figcaption></figure>
