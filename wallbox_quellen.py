@@ -226,6 +226,95 @@ def ha_vorschlag(alle):
     return {"ok": True, "kandidaten": kand, "vorschlag": z}
 
 
+def _rolle(s, a, eid, name):
+    """Welche Rolle passt zu einer Entitaet (generisch, kein Code je Modell) -> (rolle, punkte) oder (None, 0)."""
+    wort = 2 if any(w in name for w in WALLBOX_WOERTER) else 0
+    einheit, klasse, st, dom = str(a.get("unit_of_measurement") or ""), str(a.get("device_class") or ""), str(s.get("state") or ""), eid.split(".")[0]
+    if dom == "switch" and wort:
+        return "modus", wort
+    if dom in ("select", "input_select") and wort and any(m in name for m in ("mode", "modus", "lademodus")):
+        return "modus", wort + 1
+    if dom in ("number", "input_number") and (einheit == "A" or klasse == "current"):
+        return "strom", wort + 2
+    if dom in ("number", "input_number") and einheit == "%" and wort:
+        return "ziel", wort
+    if dom == "sensor" and (klasse == "power" or einheit in ("W", "kW")) and wort:
+        return "leistung", wort + (1 if klasse == "power" else 0)
+    if dom == "sensor" and st.startswith("charger_"):
+        return "laedt", wort + 3
+    if dom == "binary_sensor" and (klasse == "battery_charging" or wort):
+        return "laedt", wort
+    if dom == "sensor" and wort and any(w in name for w in ("status", "state", "zustand")):
+        return "laedt", wort
+    if dom == "time" and wort:
+        return "startzeit", wort
+    return None, 0
+
+
+MODUS_WOERTER = {"aus": ("off", "aus", "stop", "disabled"), "sofort": ("now", "fast", "sofort", "schnell", "immediate", "max"),
+                 "minpv": ("minpv", "min+pv", "min_pv", "min pv"), "pv": ("pv", "solar", "sonne")}
+
+
+def _modus_optionen(optionen):
+    """Optionen eines select-Lademodus vorsichtig zuordnen (nur eindeutige Treffer, sonst leer lassen)."""
+    o = {}
+    for m, woerter in MODUS_WOERTER.items():
+        treffer = [x for x in optionen if str(x).strip().lower() in woerter]
+        if len(treffer) == 1:
+            o[m] = treffer[0]
+    return o
+
+
+def ha_geraete(alle, geraet=None):
+    """Rein: plausible Wallboxen in HA, je HA-Geraet gruppiert (geraet: entity_id -> (device_id, Name); ohne: nach dem
+    ersten Wort der Objekt-ID). Plausibel = (Schalter/Modus oder Ladestrom) und (Leistung oder Lade-Status)."""
+    states, gruppen = {}, {}
+    for s in (alle or [])[:5000]:
+        if not isinstance(s, dict) or not ENTITAET.match(str(s.get("entity_id") or "")):
+            continue
+        eid = s["entity_id"]
+        states[eid] = s
+        a = s.get("attributes") if isinstance(s.get("attributes"), dict) else {}
+        rolle, p = _rolle(s, a, eid, (eid + " " + str(a.get("friendly_name") or "")).lower())
+        if not rolle:
+            continue
+        did, dname = (geraet or {}).get(eid) or ("", "")
+        key = did or "obj:" + eid.split(".")[1].split("_")[0]
+        g = gruppen.setdefault(key, {"name": dname, "rollen": {}})
+        if rolle not in g["rollen"] or p > g["rollen"][rolle][1]:
+            g["rollen"][rolle] = (eid, p)
+    aus = []
+    for key, g in gruppen.items():
+        r = g["rollen"]
+        if not (("modus" in r or "strom" in r) and ("leistung" in r or "laedt" in r)):
+            continue
+        name = g["name"] or str((states[(r.get("leistung") or r.get("modus") or next(iter(r.values())))[0]].get("attributes") or {}).get("friendly_name") or key.split(":")[-1])
+        z = {"schluessel": "wallbox", "titel": name.strip()[:40] or "Wallbox", "modusOptionen": {}}
+        for rolle in DOMAENEN:
+            z[rolle] = r[rolle][0] if rolle in r else None
+        if z["modus"] and not z["modus"].startswith("switch."):
+            z["modusOptionen"] = _modus_optionen((states[z["modus"]].get("attributes") or {}).get("options") or [])
+        try:
+            z = pruefe_ha_zuordnung(z)
+        except WallboxFehler:
+            continue
+        lp = ha_ladepunkt(z, {rolle: dict(states[eid], entity_id=eid) for rolle, (eid, _) in r.items()})
+        aus.append({"name": z["titel"], "zuordnung": z, "leistungW": lp["leistungW"], "laedt": lp["laedt"], "modus": lp["modus"],
+                    "stromA": lp["stromA"], "rollen": sorted(r), "punkte": sum(p for _, p in r.values()) + 2 * len(r)})
+    return sorted(aus, key=lambda x: -x["punkte"])
+
+
+def _vorlage(eids):
+    """Jinja fuer POST /api/template: je Entitaet [entity_id, device_id, Geraetename]. Nur gepruefte IDs (ENTITAET)."""
+    liste = json.dumps([e for e in eids if ENTITAET.match(e)][:200])
+    return ("{%- set ns = namespace(d=[]) -%}{%- for e in " + liste + " -%}{%- set i = device_id(e) -%}"
+            "{%- set ns.d = ns.d + [[e, i or '', ((device_attr(i, 'name_by_user') or device_attr(i, 'name') or '') if i else '')]] -%}"
+            "{%- endfor -%}{{ ns.d | tojson }}")
+
+
+TUYA_DOMAENEN = ("localtuya", "tuya_local", "tuya")
+
+
 class HaQuelle:
     def __init__(self, url, token, zuordnungen, http=_ha_http, schlaf=time.sleep):
         self.basis, self.token, self.zu, self.http, self.schlaf = basis_url(url), token, list(zuordnungen or []), http, schlaf
@@ -247,6 +336,30 @@ class HaQuelle:
         if not isinstance(alle, list):
             raise WallboxFehler("antwort_ungueltig", 502)
         return ha_vorschlag(alle)
+
+    def auto(self):
+        """Nur lesend, auf Knopfdruck bzw. einmal beim Start: plausible Wallboxen + ob Tuya schon in HA eingebunden ist."""
+        alle = self.http("GET", self.basis + "/api/states", self.token)
+        if not isinstance(alle, list):
+            raise WallboxFehler("antwort_ungueltig", 502)
+        roh = ha_geraete(alle)
+        eids = sorted({e for g in roh for e in g["zuordnung"].values() if isinstance(e, str) and "." in e})
+        geraet = {}
+        if eids:
+            try:
+                d = self.http("POST", self.basis + "/api/template", self.token, {"template": _vorlage(eids)})
+                geraet = {x[0]: (x[1], x[2]) for x in d if isinstance(x, list) and len(x) == 3} if isinstance(d, list) else {}
+            except WallboxFehler:
+                geraet = {}
+        geraete = ha_geraete(alle, geraet) if geraet else roh
+        tuya = None
+        try:
+            e = self.http("GET", self.basis + "/api/config/config_entries/entry", self.token)
+            if isinstance(e, list):
+                tuya = sorted({str(x.get("domain")) for x in e if isinstance(x, dict) and x.get("domain") in TUYA_DOMAENEN})
+        except WallboxFehler:
+            tuya = None
+        return {"geraete": geraete[:10], "tuya_in_ha": tuya}
 
     def _zuordnung(self, lid):
         for z in self.zu:

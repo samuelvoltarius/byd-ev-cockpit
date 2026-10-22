@@ -1,5 +1,5 @@
 {
-  "version": "1.16.0",
-  "was_neu": "Das Panoptes-Logo im Cockpit, im Browser-Tab und auf Wunsch als Desktop-Verknüpfung",
+  "version": "1.17.0",
+  "was_neu": "Wallbox automatisch einrichten: über deine Home-Assistant-Verbindung mit einem Klick, Tuya-Geräte im Heimnetz finden",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }

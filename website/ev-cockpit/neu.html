@@ -44,6 +44,18 @@ footer a{color:var(--mut)}
   <p class=lead>Alle Änderungen am EV-Cockpit — das Neueste zuerst.</p>
 
     <section class="ver">
+      <div class="verhead"><h2>Version 1.17</h2><span class="datum">23.10.2026</span></div>
+      <p class="titel">Wallbox automatisch einrichten</p>
+      <ul>
+        <li><b>🔎 Mit einem Klick</b> — ist Home Assistant schon verbunden (für PV oder als Datenquelle), sucht das Cockpit dort selbst nach deiner Wallbox und zeigt sie an: „Gefunden: Name, Leistung, Status“. Ein Klick auf „Übernehmen“, fertig – ohne zweite Anmeldung. Mehrere Wallboxen? Dann wählst du aus einer Liste.</li>
+        <li><b>🏠 Home Assistant finden</b> — noch nicht verbunden? Das Cockpit findet Home Assistant im Heimnetz, du meldest dich einmal an.</li>
+        <li><b>🔌 Tuya im Heimnetz</b> — das Cockpit hört auf die Meldungen der Tuya-Geräte und zeigt Geräte-ID, Adresse und Protokoll. Laufen deine Tuya-Geräte schon in Home Assistant, empfiehlt es diesen Weg; sonst erklärt es, woher der nötige Schlüssel kommt.</li>
+        <li><b>💡 Hinweis beim Start</b> — erkennt das Cockpit eine Wallbox, fragt es einmal leise: „Wallbox gefunden – einrichten?“</li>
+        <li><b>🔒 Steuern bleibt deine Entscheidung</b> — eingerichtet heißt nur anzeigen. Steuern gibst du an der Wallbox-Karte eigens frei, jede Änderung fragt nach.</li>
+      </ul>
+    </section>
+
+    <section class="ver">
       <div class="verhead"><h2>Version 1.16</h2><span class="datum">22.10.2026</span></div>
       <p class="titel">Mit Logo</p>
       <ul>
