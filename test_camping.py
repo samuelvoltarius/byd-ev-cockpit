@@ -34,6 +34,7 @@ SCHEMA = {"gruppen": [{"id": "camping", "felder": [
     {"key": "camping.heizweg", "typ": "auswahl", "optionen": [{"wert": w, "titel": w} for w in ("probelauf", "auto_an", "auto_an_und_cloud")], "standard": "probelauf"},
     {"key": "camping.socGrenze", "typ": "int", "min": 5, "max": 80, "schritt": 1, "einheit": "%", "standard": 20},
     {"key": "camping.weckzeit", "typ": "zeit"},
+    {"key": "camping.nachlaufMinuten", "typ": "int", "min": 0, "max": 240, "schritt": 5, "einheit": "min", "standard": 60},
     {"key": "camping.vorheizenMinuten", "typ": "int", "min": 0, "max": 60, "standard": 30},
     {"key": "camping.morgensHeizen", "typ": "bool", "standard": False},
     {"key": "camping.hoechstdauerStunden", "typ": "int", "min": 1, "max": 24, "standard": 12},
@@ -77,10 +78,29 @@ class TestModul(unittest.TestCase):
 
     def test_planung_nur_mit_feld(self):
         self.assertFalse(camping.anzeige(STATUS)["plan_moeglich"])
-        a = camping.anzeige(dict(STATUS, geplant={"start": NOW, "ende": NOW + 3600000, "grund": "nicht_geparkt"}))
+        a = camping.anzeige(dict(STATUS, geplant={"start": NOW, "ende": NOW + 3600000}, planFehler={"grund": "nicht_geparkt", "zeit": NOW - 60000}))
         self.assertTrue(a["plan_moeglich"])
-        self.assertEqual(a["geplant"]["grund"], "nicht_geparkt")
+        self.assertEqual((a["geplant"]["start"], a["geplant"]["ende"]), (NOW, NOW + 3600000))
+        self.assertEqual(a["planFehler"], {"grund": "nicht_geparkt", "zeit": NOW - 60000})
         self.assertTrue(camping.anzeige(dict(STATUS, geplant=None))["plan_moeglich"])
+        self.assertIsNone(camping.anzeige(dict(STATUS, geplant=None))["planFehler"])
+        self.assertEqual(camping.anzeige(dict(STATUS, geplant={"start": NOW, "ende": None}))["geplant"]["ende"], None)
+
+    def test_ende_um_und_grund(self):
+        a = camping.anzeige(dict(STATUS, endeUm=NOW + 7200000, endeGrund="weckzeit"))
+        self.assertEqual((a["endeUm"], a["endeGrund"]), (NOW + 7200000, "weckzeit"))
+        self.assertIsNone(camping.anzeige(dict(STATUS, endeUm=NOW, endeGrund="quatsch<b>"))["endeGrund"])
+        self.assertIsNone(camping.anzeige(STATUS)["endeUm"])
+
+    def test_plan_fehlercodes_deutsch(self):
+        for code in ("start", "start_format", "start_vergangen", "start_zu_weit", "ende_format", "ende_vor_start", "camping_laeuft"):
+            self.assertIn(code, camping.FEHLER_TEXT)
+            self.assertNotIn("abgelehnt", camping.FEHLER_TEXT[code])
+        pv = FakePv()
+        pv.senden = lambda pfad, daten: {"ok": False, "fehler": "ende_vor_start", "_status": 400}
+        r = camping.plan_senden(pv, "2026-10-23T22:00:00Z", "2026-10-23T20:00:00Z")
+        self.assertEqual((r["ok"], r["fehler"]), (False, "ende_vor_start"))
+        self.assertIn("nach dem Start", r["text"])
 
     def test_aelteres_panoptes(self):
         class Alt:
@@ -94,7 +114,8 @@ class TestModul(unittest.TestCase):
         keys = [f["key"] for f in liste]
         self.assertNotIn("camping.heizweg", keys)
         self.assertNotIn("system.port", keys)
-        self.assertEqual(len(keys), 6)
+        self.assertEqual(len(keys), 7)
+        self.assertIn("camping.nachlaufMinuten", keys)
 
     def test_speichern_nur_whitelist_und_geprueft(self):
         pv = FakePv()
@@ -148,7 +169,7 @@ class TestServer(unittest.TestCase):
         self.assertTrue(d["vorhanden"])
         self.assertTrue(d["status"]["trockenlauf"])
         self.assertNotIn("innenC", json.dumps(d))
-        self.assertEqual(len(d["einstellungen"]), 6)
+        self.assertEqual(len(d["einstellungen"]), 7)
 
     def test_ohne_camping_ausgeblendet(self):
         self.pv.status = {"_status": 404}

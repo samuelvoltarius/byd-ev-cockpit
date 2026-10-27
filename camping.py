@@ -12,14 +12,20 @@ import einstellungen as ew
 
 # Nur diese Einstellungen stellt die Cockpit-Seite ein (alles Weitere bleibt in den Panoptes-Einstellungen).
 # camping.heizweg gehoert BEWUSST nicht dazu: ob das Auto wirklich heizt (statt Probelauf), entscheidet Alfred in Panoptes selbst.
-EINSTELLUNGEN = ("camping.waerme", "camping.socGrenze", "camping.weckzeit",
+EINSTELLUNGEN = ("camping.waerme", "camping.socGrenze", "camping.weckzeit", "camping.nachlaufMinuten",
                  "camping.vorheizenMinuten", "camping.morgensHeizen", "camping.hoechstdauerStunden")
+ENDE_GRUENDE = ("plan", "weckzeit", "hoechstdauer")
 PHASEN = ("vorheizen", "pause", "heizen", "morgen", "gesperrt", "ende")
 FEHLER_TEXT = {"nicht_gestartet": "Camping ist in Panoptes noch nicht bereit (gerade gestartet?). Bitte gleich noch einmal.",
                "nicht_geparkt": "Camping lässt sich nur im Stand starten (Gang P).",
                "fahrzustand_unbekannt": "Das Auto meldet gerade nicht, ob es steht. Bitte kurz warten und noch einmal.",
                "camping_aus": "Camping ist gar nicht an.", "art": "Unbekannte Rückmeldung",
-               "an": "Ungültige Anfrage", "gesperrt_fahrt": "Während der Fahrt nicht möglich."}
+               "an": "Ungültige Anfrage", "gesperrt_fahrt": "Während der Fahrt nicht möglich.",
+               # Plan (Panoptes 0.1.17, Kern 9)
+               "start": "Bitte einen Start angeben.", "start_format": "Den Start kann Panoptes nicht lesen. Bitte Datum und Uhrzeit wählen.",
+               "start_vergangen": "Der Start liegt in der Vergangenheit.", "start_zu_weit": "Planen geht höchstens 7 Tage voraus.",
+               "ende_format": "Das Ende kann Panoptes nicht lesen.", "ende_vor_start": "Das Ende muss nach dem Start liegen.",
+               "camping_laeuft": "Camping läuft schon. Ein Plan geht nur, solange Camping aus ist."}
 
 
 def _zahl(x):
@@ -56,6 +62,7 @@ def anzeige(d):
     v = d.get("verbrauch") if isinstance(d.get("verbrauch"), dict) else {}
     t = d.get("tabelle") if isinstance(d.get("tabelle"), dict) else None
     g = d.get("geplant") if isinstance(d.get("geplant"), dict) else None
+    pf = d.get("planFehler") if isinstance(d.get("planFehler"), dict) else None
     out = {
         "aktiv": bool(d.get("aktiv")), "gestartet": d.get("gestartet") is not False,
         "trockenlauf": d.get("trockenlauf") is not False,                       # unbekannt = lieber 'heizt nicht' behaupten
@@ -78,7 +85,9 @@ def anzeige(d):
         "protokoll": [],
         # Planung (kommt mit Panoptes 0.1.17): nur wenn der Kern das Feld liefert, wird sie im Cockpit freigeschaltet
         "plan_moeglich": "geplant" in d,
-        "geplant": None if not g else {"start": _ms(g.get("start")), "ende": _ms(g.get("ende")), "grund": _txt(g.get("grund"), 60) or None},
+        "geplant": None if not g else {"start": _ms(g.get("start")), "ende": _ms(g.get("ende"))},
+        "planFehler": None if not pf else {"grund": _txt(pf.get("grund"), 40) or None, "zeit": _ms(pf.get("zeit"))},
+        "endeUm": _ms(d.get("endeUm")), "endeGrund": d.get("endeGrund") if d.get("endeGrund") in ENDE_GRUENDE else None,
     }
     for e in (d.get("protokoll") or [])[-8:]:
         if isinstance(e, dict) and e.get("aktion") in ("ein", "aus"):
