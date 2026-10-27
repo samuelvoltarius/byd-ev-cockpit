@@ -396,8 +396,8 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
                  ("Autostart erlauben.", "Damit Panoptes von selbst startet. Der Assistent öffnet die richtige Seite.")],
         "ausfuehrlich": "Ausführliche Anleitung mit allen Befehlen (8 Schritte)",
         "ds_detail": "Genau nachlesen: was geht wohin?",
-        # Bekannter Fehler (Koordination/Deploy 27.10.2026, steht auch in den Release-Notizen v0.1.17/v0.1.18). Entfernen, sobald 0.1.19 live ist.
-        "bekannt": "<b>Bekannter Fehler:</b> „Installieren“ unter System → App-Updates funktioniert in 0.1.17 und 0.1.18 noch nicht (die App findet das Update, bricht die Installation aber ab). Bitte Updates von Hand installieren, wie bei der ersten Installation (<a href=\"#schritte\">Anleitung</a>) – deine Daten bleiben erhalten. Behoben ab 0.1.19.",
+        # Bekannter Fehler (Koordination/Deploy 27.10.2026). Bleibt, bis ein Updater-Test am Auto gruen ist (Koordination).
+        "bekannt": "<b>Bekannter Fehler:</b> Wer 0.1.17 oder 0.1.18 hat: bitte 0.1.19.1 einmal von Hand installieren (<a href=\"#schritte\">Anleitung</a>). In diesen Versionen funktioniert „Installieren“ unter System → App-Updates nicht. Deine Daten bleiben erhalten.",
         "zus_detail": "Wie Panoptes mit Cockpit, Routenplaner, Karte und Wallbox verbunden ist",
     },
     "en": {
@@ -423,7 +423,7 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
                  ("Allow autostart.", "So Panoptes starts by itself. The assistant opens the right page.")],
         "ausfuehrlich": "Detailed guide with all commands (8 steps)",
         "ds_detail": "In detail: what goes where?",
-        "bekannt": "<b>Known issue:</b> ‘Install’ under System → App updates does not work yet in 0.1.17 and 0.1.18 (the update is found, but installation aborts). Please install updates by hand, like the first installation (<a href=\"#schritte\">guide</a>) – your data is kept. Fixed from 0.1.19.",
+        "bekannt": "<b>Known issue:</b> If you have 0.1.17 or 0.1.18: please install 0.1.19.1 once by hand (<a href=\"#schritte\">guide</a>). In these versions ‘Install’ under System → App updates does not work. Your data is kept.",
         "zus_detail": "How Panoptes connects to the cockpit, route planner, map and wall box",
     },
 }
