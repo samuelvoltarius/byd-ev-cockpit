@@ -73,6 +73,7 @@ body{margin:0;color:var(--ink);min-height:100vh}
 input[type=range]{width:100%;accent-color:#B5F23D;padding:0}
 .skala{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}.seg button{padding:8px 14px;font:600 13px 'Manrope',system-ui,sans-serif;border:0;border-right:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}.seg button:last-child{border:0}.seg button[disabled]{opacity:.45;cursor:not-allowed}
+.wimg{display:none;position:relative;margin-top:8px;height:96px;border-radius:10px;overflow:hidden;background:#0d2c40}.wimg img{width:100%;height:100%;object-fit:cover;display:block}.wimg span{position:absolute;left:6px;bottom:5px;font-size:11px;font-weight:600;padding:1px 7px;border-radius:99px;background:rgba(5,16,28,.72);color:var(--ink)}
 .minimap{height:46px;border-radius:10px;overflow:hidden;position:relative;background:linear-gradient(135deg,#0d2c40,#103b48);display:grid;place-items:center;color:var(--ink-3);font-size:12px}
 .car{width:16px;height:16px;border-radius:50%;background:var(--lime);border:3px solid #0A2238;box-shadow:0 0 0 7px rgba(181,242,61,.18)}
 .alle{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border-style:dashed;text-decoration:none;color:var(--ink)}
@@ -182,7 +183,7 @@ CAMPING_AUF = r"""@@CAMPING_HTML@@"""
 BODY_TEIL3 = r"""
   <section class="card t ro" id=t_tuer><div class=kk><h2><svg><use href="#i-door"/></svg>Türen &amp; Fenster</h2><div class=v id=t_tuer_v>–</div><div class=muted id=t_tuer2></div></div></section>
   <section class="card t ro" id=t_reifen><div class=kk><h2><svg><use href="#i-tyre"/></svg>Reifen</h2><div class=v id=t_reifen_v>–</div><div class=muted id=t_reifen2></div></div></section>
-  <section class="card t ro" id=t_waech><div class=kk><h2><svg><use href="#i-eye"/></svg>Wächter<a class=more href="__PANOPTES_WEB__/waechter.html" target="_blank" rel="noopener">Aufnahmen</a></h2><div class=v id=t_waech_v>–</div><div class=muted id=t_waech2></div></div></section>
+  <section class="card t ro" id=t_waech><div class=kk><h2><svg><use href="#i-eye"/></svg>Wächter<a class=more href="__PANOPTES_WEB__/waechter.html" target="_blank" rel="noopener">Aufnahmen</a></h2><div class=v id=t_waech_v>–</div><div class=muted id=t_waech2></div><a class=wimg id=t_waech_img href="__PANOPTES_WEB__/waechter.html" target="_blank" rel="noopener" title="Aufnahmen"></a></div></section>
   <section class="card t ro" id=t_pos><div class=kk><h2><svg><use href="#i-pin"/></svg>Standort</h2><div class=minimap id=map>–</div><div class=muted id=t_pos2></div></div></section>
   <section class="card t ro" id=t_warn><div class=kk><h2><svg><use href="#i-warn"/></svg>Warnungen</h2><div class=v id=t_warn_v>–</div><div class=muted id=t_warn2></div></div></section>
   <a class="card t alle" id=alle href="__PANOPTES_WEB__/" target="_blank" rel="noopener"><div class=v>Alle Funktionen ↗</div><div class=muted>Fahrten, Ladeplan, Aufnahmen, Einstellungen – in Panoptes</div></a>
@@ -253,6 +254,7 @@ function zeichne(s){
  el('t_reifen2').textContent=s.reifen&&s.reifen.stufe?(s.reifen.stufe==='gruen'?__T('in Ordnung'):__T('bitte prüfen')):(ty.length?__T('kleinster Wert aller vier Reifen'):'');
  el('t_waech_v').textContent=wz?__T(wz[0]):(s.panoptes_an?'–':__T('nicht verbunden'));el('t_waech_v').className='v '+(wz&&wz[1]||'');
  const w=s.waechter_letzt;el('t_waech2').textContent=w&&w.timestamp?__T('Letztes Ereignis')+' '+rel(w.timestamp):__T('noch kein Ereignis');
+ const wi=el('t_waech_img');if(w&&w.id&&w.available){wi.style.display='block';if(wi.dataset.id!==w.id){wi.dataset.id=w.id;wi.innerHTML='<img alt="" loading=lazy src="/waechter/bild/'+esc(w.id)+'" onerror="this.remove()"><span>'+esc(rel(w.timestamp))+'</span>';}else{const sp=wi.querySelector('span');if(sp)sp.textContent=rel(w.timestamp);}}else wi.style.display='none';
  el('t_pos2').textContent=s.latitude!=null?z(s.latitude,4)+', '+z(s.longitude,4):__T('Standort unbekannt');
  karte(s);
  const W=[];
@@ -360,6 +362,7 @@ async function wbPost(url,b){const o=x=>({method:'POST',headers:{'Content-Type':
  if(r.status===409&&d.grund==='bestaetigung_noetig'){if(!confirm(__T(d.frage&&d.frage.text||'Wirklich?')))return null;
   r=await fetch(url,o(Object.assign({},b,{bestaetigung:d.bestaetigung})));d=await r.json();}
  return d;}
+const WB_QUELLE={ha:'Home Assistant',tuya:'Tuya (lokal)'};
 async function wbLaden(){const box=el('wb_box');
  try{const d=await (await fetch('/wallbox/status',{cache:'no-store'})).json();
   const lp=d&&d.ok&&d.quelle&&d.ladepunkte&&d.ladepunkte[0];LB=lp||null;
@@ -408,6 +411,10 @@ async function load(){
  try{const s=await (await fetch('/data',{cache:'no-store'})).json();zeichne(s);auto3d(s);
   if(s.abfrage&&s.abfrage.takt_s)t=Math.min(60000,Math.max(5000,s.abfrage.takt_s*500));}catch(e){}
  try{const w=await (await fetch('/wallbox/status',{cache:'no-store'})).json();const lp=w&&w.ok&&w.quelle&&w.ladepunkte&&w.ladepunkte[0];
+  const wt=el('t_wallbox');if(lp){wt.style.display='';const kw0=lp.leistungW!=null?z(Math.round(lp.leistungW/100)/10,1)+' kW':'–';
+   el('t_wallbox_v').textContent=lp.erreichbar===false?__T('nicht erreichbar'):lp.laedt?__T('lädt')+' · '+kw0:__T('bereit');el('t_wallbox_v').className='v '+(lp.laedt?'ok':lp.erreichbar===false?'warn':'');
+   el('t_wallbox_m').textContent=[lp.titel||'Wallbox',lp.stromA!=null?lp.stromA+' A':'',__T('Quelle')+': '+(WB_QUELLE[w.quelle]||w.quelle||'–')].filter(Boolean).join(' · ');}
+  else if(w&&w.quelle&&w.ok===false){wt.style.display='';el('t_wallbox_v').textContent=__T('nicht erreichbar');el('t_wallbox_v').className='v warn';el('t_wallbox_m').textContent=__T('Quelle')+': '+(WB_QUELLE[w.quelle]||w.quelle);}else wt.style.display='none';
   if(lp&&S){const k=lp.leistungW!=null?z(Math.round(lp.leistungW/100)/10,1)+' kW':'–';
    const zl=LADEN_ZEILEN.map(esc);
    if(S.charging==='ON'&&typeof lp.zielSoc==='number')zl.push(esc(__T('Ziel'))+' '+lp.zielSoc+' %');
@@ -454,6 +461,10 @@ def uebernommen(cockpit):
     return css, rh, rj, ch, cj
 
 
+WALLBOX_TILE = ("<section class='card t' id='t_wallbox' style='display:none'><div class=kk onclick=\"kachelUm('laden')\">"
+                "<h2><svg><use href='#i-flash'/></svg>Wallbox<span class=chev>Bedienen</span></h2><div class=v id=t_wallbox_v>–</div><div class=muted id=t_wallbox_m></div></div></section>")
+
+
 def seite(karten_stil="", panoptes_web="", cockpit=""):
     css, rh, rj, ch, cj = uebernommen(cockpit)
     route_auf = rh or ROUTE_FALLBACK
@@ -463,7 +474,7 @@ def seite(karten_stil="", panoptes_web="", cockpit=""):
     laden_tile = _tile("laden", "flash", "Laden", "t_laden_v", "t_laden_m", LADEN_AUF)
     klima_tile = _tile("klima", "snow", "Klima", "t_klima_v", "t_klima_m", KLIMA_AUF)
     camp_tile = _tile("camping", "tent", "Camping", "t_camping_v", "t_camping_m", camp_auf)
-    html = (HEAD.replace("@@CSS@@", CSS.replace("@@ALT_CSS@@", css)) + BODY_TEIL1 + route_tile + laden_tile + klima_tile + camp_tile + BODY_TEIL3
+    html = (HEAD.replace("@@CSS@@", CSS.replace("@@ALT_CSS@@", css)) + BODY_TEIL1 + route_tile + laden_tile + WALLBOX_TILE + klima_tile + camp_tile + BODY_TEIL3
             + JS.replace("// @@ROUTE_JS@@", rj).replace("// @@CAMPING_JS@@", cj)) + "</html>"
     html = html.replace("@@ROUTE_HTML@@", "").replace("@@CAMPING_HTML@@", "")
     return html.replace("__KARTENSTIL__", karten_stil).replace("__PANOPTES_WEB__", panoptes_web.rstrip("/"))
