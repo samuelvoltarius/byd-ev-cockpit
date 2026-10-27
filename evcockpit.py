@@ -5901,7 +5901,7 @@ class H(BaseHTTPRequestHandler):
         elif u.path == "/panoptes/handy/pruefen":
             try:
                 import panoptes_source as ps
-                v = ps.handy_vorhanden(_CFG["panoptes_url"]) if _panoptes_gekoppelt() else None
+                v = ps.handy_vorhanden(_CFG["panoptes_url"], _CFG.get("panoptes_jwt", "")) if _panoptes_gekoppelt() else None
                 self._send(json.dumps({"ok": True, "vorhanden": v}), "application/json")
             except Exception:
                 self._send(json.dumps({"ok": True, "vorhanden": None}), "application/json")

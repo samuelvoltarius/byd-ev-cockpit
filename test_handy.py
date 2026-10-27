@@ -63,10 +63,13 @@ if __name__ == "__main__":
 
 class Pruefen(unittest.TestCase):
     def test_funktion_statt_version(self):
-        self.assertIs(ps.handy_vorhanden("http://h", roh=lambda u, d=None, timeout=0: (404, {})), False)
-        for c in (401, 403, 200):
-            self.assertIs(ps.handy_vorhanden("http://h", roh=lambda u, d=None, timeout=0, c=c: (c, {})), True)
+        # 0.1.17: kein JSON ("Nicht fuer gekoppelte Geraete" kommt als Text -> _roh liefert {}) bei 401/403/404 -> alt
+        for c in (401, 403, 404):
+            self.assertIs(ps.handy_vorhanden("http://h", "J", roh=lambda u, d=None, timeout=0, jwt="", c=c: (c, {})), False)
+        # neu: JSON mit Grund (z. B. nur_handy) -> Schnittstelle da
+        self.assertIs(ps.handy_vorhanden("http://h", "J", roh=lambda u, d=None, timeout=0, jwt="": (403, {"ok": False, "grund": "nur_handy"})), True)
+        self.assertIs(ps.handy_vorhanden("http://h", "J", roh=lambda u, d=None, timeout=0, jwt="": (405, {})), True)
 
         def weg(*a, **k):
             raise OSError("x")
-        self.assertIsNone(ps.handy_vorhanden("http://h", roh=weg))
+        self.assertIsNone(ps.handy_vorhanden("http://h", "J", roh=weg))

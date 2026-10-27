@@ -316,12 +316,13 @@ def neue_pruefzahl():
     return "%04d" % secrets.randbelow(10000)
 
 
-def _roh(url, daten=None, timeout=TIMEOUT):
+def _roh(url, daten=None, timeout=TIMEOUT, jwt=""):
     """(Status, JSON) ohne Ausnahme bei HTTP-Fehlern; Netzfehler werfen weiter."""
+    kopf = {"Accept": "application/json", "User-Agent": "ev-cockpit", "Content-Type": "application/json"}
+    if jwt:
+        kopf["Authorization"] = "Bearer " + jwt
     req = urllib.request.Request(url, data=json.dumps(daten).encode() if daten is not None else None,
-                                 method="POST" if daten is not None else "GET",
-                                 headers={"Accept": "application/json", "User-Agent": "ev-cockpit",
-                                          "Content-Type": "application/json"})
+                                 method="POST" if daten is not None else "GET", headers=kopf)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return r.status, json.loads(r.read().decode("utf-8") or "{}")
@@ -393,16 +394,20 @@ def handy_aktion(url, jwt, aktion, felder=None, http=_http):
     return {"ok": False, "grund": str(d.get("grund") or "unbekannt")[:40]}
 
 
-def handy_vorhanden(url, roh=_roh):
-    """Gibt es /api/handy/v1? Per Funktion statt Versionsnummer: POST /api/handy/v1/status ohne Token.
-    404 -> Panoptes zu alt (False); 401/403/200 -> Schnittstelle da (True); Netzfehler -> None (unbekannt)."""
+def handy_vorhanden(url, jwt, roh=_roh):
+    """Gibt es /api/handy/v1? Per Funktion statt Versionsnummer: POST /api/handy/v1/status mit dem Lese-Zugang.
+    Ohne Token antwortet Panoptes bei JEDEM Pfad 401, und mit Token antwortet 0.1.17 bei jedem unbekannten Pfad
+    403 "Nicht fuer gekoppelte Geraete" (kein JSON) - beides sagt nichts. Vorhanden = JSON-Antwort mit "grund"/"ok"
+    bzw. 200/400/405; Netzfehler -> None (unbekannt)."""
     try:
-        code, _ = roh(url.rstrip("/") + "/api/handy/v1/status", {})
+        code, d = roh(url.rstrip("/") + "/api/handy/v1/status", {}, jwt=jwt)
     except Exception:
         return None
-    if code == 404:
-        return False
-    return True if code in (200, 400, 401, 403, 405) else None
+    if code in (200, 400, 405):
+        return True
+    if code in (401, 403, 404):
+        return bool(isinstance(d, dict) and (d.get("grund") or "ok" in d))
+    return None
 
 
 def aus_kopplungslink(text):
