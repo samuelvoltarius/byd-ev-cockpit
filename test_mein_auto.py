@@ -114,3 +114,10 @@ class Bedienkacheln121(unittest.TestCase):
             ev._CFG.update(gesichert)
             ev._HOLD_UNTIL = 0             # _run_cmd haelt den Poller 45 s an - hier nicht an andere Tests weitergeben
         self.assertEqual([g[1]["tempC"] for g in gesehen], [22, 33, 26])
+
+class WaechterFenster1203(unittest.TestCase):
+    def test_kachel_oeffnet_fenster_im_cockpit(self):
+        h = mein_auto_seite.seite("", "http://100.1.2.3:8180", ev.COCKPIT)
+        self.assertIn('id=t_waech onclick="wmAuf()"', h)
+        self.assertIn("id=wm_strip", h)
+        self.assertNotIn("waechter.html", h)                  # kein Sprung in die Panoptes-Weboberflaeche

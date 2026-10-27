@@ -74,6 +74,21 @@ input[type=range]{width:100%;accent-color:#B5F23D;padding:0}
 .skala{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}.seg button{padding:8px 14px;font:600 13px 'Manrope',system-ui,sans-serif;border:0;border-right:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}.seg button:last-child{border:0}.seg button[disabled]{opacity:.45;cursor:not-allowed}
 .wimg{display:none;position:relative;margin-top:8px;height:96px;border-radius:10px;overflow:hidden;background:#0d2c40}.wimg img{width:100%;height:100%;object-fit:cover;display:block}.wimg span{position:absolute;left:6px;bottom:5px;font-size:11px;font-weight:600;padding:1px 7px;border-radius:99px;background:rgba(5,16,28,.72);color:var(--ink)}
+.wm{position:fixed;inset:0;z-index:50;background:rgba(3,10,18,.97);overflow:auto;display:none}.wm.on{display:block}
+.wmbox{max-width:980px;margin:0 auto;padding:16px 18px 40px}
+.wmtop{display:flex;align-items:center;gap:12px;margin-bottom:12px}.wmtop b{font:700 24px 'Sora',system-ui,sans-serif;flex:1}
+.wmbig{border:1px solid var(--line);background:rgba(255,255,255,.1);color:var(--ink);border-radius:16px;padding:14px 20px;font:700 17px 'Manrope',system-ui,sans-serif;cursor:pointer;min-height:56px}
+.wmbig.lime{background:var(--lime);color:var(--lime-ink);border-color:transparent}.wmbig[disabled]{opacity:.35;cursor:default}
+.wmplay{position:relative;background:#06121d;border-radius:20px;overflow:hidden;aspect-ratio:16/9;display:grid;place-items:center}
+.wmplay video,.wmplay img{width:100%;height:100%;object-fit:contain;background:#06121d}
+.wmplay .leer{color:var(--ink-2);font-size:18px;text-align:center;padding:20px}
+.wmplay .gross{position:absolute;inset:0;display:grid;place-items:center;background:rgba(3,10,18,.25);border:0;cursor:pointer;color:#fff;font-size:72px}
+.wminfo{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.wminfo span{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:14px;padding:10px 14px;font:700 17px 'Manrope',system-ui,sans-serif}
+.wmnav{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:10px;margin-bottom:16px}
+.wmstrip{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.wmth{border:2px solid transparent;border-radius:16px;overflow:hidden;background:#0d2c40;cursor:pointer;padding:0;color:var(--ink);text-align:left}
+.wmth.on{border-color:var(--lime)}.wmth img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block}.wmth div{padding:6px 9px;font-weight:700;font-size:14px}.wmth small{display:block;color:var(--ink-2);font-weight:600}
+@media(max-width:620px){.wmnav{grid-template-columns:1fr 1fr}.wmnav .lime{grid-column:1/3;order:-1}}
 .minimap{height:46px;border-radius:10px;overflow:hidden;position:relative;background:linear-gradient(135deg,#0d2c40,#103b48);display:grid;place-items:center;color:var(--ink-3);font-size:12px}
 .car{width:16px;height:16px;border-radius:50%;background:var(--lime);border:3px solid #0A2238;box-shadow:0 0 0 7px rgba(181,242,61,.18)}
 .alle{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border-style:dashed;text-decoration:none;color:var(--ink)}
@@ -183,12 +198,19 @@ CAMPING_AUF = r"""@@CAMPING_HTML@@"""
 BODY_TEIL3 = r"""
   <section class="card t ro" id=t_tuer><div class=kk><h2><svg><use href="#i-door"/></svg>Türen &amp; Fenster</h2><div class=v id=t_tuer_v>–</div><div class=muted id=t_tuer2></div></div></section>
   <section class="card t ro" id=t_reifen><div class=kk><h2><svg><use href="#i-tyre"/></svg>Reifen</h2><div class=v id=t_reifen_v>–</div><div class=muted id=t_reifen2></div></div></section>
-  <section class="card t ro" id=t_waech><div class=kk><h2><svg><use href="#i-eye"/></svg>Wächter<a class=more href="__PANOPTES_WEB__/waechter.html" target="_blank" rel="noopener">Aufnahmen</a></h2><div class=v id=t_waech_v>–</div><div class=muted id=t_waech2></div><a class=wimg id=t_waech_img href="__PANOPTES_WEB__/waechter.html" target="_blank" rel="noopener" title="Aufnahmen"></a></div></section>
+  <section class="card t ro" id=t_waech onclick="wmAuf()" style="cursor:pointer"><div class=kk style="cursor:pointer"><h2><svg><use href="#i-eye"/></svg>Wächter<span class=more>Ansehen ›</span></h2><div class=v id=t_waech_v>–</div><div class=muted id=t_waech2></div><div class=wimg id=t_waech_img title="Ansehen"></div></div></section>
   <section class="card t ro" id=t_pos><div class=kk><h2><svg><use href="#i-pin"/></svg>Standort</h2><div class=minimap id=map>–</div><div class=muted id=t_pos2></div></div></section>
   <section class="card t ro" id=t_warn><div class=kk><h2><svg><use href="#i-warn"/></svg>Warnungen</h2><div class=v id=t_warn_v>–</div><div class=muted id=t_warn2></div></div></section>
   <a class="card t alle" id=alle href="__PANOPTES_WEB__/" target="_blank" rel="noopener"><div class=v>Alle Funktionen ↗</div><div class=muted>Fahrten, Ladeplan, Aufnahmen, Einstellungen – in Panoptes</div></a>
  </div>
 </div>
+<div class=wm id=wm onclick="if(event.target===this)wmZu()"><div class=wmbox>
+ <div class=wmtop><b id=wm_titel>Wächter</b><button type=button class=wmbig onclick="wmZu()">✕ Schließen</button></div>
+ <div class=wmplay id=wm_play></div>
+ <div class=wminfo id=wm_info></div>
+ <div class=wmnav><button type=button class=wmbig id=wm_neu onclick="wmGeh(-1)">◀ Neuer</button><button type=button class="wmbig lime" id=wm_abs onclick="wmAbspielen()">▶ Abspielen</button><button type=button class=wmbig id=wm_alt onclick="wmGeh(1)">Älter ▶</button></div>
+ <div class=wmstrip id=wm_strip></div>
+</div></div>
 """
 
 JS = r"""<script>
@@ -405,6 +427,46 @@ async function routeLaden(){if(Date.now()-ROUTE_T<30000)return;ROUTE_T=Date.now(
 // @@ROUTE_JS@@
 // @@CAMPING_JS@@
 function rKarte(){}   // keine Karte in der Kachel (Ladestopps als Liste)
+// Waechter-Fenster: Ereignis im Cockpit ansehen (nur lesend aus Panoptes; kein Sprung zu einer anderen Seite)
+let WM={l:[],i:0,offen:false,fehler:''};
+const WM_ART={sentry:['👁','Wächter hat etwas bemerkt'],proximity:['🚶','Jemand war nah am Auto']};
+const WM_WER={person:['🧍','Person'],car:['🚗','Auto'],vehicle:['🚗','Fahrzeug'],truck:['🚚','Lkw'],bike:['🚲','Fahrrad'],bicycle:['🚲','Fahrrad'],motorcycle:['🏍','Motorrad'],animal:['🐾','Tier'],dog:['🐕','Hund'],cat:['🐈','Katze']};
+function wmZeit(ts){const d=new Date(ts),h=new Date(),en=window.__LANG__==='en',t0=new Date(h.getFullYear(),h.getMonth(),h.getDate()).getTime();
+ const uhr=d.toLocaleTimeString(en?'en-GB':'de-AT',{hour:'2-digit',minute:'2-digit'});
+ if(ts>=t0)return __T('Heute')+' '+uhr;if(ts>=t0-86400000)return __T('Gestern')+' '+uhr;
+ return d.toLocaleDateString(en?'en-GB':'de-AT',{day:'2-digit',month:'2-digit'})+' '+uhr;}
+function wmOrt(a){const p=a.place;return typeof p==='string'?p:(p&&(p.short||p.medium))||'';}
+function wmWer(a){const s=new Set();(a.actors||[]).forEach(x=>{const k=String((x&&x.class)||x||'').toLowerCase();if(WM_WER[k])s.add(k);});
+ if(!s.size){if(a.personCount>0)s.add('person');if(a.vehicleCount>0)s.add('vehicle');if(a.bikeCount>0)s.add('bike');if(a.animalCount>0)s.add('animal');}
+ return [...s];}
+async function wmLaden(){
+ WM.fehler='';
+ try{const r=await Promise.all(['sentry','proximity'].map(a=>fetch('/waechter/liste?art='+a,{cache:'no-store'}).then(x=>x.json())));
+  let l=[];r.forEach(d=>{if(d&&d.ok)l=l.concat(d.aufnahmen||[]);else if(d&&d.grund==='zu_alt')WM.fehler='Dein Panoptes kann die Aufnahmen noch nicht zeigen (ab Version 0.1.9).';else if(d&&d.error)WM.fehler=d.error;});
+  l.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));WM.l=l.slice(0,12);
+ }catch(e){WM.fehler='Panoptes antwortet gerade nicht.';WM.l=[];}}
+async function wmAuf(){
+ const w=el('wm');w.classList.add('on');WM.offen=true;document.body.style.overflow='hidden';
+ el('wm_titel').textContent=__T('Wächter');el('wm_play').innerHTML='<div class=leer>⏳</div>';
+ await wmLaden();WM.i=0;wmZeige();}
+function wmZu(){el('wm').classList.remove('on');WM.offen=false;document.body.style.overflow='';const v=el('wm_play').querySelector('video');if(v){v.pause();v.removeAttribute('src');v.load();}}
+function wmGeh(d){const n=WM.i+d;if(n<0||n>=WM.l.length)return;WM.i=n;wmZeige();}
+function wmZeige(){
+ const a=WM.l[WM.i],pl=el('wm_play'),inf=el('wm_info');
+ el('wm_neu').disabled=WM.i<=0;el('wm_alt').disabled=WM.i>=WM.l.length-1;el('wm_abs').disabled=!a||!a.available;
+ if(!a){pl.innerHTML='<div class=leer>'+esc(__T(WM.fehler||'Noch kein Ereignis.'))+'</div>';inf.innerHTML='';el('wm_strip').innerHTML='';return;}
+ const art=WM_ART[a.type]||['🎥',a.type||''];
+ pl.innerHTML=a.available?'<img alt="" src="/waechter/bild/'+esc(a.id)+'"><button type=button class=gross onclick="wmAbspielen()" aria-label="'+esc(__T('Abspielen'))+'">▶</button>':'<div class=leer>'+esc(__T('Datenträger fehlt – die Aufnahme ist gerade nicht lesbar.'))+'</div>';
+ const ch=[ '<span>'+art[0]+' '+esc(__T(art[1]))+'</span>','<span>🕒 '+esc(wmZeit(a.timestamp))+' · '+esc(rel(a.timestamp))+'</span>'];
+ wmWer(a).forEach(k=>ch.push('<span>'+WM_WER[k][0]+' '+esc(__T(WM_WER[k][1]))+'</span>'));
+ if(a.cameraId!=null)ch.push('<span>📷 '+esc(__T('Kamera'))+' '+(Number(a.cameraId)+1)+'</span>');
+ const o=wmOrt(a);if(o)ch.push('<span>📍 '+esc(o)+'</span>');
+ inf.innerHTML=ch.join('');
+ el('wm_strip').innerHTML=WM.l.map((x,k)=>'<button type=button class="wmth'+(k===WM.i?' on':'')+'" onclick="WM.i='+k+';wmZeige()">'+(x.available?'<img loading=lazy alt="" src="/waechter/bild/'+esc(x.id)+'">':'')+'<div>'+(WM_ART[x.type]||['🎥'])[0]+' '+esc(wmZeit(x.timestamp))+'<small>'+esc(rel(x.timestamp))+'</small></div></button>').join('');}
+function wmAbspielen(){const a=WM.l[WM.i];if(!a||!a.available)return;const pl=el('wm_play');
+ pl.innerHTML='<video controls autoplay playsinline src="/waechter/clip/'+esc(a.id)+'" poster="/waechter/bild/'+esc(a.id)+'"></video>';
+ const v=pl.querySelector('video');v.onerror=()=>{pl.innerHTML='<div class=leer>'+esc(__T('Das Video lässt sich gerade nicht laden. Bitte später noch einmal.'))+'</div>';};}
+document.addEventListener('keydown',e=>{if(!WM.offen)return;if(e.key==='Escape')wmZu();else if(e.key==='ArrowLeft')wmGeh(-1);else if(e.key==='ArrowRight')wmGeh(1);});
 // Laden: Daten holen
 let TIMER=null;
 async function load(){
