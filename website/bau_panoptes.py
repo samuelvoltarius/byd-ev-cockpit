@@ -396,6 +396,8 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
                  ("Autostart erlauben.", "Damit Panoptes von selbst startet. Der Assistent öffnet die richtige Seite.")],
         "ausfuehrlich": "Ausführliche Anleitung mit allen Befehlen (8 Schritte)",
         "ds_detail": "Genau nachlesen: was geht wohin?",
+        # Bekannter Fehler (Koordination/Deploy 27.10.2026, steht auch in den Release-Notizen v0.1.17/v0.1.18). Entfernen, sobald 0.1.19 live ist.
+        "bekannt": "<b>Bekannter Fehler:</b> „Installieren“ unter System → App-Updates funktioniert in 0.1.17 und 0.1.18 noch nicht (die App findet das Update, bricht die Installation aber ab). Bitte Updates von Hand installieren, wie bei der ersten Installation (<a href=\"#schritte\">Anleitung</a>) – deine Daten bleiben erhalten. Behoben ab 0.1.19.",
         "zus_detail": "Wie Panoptes mit Cockpit, Routenplaner, Karte und Wallbox verbunden ist",
     },
     "en": {
@@ -421,6 +423,7 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
                  ("Allow autostart.", "So Panoptes starts by itself. The assistant opens the right page.")],
         "ausfuehrlich": "Detailed guide with all commands (8 steps)",
         "ds_detail": "In detail: what goes where?",
+        "bekannt": "<b>Known issue:</b> ‘Install’ under System → App updates does not work yet in 0.1.17 and 0.1.18 (the update is found, but installation aborts). Please install updates by hand, like the first installation (<a href=\"#schritte\">guide</a>) – your data is kept. Fixed from 0.1.19.",
         "zus_detail": "How Panoptes connects to the cockpit, route planner, map and wall box",
     },
 }
@@ -765,6 +768,8 @@ def seite(t):
     # Download
     o.append('  <span id="download"></span><h2 id="%s">%s<span class="bald">%s</span></h2>' % (t["dl_anker"], t["h_dl"], t["dl_bald"]))
     o.append('  <div class="card"><p style="margin-top:0">%s</p>' % t["dl_text"])
+    if t.get("bekannt"):
+        o.append('    <div class="bd-hinweis warn" id="bekannter-fehler"><p>%s</p></div>' % t["bekannt"])
     o.append('    <div class="bd-knoepfe"><a class="bd-knopf gross haupt" href="%s" data-ver-href="panoptes.apk_url" data-umami-event="download" data-umami-event-quelle="apk">%s</a>'
              '<a class="bd-knopf leer" href="%s" data-ver-href="panoptes.release_url">%s</a><a class="bd-knopf leer" href="%s">%s</a></div>'
              % (DL_APK, t["dl_knopf"], DL_RELEASE, t["dl_release"], DL_QUELLE, t["dl_quelle"]))
