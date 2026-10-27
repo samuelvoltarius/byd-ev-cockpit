@@ -148,7 +148,7 @@ T = {
         "hero_dl": "⬇️ Panoptes {V} herunterladen", "hero_anl": "Anleitung", "kopf_dl": "⬇️ Download",
         "dl_release": "Release auf GitHub", "dl_quelle": "Quellcode",
         "dl_pruef": "Prüfsumme (SHA-256)", "dl_zert": "Signaturzertifikat (SHA-256)",
-        "dl_update": "<b>Wichtig zu Updates:</b> Ab 0.1.15 kommen Updates automatisch aus dem öffentlichen GitHub-Repository (System → App-Updates, nur wenn das Auto steht). Ab 0.1.15 sucht Panoptes selbst nach Updates. Mit 0.1.17 und 0.1.18 bitte einmal von Hand installieren (siehe Hinweis oben). <b>Wer noch 0.1.14.1 hat, installiert {V} einmal von Hand</b>, genau wie beim ersten Mal (Schritt 4); deine Einstellungen und Daten bleiben dabei erhalten. Der Grund: Ab 0.1.15 ist Panoptes mit einem neuen, dauerhaften Schlüssel signiert (mit Herkunftsnachweis vom bisherigen), den 0.1.14.1 von selbst noch nicht annimmt.",
+        "dl_update": "Ab 0.1.19.1 kommen Updates über System → App-Updates. Wer 0.1.17 oder 0.1.18 hat, installiert die aktuelle Version einmal von Hand (<a href=\"#schritte\">Anleitung</a>); die Daten bleiben erhalten.",
         "h_anl": "Schritt für Schritt",
         "anl": [
             ("Vorher lesen.", "Panoptes ist für dein eigenes Auto gedacht, privat und auf eigenes Risiko. Lies die <a href=\"hinweise.html\">Hinweise</a>. Für die Installation schaltest du am Auto Entwickler-Funktionen ein. Ob das für deine Garantie eine Rolle spielt, klärst du im Zweifel mit deinem Händler."),
@@ -325,7 +325,7 @@ T = {
         "hero_dl": "⬇️ Download Panoptes {V}", "hero_anl": "Guide", "kopf_dl": "⬇️ Download",
         "dl_release": "Release on GitHub", "dl_quelle": "Source code",
         "dl_pruef": "Checksum (SHA-256)", "dl_zert": "Signing certificate (SHA-256)",
-        "dl_update": "<b>Important about updates:</b> From 0.1.15 on, updates come automatically from the public GitHub repository (System → App updates, only while the car is parked). From 0.1.15 on, Panoptes checks for updates itself. With 0.1.17 and 0.1.18 please install once by hand (see notice above). <b>If you still have 0.1.14.1, install {V} once by hand</b>, just like the first time (step 4); your settings and data are kept. The reason: from 0.1.15 on Panoptes is signed with a new, permanent key (with proof of origin from the old one), which 0.1.14.1 does not accept by itself yet.",
+        "dl_update": "From 0.1.19.1 on, updates arrive via System → App updates. If you have 0.1.17 or 0.1.18, install the current version once by hand (<a href=\"#schritte\">guide</a>); your data is kept.",
         "h_anl": "Step by step",
         "anl": [
             ("Read first.", "Panoptes is meant for your own car, for private use and at your own risk. Read the <a href=\"hinweise.html\">notes</a>. To install it you turn on developer functions in the car. If in doubt whether this matters for your warranty, ask your dealer."),
@@ -405,8 +405,6 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
             ("go-e Cloud (go-e GmbH, *.api.v3.go-e.io)", "Status und Befehle deiner go-e-Wallbox (laden ja/nein, Ladestrom, Leistung) und dein API-Token. Der Token wird einmal per Handy direkt an dein Auto übergeben und liegt dort verschlüsselt; er geht nie über Panoptes-Server.", "nur wenn du bei der Wallbox „go-e Charger (Cloud)“ wählst und ausdrücklich einwilligst (Standard aus). Einwilligung ausschalten oder Gerät entfernen beendet es sofort."),
             ("Wallbox-Konto (Wallbox Chargers S.L., api.wall-box.com / user-api.wall-box.com)", "Anmeldung mit deinem Wallbox-Konto (E-Mail und Passwort, verschlüsselt im Auto gespeichert), Status und Befehle deines Ladegeräts. Inoffizielle Schnittstelle (wie bei Home Assistant).", "nur wenn du „Wallbox Pulsar / Commander (Cloud)“ wählst und ausdrücklich einwilligst (Standard aus). Einwilligung ausschalten oder Gerät entfernen beendet es sofort."),
         ],
-        # Bekannter Fehler (Koordination/Deploy 27.10.2026). Bleibt, bis ein Updater-Test am Auto gruen ist (Koordination).
-        "bekannt": "<b>Bekannter Fehler:</b> Wer 0.1.17 oder 0.1.18 hat: bitte 0.1.19.1 einmal von Hand installieren (<a href=\"#schritte\">Anleitung</a>). In diesen Versionen funktioniert „Installieren“ unter System → App-Updates nicht. Deine Daten bleiben erhalten.",
         "zus_detail": "Wie Panoptes mit Cockpit, Routenplaner, Karte und Wallbox verbunden ist",
     },
     "en": {
@@ -439,7 +437,6 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
             ("go-e Cloud (go-e GmbH, *.api.v3.go-e.io)", "Status and commands of your go-e wallbox (charging on/off, charging current, power) and your API token. The token is handed to your car once via your phone and stored there encrypted; it never passes through Panoptes servers.", "only if you choose “go-e Charger (Cloud)” for your wallbox and explicitly consent (off by default). Turning consent off or removing the device stops it immediately."),
             ("Wallbox account (Wallbox Chargers S.L., api.wall-box.com / user-api.wall-box.com)", "Login with your Wallbox account (e-mail and password, stored encrypted in the car), status and commands of your charger. Unofficial interface (as used by Home Assistant).", "only if you choose “Wallbox Pulsar / Commander (Cloud)” and explicitly consent (off by default). Turning consent off or removing the device stops it immediately."),
         ],
-        "bekannt": "<b>Known issue:</b> If you have 0.1.17 or 0.1.18: please install 0.1.19.1 once by hand (<a href=\"#schritte\">guide</a>). In these versions ‘Install’ under System → App updates does not work. Your data is kept.",
         "zus_detail": "How Panoptes connects to the cockpit, route planner, map and wall box",
     },
 }
