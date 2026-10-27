@@ -396,6 +396,11 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
                  ("Autostart erlauben.", "Damit Panoptes von selbst startet. Der Assistent öffnet die richtige Seite.")],
         "ausfuehrlich": "Ausführliche Anleitung mit allen Befehlen (8 Schritte)",
         "ds_detail": "Genau nachlesen: was geht wohin?",
+        # Datenschutz-Zeilen ab 0.1.20 (Kern 12, 27.10.2026): erscheinen automatisch, sobald versionen.json >= 0.1.20 meldet
+        "ds_ab_0120": [
+            ("go-e Cloud (go-e GmbH, *.api.v3.go-e.io)", "Status und Befehle deiner go-e-Wallbox (laden ja/nein, Ladestrom, Leistung) und dein API-Token. Der Token wird einmal per Handy direkt an dein Auto übergeben und liegt dort verschlüsselt; er geht nie über Panoptes-Server.", "nur wenn du bei der Wallbox „go-e Charger (Cloud)“ wählst und ausdrücklich einwilligst (Standard aus). Einwilligung ausschalten oder Gerät entfernen beendet es sofort."),
+            ("Wallbox-Konto (Wallbox Chargers S.L., api.wall-box.com / user-api.wall-box.com)", "Anmeldung mit deinem Wallbox-Konto (E-Mail und Passwort, verschlüsselt im Auto gespeichert), Status und Befehle deines Ladegeräts. Inoffizielle Schnittstelle (wie bei Home Assistant).", "nur wenn du „Wallbox Pulsar / Commander (Cloud)“ wählst und ausdrücklich einwilligst (Standard aus). Einwilligung ausschalten oder Gerät entfernen beendet es sofort."),
+        ],
         # Bekannter Fehler (Koordination/Deploy 27.10.2026). Bleibt, bis ein Updater-Test am Auto gruen ist (Koordination).
         "bekannt": "<b>Bekannter Fehler:</b> Wer 0.1.17 oder 0.1.18 hat: bitte 0.1.19.1 einmal von Hand installieren (<a href=\"#schritte\">Anleitung</a>). In diesen Versionen funktioniert „Installieren“ unter System → App-Updates nicht. Deine Daten bleiben erhalten.",
         "zus_detail": "Wie Panoptes mit Cockpit, Routenplaner, Karte und Wallbox verbunden ist",
@@ -423,6 +428,10 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
                  ("Allow autostart.", "So Panoptes starts by itself. The assistant opens the right page.")],
         "ausfuehrlich": "Detailed guide with all commands (8 steps)",
         "ds_detail": "In detail: what goes where?",
+        "ds_ab_0120": [
+            ("go-e Cloud (go-e GmbH, *.api.v3.go-e.io)", "Status and commands of your go-e wallbox (charging on/off, charging current, power) and your API token. The token is handed to your car once via your phone and stored there encrypted; it never passes through Panoptes servers.", "only if you choose “go-e Charger (Cloud)” for your wallbox and explicitly consent (off by default). Turning consent off or removing the device stops it immediately."),
+            ("Wallbox account (Wallbox Chargers S.L., api.wall-box.com / user-api.wall-box.com)", "Login with your Wallbox account (e-mail and password, stored encrypted in the car), status and commands of your charger. Unofficial interface (as used by Home Assistant).", "only if you choose “Wallbox Pulsar / Commander (Cloud)” and explicitly consent (off by default). Turning consent off or removing the device stops it immediately."),
+        ],
         "bekannt": "<b>Known issue:</b> If you have 0.1.17 or 0.1.18: please install 0.1.19.1 once by hand (<a href=\"#schritte\">guide</a>). In these versions ‘Install’ under System → App updates does not work. Your data is kept.",
         "zus_detail": "How Panoptes connects to the cockpit, route planner, map and wall box",
     },
@@ -792,7 +801,10 @@ def seite(t):
     o.append('  <h2 id="datenschutz">%s</h2><p class="lead">%s</p>' % (t["h_ds"], t["ds_lead"]))
     o.append('  <details class="bd-auf"><summary>%s</summary><div class="tab"><table><tr><th>%s</th><th>%s</th><th>%s</th></tr>'
              % ((t["ds_detail"],) + t["ds_kopf"]))
-    for wo, was, wann in t["ds"]:
+    zeilen = list(t["ds"])
+    if tuple(int(x) for x in VERSION.split(".")[:3]) >= (0, 1, 20):   # Zeilen ab 0.1.20 vor „Weitere Dienste“
+        zeilen[-1:-1] = t.get("ds_ab_0120", [])
+    for wo, was, wann in zeilen:
         o.append("    <tr><td><b>%s</b></td><td>%s</td><td>%s</td></tr>" % (html.escape(wo), html.escape(was), wann))
     o.append("  </table></div></details>")
     o.append('  <details class="bd-auf" id="zusammenhang"><summary>%s</summary><p class="lead">%s</p>' % (t["zus_detail"], t["zus_lead"]))
