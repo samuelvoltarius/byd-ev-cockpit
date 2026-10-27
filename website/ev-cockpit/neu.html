@@ -44,6 +44,15 @@ footer a{color:var(--mut)}
   <p class=lead>Alle Änderungen am EV-Cockpit — das Neueste zuerst.</p>
 
     <section class="ver">
+      <div class="verhead"><h2>Version 1.18.1</h2><span class="datum">27.10.2026</span></div>
+      <p class="titel">Ehrlicher bei alten Werten</p>
+      <ul>
+        <li><b>🕒 „Stand 10:29“</b> — sind die Werte älter als 15 Minuten (und älter als das Doppelte deines eingestellten Takts), steht oben ein deutlicher Hinweis mit der Uhrzeit, und die Zahlen werden abgeblendet. Im Kopf steht bei älteren Werten zusätzlich „Stand <Uhrzeit>“. Bei „nur manuell“ ist ein höheres Alter normal und löst keine Warnung aus.</li>
+        <li><b>🔧 Ohne BYD-Cloud-Paket</b> — wer nur Panoptes oder Home Assistant nutzt, braucht das Programmpaket pybyd nicht mehr. Bisher beendete sich der Abruf, bevor Panoptes überhaupt gefragt wurde, wenn es fehlte.</li>
+      </ul>
+    </section>
+
+    <section class="ver">
       <div class="verhead"><h2>Version 1.18</h2><span class="datum">27.10.2026</span></div>
       <p class="titel">Camping im Cockpit</p>
       <ul>
