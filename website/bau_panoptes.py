@@ -148,7 +148,7 @@ T = {
         "hero_dl": "⬇️ Panoptes {V} herunterladen", "hero_anl": "Anleitung", "kopf_dl": "⬇️ Download",
         "dl_release": "Release auf GitHub", "dl_quelle": "Quellcode",
         "dl_pruef": "Prüfsumme (SHA-256)", "dl_zert": "Signaturzertifikat (SHA-256)",
-        "dl_update": "<b>Wichtig zu Updates:</b> Ab 0.1.15 kommen Updates automatisch aus dem öffentlichen GitHub-Repository (System → App-Updates, nur wenn das Auto steht). Wer 0.1.15 oder neuer hat, bekommt {V} automatisch. <b>Wer noch 0.1.14.1 hat, installiert {V} einmal von Hand</b>, genau wie beim ersten Mal (Schritt 4); deine Einstellungen und Daten bleiben dabei erhalten. Der Grund: Ab 0.1.15 ist Panoptes mit einem neuen, dauerhaften Schlüssel signiert (mit Herkunftsnachweis vom bisherigen), den 0.1.14.1 von selbst noch nicht annimmt.",
+        "dl_update": "<b>Wichtig zu Updates:</b> Ab 0.1.15 kommen Updates automatisch aus dem öffentlichen GitHub-Repository (System → App-Updates, nur wenn das Auto steht). Ab 0.1.15 sucht Panoptes selbst nach Updates. Mit 0.1.17 und 0.1.18 bitte einmal von Hand installieren (siehe Hinweis oben). <b>Wer noch 0.1.14.1 hat, installiert {V} einmal von Hand</b>, genau wie beim ersten Mal (Schritt 4); deine Einstellungen und Daten bleiben dabei erhalten. Der Grund: Ab 0.1.15 ist Panoptes mit einem neuen, dauerhaften Schlüssel signiert (mit Herkunftsnachweis vom bisherigen), den 0.1.14.1 von selbst noch nicht annimmt.",
         "h_anl": "Schritt für Schritt",
         "anl": [
             ("Vorher lesen.", "Panoptes ist für dein eigenes Auto gedacht, privat und auf eigenes Risiko. Lies die <a href=\"hinweise.html\">Hinweise</a>. Für die Installation schaltest du am Auto Entwickler-Funktionen ein. Ob das für deine Garantie eine Rolle spielt, klärst du im Zweifel mit deinem Händler."),
@@ -325,7 +325,7 @@ T = {
         "hero_dl": "⬇️ Download Panoptes {V}", "hero_anl": "Guide", "kopf_dl": "⬇️ Download",
         "dl_release": "Release on GitHub", "dl_quelle": "Source code",
         "dl_pruef": "Checksum (SHA-256)", "dl_zert": "Signing certificate (SHA-256)",
-        "dl_update": "<b>Important about updates:</b> From 0.1.15 on, updates come automatically from the public GitHub repository (System → App updates, only while the car is parked). If you have 0.1.15 or newer, you get {V} automatically. <b>If you still have 0.1.14.1, install {V} once by hand</b>, just like the first time (step 4); your settings and data are kept. The reason: from 0.1.15 on Panoptes is signed with a new, permanent key (with proof of origin from the old one), which 0.1.14.1 does not accept by itself yet.",
+        "dl_update": "<b>Important about updates:</b> From 0.1.15 on, updates come automatically from the public GitHub repository (System → App updates, only while the car is parked). From 0.1.15 on, Panoptes checks for updates itself. With 0.1.17 and 0.1.18 please install once by hand (see notice above). <b>If you still have 0.1.14.1, install {V} once by hand</b>, just like the first time (step 4); your settings and data are kept. The reason: from 0.1.15 on Panoptes is signed with a new, permanent key (with proof of origin from the old one), which 0.1.14.1 does not accept by itself yet.",
         "h_anl": "Step by step",
         "anl": [
             ("Read first.", "Panoptes is meant for your own car, for private use and at your own risk. Read the <a href=\"hinweise.html\">notes</a>. To install it you turn on developer functions in the car. If in doubt whether this matters for your warranty, ask your dealer."),
