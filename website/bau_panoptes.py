@@ -114,6 +114,7 @@ T = {
             ("Routenplaner (byd.serveone.at/ev)", "Ladestand, Verbrauchsfaktor, Fahrstatus und deine Ladekarten für die Preisabfrage (der Server speichert sie nicht); die ungefähre Position nur für einen neu vorgeschlagenen Ladestopp oder, wenn du es erlaubst, für Preisvorschläge nach dem Laden. Das Fahrtenbuch nur, wenn du es einschaltest (standardmäßig aus) und auf /ev/ selbst abrufst: Ende-zu-Ende verschlüsselt, der Server bekommt nur verschlüsselte Daten und hält sie laut Routenplaner höchstens 2 Minuten im Arbeitsspeicher.", "nur nach dem Verbinden, jederzeit trennbar"),
             ("Community-Server (byd.serveone.at/community)", "geteilte Regeln, nur wenn du sie teilst", "standardmäßig aus"),
             ("Open-Meteo", "ungefähre Position für das Wetter", "nur mit deiner Einwilligung, standardmäßig aus"),
+            ("Besucherzählung dieser Webseite (eigenes Umami, analytics.serveone.at)", "aufgerufene Seite, Herkunftsseite, Browser, Gerätetyp, Land; Klicks auf den Download-Knopf als Zahl. Keine Cookies, keine IP-Adresse; bei „Do Not Track“ wird nicht gezählt. Das betrifft nur diese Webseite, nicht die App.", "beim Besuch der Webseite; Details in der <a href=\"/datenschutz#zaehlung\">Datenschutzerklärung</a>"),
             ("Weitere Dienste (BYD-Konto, MQTT/Smart Home, ABRP, Stadia Maps, KI-Assistent)", "je nach Dienst; an der Eingabe steht, wohin deine Anfragen gehen", "nur, wenn du sie selbst einrichtest"),
         ],
         "h_stand": "Stand der Entwicklung",
@@ -289,6 +290,7 @@ T = {
             ("Route planner (byd.serveone.at/ev)", "charge level, consumption factor, driving status and your charge cards for the price query (the server does not store them); your approximate position only for a newly suggested charging stop or, if you allow it, for price suggestions after charging. The trip log only if you turn it on (off by default) and fetch it yourself on /ev/: end-to-end encrypted; the server only receives encrypted data and, according to the route planner, keeps it in memory for 2 minutes at most.", "only after linking, can be disconnected at any time"),
             ("Community server (byd.serveone.at/community)", "shared rules, only if you share them", "off by default"),
             ("Open-Meteo", "approximate position for the weather", "only with your consent, off by default"),
+            ("Visitor counting on this website (own Umami, analytics.serveone.at)", "page viewed, referring page, browser, device type, country; clicks on the download button as a number. No cookies, no IP address; nothing is counted with “Do Not Track”. This only concerns this website, not the app.", "when you visit the website; details in the <a href=\"/datenschutz#zaehlung\">privacy policy</a> (German)"),
             ("Other services (BYD account, MQTT/smart home, ABRP, Stadia Maps, AI assistant)", "depends on the service; the input field tells you where your requests go", "only if you set them up yourself"),
         ],
         "h_stand": "Development status",
@@ -552,6 +554,7 @@ def kopf(t, titel, desc, alt_de, alt_en, kanon):
 <meta property="og:title" content="%s">
 <meta property="og:description" content="%s">
 <style>%s</style>
+<script defer src="https://analytics.serveone.at/script.js" data-website-id="a7e62dac-cb0b-4ff5-a0cd-4a9b0778cf3b" data-domains="byd.serveone.at" data-do-not-track="true" data-exclude-search="true"></script>
 </head>
 <body>
 <div class="wrap">
@@ -583,10 +586,10 @@ def seite(t):
     p = t["pfad"]
     kanon = BASIS + ("en/" if t["lang"] == "en" else "")
     o = [kopf(t, t["title"], t["desc"], BASIS, BASIS + "en/", kanon)]
-    o.append('  <div class="top"><a href="/">%s</a><span class="topr"><a class="topdl" href="#%s">%s</a><a href="%s" hreflang="%s">🌐 %s</a></span></div>'
+    o.append('  <div class="top"><a href="/">%s</a><span class="topr"><a class="topdl" href="#%s" data-umami-event="download-weiter" data-umami-event-quelle="kopf">%s</a><a href="%s" hreflang="%s">🌐 %s</a></span></div>'
              % (t["zurueck"], t["dl_anker"], t["kopf_dl"], t["andere"], "en" if t["lang"] == "de" else "de", t["andere_name"]))
     o.append('  <header><div class="eyebrow">%s</div><h1>%s — <span class="grad">%s</span></h1><p class="sub">%s</p>'
-             '<div class="btns herobtns"><a class="btn dl gross" href="#%s">%s</a><a class="btn gross" href="#%s">%s</a></div></header>'
+             '<div class="btns herobtns"><a class="btn dl gross" href="#%s" data-umami-event="download-weiter" data-umami-event-quelle="hero">%s</a><a class="btn gross" href="#%s">%s</a></div></header>'
              % (t["eyebrow"], t["h1a"], t["h1b"], t["sub"], t["dl_anker"], t["hero_dl"], t["dl_anker"], t["hero_anl"]))
     o.append("  " + reihe([("start", "pc", t["hero_alt_pc"]), ("start", "handy", t["hero_alt_handy"])], p, sofort=True))
     o.append('  <div class="note">%s</div>' % t["wichtig"])
@@ -623,7 +626,7 @@ def seite(t):
     o.append('  <h2 id="datenschutz">%s</h2><p class="lead">%s</p>' % (t["h_ds"], t["ds_lead"]))
     o.append('  <div class="tab"><table><tr><th>%s</th><th>%s</th><th>%s</th></tr>' % t["ds_kopf"])
     for wo, was, wann in t["ds"]:
-        o.append("    <tr><td><b>%s</b></td><td>%s</td><td>%s</td></tr>" % (html.escape(wo), html.escape(was), html.escape(wann)))
+        o.append("    <tr><td><b>%s</b></td><td>%s</td><td>%s</td></tr>" % (html.escape(wo), html.escape(was), wann))
     o.append("  </table></div>")
     # Stand der Entwicklung
     o.append('  <h2 id="stand">%s</h2><p class="lead">%s</p>' % (t["h_stand"], t["stand_lead"]))
@@ -636,7 +639,7 @@ def seite(t):
              % (t["h_brauch"], "".join("<li>%s</li>" % x for x in t["brauch"])))
     o.append('  <span id="download"></span><h2 id="%s">%s<span class="bald">%s</span></h2>' % (t["dl_anker"], t["h_dl"], t["dl_bald"]))
     o.append('  <div class="card"><p style="margin-top:0">%s</p>' % t["dl_text"])
-    o.append('    <div class="btns"><a class="btn dl" href="%s">%s</a><a class="btn" href="%s">%s</a><a class="btn" href="%s">%s</a></div>'
+    o.append('    <div class="btns"><a class="btn dl" href="%s" data-umami-event="download" data-umami-event-quelle="apk">%s</a><a class="btn" href="%s">%s</a><a class="btn" href="%s">%s</a></div>'
              % (DL_APK, t["dl_knopf"], DL_RELEASE, t["dl_release"], DL_QUELLE, t["dl_quelle"]))
     o.append('    <p class="hash">%s: <code>%s</code><br>%s: <code>%s</code></p>' % (t["dl_pruef"], DL_SHA, t["dl_zert"], DL_CERT))
     o.append('    <div class="note" style="margin-bottom:0">%s</div></div>' % t["dl_update"])
