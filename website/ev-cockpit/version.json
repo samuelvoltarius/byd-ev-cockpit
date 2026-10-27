@@ -1,5 +1,5 @@
 {
-  "version": "1.18.1",
-  "was_neu": "Hinweis „Stand <Uhrzeit>“ bei veralteten Werten; läuft auch ohne das Cloud-Paket pybyd",
+  "version": "1.18.2",
+  "was_neu": "Wallbox-Brücke in Home Assistant wird automatisch erkannt; Ladestrom in Stufen (Auswahlliste)",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }

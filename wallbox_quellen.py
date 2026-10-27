@@ -22,11 +22,11 @@ ENTITAET = re.compile(r"[a-z_]{1,32}\.[a-z0-9_]{1,128}\Z")
 UHRZEIT = re.compile(r"([01][0-9]|2[0-3]):[0-5][0-9]\Z")
 DOMAENEN = {"laedt": ("binary_sensor", "sensor", "switch", "input_boolean"), "leistung": ("sensor",),
             "modus": ("select", "input_select", "switch"), "ziel": ("number", "input_number"),
-            "strom": ("number", "input_number"), "startzeit": ("time", "input_datetime"),
+            "strom": ("number", "input_number", "select"), "startzeit": ("time", "input_datetime"),
             "start": ("button",), "stop": ("button",)}
 # Nie als Wallbox-Steuerung nehmen (Sicherheits-/Geraete-Einstellungen) und nie Fahrzeug-Entitaeten als Wallbox anzeigen.
 NIE_STEUERN = re.compile(r"unearth|earth|erdung|lock|sperre|child|kinder|led|_led|light|licht|display|sound|beep|phase|rcd|"
-                         r"reset|restart|neu_starten|reboot|update|firmware|maximum_current|max_current|max_strom|calibrat")
+                         r"reset|restart|neu_starten|reboot|update|firmware|erlaubt|freigabe|maximum_current|max_current|max_strom|calibrat")
 FAHRZEUG = re.compile(r"(^|[._ ])(byd|overdrive|surfmate|panoptes|vehicle|fahrzeug)")
 STEUER_ROLLEN = ("modus", "ziel", "strom", "start", "stop")
 TABELLE = Path(__file__).with_name("static") / "wallbox-tuya-modelle.json"
@@ -200,7 +200,10 @@ def ha_ladepunkt(z, e):
     o.update(zielSoc=_zahl(zi["state"]) if _gueltig(zi) else None, zielMin=zmin, zielMax=zmax)
     st = e.get("strom")
     strom_f = None
-    if _gueltig(st):
+    if _gueltig(st) and str(st.get("entity_id") or (z.get("strom") or "")).startswith("select."):
+        stufen = _stufen((st.get("attributes") or {}).get("options"))
+        strom_f = {"min": stufen[0], "max": stufen[-1], "stufen": stufen} if stufen else None
+    elif _gueltig(st):
         a = st.get("attributes") or {}
         smin, smax = max(1, int(round(_zahl(a.get("min")) or 6))), min(80, int(round(_zahl(a.get("max")) or 16)))
         if smin <= smax:
@@ -246,7 +249,7 @@ def ha_vorschlag(alle):
             rolle, p = "leistung", p + (1 if klasse == "power" else 0)
         elif dom == "sensor" and st.startswith("charger_"):
             rolle, p = "laedt", p + 3
-        elif dom == "binary_sensor" and (klasse == "battery_charging" or wort):
+        elif dom == "binary_sensor" and (klasse == "battery_charging" or (wort and klasse not in MELDER_KLASSEN)):
             rolle = "laedt"
         elif dom == "sensor" and wort and any(w in name for w in ("status", "state", "zustand")):
             rolle = "laedt"
@@ -263,6 +266,18 @@ def ha_vorschlag(alle):
     return {"ok": True, "kandidaten": kand, "vorschlag": z}
 
 
+MELDER_KLASSEN = ("problem", "plug", "connectivity", "safety", "lock", "door", "running", "tamper", "update")
+
+
+def _stufen(optionen):
+    """Ganzzahlige Stufen eines select (nur wenn ALLE Optionen Zahlen sind) -> sortierte Liste oder []."""
+    try:
+        v = sorted({int(str(o).strip()) for o in (optionen or [])})
+    except ValueError:
+        return []
+    return v if 1 <= len(v) <= 20 and v[0] >= 1 and v[-1] <= 80 else []
+
+
 def _rolle(s, a, eid, name):
     """Welche Rolle passt zu einer Entitaet (generisch, kein Code je Modell) -> (rolle, punkte) oder (None, 0)."""
     if FAHRZEUG.search(eid) or FAHRZEUG.search(name):
@@ -277,6 +292,8 @@ def _rolle(s, a, eid, name):
         if re.search(r"charge|start|laden", name):
             return "start", wort + 1
         return None, 0
+    if dom == "select" and wort and re.search(r"strom|current|ampere", name) and _stufen(a.get("options")):
+        return "strom", wort + 2                   # Stufen-Ladestrom (z. B. 6/8/10/13/16 A)
     if dom == "sensor" and wort and "charging" in [str(x).lower() for x in (a.get("options") or [])]:
         return "laedt", wort + 3
     if dom == "switch" and wort:
@@ -291,7 +308,7 @@ def _rolle(s, a, eid, name):
         return "leistung", wort + (1 if klasse == "power" else 0)
     if dom == "sensor" and st.startswith("charger_"):
         return "laedt", wort + 3
-    if dom == "binary_sensor" and (klasse == "battery_charging" or wort):
+    if dom == "binary_sensor" and (klasse == "battery_charging" or (wort and klasse not in MELDER_KLASSEN and not NIE_STEUERN.search(eid))):
         return "laedt", wort
     if dom == "sensor" and wort and any(w in name for w in ("status", "state", "zustand")):
         return "laedt", wort
@@ -328,7 +345,8 @@ def ha_geraete(alle, geraet=None):
         if not rolle:
             continue
         did, dname = (geraet or {}).get(eid) or ("", "")
-        key = did or "obj:" + "_".join(eid.split(".")[1].split("_")[:2])
+        teile = eid.split(".")[1].split("_")
+        key = did or "obj:" + "_".join(teile[:1] if teile[0] in ("wallbox", "evse", "wb") else teile[:2])
         g = gruppen.setdefault(key, {"name": dname, "rollen": {}})
         if rolle not in g["rollen"] or p > g["rollen"][rolle][1]:
             g["rollen"][rolle] = (eid, p)
@@ -337,7 +355,7 @@ def ha_geraete(alle, geraet=None):
         r = g["rollen"]
         if not (("modus" in r or "strom" in r or ("start" in r and "stop" in r)) and ("leistung" in r or "laedt" in r)):
             continue
-        name = g["name"] or str((states[(r.get("leistung") or r.get("modus") or next(iter(r.values())))[0]].get("attributes") or {}).get("friendly_name") or key.split(":")[-1])
+        name = g["name"] or (key.split(":")[-1].replace("_", " ").title() if key.startswith("obj:wallbox") else "") or str((states[(r.get("leistung") or r.get("modus") or next(iter(r.values())))[0]].get("attributes") or {}).get("friendly_name") or key.split(":")[-1])
         z = {"schluessel": "wallbox", "titel": name.strip()[:40] or "Wallbox", "modusOptionen": {}}
         for rolle in DOMAENEN:
             z[rolle] = r[rolle][0] if rolle in r else None
@@ -452,7 +470,12 @@ class HaQuelle:
             if not f["strom"]:
                 raise WallboxFehler("nicht_unterstuetzt")
             soll = ganzzahl(wert, f["strom"]["min"], f["strom"]["max"])
-            self._dienst(z["strom"].split(".")[0], "set_value", {"entity_id": z["strom"], "value": soll})
+            if z["strom"].startswith("select."):
+                if soll not in f["strom"].get("stufen", []):
+                    raise WallboxFehler("wert_ungueltig")
+                self._dienst("select", "select_option", {"entity_id": z["strom"], "option": str(soll)})
+            else:
+                self._dienst(z["strom"].split(".")[0], "set_value", {"entity_id": z["strom"], "value": soll})
             feld = "stromA"
         else:
             raise WallboxFehler("nicht_unterstuetzt")
@@ -671,7 +694,10 @@ def pruefe_wert(lp, aktion, wert):
         s = f.get("strom")
         if not s:
             raise WallboxFehler("nicht_unterstuetzt")
-        return ganzzahl(wert, s["min"], s["max"])
+        v = ganzzahl(wert, s["min"], s["max"])
+        if s.get("stufen") and v not in s["stufen"]:
+            raise WallboxFehler("wert_ungueltig")
+        return v
     if aktion == "ziel":
         if not f.get("ziel"):
             raise WallboxFehler("nicht_unterstuetzt")

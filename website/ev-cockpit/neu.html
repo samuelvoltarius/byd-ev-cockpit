@@ -44,6 +44,16 @@ footer a{color:var(--mut)}
   <p class=lead>Alle Änderungen am EV-Cockpit — das Neueste zuerst.</p>
 
     <section class="ver">
+      <div class="verhead"><h2>Version 1.18.2</h2><span class="datum">27.10.2026</span></div>
+      <p class="titel">Wallbox-Brücke wird erkannt</p>
+      <ul>
+        <li><b>🔌 Automatisch erkannt</b> — die Wallbox-Brücke in Home Assistant (Status, Leistung, Laden starten/stoppen, Ladestrom) wird bei „Wallbox automatisch einrichten“ von selbst gefunden und als ein Gerät „Wallbox“ vorgeschlagen.</li>
+        <li><b>🛡️ Sicherer</b> — der Freigabe-Schalter der Brücke („Steuern erlaubt“) und Melder wie „Fehler“ oder „Erdungsprüfung“ werden nie als Steuerung oder als „lädt“ verwendet.</li>
+        <li><b>🔢 Ladestrom in Stufen</b> — Auswahllisten mit festen Stufen (z. B. 6, 8, 10, 13, 16 A) werden unterstützt; andere Werte werden vor dem Senden abgelehnt.</li>
+      </ul>
+    </section>
+
+    <section class="ver">
       <div class="verhead"><h2>Version 1.18.1</h2><span class="datum">27.10.2026</span></div>
       <p class="titel">Ehrlicher bei alten Werten</p>
       <ul>
