@@ -340,18 +340,19 @@ async function cmd(a){
  catch(ex){m.textContent='⚠️ '+ex.message;}
  finally{bs.forEach(b=>b.classList.remove('busy'));}
  setTimeout(()=>{MSGHOLD=0;manualRefresh();},2500);}
-function handyKnopf(){const b=el('a_setup');if(!b)return;const alt=HANDY_OK===false;b.disabled=HANDY_OK!==true;b.style.opacity=b.disabled?'.5':'';
+function handyKnopf(){const b=el('a_setup');if(!b)return;const alt=HANDY_OK===false;b.disabled=false;b.style.opacity=alt?'.6':'';
  b.title=alt?__T('Braucht Panoptes ab 0.1.19.1'):__T('Einmal koppeln, damit das Cockpit über Panoptes zusperren und vorheizen darf.');}
 async function handyKoppeln(){
  const m=el('actmsg');MSGHOLD=Date.now()+300000;m.textContent='⏳ …';
  try{const r=await (await fetch('/panoptes/handy/anfrage',{method:'POST',body:'{}'})).json();
-  if(!r.ok){m.textContent='⚠️ '+r.error;return;}
+  if(!r.ok){m.textContent='⚠️ '+__T(r.error||'Panoptes antwortet nicht. Bitte noch einmal versuchen.');return;}
   m.textContent='🔗 '+__T('In Panoptes (Telegram, Web oder Auto-Display) erlauben. Prüfzahl:')+' '+r.pruefzahl;
   for(let i=0;i<65;i++){await new Promise(zz=>setTimeout(zz,2000));
    const s=await (await fetch('/panoptes/handy/status',{method:'POST',body:'{}'})).json();
    if(s.status==='erlaubt'){m.textContent='✅ '+__T('Gekoppelt. Zusperren und Vorheizen gehen jetzt über Panoptes.');MSGHOLD=0;manualRefresh();return;}
-   if(s.status!=='wartet'){m.textContent='⚠️ '+(s.error||'');return;}}
- }catch(e){m.textContent='⚠️ '+e;}}
+   if(s.status!=='wartet'){m.textContent='⚠️ '+__T(s.error||'Die Kopplung hat nicht geklappt. Bitte noch einmal von vorn.');return;}}
+  m.textContent='⚠️ '+__T('Keine Bestätigung in Panoptes. Bitte noch einmal von vorn.');
+ }catch(e){m.textContent='⚠️ '+__T('Das Cockpit erreicht sich selbst nicht – bitte neu starten.')+' ('+e+')';}}
 // Wallbox (Laden-Kachel): Steuern nur mit Freigabe, bei jedem Klick Rueckfrage (serverseitig erzwungen, wie unter Mehr -> Wallbox)
 const WB_FEHLER={nicht_eingerichtet:'Noch nicht eingerichtet',nicht_erreichbar:'Wallbox bzw. Home Assistant nicht erreichbar',anmeldung:'Home Assistant: bitte anmelden (Einstellungen)',
  nicht_unterstuetzt:'Das kann diese Wallbox nicht',wert_ungueltig:'Wert außerhalb des erlaubten Bereichs',nicht_freigegeben:'Steuern ist für diesen Ladepunkt nicht freigegeben',
