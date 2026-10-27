@@ -332,9 +332,12 @@ def _roh(url, daten=None, timeout=TIMEOUT):
             return e.code, {}
 
 
-def kopplung_anfrage(url, geraet, pruefzahl, roh=_roh):
-    """POST /auth/kopplung/anfrage -> {ok, id, gueltigBis} oder {ok:False, grund}."""
-    code, d = roh(url.rstrip("/") + "/auth/kopplung/anfrage", {"geraet": geraet, "pruefzahl": pruefzahl})
+def kopplung_anfrage(url, geraet, pruefzahl, roh=_roh, art=None):
+    """POST /auth/kopplung/anfrage -> {ok, id, gueltigBis} oder {ok:False, grund}. art="handy": Fernbedien-Kopplung (HANDY_API_VERTRAG)."""
+    body = {"geraet": geraet, "pruefzahl": pruefzahl}
+    if art:
+        body["art"] = art
+    code, d = roh(url.rstrip("/") + "/auth/kopplung/anfrage", body)
     if code == 200 and d.get("ok") and re.fullmatch(r"[0-9a-f]{32}", str(d.get("id") or "")):
         return {"ok": True, "id": d["id"], "gueltigBis": d.get("gueltigBis")}
     if code == 404:
@@ -354,6 +357,40 @@ def kopplung_status(url, aid, roh=_roh):
         return {"status": "erlaubt", "jwt": d["jwt"], "kopplungId": str(d.get("kopplungId") or ""),
                 "expiresIn": d.get("expiresIn")}
     return {"status": st if st in ("wartet", "abgeholt", "abgelehnt", "abgelaufen") else "fehler"}
+
+
+HANDY_AKTIONEN = ("klima_an", "klima_aus", "zusperren")        # NIE "aufsperren": das gibt es im Cockpit nicht (Regel)
+HANDY_GRUENDE = {
+    "nicht_erlaubt": "Dieses Gerät darf das nicht. In Panoptes unter „Gekoppelte Geräte“ das Recht einschalten.",
+    "nicht_vorhanden": "Das kommt mit Panoptes 0.1.19.1 – dein Panoptes kann es noch nicht.",
+    "nicht_angemeldet": "Die Verbindung zum Steuern ist abgelaufen. Bitte „Steuern einrichten“ noch einmal.",
+    "ratenlimit": "Zu viele Befehle in kurzer Zeit. Bitte kurz warten.",
+    "auto_laeuft": "Das Auto ist eingeschaltet. Das geht nur, wenn es aus ist.",
+    "gate": "Panoptes lässt den Befehl gerade nicht zu.",
+    "keine_antwort": "Panoptes antwortet nicht.",
+}
+
+
+def handy_aktion(url, jwt, aktion, felder=None, http=_http):
+    """POST /api/handy/v1/aktion (Vertrag Handy-App/Kern 0.1.18). -> {ok, weg, bestaetigt} oder {ok:False, grund}."""
+    if aktion not in HANDY_AKTIONEN:
+        return {"ok": False, "grund": "nicht_erlaubt"}
+    if not jwt:
+        return {"ok": False, "grund": "nicht_angemeldet"}
+    body = dict(felder or {}, aktion=aktion)
+    try:
+        d = http(url.rstrip("/") + "/api/handy/v1/aktion", body, jwt=jwt)
+    except NichtAngemeldet:
+        return {"ok": False, "grund": "nicht_angemeldet"}
+    except urllib.error.HTTPError as e:
+        return {"ok": False, "grund": {404: "nicht_vorhanden", 429: "ratenlimit"}.get(e.code, "http_%s" % e.code)}
+    except Exception:
+        return {"ok": False, "grund": "keine_antwort"}
+    if d.get("_status") == 403 and not d.get("grund"):
+        return {"ok": False, "grund": "nicht_erlaubt"}
+    if d.get("ok") is True:
+        return {"ok": True, "weg": d.get("weg") if d.get("weg") in ("lokal", "cloud") else None, "bestaetigt": d.get("bestaetigt") is True}
+    return {"ok": False, "grund": str(d.get("grund") or "unbekannt")[:40]}
 
 
 def aus_kopplungslink(text):
