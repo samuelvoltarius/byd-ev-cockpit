@@ -393,6 +393,18 @@ def handy_aktion(url, jwt, aktion, felder=None, http=_http):
     return {"ok": False, "grund": str(d.get("grund") or "unbekannt")[:40]}
 
 
+def handy_vorhanden(url, roh=_roh):
+    """Gibt es /api/handy/v1? Per Funktion statt Versionsnummer: POST /api/handy/v1/status ohne Token.
+    404 -> Panoptes zu alt (False); 401/403/200 -> Schnittstelle da (True); Netzfehler -> None (unbekannt)."""
+    try:
+        code, _ = roh(url.rstrip("/") + "/api/handy/v1/status", {})
+    except Exception:
+        return None
+    if code == 404:
+        return False
+    return True if code in (200, 400, 401, 403, 405) else None
+
+
 def aus_kopplungslink(text):
     """Link aus Panoptes "Neues Geraet koppeln" (<adresse>/system.html#koppeln=<code>) -> (adresse, code) oder None."""
     m = re.fullmatch(r"\s*(https?://[^/#?\s]+)(?:/[^#\s]*)?#koppeln=([A-Za-z0-9_-]{4,64})\s*", text or "")

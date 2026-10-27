@@ -42,7 +42,7 @@ class TestBefehlsliste(unittest.TestCase):
         from sicherheit import ERLAUBTE_BEFEHLE, NIE
         self.assertIn("unlock", NIE)
         self.assertNotIn("unlock", ERLAUBTE_BEFEHLE)
-        self.assertIn("find", ERLAUBTE_BEFEHLE)     # Hupe/Licht geht durch dieselbe Sperre wie alle anderen
+        self.assertNotIn("find", ERLAUBTE_BEFEHLE)  # Hupe/Licht gibt es im Cockpit nicht mehr (Regel A+)
 
 
 class TestStillerBeweis(unittest.TestCase):

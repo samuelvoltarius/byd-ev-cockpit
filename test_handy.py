@@ -59,3 +59,14 @@ class Handy(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Pruefen(unittest.TestCase):
+    def test_funktion_statt_version(self):
+        self.assertIs(ps.handy_vorhanden("http://h", roh=lambda u, d=None, timeout=0: (404, {})), False)
+        for c in (401, 403, 200):
+            self.assertIs(ps.handy_vorhanden("http://h", roh=lambda u, d=None, timeout=0, c=c: (c, {})), True)
+
+        def weg(*a, **k):
+            raise OSError("x")
+        self.assertIsNone(ps.handy_vorhanden("http://h", roh=weg))
