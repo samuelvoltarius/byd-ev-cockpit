@@ -9,6 +9,7 @@ os.environ["EVCOCKPIT_CFGDIR"] = _D
 import evcockpit as ev  # noqa: E402
 import mein_auto_seite  # noqa: E402
 import neu_look  # noqa: E402
+import anpassen  # noqa: E402
 
 H = mein_auto_seite.seite("https://x/stil.json", "http://100.1.2.3:8180", ev.COCKPIT)
 
@@ -95,9 +96,28 @@ class Bedienkacheln121(unittest.TestCase):
             self.assertIn(t, H)
         self.assertNotIn("braucht Panoptes 0.1.20", H)
 
-    def test_sitzheizung_ehrlich(self):
-        self.assertIn("gerade nicht möglich", H)
-        self.assertIn("seatOk", H)
+    def test_sitzheizung_ueber_panoptes_mit_rueckfrage(self):
+        self.assertIn("id=seatP", H)
+        self.assertIn("function sitz(w,n)", H)
+        self.assertIn("confirm(", H.split("function sitz(w,n)")[1].split("}")[0])
+        import panoptes_source as ps
+        import time
+        gesichert = dict(ev._CFG)
+        ev._CFG.update(panoptes=True, panoptes_url="http://127.0.0.1:9", panoptes_jwt="x", panoptes_handy_jwt="H")
+        gesehen = []
+        alt = ps.handy_aktion
+        ps.handy_aktion = lambda url, jwt, a, f=None, **k: (gesehen.append((a, f)) or {"ok": True, "weg": "lokal", "bestaetigt": True})
+        try:
+            ev._run_cmd("sitz_f_2")
+            time.sleep(0.5)
+            ev._run_cmd("sitz_b_0")
+            time.sleep(0.5)
+        finally:
+            ps.handy_aktion = alt
+            ev._CFG.clear()
+            ev._CFG.update(gesichert)
+            ev._HOLD_UNTIL = 0
+        self.assertEqual(gesehen, [("sitzheizung", {"sitz": "fahrer", "stufe": 2}), ("sitzheizung", {"sitz": "beifahrer", "stufe": 0})])
 
     def test_cmd_temperatur_durchgereicht(self):
         import panoptes_source as ps
@@ -150,8 +170,13 @@ class Boersenpreis1204(unittest.TestCase):
             for art in ("fest", "zeit", "zeittarif"):
                 ev._TARIF["art"] = art
                 self.assertFalse(ev._preis_erlaubt(False), art)
-            ev._TARIF["art"] = "dynamisch"
+            for art in ("boerse_aus", "dynamisch", "irgendwas"):     # ab 1.21: NUR genau "boerse" erlaubt Boersenpreise
+                ev._TARIF["art"] = art
+                self.assertFalse(ev._preis_erlaubt(False), art)
+            ev._TARIF["art"] = "boerse"
             self.assertTrue(ev._preis_erlaubt(False))
+            ev._CFG["show_price"] = False
+            self.assertFalse(ev._preis_erlaubt(False))
         finally:
             ev._CFG.clear()
             ev._CFG.update(alt_cfg)
@@ -180,3 +205,28 @@ class Unterseiten121(unittest.TestCase):
         for h in (ev._i18n(ev.ABOUT.replace("__VERSION__", "1")), ev._i18n(ev.PANOPTES_SEITE), ev._i18n(ev.WIZARD)):
             self.assertIn("id=uni", h)
             self.assertNotIn("font:16px/1.55 system-ui", h)
+
+
+class Anpassen121(unittest.TestCase):
+    def test_standard_und_bereinigen(self):
+        std = anpassen.standard()
+        self.assertEqual(std["reihe"], list(anpassen.KACHELN))
+        self.assertEqual(std["kacheln"]["pos"]["gr"], "M")
+        self.assertEqual(anpassen.bereinigen(None), std)
+        self.assertEqual(anpassen.bereinigen("x"), std)
+
+    def test_ungueltiges_faellt_weg_fehlendes_kommt_dazu(self):
+        r = anpassen.bereinigen({"reihe": ["warn", "route", "warn", "unsinn", 5], "kacheln": {"route": {"gr": "XL", "aus": "ja"}, "warn": {"gr": "L", "aus": True}, "boese": {"gr": "S"}}})
+        self.assertEqual(r["reihe"][:2], ["warn", "route"])
+        self.assertEqual(sorted(r["reihe"]), sorted(anpassen.KACHELN))
+        self.assertEqual(r["kacheln"]["route"], {"gr": "S", "aus": False})
+        self.assertEqual(r["kacheln"]["warn"], {"gr": "L", "aus": True})
+        self.assertNotIn("boese", r["kacheln"])
+
+    def test_nur_im_anpassen_modus_aenderbar(self):
+        self.assertIn('onclick="anpEin()"', H)
+        self.assertIn(".anpbar{display:none}", H)
+        self.assertIn("ANPAN&&", H)                    # Klicks auf Kacheln sind im Modus gesperrt, nicht davor
+        self.assertIn("/layout", H)
+        for g in ("anpReset", "anpGr", "anpSicht", "anpBew", "anpZiehen"):
+            self.assertIn("function " + g, H)

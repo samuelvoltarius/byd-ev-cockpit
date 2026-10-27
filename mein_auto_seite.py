@@ -6,6 +6,8 @@ dem COCKPIT-Text geschnitten (eine Quelle, bis /klassisch in 1.21 entfaellt). Be
 KEIN Aufsperren, KEIN Finden/Blinken (Regel A+)."""
 import re
 
+import anpassen
+
 CSS = r"""
 *{box-sizing:border-box}
 :root{--surface:#0A2238;--soft:#0f2c40;--border:#1d4152;--txt:#EAF6F8;--mut:#A9C7CE;--blue:#5FD6E6;--lime-ink:#1d2a00}
@@ -65,6 +67,7 @@ body{margin:0;color:var(--ink);min-height:100vh}
 #routetile{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 26px;align-items:start}
 #routetile>*{grid-column:1}#routetile>#rerg{grid-column:2;grid-row:1/span 14}
 #t_camping .auf{column-count:2;column-gap:28px}#t_camping .auf>*{break-inside:avoid}.t.open .chev::after{content:" ▴"}.t:not(.open) .chev::after{content:" ▾"}
+.sitzz{display:flex;align-items:center;gap:12px;margin:8px 0}.sitzz>span{min-width:84px;font-weight:700}.btn.big{min-height:52px;font-size:15px;padding:0 20px;border-radius:16px}.seg button{min-height:48px;min-width:56px}
 .zwei{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .lab{font-size:11.5px;color:var(--ink-3);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:8px 0 4px}
 .row2{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:6px 0}
@@ -107,6 +110,7 @@ body.datenalt .c-hero,body.datenalt .t{opacity:.55}
 .auf .tile{padding:0;background:none;border:0}
 .label2{font-size:11.5px;color:var(--ink-3);font-weight:600;letter-spacing:.04em;margin:10px 0 4px}
 @@ALT_CSS@@
+@@ANP_CSS@@
 @media(max-width:1000px){.c-hero,.c-4{grid-column:span 10}.t,.t.open,.t.open#t_route,.t.open#t_camping{grid-column:span 5}.zwei{grid-template-columns:1fr}#routetile{display:block}#t_camping .auf{column-count:1}}
 @media(max-width:620px){.wrap{padding:12px 14px 40px}.c-hero{grid-template-columns:1fr;justify-items:center;text-align:center}.hero-txt .chips{justify-content:center}.t,.t.open,.t.open#t_route,.t.open#t_camping{grid-column:span 10}.top h1{font-size:20px}.act{padding:10px 4px;font-size:12px}}
 """
@@ -144,7 +148,7 @@ BODY_TEIL1 = r"""<body class=mein-auto>
   <span class=pill id=pw style="display:none"><i class="dot"></i><span id=pwt>–</span></span>
   <span class=pill id=pq><i class="dot aq"></i><span id=pqt>–</span></span>
   <button type=button class=btn id=refreshbtn onclick="manualRefresh()">↻ Aktualisieren</button>
-  <button type=button class=btn onclick="location.href='/mehr'"><svg width=18 height=18><use href="#i-more"/></svg> Mehr</button>
+  @@ANP_KNOPF@@<button type=button class=btn onclick="location.href='/mehr'"><svg width=18 height=18><use href="#i-more"/></svg> Mehr</button>
  </header>
 
  <div id=altband class=hinweis role=alert></div>
@@ -179,14 +183,26 @@ LADEN_AUF = r"""<div class=zwei><div>
    <div class=lab>Strompreis</div><div class=hint id=preis_box>aus · Schalter „Ich habe einen dynamischen Stromtarif“ in den Einstellungen.</div></div></div>"""
 
 KLIMA_AUF = r"""<div class=zwei><div>
-  <div class=lab>Vorheizen · Temperatur</div>
+  <div class=lab>Temperatur</div>
   <input type=range id=temp min=17 max=33 value=25 oninput="tempZeigen()"><div class=skala><span>17 °C</span><span>25 °C (neutral)</span><span>33 °C</span></div>
-  <div class=row2><button type=button class="btn lime" id=k_heat onclick="cmd('heat')">🌡️ Vorheizen auf <span id=temp_v>25</span> °C</button><button type=button class=btn onclick="cmd('off')">⏹ Klima aus</button></div>
-  <div class=hint id=k_hint>Nur bei ausgeschaltetem Auto.</div></div>
-  <div><div class=lab>Sitzheizung (Fahrer)</div>
-   <div class=seg id=seat><button type=button disabled onclick="cmd('seat_off')">0</button><button type=button disabled onclick="cmd('seat_lo')">1</button><button type=button disabled onclick="cmd('seat_hi')">2</button></div>
-   <span class=warnb id=seat_n style="margin-left:8px">Kommt mit Panoptes 0.1.21</span>
-   <div class=hint style="margin-top:6px">Die Sitzheizung schaltet Panoptes ab Version 0.1.21. Dann erscheint sie hier.</div></div></div>"""
+  <div class=row2><button type=button class="btn lime big" id=k_heat onclick="cmd('heat')">🔥 Heizen auf <span id=temp_v>25</span> °C</button>
+   <button type=button class="btn big" id=k_cool onclick="cmd('cool')" style="display:none">❄️ Kühlen</button>
+   <button type=button class="btn big" onclick="cmd('off')">⏹ Klima aus</button></div>
+  <div class=hint id=k_hint>Nur bei ausgeschaltetem Auto.</div>
+  <div id=k_batt style="display:none"><div class=lab>Batterie</div>
+   <div class=row2><button type=button class="btn big" onclick="cmd('batt_on')">🔋 Vorheizen</button><button type=button class="btn big" onclick="cmd('batt_off')">Aus</button></div>
+   <div class=hint>Im Winter vor dem Schnellladen: eine warme Batterie lädt schneller.</div></div></div>
+  <div>
+   <div id=seatP style="display:none"><div class=lab>💺 Sitzheizung</div>
+    <div class=sitzz><span>Fahrer</span><div class=seg><button type=button onclick="sitz('f',0)">Aus</button><button type=button onclick="sitz('f',1)">1</button><button type=button onclick="sitz('f',2)">2</button></div></div>
+    <div class=sitzz><span>Beifahrer</span><div class=seg><button type=button onclick="sitz('b',0)">Aus</button><button type=button onclick="sitz('b',1)">1</button><button type=button onclick="sitz('b',2)">2</button></div></div>
+    <div class=hint>Läuft über Panoptes (ab 0.1.21), nur bei ausgeschaltetem Auto.</div></div>
+   <div id=seatC style="display:none"><div class=lab>💺 Sitzheizung (beide vorne)</div>
+    <div class=seg id=seat><button type=button onclick="cmd('seat_off')">Aus</button><button type=button onclick="cmd('seat_lo')">1</button><button type=button onclick="cmd('seat_hi')">2</button></div></div>
+   <div id=ventC style="display:none"><div class=lab>💨 Sitzbelüftung (beide vorne)</div>
+    <div class=seg><button type=button onclick="cmd('vent_off')">Aus</button><button type=button onclick="cmd('vent_lo')">1</button><button type=button onclick="cmd('vent_hi')">2</button></div></div>
+   <div id=seatN class=warnb style="display:none">Die Sitzheizung braucht „Steuern einrichten“ (Panoptes ab 0.1.21) oder ein BYD-Konto.</div>
+  </div></div>"""
 
 CAMPING_AUF = r"""@@CAMPING_HTML@@"""
 
@@ -282,7 +298,7 @@ function zeichne(s){
  // Schnellknoepfe + Klima-Details
  const F=s.features||{},hy=!!s.handy_an,sicht=(id,an)=>{el(id).style.display=an?'':'none';};
  sicht('a_heat',F.klima||hy);sicht('a_off',F.klima||hy);sicht('a_lock',F.lock||hy);sicht('a_setup',!!s.panoptes_an&&!hy);
- const seatOk=!!F.seat;document.querySelectorAll('#seat button').forEach(b=>b.disabled=!seatOk);el('seat_n').style.display=seatOk?'none':'';
+ sicht('seatP',hy);sicht('seatC',!hy&&!!F.seat);sicht('ventC',!hy&&!!F.seatvent);sicht('seatN',!hy&&!F.seat);sicht('k_cool',!hy&&!!F.klima);sicht('k_batt',!hy&&!!F.batt);
  el('k_hint').textContent=hy?__T('10 Minuten, nur bei ausgeschaltetem Auto. Läuft über Panoptes.'):(F.klima?__T('Über die BYD-Cloud fest höchstens 31 °C, nur bei ausgeschaltetem Auto.'):__T('Zum Vorheizen erst „Steuern einrichten“ (oben).'));
  el('k_heat').disabled=!(F.klima||hy);
  if(s.panoptes_an&&!hy&&HANDY_OK===undefined){HANDY_OK=null;fetch('/panoptes/handy/pruefen',{method:'POST',body:'{}'}).then(r=>r.json()).then(r=>{HANDY_OK=r.vorhanden;handyKnopf();}).catch(()=>{HANDY_OK=undefined;});}
@@ -291,7 +307,7 @@ function zeichne(s){
  if(s._msg&&Date.now()>MSGHOLD)el('actmsg').textContent=s._msg;
  el('alle').style.display=s.panoptes_web?'':'none';
  if(s.update){el('updbar').style.display='block';el('updver').textContent=s.update.version;el('updwas').textContent=s.update.was_neu||'';el('updlink').href=s.update.url;}
- const pb=el('preis_box');if(!s.show_price&&s.tarif_art&&['fest','zeit','zeittarif'].includes(s.tarif_art))pb.textContent=__T('Fester Strompreis laut Panoptes – Börsenpreise werden nicht angezeigt.');
+ const pb=el('preis_box');if(!s.show_price&&s.tarif_art&&s.tarif_art!=='boerse')pb.textContent=__T(s.tarif_art==='boerse_aus'?'Der Börsentarif ist in Panoptes ausgeschaltet – Börsenpreise werden nicht angezeigt.':'Fester Strompreis laut Panoptes – Börsenpreise werden nicht angezeigt.');
  if(s.show_price&&s.price_now!=null)pb.textContent=__T('jetzt')+' '+z(s.price_now,1)+' ct/kWh · '+__T('günstigste Stunde')+' '+(s.price_cheap_time||'–')+' ('+z(s.price_cheap_ct,1)+' ct)';
  freshness();
 }
@@ -348,6 +364,8 @@ async function karte(s){
 // Schnellknoepfe: gleiche geprueften Wege wie bisher (/cmd), Panoptes-Weg wenn mit "Steuern einrichten" gekoppelt
 function zusperren(){if(confirm(__T('Auto wirklich zusperren?')))cmd('lock');}
 function tempZeigen(){TEMP=parseInt(el('temp').value,10)||25;el('temp_v').textContent=TEMP;if(S)el('t_klima_m').textContent=[S.temp_out!=null?__T('Außen')+' '+z(S.temp_out,0)+' °C':'',__T('Vorheizen auf')+' '+TEMP+' °C'].filter(Boolean).join(' · ');}
+const SITZ={f:'Fahrer',b:'Beifahrer'};
+function sitz(w,n){if(!confirm(__T('Sitzheizung')+' '+__T(SITZ[w])+' → '+(n?__T('Stufe')+' '+n:__T('aus'))+'?'))return;cmd('sitz_'+w+'_'+n);}
 async function cmd(a){
  const m=el('actmsg');MSGHOLD=Date.now()+6000;m.textContent='⏳ '+__T('Sende …');
  const bs=[...document.querySelectorAll('.act')];bs.forEach(b=>b.classList.add('busy'));
@@ -420,6 +438,7 @@ async function routeLaden(){if(Date.now()-ROUTE_T<30000)return;ROUTE_T=Date.now(
  }catch(e){}}
 // @@ROUTE_JS@@
 // @@CAMPING_JS@@
+// @@ANP_JS@@
 function rKarte(){}   // keine Karte in der Kachel (Ladestopps als Liste)
 // Waechter-Fenster: Ereignis im Cockpit ansehen (nur lesend aus Panoptes; kein Sprung zu einer anderen Seite)
 let WM={l:[],i:0,offen:false,fehler:''};
@@ -574,4 +593,6 @@ def seite(karten_stil="", panoptes_web="", cockpit=""):
     html = (HEAD.replace("@@CSS@@", CSS.replace("@@ALT_CSS@@", css)) + BODY_TEIL1 + route_tile + laden_tile + WALLBOX_TILE + klima_tile + camp_tile + BODY_TEIL3
             + JS.replace("// @@ROUTE_JS@@", rj).replace("// @@CAMPING_JS@@", cj)) + "</html>"
     html = html.replace("@@ROUTE_HTML@@", "").replace("@@CAMPING_HTML@@", "")
+    html = html.replace("@@ANP_KNOPF@@", anpassen.KNOPF).replace("@@ANP_CSS@@", anpassen.CSS).replace("// @@ANP_JS@@", anpassen.JS)
+    html = html.replace("<div class=wm id=wm ", anpassen.FUSS + "<div class=wm id=wm ", 1)
     return html.replace("__KARTENSTIL__", karten_stil).replace("__PANOPTES_WEB__", panoptes_web.rstrip("/"))

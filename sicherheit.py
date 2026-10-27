@@ -17,7 +17,8 @@ FRISCH_S = 180
 # 180 s alt, gilt fuer ALLE Befehle (auch Batterie, Hupe/Licht), Aufsperren NIE. Der power_level von Panoptes kommt
 # per HTTP direkt aus dem Fahrzeug-SDK (collectTelemetry, ~2 s Cache), nicht aus einem gespeicherten MQTT-Wert.
 ERLAUBTE_BEFEHLE = ("heat", "cool", "off", "batt_on", "batt_off", "lock",
-                    "seat_off", "seat_lo", "seat_hi", "vent_off", "vent_lo", "vent_hi")
+                    "seat_off", "seat_lo", "seat_hi", "vent_off", "vent_lo", "vent_hi",
+                    "sitz_f_0", "sitz_f_1", "sitz_f_2", "sitz_b_0", "sitz_b_1", "sitz_b_2")
 NIE = ("unlock", "find")      # Aufsperren nie; Hupe/Licht nie (Regel A+, Koordination 27.10.): "find" gibt es im Cockpit nicht
 assert not set(ERLAUBTE_BEFEHLE) & set(NIE)
 

@@ -393,6 +393,7 @@ def _auth_failure(error):
 from sicherheit import befehl_erlaubt, aus_letzter_abfrage, ERLAUBTE_BEFEHLE, NIE
 from live_saeulen import Live
 import neu_look
+import anpassen
 
 _LIVE = Live()
 
@@ -1159,7 +1160,7 @@ def _preis_schalten(an):
 
 
 _TARIF = {"art": None, "ts": 0.0}
-_TARIF_OHNE_BOERSE = ("fest", "zeit", "zeittarif")
+_TARIF_BOERSE = "boerse"       # ab Panoptes 0.1.21: tarif.art = fest | zeittarif | boerse | boerse_aus
 
 
 def _tarif_art(auffrischen=True):
@@ -1179,7 +1180,8 @@ def _tarif_art(auffrischen=True):
 
 def _preis_erlaubt(auffrischen=True):
     """Boersenpreise nur, wenn der Schalter 'dynamischer Stromtarif' AN ist UND Panoptes keinen festen Preis/Zeittarif meldet."""
-    return bool(_CFG.get("show_price")) and _tarif_art(auffrischen) not in _TARIF_OHNE_BOERSE
+    art = _tarif_art(auffrischen)
+    return bool(_CFG.get("show_price")) and (art is None or art == _TARIF_BOERSE)      # Tarif unlesbar: nur der Schalter; sonst NUR "boerse"
 
 
 def _price_loop():
@@ -1400,6 +1402,24 @@ def _run_cmd(action, temp=None):
         global _HOLD_UNTIL
         _HOLD_UNTIL = time.time() + 45
         _MSG.update({"text": "⏳ " + labels.get(action, "Befehl") + " wird gesendet …", "ts": time.time()})
+        if action.startswith("sitz_"):
+            # Sitzheizung ueber Panoptes (ab 0.1.21, Aktion "sitzheizung"): Fahrer oder Beifahrer, Stufe 0-2. Nie eine eigene Cloud-Abkuerzung.
+            import panoptes_source as ps
+            _, w, n = action.split("_")
+            name = "💺 Sitzheizung " + ("Fahrer" if w == "f" else "Beifahrer") + (" aus" if n == "0" else " Stufe " + n)
+            if not (_CFG.get("panoptes_handy_jwt") and _panoptes_gekoppelt()):
+                _MSG.update({"text": "⛔ " + name + " nicht gesendet: erst „Steuern einrichten“ (Panoptes ab 0.1.21).", "ts": time.time()})
+                return
+            r = ps.handy_aktion(_CFG["panoptes_url"], _CFG["panoptes_handy_jwt"], "sitzheizung",
+                                {"sitz": "fahrer" if w == "f" else "beifahrer", "stufe": int(n)})
+            if r["ok"] and r.get("bestaetigt"):
+                t = "✅ " + name + " – Panoptes hat es bestätigt"
+            elif r["ok"]:
+                t = "ℹ️ " + name + " gesendet – das Auto hat es noch nicht zurückgemeldet. Bitte kurz prüfen."
+            else:
+                t = "⛔ " + name + " nicht gesendet: " + ps.HANDY_GRUENDE.get(r["grund"], "Panoptes lehnt ab (%s)" % r["grund"])
+            _MSG.update({"text": t, "ts": time.time()})
+            return
         if action in ("heat", "off", "lock") and _CFG.get("panoptes_handy_jwt") and _panoptes_gekoppelt():
             # Weg ueber Panoptes (/api/handy/v1): Panoptes prueft Recht, Gate, Echo, Ratenlimit. Kein Cloud-Gate hier.
             import panoptes_source as ps
@@ -5178,6 +5198,8 @@ class H(BaseHTTPRequestHandler):
                 self._send(("Modell-Datei nicht geladen (%s)" % type(e).__name__).encode("utf-8"), "text/plain", 404)
         elif p == "/panoptes":
             self._send(_i18n(PANOPTES_SEITE))
+        elif p == "/layout":
+            self._send(json.dumps(anpassen.bereinigen(_CFG.get("layout"))), "application/json")
         elif p in ("/mehr", "/klassisch"):
             self._send(_i18n(neu_look.hub_html(VERSION)))
         elif p in neu_look.SEITEN:
@@ -5644,6 +5666,14 @@ class H(BaseHTTPRequestHandler):
                 save_cfg(_CFG)
                 _preis_schalten(an)
                 return self._send(json.dumps({"ok": True, "show_price": an}), "application/json")
+            except Exception as e:
+                return self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json", 400)
+        if u.path == "/layout":
+            # Anordnung der Startseite (nur Aussehen, kein Fahrzeugbefehl): bereinigt speichern
+            try:
+                _CFG["layout"] = anpassen.bereinigen(json.loads(raw or "{}"))
+                save_cfg(_CFG)
+                return self._send(json.dumps({"ok": True}), "application/json")
             except Exception as e:
                 return self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json", 400)
         if u.path == "/jetzt":

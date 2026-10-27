@@ -390,7 +390,7 @@ def kopplung_status(url, aid, roh=_roh):
     return {"status": st if st in ("wartet", "abgeholt", "abgelehnt", "abgelaufen") else "fehler"}
 
 
-HANDY_AKTIONEN = ("klima_an", "klima_aus", "zusperren")        # NIE "aufsperren": das gibt es im Cockpit nicht (Regel)
+HANDY_AKTIONEN = ("klima_an", "klima_aus", "zusperren", "sitzheizung")        # NIE "aufsperren": das gibt es im Cockpit nicht (Regel)
 HANDY_GRUENDE = {
     "nicht_erlaubt": "Dieses Gerät darf das nicht. In Panoptes unter „Gekoppelte Geräte“ das Recht einschalten.",
     "nicht_vorhanden": "Das kommt mit Panoptes 0.1.19.1 – dein Panoptes kann es noch nicht.",
