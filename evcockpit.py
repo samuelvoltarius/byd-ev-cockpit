@@ -1572,7 +1572,12 @@ LOOK_CSS = """<style>
 body{font-family:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif!important;
  background:radial-gradient(1200px 700px at 85% -10%,rgba(11,92,102,.55),transparent 60%) fixed,
   linear-gradient(160deg,var(--ocean),var(--deep) 70%) fixed!important}
-html{background:var(--deep)}
+html{background:var(--deep);color-scheme:dark}
+select,input,textarea{color-scheme:dark}
+select,option,optgroup{background-color:#0f2c40;color:#EAF6F8}
+option:checked,option:hover,option:focus{background-color:#16506a;color:#ffffff}
+select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #5FD6E6;outline-offset:1px}
+input::placeholder,textarea::placeholder{color:#8fb0b9}
 h1,h2,h3,.sect,.big,.val,.v,.nav button,.kpi,.num{font-family:'Sora',system-ui,sans-serif}
 </style>"""
 
@@ -5284,6 +5289,23 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "error": "Suche fehlgeschlagen (%s)" % type(e).__name__}), "application/json")
         elif p == "/wallbox/einstellungen":
             self._send(json.dumps(_wb_einstellungen_lesen()), "application/json")
+        elif p == "/panoptes/ladeplan":
+            # Ladeplan aus Panoptes (ab 0.1.20) nur lesen. "zu alt" nur bei 404; 401/403 heisst "Zugriff fehlt", nicht "zu alt".
+            try:
+                pv = _panoptes_obj()
+                if pv is None:
+                    return self._send(json.dumps({"ok": False, "grund": "nicht_gekoppelt"}), "application/json")
+                try:
+                    d = pv._get("/api/ladeplan")
+                except urllib.error.HTTPError as e:
+                    g = "zu_alt" if e.code == 404 else "zugriff" if e.code in (401, 403) else "fehler"
+                    return self._send(json.dumps({"ok": False, "grund": g, "code": e.code}), "application/json")
+                if not isinstance(d, dict) or d.get("ok") is not True:
+                    return self._send(json.dumps({"ok": False, "grund": "fehler"}), "application/json")
+                self._send(json.dumps({"ok": True, "einstellungen": d.get("einstellungen") or {}, "zustand": d.get("zustand") or {},
+                                       "tarif": d.get("tarif") or {}}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "grund": "fehler", "error": type(e).__name__}), "application/json")
         elif p == "/wallbox/status":
             # Nur lesend; Tuya: eine kurze LAN-Verbindung je Geraet. Wallbox-Daten gehen an keinen unserer Server (Regel 2).
             import wallbox_quellen as wq

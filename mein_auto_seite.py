@@ -89,6 +89,8 @@ input[type=range]{width:100%;accent-color:#B5F23D;padding:0}
 .wmth{border:2px solid transparent;border-radius:16px;overflow:hidden;background:#0d2c40;cursor:pointer;padding:0;color:var(--ink);text-align:left}
 .wmth.on{border-color:var(--lime)}.wmth img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block}.wmth div{padding:6px 9px;font-weight:700;font-size:14px}.wmth small{display:block;color:var(--ink-2);font-weight:600}
 @media(max-width:620px){.wmnav{grid-template-columns:1fr 1fr}.wmnav .lime{grid-column:1/3;order:-1}}
+#t_pos{grid-column:span 4;min-height:300px}#t_pos .minimap{height:220px;border-radius:14px}#t_pos h2 .more{background:none;border:0;cursor:pointer;font:600 13px 'Manrope',system-ui,sans-serif}
+.pmg{height:62vh;border-radius:20px;overflow:hidden;background:#0d2c40;display:grid;place-items:center;color:var(--ink-2);font-size:18px;text-align:center;padding:10px}
 .minimap{height:46px;border-radius:10px;overflow:hidden;position:relative;background:linear-gradient(135deg,#0d2c40,#103b48);display:grid;place-items:center;color:var(--ink-3);font-size:12px}
 .car{width:16px;height:16px;border-radius:50%;background:var(--lime);border:3px solid #0A2238;box-shadow:0 0 0 7px rgba(181,242,61,.18)}
 .alle{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border-style:dashed;text-decoration:none;color:var(--ink)}
@@ -179,8 +181,7 @@ ROUTE_AUF = r"""@@ROUTE_HTML@@"""
 LADEN_AUF = r"""<div class=zwei><div>
   <div class=lab>Wallbox zu Hause</div><div id=wb_box class=hint>–</div><div id=wb_msg class=hint></div></div>
   <div><div class=lab>Zu Hause laden · Ladeplan</div>
-   <div class=row2><span class="pill aus"><i class=dot></i>Ladeplan: aus</span><select disabled><option>Zeittarif</option></select></div>
-   <div class=warnb>Ausgegraut: braucht Panoptes 0.1.20 (Ladeplan und Zeittarif).</div>
+   <div id=lp_box class=hint>–</div>
    <div class=lab>Strompreis</div><div class=hint id=preis_box>aus · Schalter „Ich habe einen dynamischen Stromtarif“ in den Einstellungen.</div></div></div>"""
 
 KLIMA_AUF = r"""<div class=zwei><div>
@@ -190,8 +191,8 @@ KLIMA_AUF = r"""<div class=zwei><div>
   <div class=hint id=k_hint>Nur bei ausgeschaltetem Auto.</div></div>
   <div><div class=lab>Sitzheizung (Fahrer)</div>
    <div class=seg id=seat><button type=button disabled onclick="cmd('seat_off')">0</button><button type=button disabled onclick="cmd('seat_lo')">1</button><button type=button disabled onclick="cmd('seat_hi')">2</button></div>
-   <span class=warnb id=seat_n style="margin-left:8px">gerade nicht möglich</span>
-   <div class=hint style="margin-top:6px">Panoptes kann Sitzheizung nur bei wachem Auto lokal schalten. Ohne BYD-Cloud-Zugang sagt das Cockpit ehrlich „nicht möglich“.</div></div></div>"""
+   <span class=warnb id=seat_n style="margin-left:8px">Kommt mit Panoptes 0.1.21</span>
+   <div class=hint style="margin-top:6px">Die Sitzheizung schaltet Panoptes ab Version 0.1.21. Dann erscheint sie hier.</div></div></div>"""
 
 CAMPING_AUF = r"""@@CAMPING_HTML@@"""
 
@@ -199,7 +200,7 @@ BODY_TEIL3 = r"""
   <section class="card t ro" id=t_tuer><div class=kk><h2><svg><use href="#i-door"/></svg>Türen &amp; Fenster</h2><div class=v id=t_tuer_v>–</div><div class=muted id=t_tuer2></div></div></section>
   <section class="card t ro" id=t_reifen><div class=kk><h2><svg><use href="#i-tyre"/></svg>Reifen</h2><div class=v id=t_reifen_v>–</div><div class=muted id=t_reifen2></div></div></section>
   <section class="card t ro" id=t_waech onclick="wmAuf()" style="cursor:pointer"><div class=kk style="cursor:pointer"><h2><svg><use href="#i-eye"/></svg>Wächter<span class=more>Ansehen ›</span></h2><div class=v id=t_waech_v>–</div><div class=muted id=t_waech2></div><div class=wimg id=t_waech_img title="Ansehen"></div></div></section>
-  <section class="card t ro" id=t_pos><div class=kk><h2><svg><use href="#i-pin"/></svg>Standort</h2><div class=minimap id=map>–</div><div class=muted id=t_pos2></div></div></section>
+  <section class="card t ro" id=t_pos><div class=kk><h2><svg><use href="#i-pin"/></svg>Standort<button type=button class=more onclick="posGross()">⤢ Groß ansehen</button></h2><div class=minimap id=map>–</div><div class=muted id=t_pos2></div></div></section>
   <section class="card t ro" id=t_warn><div class=kk><h2><svg><use href="#i-warn"/></svg>Warnungen</h2><div class=v id=t_warn_v>–</div><div class=muted id=t_warn2></div></div></section>
   <a class="card t alle" id=alle href="__PANOPTES_WEB__/" target="_blank" rel="noopener"><div class=v>Alle Funktionen ↗</div><div class=muted>Fahrten, Ladeplan, Aufnahmen, Einstellungen – in Panoptes</div></a>
  </div>
@@ -230,7 +231,7 @@ function kachelUm(k){const t=el('t_'+k),war=t.classList.contains('open');
  if(typeof campingStopp==='function')campingStopp();
  if(!war){t.classList.add('open');
   if(k==='camping'&&typeof campingLaden==='function')campingLaden(true);
-  if(k==='laden')wbLaden();
+  if(k==='laden'){wbLaden();lpLaden();}
   if(k==='route'&&S&&typeof rSocVomAuto==='function')rSocVomAuto(S);}}
 const WZ={scharf:['scharf','ok'],startet:['startet',''],unterdrueckt:['pausiert (sicherer Ort)',''],aus:['aus','warn'],nicht_gewaehlt:['bitte wählen','warn']};
 function zeichne(s){
@@ -347,7 +348,7 @@ async function karte(s){
     const lade=u=>new Promise((o,n2)=>{const sc=document.createElement('script');sc.src=u;sc.onload=o;sc.onerror=n2;document.head.appendChild(sc);});
     lade('/static/maplibre-gl.js').then(()=>lade('/static/pmtiles.js')).then(ok,no);});
    if(window.pmtiles&&!window.__PMT){window.__PMT=1;maplibregl.addProtocol('pmtiles',new pmtiles.Protocol().tile);}
-   m.textContent='';MAPOBJ=new maplibregl.Map({container:'map',style:KARTEN_STIL,center:[s.longitude,s.latitude],zoom:13,interactive:false,attributionControl:false});
+   m.textContent='';MAPOBJ=new maplibregl.Map({container:'map',style:KARTEN_STIL,center:[s.longitude,s.latitude],zoom:13,interactive:true,attributionControl:false});MAPOBJ.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
    const d=document.createElement('div');d.className='car';MAPOBJ._mk=new maplibregl.Marker({element:d}).setLngLat([s.longitude,s.latitude]).addTo(MAPOBJ);
   }else if(MAPOBJ.setCenter){MAPOBJ.setCenter([s.longitude,s.latitude]);MAPOBJ._mk.setLngLat([s.longitude,s.latitude]);}
  }catch(e){MAPOBJ=0;m.textContent='📍';}}
@@ -433,6 +434,8 @@ const WM_ART={sentry:['👁','Wächter hat etwas bemerkt'],proximity:['🚶','Je
 const WM_WER={person:['🧍','Person'],car:['🚗','Auto'],vehicle:['🚗','Fahrzeug'],truck:['🚚','Lkw'],bike:['🚲','Fahrrad'],bicycle:['🚲','Fahrrad'],motorcycle:['🏍','Motorrad'],animal:['🐾','Tier'],dog:['🐕','Hund'],cat:['🐈','Katze']};
 function wmZeit(ts){const d=new Date(ts),h=new Date(),en=window.__LANG__==='en',t0=new Date(h.getFullYear(),h.getMonth(),h.getDate()).getTime();
  const uhr=d.toLocaleTimeString(en?'en-GB':'de-AT',{hour:'2-digit',minute:'2-digit'});
+ if(ts>=t0+172800000)return d.toLocaleDateString(en?'en-GB':'de-AT',{day:'2-digit',month:'2-digit'})+' '+uhr;
+ if(ts>=t0+86400000)return __T('Morgen')+' '+uhr;
  if(ts>=t0)return __T('Heute')+' '+uhr;if(ts>=t0-86400000)return __T('Gestern')+' '+uhr;
  return d.toLocaleDateString(en?'en-GB':'de-AT',{day:'2-digit',month:'2-digit'})+' '+uhr;}
 function wmOrt(a){const p=a.place;return typeof p==='string'?p:(p&&(p.short||p.medium))||'';}
@@ -467,6 +470,44 @@ function wmAbspielen(){const a=WM.l[WM.i];if(!a||!a.available)return;const pl=el
  pl.innerHTML='<video controls autoplay playsinline src="/waechter/clip/'+esc(a.id)+'" poster="/waechter/bild/'+esc(a.id)+'"></video>';
  const v=pl.querySelector('video');v.onerror=()=>{pl.innerHTML='<div class=leer>'+esc(__T('Das Video lässt sich gerade nicht laden. Bitte später noch einmal.'))+'</div>';};}
 document.addEventListener('keydown',e=>{if(!WM.offen)return;if(e.key==='Escape')wmZu();else if(e.key==='ArrowLeft')wmGeh(-1);else if(e.key==='ArrowRight')wmGeh(1);});
+// Ladeplan (aus Panoptes, nur lesen). "zu alt" nur bei 404; 401/403 = Zugriff fehlt
+async function lpLaden(){const b=el('lp_box');if(!b)return;
+ try{const d=await (await fetch('/panoptes/ladeplan',{cache:'no-store'})).json();
+  if(!d.ok){const T={nicht_gekoppelt:'Erst mit Panoptes verbinden (Mehr → Einstellungen).',zu_alt:'Dein Panoptes kann den Ladeplan noch nicht (ab Version 0.1.20).',
+    zugriff:'Panoptes erlaubt dem Cockpit das Lesen des Ladeplans nicht. Bitte das Cockpit unter Mehr → Einstellungen neu mit Panoptes verbinden.',fehler:'Panoptes antwortet gerade nicht.'};
+   b.innerHTML='<div class=warnb>'+esc(__T(T[d.grund]||T.fehler))+'</div>';return;}
+  const e=d.einstellungen||{},z0=d.zustand||{},ab=e.abfahrt||{},wt=ab.werktag||{},we=ab.wochenende||{};
+  const an=e.modus&&e.modus!=='aus',zeile=[];
+  zeile.push('<span class="pill '+(an?'':'aus')+'"><i class="dot '+(an?'ok':'')+'"></i>'+esc(__T('Ladeplan'))+': '+esc(an?__T('an'):__T('aus'))+'</span>');
+  const li=[];
+  if(wt.an)li.push('🌅 '+esc(__T('Mo–Fr fertig um'))+' '+esc(wt.zeit)+' · '+esc(wt.ziel)+' %');
+  if(we.an)li.push('🌅 '+esc(__T('Sa/So fertig um'))+' '+esc(we.zeit)+' · '+esc(we.ziel)+' %');
+  if(e.mindestladung!=null)li.push('🔋 '+esc(__T('Mindestens'))+' '+esc(e.mindestladung)+' %');
+  const f=(e.fenster||[])[0];if(f)li.push('🕒 '+esc(__T('Laden zwischen'))+' '+esc(f.von)+' '+esc(__T('und'))+' '+esc(f.bis));
+  if(z0.abfahrt&&z0.abfahrt.zeit)li.push('🚗 '+esc(__T('Nächste Abfahrt'))+': '+esc(wmZeit(z0.abfahrt.zeit))+' · '+esc(z0.abfahrt.ziel)+' %');
+  const t=d.tarif||{};li.push('💶 '+esc(__T('Strompreis'))+': '+esc(t.art==='fest'?__T('fester Preis'):t.tarifName||t.art||'–'));
+  b.innerHTML='<div class=row2>'+zeile.join('')+'</div><div style="margin-top:8px;line-height:1.8">'+li.join('<br>')+'</div><div class=hint style="margin-top:6px">'+esc(__T('Einstellen kommt ins Cockpit; bis dahin im Auto oder in Panoptes.'))+'</div>';
+ }catch(x){b.innerHTML='<div class=warnb>'+esc(__T('Das Cockpit erreicht sich selbst nicht – bitte neu starten.'))+'</div>';}}
+// Standort gross: eigene Karte im Cockpit (Fenster), kein Sprung woanders
+let BIGMAP=null;
+function posGross(){
+ const s=S||{};let w=el('pm');
+ if(!w){w=document.createElement('div');w.id='pm';w.className='wm';w.onclick=e=>{if(e.target===w)posZu();};
+  w.innerHTML='<div class=wmbox><div class=wmtop><b>'+esc(__T('Standort'))+'</b><button type=button class=wmbig onclick="posZu()">✕ '+esc(__T('Schließen'))+'</button></div><div class=pmg id=pm_karte></div><div class=wminfo id=pm_info></div></div>';
+  document.body.appendChild(w);}
+ w.classList.add('on');document.body.style.overflow='hidden';
+ const k=el('pm_karte'),i=el('pm_info');
+ if(s.latitude==null){k.textContent=__T('Standort unbekannt');i.innerHTML='';return;}
+ i.innerHTML='<span>📍 '+esc(z(s.latitude,5))+', '+esc(z(s.longitude,5))+'</span>';
+ if(!KARTEN_STIL||!window.maplibregl){k.textContent=__T('Die Karte ist aus. Unter Mehr → Einstellungen kannst du sie einschalten.');return;}
+ k.textContent='';
+ try{if(BIGMAP){BIGMAP.remove();BIGMAP=null;}
+  BIGMAP=new maplibregl.Map({container:'pm_karte',style:KARTEN_STIL,center:[s.longitude,s.latitude],zoom:15,attributionControl:false});
+  BIGMAP.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
+  const d=document.createElement('div');d.className='car';new maplibregl.Marker({element:d}).setLngLat([s.longitude,s.latitude]).addTo(BIGMAP);
+ }catch(e){k.textContent='📍 '+z(s.latitude,5)+', '+z(s.longitude,5);}}
+function posZu(){const w=el('pm');if(w)w.classList.remove('on');document.body.style.overflow='';if(BIGMAP){try{BIGMAP.remove();}catch(e){}BIGMAP=null;}}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')posZu();});
 // Laden: Daten holen
 let TIMER=null;
 async function load(){

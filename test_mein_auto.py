@@ -86,8 +86,9 @@ class Bedienkacheln121(unittest.TestCase):
         self.assertIn("'&t='+TEMP", H)
 
     def test_laden_kachel_rueckfrage_und_freigabe(self):
-        for t in ("bestaetigung_noetig", "/wallbox/freigabe", "/wallbox/steuern", "Steuern erlauben", "Ladeplan: aus", "braucht Panoptes 0.1.20"):
+        for t in ("bestaetigung_noetig", "/wallbox/freigabe", "/wallbox/steuern", "Steuern erlauben", "lp_box", "/panoptes/ladeplan"):
             self.assertIn(t, H)
+        self.assertNotIn("braucht Panoptes 0.1.20", H)
 
     def test_sitzheizung_ehrlich(self):
         self.assertIn("gerade nicht möglich", H)
@@ -121,3 +122,12 @@ class WaechterFenster1203(unittest.TestCase):
         self.assertIn('id=t_waech onclick="wmAuf()"', h)
         self.assertIn("id=wm_strip", h)
         self.assertNotIn("waechter.html", h)                  # kein Sprung in die Panoptes-Weboberflaeche
+
+    def test_ladeplan_zu_alt_nur_bei_404(self):
+        src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "evcockpit.py"), encoding="utf-8").read()
+        self.assertIn('"zu_alt" if e.code == 404 else "zugriff" if e.code in (401, 403)', src)
+
+    def test_dropdowns_lesbar(self):
+        h = ev._i18n("<html><head><meta charset=utf-8></head><body></body></html>")
+        self.assertIn("color-scheme:dark", h)
+        self.assertIn("option:checked", h)
