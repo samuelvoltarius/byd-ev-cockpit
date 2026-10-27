@@ -424,11 +424,28 @@ def handy_aktion(url, jwt, aktion, felder=None, http=_http):
     return {"ok": False, "grund": str(d.get("grund") or "unbekannt")[:40]}
 
 
+HANDY_AB = (0, 1, 19, 1)          # erste Panoptes-Version mit /api/handy/v1
+
+
+def version_aus(text):
+    """'0.1.19.1' -> (0, 1, 19, 1); sonst None."""
+    t = re.findall(r"\d+", str(text or ""))[:4]
+    return tuple(int(x) for x in t) + (0,) * (4 - len(t)) if t else None
+
+
 def handy_vorhanden(url, jwt, roh=_roh):
-    """Gibt es /api/handy/v1? Per Funktion statt Versionsnummer: POST /api/handy/v1/status mit dem Lese-Zugang.
-    Ohne Token antwortet Panoptes bei JEDEM Pfad 401, und mit Token antwortet 0.1.17 bei jedem unbekannten Pfad
-    403 "Nicht fuer gekoppelte Geraete" (kein JSON) - beides sagt nichts. Vorhanden = JSON-Antwort mit "grund"/"ok"
-    bzw. 200/400/405; Netzfehler -> None (unbekannt)."""
+    """Kann dieses Panoptes die Fernbedien-Schnittstelle /api/handy/v1? True / False / None (unbekannt).
+    Ein Statuscode-Test sagt hier NICHTS: Das Kopplungs-Token (art != handy) bekommt auf JEDEN Pfad (auch unbekannte) dieselbe
+    403 "Nicht fuer gekoppelte Geraete" als Text, ohne Token kommt auf jeden Pfad 401 (gemessen am Auto mit 0.1.17 UND 0.1.19.1).
+    Darum zuerst die Panoptes-Version aus /api/ha/v1/zustand (geraet.appVersion, nur lesen); erst wenn die fehlt, die JSON-Antwort
+    von POST /api/handy/v1/status (JSON mit Grund = Schnittstelle da, Text = alt)."""
+    try:
+        code, d = roh(url.rstrip("/") + "/api/ha/v1/zustand", None, jwt=jwt)
+        v = version_aus(((d or {}).get("geraet") or {}).get("appVersion")) if code == 200 and isinstance(d, dict) else None
+        if v:
+            return v >= HANDY_AB
+    except Exception:
+        pass
     try:
         code, d = roh(url.rstrip("/") + "/api/handy/v1/status", {}, jwt=jwt)
     except Exception:

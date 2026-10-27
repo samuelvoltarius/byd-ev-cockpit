@@ -62,17 +62,38 @@ if __name__ == "__main__":
 
 
 class Pruefen(unittest.TestCase):
-    def test_funktion_statt_version(self):
-        # 0.1.17: kein JSON ("Nicht fuer gekoppelte Geraete" kommt als Text -> _roh liefert {}) bei 401/403/404 -> alt
-        for c in (401, 403, 404):
-            self.assertIs(ps.handy_vorhanden("http://h", "J", roh=lambda u, d=None, timeout=0, jwt="", c=c: (c, {})), False)
-        # neu: JSON mit Grund (z. B. nur_handy) -> Schnittstelle da
-        self.assertIs(ps.handy_vorhanden("http://h", "J", roh=lambda u, d=None, timeout=0, jwt="": (403, {"ok": False, "grund": "nur_handy"})), True)
-        self.assertIs(ps.handy_vorhanden("http://h", "J", roh=lambda u, d=None, timeout=0, jwt="": (405, {})), True)
+    def roh(self, antworten):
+        def f(u, d=None, timeout=0, jwt=""):
+            for pfad, a in antworten.items():
+                if u.endswith(pfad):
+                    if isinstance(a, Exception):
+                        raise a
+                    return a
+            return (404, {})
+        return f
 
-        def weg(*a, **k):
-            raise OSError("x")
-        self.assertIsNone(ps.handy_vorhanden("http://h", "J", roh=weg))
+    def test_version_entscheidet(self):
+        z = lambda v: {"/api/ha/v1/zustand": (200, {"geraet": {"appVersion": v}})}
+        self.assertIs(ps.handy_vorhanden("http://h", "J", roh=self.roh(z("0.1.19.1"))), True)
+        self.assertIs(ps.handy_vorhanden("http://h", "J", roh=self.roh(z("0.1.20"))), True)
+        self.assertIs(ps.handy_vorhanden("http://h", "J", roh=self.roh(z("0.1.19"))), False)
+        self.assertIs(ps.handy_vorhanden("http://h", "J", roh=self.roh(z("0.1.17"))), False)
+        self.assertEqual(ps.version_aus("0.1.19.1"), (0, 1, 19, 1))
+        self.assertEqual(ps.version_aus("0.1.20"), (0, 1, 20, 0))
+        self.assertIsNone(ps.version_aus("x"))
+
+    def test_gemessenes_verhalten_am_auto_0191(self):
+        # Alfreds Auto 0.1.19.1: Kopplungs-Token bekommt auf JEDEN Pfad 403-Text; die Version aus /ha/v1/zustand entscheidet
+        a = {"/api/ha/v1/zustand": (200, {"geraet": {"appVersion": "0.1.19.1"}}), "/api/handy/v1/status": (403, {})}
+        self.assertIs(ps.handy_vorhanden("http://h", "J", roh=self.roh(a)), True)
+
+    def test_ohne_version_json_antwort_entscheidet(self):
+        alt = {"/api/handy/v1/status": (403, {})}
+        self.assertIs(ps.handy_vorhanden("http://h", "J", roh=self.roh(alt)), False)
+        neu = {"/api/handy/v1/status": (403, {"ok": False, "grund": "nur_handy"})}
+        self.assertIs(ps.handy_vorhanden("http://h", "J", roh=self.roh(neu)), True)
+        self.assertIs(ps.handy_vorhanden("http://h", "J", roh=self.roh({"/api/handy/v1/status": (405, {})})), True)
+        self.assertIsNone(ps.handy_vorhanden("http://h", "J", roh=self.roh({"/api/ha/v1/zustand": OSError("x"), "/api/handy/v1/status": OSError("x")})))
 
 
 class ModellLack(unittest.TestCase):
