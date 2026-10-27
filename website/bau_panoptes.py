@@ -396,6 +396,10 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
                  ("Autostart erlauben.", "Damit Panoptes von selbst startet. Der Assistent öffnet die richtige Seite.")],
         "ausfuehrlich": "Ausführliche Anleitung mit allen Befehlen (8 Schritte)",
         "ds_detail": "Genau nachlesen: was geht wohin?",
+        # ab 0.1.21 (Kern 12): aWATTar-Börsenpreise
+        "ds_ab_0121": [
+            ("aWATTar (aWATTar GmbH bzw. Deutschland GmbH, api.awattar.at / api.awattar.de)", "Panoptes holt höchstens einmal je Stunde (meist einmal am Tag) die öffentlichen Börsenstrompreise für AT bzw. DE. Es gibt kein Konto, und es werden keine Daten über dich oder dein Auto gesendet; aWATTar sieht nur die Internetadresse des Autos.", "nur wenn du im Ladeplan „Ich habe einen dynamischen Stromtarif“ einschaltest (Standard aus) und als Strompreis zu Hause „Börsenpreis“ wählst. Schalter „dynamischer Stromtarif“ aus: ab sofort kein Abruf mehr."),
+        ],
         # Datenschutz-Zeilen ab 0.1.20 (Kern 12, 27.10.2026): erscheinen automatisch, sobald versionen.json >= 0.1.20 meldet
         "ds_ab_0120": [
             ("go-e Cloud (go-e GmbH, *.api.v3.go-e.io)", "Status und Befehle deiner go-e-Wallbox (laden ja/nein, Ladestrom, Leistung) und dein API-Token. Der Token wird einmal per Handy direkt an dein Auto übergeben und liegt dort verschlüsselt; er geht nie über Panoptes-Server.", "nur wenn du bei der Wallbox „go-e Charger (Cloud)“ wählst und ausdrücklich einwilligst (Standard aus). Einwilligung ausschalten oder Gerät entfernen beendet es sofort."),
@@ -428,6 +432,9 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
                  ("Allow autostart.", "So Panoptes starts by itself. The assistant opens the right page.")],
         "ausfuehrlich": "Detailed guide with all commands (8 steps)",
         "ds_detail": "In detail: what goes where?",
+        "ds_ab_0121": [
+            ("aWATTar (aWATTar GmbH / Deutschland GmbH, api.awattar.at / api.awattar.de)", "Panoptes fetches the public exchange electricity prices for AT or DE at most once per hour (usually once a day). There is no account, and no data about you or your car is sent; aWATTar only sees the car’s internet address.", "only if you switch on “I have a dynamic electricity tariff” in the charge plan (off by default) and choose “Exchange price” as your home electricity price. Switch “dynamic electricity tariff” off: no more requests from then on."),
+        ],
         "ds_ab_0120": [
             ("go-e Cloud (go-e GmbH, *.api.v3.go-e.io)", "Status and commands of your go-e wallbox (charging on/off, charging current, power) and your API token. The token is handed to your car once via your phone and stored there encrypted; it never passes through Panoptes servers.", "only if you choose “go-e Charger (Cloud)” for your wallbox and explicitly consent (off by default). Turning consent off or removing the device stops it immediately."),
             ("Wallbox account (Wallbox Chargers S.L., api.wall-box.com / user-api.wall-box.com)", "Login with your Wallbox account (e-mail and password, stored encrypted in the car), status and commands of your charger. Unofficial interface (as used by Home Assistant).", "only if you choose “Wallbox Pulsar / Commander (Cloud)” and explicitly consent (off by default). Turning consent off or removing the device stops it immediately."),
@@ -804,6 +811,8 @@ def seite(t):
     zeilen = list(t["ds"])
     if tuple(int(x) for x in VERSION.split(".")[:3]) >= (0, 1, 20):   # Zeilen ab 0.1.20 vor „Weitere Dienste“
         zeilen[-1:-1] = t.get("ds_ab_0120", [])
+    if tuple(int(x) for x in VERSION.split(".")[:3]) >= (0, 1, 21):
+        zeilen[-1:-1] = t.get("ds_ab_0121", [])
     for wo, was, wann in zeilen:
         o.append("    <tr><td><b>%s</b></td><td>%s</td><td>%s</td></tr>" % (html.escape(wo), html.escape(was), wann))
     o.append("  </table></div></details>")
