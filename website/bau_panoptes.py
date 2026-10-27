@@ -596,7 +596,7 @@ def diagramm_schmal(s):
 
 # ---- Gemeinsames Aussehen (byd-design.css), gleiches Menü und gleicher Fuß wie alle Seiten von byd.serveone.at ----
 # Vorlage: F:\byd-community\werkzeuge\bau_seiten.py (Homepage-Sitzung, 27.10.2026). Menü/Fuß hier gleich halten.
-CSS_V = "7"
+CSS_V = "8"
 JS_V = "3"
 UMAMI = ('<script defer src="https://analytics.serveone.at/script.js" data-website-id="a7e62dac-cb0b-4ff5-a0cd-4a9b0778cf3b" '
          'data-domains="byd.serveone.at" data-do-not-track="true" data-exclude-search="true"></script>')
