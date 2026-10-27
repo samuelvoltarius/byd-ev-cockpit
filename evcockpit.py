@@ -2698,6 +2698,7 @@ button,input{font:inherit}button:focus-visible,a:focus-visible,input:focus-visib
 .cpset input[type=number]{width:90px}.cpset small{flex:1 1 100%;color:var(--mut);font-size:12px}
 .cpplan{max-width:560px;font-size:13.5px}.cpplan.aus{opacity:.55}.cpplan label{display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap}
 .cpplan input{background:rgba(255,255,255,.06);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:7px 10px;font:inherit}
+.cpsave{border:0;border-radius:11px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer;background:#B5F23D;color:#1d2a00}
 .cpproto{margin-top:12px;font-size:12.5px;color:var(--mut)}.cpproto summary{cursor:pointer}.cpproto div div{margin:3px 0}
 .rmsg-laut{color:#FFC266!important;font-weight:700;font-size:14px!important;border:1px solid rgba(255,194,102,.45);border-radius:10px;padding:8px 12px;margin-top:8px}
 .lkz .m{color:var(--mut);font-size:12.5px;text-align:right}
@@ -3456,7 +3457,7 @@ async function campingLaden(neu){if(neu)CP_AUF=true;if(!CP_AUF)return;clearTimeo
   campingZeichnen(d.status,d.einstellungen||[]);
  }catch(e){document.getElementById('cp_status').textContent='⚠️ '+e.message;}
  CP_T=setTimeout(()=>campingLaden(false),30000);}
-function campingZeichnen(s,set){CPS=s;const an=s.aktiv,probe=s.trockenlauf;
+function campingZeichnen(s,set){CPS=s;const an=s.aktiv,probe=s.trockenlauf;const sub=document.getElementById('cp_sub');if(sub)sub.textContent=an?__T('läuft gerade'):__T('im Auto schlafen · Wärme, Akku, Weckzeit');
  const pr=document.getElementById('cp_probe');pr.style.display=probe?'':'none';
  if(probe)pr.innerHTML='🧪 <b>'+esc(__T('Probelauf – es wird noch nicht geheizt.'))+'</b> '+esc(__T('Panoptes rechnet nur durch, was es schalten würde. Wann das Auto wirklich heizt, stellst du in Panoptes ein, nicht hier.'))+' <a href="/panoptes" style="color:var(--cyan)">'+esc(__T('Panoptes-Einstellungen'))+'</a>';
  let t=an?__T('Camping läuft')+(s.seit?' · '+__T('seit')+' '+cpUhr(s.seit):''):__T('Camping ist aus');
@@ -3492,7 +3493,7 @@ function cpSet(set){const e=document.getElementById('cp_set');if(e.contains(docu
  e.innerHTML=set.filter(f=>f.bearbeitbar).map(f=>{const id='cps_'+f.key.split('.')[1],n=__T(CP_NAME[f.key]||f.key),w=f.wert;let inp='';
   if(f.typ==='auswahl')inp='<select id="'+id+'" data-k="'+f.key+'">'+f.optionen.filter(o=>!o.gesperrt).map(o=>'<option value="'+esc(o.wert)+'"'+(o.wert===w?' selected':'')+'>'+esc(__T(CP_WAERME[o.wert]||o.titel))+'</option>').join('')+'</select>';
   else if(f.typ==='bool')inp='<input type=checkbox id="'+id+'" data-k="'+f.key+'"'+(w?' checked':'')+'>';
-  else if(f.typ==='zeit')inp='<input type=time id="'+id+'" data-k="'+f.key+'" value="'+esc(w||'')+'">;
+  else if(f.typ==='zeit')inp='<input type=time id="'+id+'" data-k="'+f.key+'" value="'+esc(w||'')+'">';
   else inp='<input type=number id="'+id+'" data-k="'+f.key+'" value="'+(w??'')+'"'+(f.min!=null?' min='+f.min:'')+(f.max!=null?' max='+f.max:'')+(f.schritt?' step='+f.schritt:'')+'> '+esc(f.einheit||'');
   return '<label><span>'+esc(n)+'</span>'+inp+(CP_HILFE[f.key]?'<small>'+esc(__T(CP_HILFE[f.key]))+'</small>':'')+'</label>';}).join('')+
   '<div><button type=button onclick="cpSpeichern()" class=cpsave>'+esc(__T('Speichern'))+'</button></div>';
@@ -4382,8 +4383,8 @@ def _ha_ids():
 
 def _ha_client(cid):
     import paho.mqtt.client as mqtt
-    try:                                    # paho 2.x
-        return mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, client_id=cid)
+    try:                                    # paho 2.x: VERSION2 (VERSION1 ist veraltet und meldet eine DeprecationWarning)
+        return mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=cid)
     except AttributeError:                  # paho 1.x kennt CallbackAPIVersion nicht
         return mqtt.Client(client_id=cid)
 
@@ -4424,11 +4425,13 @@ def _ha_discovery(cli):
         cli.publish("homeassistant/button/evc_%s_%s/config" % (v, key), json.dumps(c), retain=True)
 
 
-def _ha_on_connect(cli, u, f, rc):
+def _ha_on_connect(cli, u, f, rc, props=None):
+    """paho 2 (VERSION2): rc ist ein ReasonCode, props kommt mit; paho 1: rc ist eine Zahl."""
     v, base = _ha_ids()
-    _HA["ok"] = (rc == 0)
-    if rc != 0:
-        _HA["err"] = "Broker weist ab (Code %s) — Benutzer/Passwort?" % rc
+    fehler = bool(rc.is_failure) if hasattr(rc, "is_failure") else rc != 0
+    _HA["ok"] = not fehler
+    if fehler:
+        _HA["err"] = "Der MQTT-Server weist ab (Code %s) – Benutzer oder Passwort prüfen." % getattr(rc, "value", rc)
         return
     _HA["err"] = ""
     _ha_discovery(cli)

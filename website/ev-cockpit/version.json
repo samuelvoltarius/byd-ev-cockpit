@@ -1,5 +1,5 @@
 {
-  "version": "1.17.1",
-  "was_neu": "Wallbox automatisch einrichten: über deine Home-Assistant-Verbindung mit einem Klick, Tuya-Geräte im Heimnetz finden",
+  "version": "1.18.0",
+  "was_neu": "Camping im Cockpit: Wärme, Akku-Grenze und Weckzeit einstellen, Status ansehen (mit Panoptes 0.1.16.1)",
   "url": "https://byd.serveone.at/ev-cockpit/neu.html"
 }

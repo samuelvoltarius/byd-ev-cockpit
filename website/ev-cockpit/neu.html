@@ -44,6 +44,18 @@ footer a{color:var(--mut)}
   <p class=lead>Alle Änderungen am EV-Cockpit — das Neueste zuerst.</p>
 
     <section class="ver">
+      <div class="verhead"><h2>Version 1.18</h2><span class="datum">27.10.2026</span></div>
+      <p class="titel">Camping im Cockpit</p>
+      <ul>
+        <li><b>⛺ Camping</b> — mit Panoptes ab 0.1.16.1 zeigt das Cockpit den Camping-Modus deines Autos: ob er läuft, bis wann der Akku für die Heizung reicht, wie oft und wie lange geheizt wird, den Verbrauch und die Außentemperatur. Starten und Beenden geht mit einem Klick; „zu kalt / passt / zu warm“ merkt sich Panoptes.</li>
+        <li><b>🎚️ Einstellen</b> — Wärme, Akku-Untergrenze, Weckzeit, Vorheizen vor dem Schlafen und zur Weckzeit, höchstens wie lange geheizt wird. Gespeichert wird im Auto.</li>
+        <li><b>🧪 Ehrlich</b> — Standard ist der „Probelauf“: Panoptes rechnet nur durch, was es schalten würde, und heizt nicht. Wann das Auto wirklich heizt, stellst du in Panoptes ein, nie im Cockpit. Eine Innentemperatur gibt es nicht, weil der Surf dort keinen Fühler hat.</li>
+        <li><b>📅 Planen</b> — Startzeit und Ende planen ist vorbereitet und schaltet sich frei, sobald Panoptes 0.1.17 das kann.</li>
+        <li><b>🔧 Intern</b> — die MQTT-Bibliothek ist auf die aktuelle Schnittstelle umgestellt (keine Warnmeldung mehr).</li>
+      </ul>
+    </section>
+
+    <section class="ver">
       <div class="verhead"><h2>Version 1.17.1</h2><span class="datum">23.10.2026</span></div>
       <p class="titel">Fehler behoben</p>
       <ul>
