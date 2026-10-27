@@ -40,7 +40,7 @@ class Bruecke(unittest.TestCase):
 
     def test_freigabe_schalter_nie_steuerung(self):
         self.assertIsNone(self.z["modus"])
-        self.assertNotIn("switch.wallbox_steuern_erlaubt", self.z.values())
+        self.assertEqual(self.z["freigabe"], "switch.wallbox_steuern_erlaubt")      # nur als Sperre-Anzeige, nie als Modus
 
     def test_melder_sind_nicht_laedt(self):
         for eid in ("binary_sensor.wallbox_fehler", "binary_sensor.wallbox_erdung_aus", "binary_sensor.wallbox_angesteckt"):
@@ -69,7 +69,9 @@ class Bruecke(unittest.TestCase):
                 return []
             eid = url.rsplit("/", 1)[1]
             s = next(x for x in BRUECKE if x["entity_id"] == eid)
-            return dict(s, state="10" if eid == "select.wallbox_ladestrom" and aufrufe else s["state"])
+            if eid == "switch.wallbox_steuern_erlaubt":
+                return dict(s, state="on")
+            return dict(s, state="10" if eid in ("select.wallbox_ladestrom", "sensor.wallbox_ladestrom_soll") and aufrufe else s["state"])
         q = wq.HaQuelle("http://192.168.1.10", "t", [self.z], http=http, schlaf=lambda s: None)
         r = q.steuern("ha:wallbox", "strom", 10)
         self.assertEqual(aufrufe, [("select/select_option", {"entity_id": "select.wallbox_ladestrom", "option": "10"})])
@@ -81,3 +83,47 @@ class Bruecke(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Sperre(unittest.TestCase):
+    def test_gesperrt_und_echo(self):
+        z = wq.ha_geraete(BRUECKE + [st("sensor.wallbox_ladestrom_soll", "6", unit_of_measurement="A", device_class="current", friendly_name="Wallbox Ladestrom eingestellt")])[0]["zuordnung"]
+        self.assertEqual((z["freigabe"], z["echo"]), ("switch.wallbox_steuern_erlaubt", "sensor.wallbox_ladestrom_soll"))
+        self.assertIsNone(z["modus"])
+        aufrufe = []
+
+        def http(m, url, tok, daten=None, timeout=4.0):
+            if m == "POST":
+                aufrufe.append(url)
+                return []
+            eid = url.rsplit("/", 1)[1]
+            return dict(next(s for s in BRUECKE + [st("sensor.wallbox_ladestrom_soll", "6", unit_of_measurement="A", device_class="current")] if s["entity_id"] == eid))
+        q = wq.HaQuelle("http://192.168.1.10", "t", [z], http=http, schlaf=lambda s: None)
+        lp = q.ladepunkte()[0]
+        self.assertTrue(lp["faehigkeiten"]["gesperrt"])
+        with self.assertRaises(wq.WallboxFehler) as f:
+            wq.pruefe_wert(lp, "strom", 10)
+        self.assertEqual(f.exception.code, "bruecke_gesperrt")
+        with self.assertRaises(wq.WallboxFehler):
+            q.steuern("ha:wallbox", "strom", 10)
+        self.assertEqual(aufrufe, [])               # nichts gesendet
+
+    def test_wartet_bis_echo(self):
+        aufrufe, zaehler = [], [0]
+        z = wq.ha_geraete(BRUECKE + [st("sensor.wallbox_ladestrom_soll", "6", unit_of_measurement="A", device_class="current", friendly_name="Wallbox Ladestrom eingestellt")])[0]["zuordnung"]
+
+        def http(m, url, tok, daten=None, timeout=4.0):
+            if m == "POST":
+                aufrufe.append(url)
+                return []
+            eid = url.rsplit("/", 1)[1]
+            if eid == "switch.wallbox_steuern_erlaubt":
+                return st(eid, "on")
+            if eid == "sensor.wallbox_ladestrom_soll":
+                zaehler[0] += 1
+                return st(eid, "10" if zaehler[0] > 12 else "6", unit_of_measurement="A")
+            return dict(next(s for s in BRUECKE if s["entity_id"] == eid))
+        q = wq.HaQuelle("http://192.168.1.10", "t", [z], http=http, schlaf=lambda s: None)
+        r = q.steuern("ha:wallbox", "strom", 10)
+        self.assertTrue(r["uebernommen"])          # erst nach ~12 Rueckleseversuchen (~12 s) sichtbar -> nicht zu frueh "anderer Wert"
+        self.assertEqual(len(aufrufe), 1)

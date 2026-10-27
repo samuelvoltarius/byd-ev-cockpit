@@ -23,7 +23,8 @@ UHRZEIT = re.compile(r"([01][0-9]|2[0-3]):[0-5][0-9]\Z")
 DOMAENEN = {"laedt": ("binary_sensor", "sensor", "switch", "input_boolean"), "leistung": ("sensor",),
             "modus": ("select", "input_select", "switch"), "ziel": ("number", "input_number"),
             "strom": ("number", "input_number", "select"), "startzeit": ("time", "input_datetime"),
-            "start": ("button",), "stop": ("button",)}
+            "start": ("button",), "stop": ("button",),
+            "freigabe": ("switch", "input_boolean"), "echo": ("sensor",)}   # nur LESEN: Sperre der Bruecke, Echo des Soll-Ladestroms
 # Nie als Wallbox-Steuerung nehmen (Sicherheits-/Geraete-Einstellungen) und nie Fahrzeug-Entitaeten als Wallbox anzeigen.
 NIE_STEUERN = re.compile(r"unearth|earth|erdung|lock|sperre|child|kinder|led|_led|light|licht|display|sound|beep|phase|rcd|"
                          r"reset|restart|neu_starten|reboot|update|firmware|erlaubt|freigabe|maximum_current|max_current|max_strom|calibrat")
@@ -214,7 +215,11 @@ def ha_ladepunkt(z, e):
     nur_uhr = _gueltig(sz) and ((z.get("startzeit") or "").startswith("time.") or (a.get("has_time") and not a.get("has_date")))
     zeit = str(sz["state"])[:5] if nur_uhr else ""
     o["plan"] = {"art": "start_um", "zeit": zeit} if nur_uhr and UHRZEIT.match(zeit) else None
+    fg, ec = e.get("freigabe"), e.get("echo")
+    o["stromEchoA"] = _zahl(ec["state"]) if _gueltig(ec) else None
     o["faehigkeiten"] = {"modus": modi, "ziel": _gueltig(zi), "strom": strom_f, "plan": "start_um" if nur_uhr else None}
+    if _gueltig(fg) and str(fg["state"]).lower() == "off":
+        o["faehigkeiten"]["gesperrt"] = True
     o["erreichbar"] = _erreichbar(e)
     o["entfernt"] = list(z.get("entfernt") or [])
     return o
@@ -284,6 +289,10 @@ def _rolle(s, a, eid, name):
         return None, 0
     wort = 2 if any(w in name for w in WALLBOX_WOERTER) else 0
     einheit, klasse, st, dom = str(a.get("unit_of_measurement") or ""), str(a.get("device_class") or ""), str(s.get("state") or ""), eid.split(".")[0]
+    if dom in ("switch", "input_boolean") and re.search(r"steuern_erlaubt|steuerung_erlaubt|steuern erlaubt|steuerung erlaubt", eid + " " + name):
+        return "freigabe", wort + 5                # Sperre der Wallbox-Bruecke: nur lesen, nie schalten
+    if dom == "sensor" and wort and (einheit == "A" or klasse == "current") and re.search(r"soll|eingestellt|target|setpoint", name):
+        return "echo", wort + 3                    # Echo des eingestellten Ladestroms
     if dom in ("switch", "select", "input_select", "number", "input_number", "button") and NIE_STEUERN.search(eid + " " + name):
         return None, 0
     if dom == "button" and wort:
@@ -379,6 +388,7 @@ def _vorlage(eids):
             "{%- endfor -%}{{ ns.d | tojson }}")
 
 
+WARTE_ECHO_S = 25
 TUYA_DOMAENEN = ("localtuya", "tuya_local", "tuya")
 
 
@@ -442,13 +452,15 @@ class HaQuelle:
         z = self._zuordnung(lid)
         vorher = ha_ladepunkt(z, self._states(z))
         f = vorher["faehigkeiten"]
+        if f.get("gesperrt"):
+            raise WallboxFehler("bruecke_gesperrt", 409)       # nichts senden: die Bruecke wuerde ohnehin ablehnen
         if aktion == "modus":
             if wert not in f["modus"]:
                 raise WallboxFehler("nicht_unterstuetzt")
             eid = z.get("modus") or ""
             if not eid and z.get("start") and z.get("stop"):
                 self._dienst("button", "press", {"entity_id": z["stop"] if wert == "aus" else z["start"]})
-                for i in range(4):
+                for i in range(WARTE_ECHO_S):
                     self.schlaf(0.4 if i == 0 else 1.0)
                     nach = ha_ladepunkt(z, self._states(z))
                     if nach["laedt"] is (wert == "sofort"):
@@ -476,11 +488,11 @@ class HaQuelle:
                 self._dienst("select", "select_option", {"entity_id": z["strom"], "option": str(soll)})
             else:
                 self._dienst(z["strom"].split(".")[0], "set_value", {"entity_id": z["strom"], "value": soll})
-            feld = "stromA"
+            feld = "stromEchoA" if z.get("echo") else "stromA"
         else:
             raise WallboxFehler("nicht_unterstuetzt")
         nach = vorher
-        for i in range(4):                         # viele HA-Wallbox-Integrationen melden verzoegert
+        for i in range(WARTE_ECHO_S):              # schlafende Wallbox: Bruecke wiederholt einmal -> bis ~25 s
             self.schlaf(0.4 if i == 0 else 1.0)
             nach = ha_ladepunkt(z, self._states(z))
             if str(nach.get(feld)) == str(soll):
@@ -686,6 +698,8 @@ def pruefe_wert(lp, aktion, wert):
         raise WallboxFehler("keine_wallbox")
     if lp.get("zuordnung") == "unbekannt":
         raise WallboxFehler("tuya_zuordnung_fehlt")
+    if f.get("gesperrt"):
+        raise WallboxFehler("bruecke_gesperrt", 409)
     if aktion == "modus":
         if wert not in (f.get("modus") or []):
             raise WallboxFehler("nicht_unterstuetzt")
