@@ -71,9 +71,10 @@ class Nachbesserung120(unittest.TestCase):
         self.assertIn("__T('unbekannt')", H)
 
     def test_kein_sprachfeld_unten_rechts(self):
-        self.assertIn("evc-ohne-sprachfeld", H)
-        self.assertIn("meta[name=evc-ohne-sprachfeld]", ev.I18N_BODY)
-        self.assertNotIn("evc-ohne-sprachfeld", ev.COCKPIT)    # alte Seite behaelt es
+        # 1.21: auf keiner Seite mehr die schwebende DE-Pille; Sprache wechselt man unter Mehr -> Deutsch/English
+        self.assertNotIn("position:fixed;right:12px;bottom:12px", ev.I18N_BODY.split("return;   // 1.21")[0])
+        self.assertIn("return;   // 1.21", ev.I18N_BODY)
+        self.assertIn("Deutsch / English", neu_look.hub_html("1"))
 
 
 class Bedienkacheln121(unittest.TestCase):

@@ -1540,7 +1540,7 @@ I18N_BODY = r'''<script>
         Array.prototype.forEach.call(x.addedNodes,function(nd){swap(nd);});});});
       mo.observe(document.body,{childList:true,subtree:true});
     }
-    if(document.querySelector('meta[name=evc-ohne-sprachfeld]'))return;
+    return;   // 1.21: keine schwebende Sprach-Pille mehr; Sprache wechseln unter Mehr -> Deutsch/English
     var SPR=[['de','Deutsch'],['en','English']];
     var b=document.createElement('button');
     b.textContent='🌐 '+LANG.toUpperCase();
@@ -1859,7 +1859,9 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
 
 <!-- ============ 1: WICHTIG ============ -->
 <div class="pan on" data-p=1>
- <div class=warn>
+ <div class=ok id=byd2kurz style="display:none">📡 <b>Du nutzt Panoptes – kein BYD-Konto nötig.</b>
+  <a href="#" onclick="document.getElementById('byd2box').style.display='block';this.style.display='none';return false">Mehr dazu</a></div>
+ <div class=warn id=byd2box>
   <b>⚠️ Bitte lies das hier — es ist der wichtigste Punkt</b><br><br>
   Die BYD-Cloud erlaubt pro Konto nur <b>eine</b> aktive Verbindung. Wenn du hier <b>dasselbe Konto</b>
   einträgst wie in deiner BYD-App am Handy, <b>stören sich beide gegenseitig</b> — mal spinnt das
@@ -1898,7 +1900,7 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
   <input type=checkbox id=disc onchange="schritt1()">
   <div><div class=h>Gelesen und einverstanden</div></div>
  </div>
- <div class=chk>
+ <div class=chk id=ackzeile>
   <input type=checkbox id=ack onchange="schritt1()">
   <div><div class=h>Verstanden — ich verwende ein zweites BYD-Konto</div>
    <small>Oder: mir ist bewusst, dass es sonst mit meiner BYD-App kollidieren kann.</small></div>
@@ -2240,6 +2242,7 @@ code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:5px;font-size:12.5p
 <script>
 const KWH=__KWHMAP__, VOR=__VOR__;
 let SCHRITT=1;
+if(VOR.pan_gekoppelt){document.getElementById('byd2box').style.display='none';document.getElementById('byd2kurz').style.display='block';document.getElementById('ackzeile').style.display='none';}
 const TITEL={1:['Bevor es losgeht','Ein Punkt ist wirklich wichtig — bitte kurz lesen.'],
  2:['Deine Datenquelle','Woher kommen die Werte deines Autos?'],
  3:['Dein Auto','Welches Fahrzeug, und wie groß ist der Akku?'],
@@ -2491,7 +2494,7 @@ async function haSuchen(){const m=document.getElementById('hasrcmsg'), box=docum
 function haPruefen(){const s=document.querySelector('.hasel[data-f=soc]');HA_OK=!!(s&&s.value);n2pruefen();}
 function haMap(){const z={};document.querySelectorAll('.hasel').forEach(s=>{if(s.value)z[s.dataset.f]=s.value;});return z;}
 function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-function schritt1(){const ok=document.getElementById('disc').checked&&document.getElementById('ack').checked;
+function schritt1(){const ok=document.getElementById('disc').checked&&(VOR.pan_gekoppelt||document.getElementById('ack').checked);
  document.getElementById('n1').disabled=!ok;
  document.getElementById('discmsg').textContent=document.getElementById('disc').checked?'':__T('Bitte bestätige die Hinweise, um fortzufahren.');}
 let PAN_POLL=null, PLANER_POLL=null;
@@ -5117,6 +5120,7 @@ class H(BaseHTTPRequestHandler):
                                         "ha", "ha_host", "ha_port", "ha_user",
                                         "pv", "pv_url", "pv_entity",
                                         "datenquelle", "ha_src_url", "ha_src_map")}
+        vor["pan_gekoppelt"] = bool(_panoptes_gekoppelt())
         vor["has_pw"] = bool(_CFG.get("password"))
         vor["has_ha_src_token"] = bool(_CFG.get("ha_src_token"))
         vor["ha_angemeldet"] = bool(_CFG.get("ha_refresh"))
