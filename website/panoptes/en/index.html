@@ -74,6 +74,8 @@ ol.anl{padding-left:1.4em;margin:.2em 0}ol.anl li{margin:.8em 0}
 .anl-h{font-size:19px;margin:26px 0 4px}
 code{background:var(--card2);border:1px solid var(--line);border-radius:6px;padding:1px 5px;font-size:.9em;overflow-wrap:anywhere}
 .hash{font-size:14px;color:var(--mut);overflow-wrap:anywhere;margin:12px 0}
+.topr{display:flex;align-items:center;gap:14px}.topr .topdl{background:var(--grn);color:#04110a;border-radius:999px;padding:4px 12px;font-weight:700}.topr .topdl:hover{text-decoration:none;background:var(--grn2)}
+.herobtns{justify-content:center;margin:22px 0 4px}.btn.gross{font-size:17px;padding:14px 22px}
 .btn.dl{background:var(--grn);color:#04110a;border-color:var(--grn)}.btn.dl:hover{background:var(--grn2);text-decoration:none}
 @media(max-width:720px){.reihe{flex-direction:column;align-items:center}.reihe>a{flex:none!important;width:100%}.reihe>a.hoch{max-width:260px}.hero,.galerie,.paar,.zwei{grid-template-columns:1fr}.hero .handy,.paar .handy{max-width:260px;margin:0 auto}h2{font-size:23px}}
 </style>
@@ -81,8 +83,8 @@ code{background:var(--card2);border:1px solid var(--line);border-radius:6px;padd
 <body>
 <div class="wrap">
 
-  <div class="top"><a href="/">← BYD EU Community</a><a href="../" hreflang="de">🌐 Deutsch</a></div>
-  <header><div class="eyebrow">Free · for BYD with DiLink 3, 4 and 5 · in testing</div><h1>Panoptes — <span class="grad">your BYD, awake and connected</span></h1><p class="sub">An app that runs right on your car's screen, plus an interface you open on your phone or PC: a camera guard, trips and charging with costs, your wallbox, remote access, Telegram notifications, its own map with chargers and a link to the route planner.</p></header>
+  <div class="top"><a href="/">← BYD EU Community</a><span class="topr"><a class="topdl" href="#install">⬇️ Download</a><a href="../" hreflang="de">🌐 Deutsch</a></span></div>
+  <header><div class="eyebrow">Free · for BYD with DiLink 3, 4 and 5 · in testing</div><h1>Panoptes — <span class="grad">your BYD, awake and connected</span></h1><p class="sub">An app that runs right on your car's screen, plus an interface you open on your phone or PC: a camera guard, trips and charging with costs, your wallbox, remote access, Telegram notifications, its own map with chargers and a link to the route planner.</p><div class="btns herobtns"><a class="btn dl gross" href="#install">⬇️ Download Panoptes 0.1.16.1</a><a class="btn gross" href="#install">Guide</a></div></header>
   <div class="reihe"><a href="../bilder/start-pc-dunkel.webp?v=906a35c4" target="_blank" rel="noopener" class="breit" style="flex:1.6000 1 0;aspect-ratio:1440/900"><picture><source media="(prefers-color-scheme: light)" srcset="../bilder/start-pc-hell.webp?v=d918283c"><img src="../bilder/start-pc-dunkel.webp?v=906a35c4" alt="Panoptes home on a PC: charge level, range, map and charging costs" width="1440" height="900" loading="eager" fetchpriority="high"></picture></a><a href="../bilder/start-handy-dunkel.webp?v=741ae942" target="_blank" rel="noopener" class="hoch" style="flex:0.4621 1 0;aspect-ratio:780/1688"><picture><source media="(prefers-color-scheme: light)" srcset="../bilder/start-handy-hell.webp?v=725c8126"><img src="../bilder/start-handy-dunkel.webp?v=741ae942" alt="Panoptes home on a phone: charge level and range" width="780" height="1688" loading="eager" fetchpriority="high"></picture></a></div>
   <div class="note"><b>New, October 2026:</b> Panoptes is now publicly available as <b>test version 0.1.16.1</b>, with source code and a <a href="#install">step-by-step guide</a>. So far it has mainly been tested on a BYD Dolphin Surf (DiLink 3). Panoptes is a private hobby project and not made by BYD. Please read the <a href="hinweise.html">notes</a> before installing.</div>
   <h2 id="funktionen">What Panoptes does</h2>
