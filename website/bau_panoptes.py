@@ -396,9 +396,13 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
                  ("Autostart erlauben.", "Damit Panoptes von selbst startet. Der Assistent öffnet die richtige Seite.")],
         "ausfuehrlich": "Ausführliche Anleitung mit allen Befehlen (8 Schritte)",
         "ds_detail": "Genau nachlesen: was geht wohin?",
-        # ab 0.1.21 (Kern 12): aWATTar-Börsenpreise
+        # ab 0.1.21 (Kern 12): aWATTar-Börsenpreise; Telegram-Anmeldung, /wo, HTTPS/CT, Sitzheizung (Kern 12, DATENSCHUTZ_0.1.21_ENTWURF.md)
         "ds_ab_0121": [
             ("aWATTar (aWATTar GmbH bzw. Deutschland GmbH, api.awattar.at / api.awattar.de)", "Panoptes holt höchstens einmal je Stunde (meist einmal am Tag) die öffentlichen Börsenstrompreise für AT bzw. DE. Es gibt kein Konto, und es werden keine Daten über dich oder dein Auto gesendet; aWATTar sieht nur die Internetadresse des Autos.", "nur wenn du im Ladeplan „Ich habe einen dynamischen Stromtarif“ einschaltest (Standard aus) und als Strompreis zu Hause „Börsenpreis“ wählst. Schalter „dynamischer Stromtarif“ aus: ab sofort kein Abruf mehr."),
+            ('Telegram: Anmeldung an der Weboberfläche', 'Eine kurze Nachricht an deinen eigenen Telegram-Chat mit einer 4-stelligen Prüfzahl und zwei Knöpfen (Erlauben/Ablehnen). Kein Gerätename, kein Browsername, keine IP-Adresse.', 'Nur wenn du im Browser auf „Per Telegram anmelden“ drückst und Telegram in Panoptes eingerichtet ist.'),
+            ('Telegram: Standort bei /wo', 'Die Parkposition des Autos.', 'Nur wenn du /wo schickst UND die Standort-Freigabe dafür eingeschaltet hast. Sonst antwortet Panoptes ohne Position.'),
+            ("Let's Encrypt und öffentliche Certificate-Transparency-Protokolle (über Tailscale)", "Für die App am Handy über HTTPS: Tailscale holt für dein Auto ein Zertifikat bei Let's Encrypt. Dabei wird der Tailscale-Name deines Autos (z. B. auto.dein-tailnet.ts.net) öffentlich und dauerhaft in den Certificate-Transparency-Protokollen eingetragen. Jeder kann diese Namen einsehen. Erreichbar ist das Auto dadurch nicht: Ins Tailnet kommen weiter nur deine eigenen Geräte.", 'Nur wenn du HTTPS in Panoptes selbst einschaltest. Ab Werk ist es aus.'),
+            ('BYD-Cloud: Sitzheizung über die Handy-App', 'Der Befehl (Fahrer- oder Beifahrersitz, Stufe 0–2) über deine BYD-Anmeldung.', 'Nur wenn das Auto aus ist und du die BYD-Cloud eingerichtet hast. Ist das Auto an, schaltet Panoptes direkt im Auto und schickt nichts in die Cloud.'),
         ],
         # Datenschutz-Zeilen ab 0.1.20 (Kern 12, 27.10.2026): erscheinen automatisch, sobald versionen.json >= 0.1.20 meldet
         "ds_ab_0120": [
@@ -432,6 +436,10 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
         "ds_detail": "In detail: what goes where?",
         "ds_ab_0121": [
             ("aWATTar (aWATTar GmbH / Deutschland GmbH, api.awattar.at / api.awattar.de)", "Panoptes fetches the public exchange electricity prices for AT or DE at most once per hour (usually once a day). There is no account, and no data about you or your car is sent; aWATTar only sees the car’s internet address.", "only if you switch on “I have a dynamic electricity tariff” in the charge plan (off by default) and choose “Exchange price” as your home electricity price. Switch “dynamic electricity tariff” off: no more requests from then on."),
+            ('Telegram: web interface sign-in', 'A short message to your own Telegram chat with a 4-digit check number and two buttons (Allow/Deny). No device name, no browser name, no IP address.', 'Only when you tap “Sign in with Telegram” in the browser and Telegram is set up in Panoptes.'),
+            ('Telegram: location with /wo', "The car's parking position.", 'Only when you send /wo AND have switched on location sharing for it. Otherwise Panoptes replies without a position.'),
+            ("Let's Encrypt and public Certificate Transparency logs (via Tailscale)", "For the phone app over HTTPS: Tailscale gets a certificate for your car from Let's Encrypt. This puts your car's Tailscale name (e.g. car.your-tailnet.ts.net) into the Certificate Transparency logs, publicly and permanently. Anyone can see these names. It does not make the car reachable: only your own devices can get into your tailnet.", 'Only if you switch HTTPS on yourself. It is off by default.'),
+            ('BYD cloud: seat heating from the phone app', 'The command (driver or passenger seat, level 0–2) via your BYD login.', 'Only when the car is off and you have set up the BYD cloud. When the car is on, Panoptes switches it inside the car and sends nothing to the cloud.'),
         ],
         "ds_ab_0120": [
             ("go-e Cloud (go-e GmbH, *.api.v3.go-e.io)", "Status and commands of your go-e wallbox (charging on/off, charging current, power) and your API token. The token is handed to your car once via your phone and stored there encrypted; it never passes through Panoptes servers.", "only if you choose “go-e Charger (Cloud)” for your wallbox and explicitly consent (off by default). Turning consent off or removing the device stops it immediately."),
