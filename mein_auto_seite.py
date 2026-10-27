@@ -6,7 +6,7 @@ Nur lesend ausser den drei Schnellknoepfen (Vorheizen, Zusperren, Klima aus) - K
 CSS = r"""
 *{box-sizing:border-box}
 body{margin:0;color:var(--ink);min-height:100vh}
-.wrap{max-width:1280px;margin:0 auto;padding:18px 26px 40px}
+.wrap{max-width:1280px;margin:0 auto;padding:14px 26px 24px}
 .top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
 .top img.lg{width:46px;height:46px;border-radius:12px}
 .top h1{font-family:'Sora',system-ui,sans-serif;font-weight:700;font-size:26px;letter-spacing:-.01em;margin:0}
@@ -18,11 +18,11 @@ body{margin:0;color:var(--ink);min-height:100vh}
 .btn{border:1px solid var(--line);background:rgba(255,255,255,.075);color:var(--ink);border-radius:12px;padding:10px 14px;font:600 13px 'Manrope',system-ui,sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
 .btn:hover{border-color:var(--aqua)}
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
-.card{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:20px;padding:20px;position:relative;overflow:hidden;min-width:0}
+.card{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:20px;padding:16px 18px;position:relative;overflow:hidden;min-width:0}
 .card h2{font-family:'Sora',system-ui,sans-serif;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin:0 0 12px;display:flex;align-items:center;gap:8px}
 .card h2 svg{width:16px;height:16px}
 .card h2 .more{margin-left:auto;text-transform:none;letter-spacing:0;color:var(--aqua);font-weight:600;font-size:13px;text-decoration:none}
-.c-hero{grid-column:span 7;display:grid;grid-template-columns:180px 1fr;gap:26px;align-items:center;padding:22px 24px;background:linear-gradient(135deg,rgba(11,92,102,.45),rgba(10,34,56,.35))}
+.c-hero{grid-column:span 7;display:grid;grid-template-columns:180px 1fr;gap:26px;align-items:center;padding:18px 24px;background:linear-gradient(135deg,rgba(11,92,102,.45),rgba(10,34,56,.35))}
 .c-5{grid-column:span 5}.c-3{grid-column:span 3}
 .gauge{width:180px;height:200px;border-radius:90px 90px 34px 34px;position:relative;overflow:hidden;background:rgba(4,16,27,.55);border:1px solid rgba(95,214,230,.25);box-shadow:inset 0 0 40px rgba(0,0,0,.35)}
 .gauge .water{position:absolute;left:0;right:0;bottom:0;height:var(--lvl,0%);background:linear-gradient(180deg,#43c9db,#0B5C66);transition:height .6s}
@@ -34,12 +34,12 @@ body{margin:0;color:var(--ink);min-height:100vh}
 .hero-txt .range small{font-size:22px;color:var(--ink-2);font-weight:600;margin-left:4px}
 .hero-txt .band{color:var(--ink-2);font-size:14px;margin:8px 0 16px}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
-.carimg{height:132px;margin:-4px 0 4px;display:grid;place-items:center}
-.carimg canvas{width:100%;max-width:300px;height:132px;display:block}
+.carimg{height:104px;margin:-6px 0 2px;display:grid;place-items:center}
+.carimg canvas{width:100%;max-width:260px;height:104px;display:block}
 .carimg .ph{color:var(--ink-3);font-size:13px;text-align:center}
-.cname{text-align:center;font-size:12px;color:var(--ink-3);margin-bottom:12px;min-height:16px}
+.cname{text-align:center;font-size:12px;color:var(--ink-3);margin-bottom:10px;min-height:16px}
 .acts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.act{border:1px solid var(--line);background:rgba(255,255,255,.075);color:var(--ink);border-radius:16px;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;font:600 13px 'Manrope',system-ui,sans-serif;cursor:pointer}
+.act{border:1px solid var(--line);background:rgba(255,255,255,.075);color:var(--ink);border-radius:16px;padding:11px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;font:600 13px 'Manrope',system-ui,sans-serif;cursor:pointer}
 .act svg{width:24px;height:24px;color:var(--aqua)}
 .act.primary{background:var(--lime);color:var(--lime-ink);border-color:transparent}.act.primary svg{color:var(--lime-ink)}
 .act.busy{opacity:.5;pointer-events:none}.act[disabled]{opacity:.5;cursor:not-allowed}
@@ -130,11 +130,13 @@ BODY = r"""<body class=mein-auto>
 </div>
 <script>
 const KARTEN_STIL='__KARTENSTIL__';
-let S=null,DATA_TS=0,MSGHOLD=0,HANDY_OK;
+let S=null,DATA_TS=0,MSGHOLD=0,HANDY_OK,LADEN_ZEILEN=[];
 const el=id=>document.getElementById(id);
 const n=v=>(v==null||v==='')?'–':v;
 const z=(v,d)=>v==null?'–':Number(v).toFixed(d==null?0:d).replace('.',window.__LANG__==='en'?'.':',');
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function modell(m){m=m||'';const lin=((m.match(/\(([^)]*)\)/)||[])[1]||'').trim();let nm=m.replace(/\([^)]*\)/,'').split('/')[0].trim();
+ if(/dolphin surf|seagull/i.test(m))nm='BYD Dolphin Surf';return {nm:nm,lin:lin};}
 function mehrUm(e){e.stopPropagation();el('mehr').classList.toggle('on');}
 document.addEventListener('click',()=>el('mehr').classList.remove('on'));
 function sprache(){try{localStorage.setItem('evc_lang',window.__LANG__==='en'?'de':'en');}catch(e){}location.reload();return false;}
@@ -142,7 +144,8 @@ const WZ={scharf:['scharf','ok'],startet:['startet',''],unterdrueckt:['pausiert 
 function zeichne(s){
  S=s;DATA_TS=(s._poll_ts?s._poll_ts*1000:Date.now());
  const en=window.__LANG__==='en';
- el('sub').textContent=[s.model||'',__T('Daten von')+' '+new Date(DATA_TS).toLocaleTimeString(en?'en-GB':'de-AT',{hour:'2-digit',minute:'2-digit'}),
+ const mo=modell(s.model);
+ el('sub').textContent=[mo.nm+(mo.lin?' ('+mo.lin+')':''),__T('Daten von')+' '+new Date(DATA_TS).toLocaleTimeString(en?'en-GB':'de-AT',{hour:'2-digit',minute:'2-digit'}),
   s.gear==='P'?__T('geparkt'):(s.gear?__T('Gang')+' '+s.gear:'')].filter(Boolean).join(' · ');
  // Kopf-Pillen
  const wz=WZ[s.waechter_zustand];
@@ -162,10 +165,14 @@ function zeichne(s){
  const ch=[];if(s.gear)ch.push('Gang '+s.gear);if(s.v12!=null)ch.push('12 V · '+z(s.v12,1)+' V');if(s.odometer!=null)ch.push(Math.round(s.odometer).toLocaleString(en?'en-GB':'de-AT')+' km');
  el('chips').innerHTML=ch.map(c=>'<span class=pill>'+esc(c)+'</span>').join('');
  // Kacheln
- el('t_laden').textContent=lad;
- el('t_laden2').innerHTML=(s.charging==='ON'&&s.charge_power!=null?z(Math.abs(s.charge_power),1)+' kW':'')+(s.consumption_avg!=null?(s.charging==='ON'?'<br>':'')+'Ø '+z(s.consumption_avg,1)+' kWh/100 km':'');
- el('t_klima').textContent=s.klima_on==='ON'?__T('an'):s.klima_on==='OFF'?__T('aus'):'–';
- el('t_klima2').textContent=[s.temp_out!=null?__T('Außen')+' '+z(s.temp_out,0)+' °C':'',__T('innen unbekannt')].filter(Boolean).join(' · ');
+ LADEN_ZEILEN=[];
+ if(s.charging==='ON'){
+  el('t_laden').textContent=__T('lädt')+(s.charge_power!=null?' · '+z(Math.abs(s.charge_power),1)+' kW':'');
+  LADEN_ZEILEN.push(s.charge_remaining?__T('Restzeit')+' '+s.charge_remaining:__T('Restzeit meldet Panoptes gerade nicht'));
+ }else{el('t_laden').textContent=lad;}
+ el('t_laden2').innerHTML=LADEN_ZEILEN.map(esc).join('<br>');
+ el('t_klima').textContent=s.klima_on==='ON'?__T('an'):s.klima_on==='OFF'?__T('aus'):__T('unbekannt');
+ el('t_klima2').textContent=[s.temp_out!=null?__T('Außen')+' '+z(s.temp_out,0)+' °C':'',__T('Innentemperatur meldet Panoptes nicht')].filter(Boolean).join(' · ');
  const tz=s.doors_open==='ON'?__T('offen'):s.doors_open==='OFF'?__T('alle zu'):'–';
  el('t_tuer').textContent=tz;el('t_tuer').className='v '+(s.doors_open==='ON'?'warn':'');
  el('t_tuer2').textContent=s.windows_open==='ON'?__T('Fenster offen'):s.windows_open==='OFF'?__T('Fenster zu'):__T('Fenster meldet Panoptes gerade nicht');
@@ -229,9 +236,9 @@ async function auto3d(s){
   const farbe=i.farbe||((i.farben||[])[0]||{}).hex||'#E8E8EC';lack.forEach(m=>m.color&&m.color.set(farbe));
   const gro=()=>{const w=cv.clientWidth||300,h=cv.clientHeight||132;r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();};gro();window.addEventListener('resize',gro);
   r.setAnimationLoop(()=>{if(document.hidden)return;pivot.rotation.y+=0.004;r.render(sc,cam);});
-  el('cname').innerHTML=esc(i.name||s.model||'')+' · 3D: '+esc(i.author||'')+(i.license?', '+esc(String(i.license).replace('-',' ').replace('-',' ')):'')+' · <a href="'+esc(i.lizenzen||'#')+'" target=_blank rel=noopener style="color:inherit" title="'+esc(i.attribution||'')+'">'+esc(__T('Lizenz'))+'</a>';
+  el('cname').innerHTML=esc(modell(S&&S.model).nm||i.name||'')+' · 3D: '+esc(i.author||'')+(i.license?', '+esc(String(i.license).replace('-',' ').replace('-',' ')):'')+' · <a href="'+esc(i.lizenzen||'#')+'" target=_blank rel=noopener style="color:inherit" title="'+esc(i.attribution||'')+'">'+esc(__T('Lizenz'))+'</a>';
   AUTO3D.ok=true;
- }catch(e){AUTO3D.ok=false;el('car').innerHTML='<div class=ph>🚗 '+esc((S&&S.model)||'')+'</div>';el('cname').textContent=(S&&S.model)||'';}}
+ }catch(e){AUTO3D.ok=false;el('car').innerHTML='<div class=ph>🚗 '+esc(modell(S&&S.model).nm)+'</div>';el('cname').textContent=modell(S&&S.model).nm;}}
 // kleine Karte (nur mit Einwilligung fuer die Community-Karte), sonst Koordinaten
 let MAPOBJ=null;
 async function karte(s){
@@ -277,8 +284,11 @@ async function load(){
   if(s.abfrage&&s.abfrage.takt_s)t=Math.min(60000,Math.max(5000,s.abfrage.takt_s*500));}catch(e){}
  try{const w=await (await fetch('/wallbox/status',{cache:'no-store'})).json();const lp=w&&w.ok&&w.quelle&&w.ladepunkte&&w.ladepunkte[0];
   if(lp&&S){const k=lp.leistungW!=null?z(Math.round(lp.leistungW/100)/10,1)+' kW':'–';
-   el('t_laden2').innerHTML=(el('t_laden2').innerHTML?el('t_laden2').innerHTML+'<br>':'')+'Wallbox: '+esc(lp.erreichbar===false?__T('nicht erreichbar'):lp.laedt?__T('lädt'):__T('bereit'))+' · '+k+(lp.stromA!=null?' · '+lp.stromA+' A':'')+
-    (lp.faehigkeiten&&lp.faehigkeiten.gesperrt?'<br>🔒 '+esc(__T('Steuerung an der Wallbox-Brücke gesperrt'))+'':'');}}catch(e){}
+   const zl=LADEN_ZEILEN.map(esc);
+   if(S.charging==='ON'&&typeof lp.zielSoc==='number')zl.push(esc(__T('Ziel'))+' '+lp.zielSoc+' %');
+   zl.push('Wallbox: '+esc(lp.erreichbar===false?__T('nicht erreichbar'):lp.laedt?__T('lädt'):__T('bereit'))+' · '+k+(lp.stromA!=null?' · '+lp.stromA+' A':''));
+   if(lp.faehigkeiten&&lp.faehigkeiten.gesperrt)zl.push('🔒 '+esc(__T('Steuerung an der Wallbox-Brücke gesperrt')));
+   el('t_laden2').innerHTML=zl.join('<br>');}}catch(e){}
  TIMER=setTimeout(load,t);}
 function manualRefresh(){clearTimeout(TIMER);fetch('/jetzt',{method:'POST'}).catch(function(){}).then(function(){setTimeout(load,1500);});}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){clearTimeout(TIMER);load();}else clearTimeout(TIMER);});
@@ -287,6 +297,7 @@ load();
 
 HEAD = """<!doctype html><html lang=de><head><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1"><title>Panoptes Cockpit</title>
+<meta name=evc-ohne-sprachfeld content=1>
 <script type=importmap>{"imports":{"three":"/static/three/three.module.min.js"}}</script>
 <style>""" + CSS + """</style></head>"""
 

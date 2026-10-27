@@ -48,3 +48,23 @@ class MeinAuto(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Nachbesserung120(unittest.TestCase):
+    def test_modellname_nur_dolphin_surf(self):
+        self.assertIn("nm='BYD Dolphin Surf'", H)
+        self.assertIn("modell(S&&S.model).nm", H)             # Bildunterschrift nimmt den bereinigten Namen
+        self.assertNotIn("el('sub').textContent=[s.model", H)
+
+    def test_laden_kachel_zeigt_leistung_restzeit_ziel(self):
+        for t in ("charge_power", "charge_remaining", "lp.zielSoc", "Restzeit meldet Panoptes gerade nicht"):
+            self.assertIn(t, H)
+        self.assertNotIn("kWh/100 km", H)                      # kein Verbrauch in der Laden-Kachel
+
+    def test_klima_nie_nur_strich(self):
+        self.assertIn("__T('unbekannt')", H)
+
+    def test_kein_sprachfeld_unten_rechts(self):
+        self.assertIn("evc-ohne-sprachfeld", H)
+        self.assertIn("meta[name=evc-ohne-sprachfeld]", ev.I18N_BODY)
+        self.assertNotIn("evc-ohne-sprachfeld", ev.COCKPIT)    # alte Seite behaelt es
