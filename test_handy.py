@@ -73,3 +73,21 @@ class Pruefen(unittest.TestCase):
         def weg(*a, **k):
             raise OSError("x")
         self.assertIsNone(ps.handy_vorhanden("http://h", "J", roh=weg))
+
+
+class ModellLack(unittest.TestCase):
+    def test_felder_aus_zustand(self):
+        z = {"geraet": {"modell": "BYD Dolphin Surf", "modellId": "seagull", "lack": {"id": "aurora-white", "name": "Aurora White", "hex": "#e8e8ec"}}}
+        o = ps.modell_aus_zustand(z)
+        self.assertEqual(o, {"pan_modell": "BYD Dolphin Surf", "pan_modell_id": "seagull",
+                             "pan_lack": {"id": "aurora-white", "name": "Aurora White", "hex": "#E8E8EC"}})
+
+    def test_nur_gepruefte_werte(self):
+        z = {"geraet": {"modell": "<b>X</b>", "modellId": "../etc", "lack": {"hex": "rot"}}}
+        o = ps.modell_aus_zustand(z)
+        self.assertNotIn("pan_modell_id", o)
+        self.assertNotIn("pan_lack", o)
+        self.assertNotIn("<", o["pan_modell"])
+        self.assertEqual(ps.modell_aus_zustand({}), {})
+        self.assertEqual(ps.modell_aus_zustand({"geraet": None}), {})
+        self.assertEqual(ps.modell_aus_zustand({"geraet": {"lack": None, "modell": ""}}), {})

@@ -93,7 +93,7 @@ class TestPanoptes(unittest.TestCase):
         self.assertEqual((st["soc"], st["online"], st["_quelle"]), (70.0, "ON", "Panoptes"))
         # 1.9.8: nutzbare Akku-kWh hoechstens alle 6 h aus der Uebersicht (hier ohne Antwort -> kein Wert)
         self.assertEqual([a[0] for a in f.aufrufe], ["/auth/kopplung", "/auth/token", "/api/mqtt/telemetry",
-                                                     "/api/vehicle/state", "/api/launcher/v1/summary"])
+                                                     "/api/vehicle/state", "/api/launcher/v1/summary", "/api/ha/v1/zustand"])   # Modell + Lack (0.1.20), alle 10 min
         self.assertNotIn("usable_kwh", st)
         p.lies()
         self.assertEqual([a[0] for a in f.aufrufe][-1], "/api/mqtt/telemetry")   # nicht schon wieder

@@ -212,7 +212,7 @@ function kachelUm(k){const t=el('t_'+k),war=t.classList.contains('open');
 const WZ={scharf:['scharf','ok'],startet:['startet',''],unterdrueckt:['pausiert (sicherer Ort)',''],aus:['aus','warn'],nicht_gewaehlt:['bitte wählen','warn']};
 function zeichne(s){
  S=s;DATA_TS=(s._poll_ts?s._poll_ts*1000:Date.now());
- const en=window.__LANG__==='en',mo=modell(s.model);
+ const en=window.__LANG__==='en',mo=modell(s.pan_modell||s.model);
  el('sub').textContent=[mo.nm+(mo.lin?' ('+mo.lin+')':''),__T('Daten von')+' '+new Date(DATA_TS).toLocaleTimeString(en?'en-GB':'de-AT',{hour:'2-digit',minute:'2-digit'}),
   s.gear==='P'?__T('geparkt'):(s.gear?__T('Gang')+' '+s.gear:'')].filter(Boolean).join(' · ');
  const wz=WZ[s.waechter_zustand],pw=el('pw');
@@ -309,7 +309,7 @@ async function auto3d(s){
   const farbe=i.farbe||((i.farben||[])[0]||{}).hex||'#E8E8EC';lack.forEach(m=>m.color&&m.color.set(farbe));
   const gro=()=>{const w=cv.clientWidth||240,h=cv.clientHeight||88;r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();};gro();window.addEventListener('resize',gro);
   r.setAnimationLoop(()=>{if(document.hidden)return;pivot.rotation.y+=0.004;r.render(sc,cam);});
-  el('cname').innerHTML=esc(modell(S&&S.model).nm||i.name||'')+' · 3D: '+esc(i.author||'')+(i.license?', '+esc(String(i.license).replace('-',' ').replace('-',' ')):'')+' · <a href="'+esc(i.lizenzen||'#')+'" target=_blank rel=noopener style="color:inherit" title="'+esc(i.attribution||'')+'">'+esc(__T('Lizenz'))+'</a>';
+  el('cname').innerHTML=esc(modell((S&&(S.pan_modell||S.model))||'').nm||i.name||'')+(i.lackName?' · '+esc(i.lackName):'')+' · 3D: '+esc(i.author||'')+(i.license?', '+esc(String(i.license).replace('-',' ').replace('-',' ')):'')+' · <a href="'+esc(i.lizenzen||'#')+'" target=_blank rel=noopener style="color:inherit" title="'+esc(i.attribution||'')+'">'+esc(__T('Lizenz'))+'</a>';
   AUTO3D.ok=true;
  }catch(e){AUTO3D.ok=false;el('car').innerHTML='<div class=ph>🚗 '+esc(modell(S&&S.model).nm)+'</div>';el('cname').textContent=modell(S&&S.model).nm;}}
 // kleine Karte (nur mit Einwilligung fuer die Community-Karte), sonst Koordinaten

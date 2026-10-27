@@ -18,6 +18,7 @@ import urllib.request
 TIMEOUT = 6
 SCHLOSS_TAKT_S = 120      # Zentralverriegelung aus /api/vehicle/state hoechstens alle 2 min
 AKKU_TAKT_S = 6 * 3600   # nutzbare Akku-kWh aendert sich kaum: hoechstens alle 6 h nachsehen
+MODELL_TAKT_S = 600        # Modell + Lack des Autos (Panoptes 0.1.20, /api/ha/v1/zustand geraet.*): alle 10 min
 ODO_TAKT_S = 600          # Kilometerstand separat nur alle 10 min (der Endpunkt kann Cloud-Abfragen ausloesen)
 
 
@@ -158,6 +159,7 @@ class Panoptes:
         self.http, self.uhr = http, uhr
         self.jwt_gespeichert = jwt_gespeichert or (lambda j, code_verbraucht=False: None)
         self.odo_t = 0.0
+        self.modell_t, self.modell_info = -1e9, {}
         self.akku_t = 0.0
         self.schloss, self.schloss_t, self.tueren = None, 0.0, None
         self.code_verbraucht = False
@@ -272,6 +274,15 @@ class Panoptes:
                         st["usable_kwh"] = kwh
                 except Exception:
                     pass
+            if self.uhr() - self.modell_t >= MODELL_TAKT_S:
+                self.modell_t = self.uhr()
+                try:
+                    self.modell_info = modell_aus_zustand(self._get("/api/ha/v1/zustand"))
+                except NichtAngemeldet:
+                    raise
+                except Exception:
+                    pass                        # aelteres Panoptes ohne diese Felder: alter Stand bleibt leer
+            st.update(self.modell_info)
             self.letzter_fehler = ""
             st["online"] = "ON"
             st["_quelle"] = "Panoptes"
@@ -281,6 +292,25 @@ class Panoptes:
             return None
         except Exception:
             return None
+
+
+def modell_aus_zustand(z):
+    """Panoptes 0.1.20: /api/ha/v1/zustand -> geraet.modell (Anzeigename), modellId, lack {id,name,hex}. Nur geprueft uebernehmen."""
+    import re
+    g = (z or {}).get("geraet") if isinstance(z, dict) else None
+    o = {}
+    if not isinstance(g, dict):
+        return o
+    m = g.get("modell")
+    if isinstance(m, str) and m.strip():
+        o["pan_modell"] = re.sub(r"[\x00-\x1f<>]", "", m.strip())[:60]
+    mid = g.get("modellId")
+    if isinstance(mid, str) and re.fullmatch(r"[a-z0-9][a-z0-9-]{0,31}", mid):
+        o["pan_modell_id"] = mid
+    lk = g.get("lack")
+    if isinstance(lk, dict) and isinstance(lk.get("hex"), str) and re.fullmatch(r"#[0-9A-Fa-f]{6}", lk["hex"]):
+        o["pan_lack"] = {"id": str(lk.get("id") or "")[:32], "name": re.sub(r"[\x00-\x1f<>]", "", str(lk.get("name") or ""))[:40], "hex": lk["hex"].upper()}
+    return o
 
 
 def kennung_aus(d):

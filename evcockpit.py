@@ -5086,7 +5086,7 @@ class H(BaseHTTPRequestHandler):
             # Gleiche 3D-Modelle wie Panoptes (Manifest auf byd.serveone.at/tiles/models/), mit Pflicht-Namensnennung
             try:
                 import modell3d
-                mid = modell3d.modell_id(_CFG.get("model"))
+                mid = _STATE.get("pan_modell_id") or modell3d.modell_id(_CFG.get("model"))     # Auto ist die Quelle (Panoptes 0.1.20)
                 if _CFG.get("modell3d") is not True or not mid:       # nur mit Einwilligung (Regel 2)
                     return self._send(json.dumps({"verfuegbar": False, "still": True}), "application/json")
                 try:
@@ -5100,7 +5100,9 @@ class H(BaseHTTPRequestHandler):
                     return self._send(json.dumps({"verfuegbar": False, "grund": "Modell „%s“ ist gerade nicht verfügbar" % mid}),
                                       "application/json")
                 d = modell3d.info(m, mani.get("paintPresets") or [])
-                d["farbe"] = _CFG.get("lackfarbe") or ""
+                pl = _STATE.get("pan_lack")
+                d["farbe"] = (pl or {}).get("hex") or _CFG.get("lackfarbe") or ""      # echte Lackfarbe aus Panoptes, sonst die alte Wahl
+                d["lackName"] = (pl or {}).get("name") or ""
                 self._send(json.dumps(d), "application/json")
             except Exception as e:
                 print("3D-Modell: Fehler:", type(e).__name__, e)
@@ -5108,7 +5110,7 @@ class H(BaseHTTPRequestHandler):
         elif p == "/modell3d/datei":
             try:
                 import modell3d
-                m = modell3d.eintrag(_MANIFEST.get(), modell3d.modell_id(_CFG.get("model")))
+                m = modell3d.eintrag(_MANIFEST.get(), _STATE.get("pan_modell_id") or modell3d.modell_id(_CFG.get("model")))
                 if not m or _CFG.get("modell3d") is not True:
                     raise LookupError
                 self._send(Path(modell3d.datei(m, str(MODELL_DIR))).read_bytes(), "model/gltf-binary")
