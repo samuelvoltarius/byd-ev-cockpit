@@ -475,7 +475,7 @@ async function lpLaden(){const b=el('lp_box');if(!b)return;
  try{const d=await (await fetch('/panoptes/ladeplan',{cache:'no-store'})).json();
   if(!d.ok){const T={nicht_gekoppelt:'Erst mit Panoptes verbinden (Mehr → Einstellungen).',zu_alt:'Dein Panoptes kann den Ladeplan noch nicht (ab Version 0.1.20).',
     zugriff:'Panoptes erlaubt dem Cockpit das Lesen des Ladeplans nicht. Bitte das Cockpit unter Mehr → Einstellungen neu mit Panoptes verbinden.',fehler:'Panoptes antwortet gerade nicht.'};
-   b.innerHTML='<div class=warnb>'+esc(__T(T[d.grund]||T.fehler))+'</div>';return;}
+   b.innerHTML='<div class=warnb>'+esc(__T(T[d.grund]||T.fehler))+'</div>'+(d.grund==='zugriff'||d.grund==='nicht_gekoppelt'?'<div class=row2 style="margin-top:8px"><a class="btn lime" href="/setup">🔗 '+esc(__T('Mit Panoptes verbinden'))+'</a></div>':'');return;}
   const e=d.einstellungen||{},z0=d.zustand||{},ab=e.abfahrt||{},wt=ab.werktag||{},we=ab.wochenende||{};
   const an=e.modus&&e.modus!=='aus',zeile=[];
   zeile.push('<span class="pill '+(an?'':'aus')+'"><i class="dot '+(an?'ok':'')+'"></i>'+esc(__T('Ladeplan'))+': '+esc(an?__T('an'):__T('aus'))+'</span>');
