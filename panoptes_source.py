@@ -399,6 +399,16 @@ HANDY_GRUENDE = {
     "auto_laeuft": "Das Auto ist eingeschaltet. Das geht nur, wenn es aus ist.",
     "gate": "Panoptes lässt den Befehl gerade nicht zu.",
     "keine_antwort": "Panoptes antwortet nicht.",
+    "werte": "Sitz oder Stufe ungültig.",
+    "cloud_gate_car_on": "Das Auto ist eingeschaltet. Das geht nur, wenn es aus ist.",
+    "cloud_gate_state_unknown": "Ob das Auto aus ist, weiß Panoptes gerade nicht. Bitte kurz warten.",
+    "cloud_gate_state_stale": "Der Zustand des Autos ist veraltet. Bitte kurz warten.",
+    "ratenlimit_cloud": "Zu viele Befehle an die BYD-Cloud. Bitte kurz warten.",
+    "cloud_nicht_eingerichtet": "Das Auto ist aus und in Panoptes ist kein BYD-Konto eingerichtet.",
+    "kein_cloud_konto": "In Panoptes ist kein BYD-Konto eingerichtet.",
+    "nicht_unterstuetzt": "Das kann dieses Auto nicht.",
+    "cloud_nicht_erreichbar": "Die BYD-Cloud antwortet gerade nicht.",
+    "fehlgeschlagen": "Der Befehl hat nicht geklappt.",
 }
 
 
