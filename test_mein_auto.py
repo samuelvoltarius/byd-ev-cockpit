@@ -8,6 +8,7 @@ _D = tempfile.mkdtemp()
 os.environ["EVCOCKPIT_CFGDIR"] = _D
 import evcockpit as ev  # noqa: E402
 import mein_auto_seite  # noqa: E402
+import neu_look  # noqa: E402
 
 H = mein_auto_seite.seite("https://x/stil.json", "http://100.1.2.3:8180", ev.COCKPIT)
 
@@ -34,9 +35,13 @@ class MeinAuto(unittest.TestCase):
         self.assertTrue((ev.STATIC_DIR / "panoptes-logo.svg").exists())
         self.assertIn("panoptes-logo.svg", ev.ICONS)
 
-    def test_mehr_menue_hat_das_cockpit_eigene(self):
-        for ziel in ('href="/setup"', 'href="/klassisch#d_energie"', 'href="/klassisch"', 'href="/about"'):
-            self.assertIn(ziel, H)
+    def test_mehr_fuehrt_zur_neuen_seite_und_nichts_zur_alten_ansicht(self):
+        self.assertIn("location.href='/mehr'", H)
+        self.assertNotIn("/klassisch", H)
+        hub = neu_look.hub_html("1.21")
+        for ziel in ('href="/setup"', 'href="/panoptes"', 'href="/energie"', 'href="/laden"', 'href="/fahrten"', 'href="/aufnahmen"',
+                     'href="/karte"', 'href="/takt"', 'href="/about"'):
+            self.assertIn(ziel, hub)
 
     def test_karte_nur_mit_stil(self):
         self.assertIn("const KARTEN_STIL='https://x/stil.json'", H)
@@ -152,3 +157,26 @@ class Boersenpreis1204(unittest.TestCase):
             ev._CFG.update(alt_cfg)
             ev._TARIF.clear()
             ev._TARIF.update(alt_t)
+
+
+class Unterseiten121(unittest.TestCase):
+    """1.21: jede frueher nur in /klassisch erreichbare Funktion hat eine Seite im neuen Look; die alte Ansicht wird nicht mehr ausgeliefert."""
+    def test_jede_seite_zeigt_nur_ihren_bereich(self):
+        for pfad, (titel, sicht, auf) in neu_look.SEITEN.items():
+            h = neu_look.sektion_html(ev.COCKPIT, pfad)
+            self.assertIn("name=evc-neu", h, pfad)
+            for i in neu_look.ALLE_BEREICHE:
+                if i not in sicht and i != "taktseite":
+                    self.assertIn("#%s{display:none!important}" % i, h, (pfad, i))
+                else:
+                    self.assertNotIn("#%s{display:none!important}" % i, h, (pfad, i))
+
+    def test_klassisch_wird_nicht_mehr_im_alten_design_ausgeliefert(self):
+        src = open(os.path.join(os.path.dirname(__file__), "evcockpit.py"), encoding="utf-8").read()
+        self.assertIn('p in ("/mehr", "/klassisch")', src)
+        self.assertNotIn('elif p != "/klassisch"', src)
+
+    def test_alle_unterseiten_tragen_das_neue_stylesheet(self):
+        for h in (ev._i18n(ev.ABOUT.replace("__VERSION__", "1")), ev._i18n(ev.PANOPTES_SEITE), ev._i18n(ev.WIZARD)):
+            self.assertIn("id=uni", h)
+            self.assertNotIn("font:16px/1.55 system-ui", h)

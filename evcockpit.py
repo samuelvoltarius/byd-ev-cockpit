@@ -392,6 +392,7 @@ def _auth_failure(error):
 
 from sicherheit import befehl_erlaubt, aus_letzter_abfrage, ERLAUBTE_BEFEHLE, NIE
 from live_saeulen import Live
+import neu_look
 
 _LIVE = Live()
 
@@ -1550,7 +1551,11 @@ ICONS = {"logo-glyph.png": "image/png", "logo-glyph-hell.png": "image/png", "fav
 
 def _i18n(h):
     h = h.replace('<head><meta charset=utf-8>', '<head><meta charset=utf-8>' + ICON_KOPF + I18N_HEAD, 1)
-    if '</head>' in h:
+    if 'name=evc-neu' in h:
+        # 1.21: Unterseite im Panoptes-Look: das alte erste <style> faellt weg, das gemeinsame Stylesheet kommt davor
+        h = re.sub(r"<style>.*?</style>", "", h, count=1, flags=re.S)
+        h = h.replace('</head>', LOOK_CSS + RAHMEN_CSS + neu_look.UNI_CSS + '</head>', 1).replace('<body>', '<body>' + neu_look.ICONS, 1)
+    elif '</head>' in h:
         h = h.replace('</head>', LOOK_CSS + ('' if 'evc-ohne-sprachfeld' in h else RAHMEN_CSS) + '</head>', 1)
     return h.replace('</body>', ('' if 'evc-ohne-sprachfeld' in h else RAHMEN_JS) + I18N_BODY + '</body>', 1) if '</body>' in h else h + I18N_BODY
 
@@ -1568,13 +1573,6 @@ RAHMEN_CSS = """<style>
 .evc-kopf a.zu{border:1px solid rgba(160,230,240,.14);background:rgba(255,255,255,.075);color:#EAF6F8;border-radius:12px;padding:9px 14px;font:600 13px 'Manrope',system-ui,sans-serif;text-decoration:none}
 .evc-kopf a.zu:hover{border-color:#5FD6E6}
 .evc-kopf a.lg{display:flex;align-items:center;gap:14px;text-decoration:none}
-.card,.panel,details{border-radius:20px!important;border-color:rgba(160,230,240,.14)}
-h1,h2,h3{font-family:'Sora',system-ui,sans-serif}
-button.sec,.sbtn{border-radius:12px}
-.nav button:not(.sec),.nav #n2{background:#B5F23D!important;color:#1d2a00!important;border-radius:12px;font-family:'Manrope',system-ui,sans-serif}
-button{font-family:'Manrope',system-ui,sans-serif}
-input[type=checkbox],input[type=radio]{accent-color:#B5F23D}
-input:focus,select:focus,textarea:focus{outline:2px solid rgba(95,214,230,.55);outline-offset:1px}
 @media(max-width:620px){.evc-kopf{padding:12px 14px 2px}}
 </style>"""
 RAHMEN_JS = r"""<script>(function(){function b(){var t=(document.title||'').replace(/^EV-Cockpit\s*[—-]\s*/,'')||'Cockpit';var d=document.createElement('div');d.className='evc-kopf';
@@ -1608,6 +1606,7 @@ h1,h2,h3,.sect,.big,.val,.v,.nav button,.kpi,.num{font-family:'Sora',system-ui,s
 
 ABOUT = r"""<!doctype html><html lang=de><head><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1"><title>EV-Cockpit — Über &amp; Rechtliches</title>
+<meta name=evc-neu content=1>
 <style>
 :root{--blue:#5FD6E6;--txt:#EAF6F8;--mut:#A9C7CE;--line:rgba(160,230,240,.18)}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(1100px 700px at 50% -8%,#0d3a4a,#071a2b 55%,#04101b);
@@ -1697,16 +1696,13 @@ small{color:var(--mut)}
 # Generisch aus GET /api/einstellungen/schema (Vertrag EINSTELLUNGEN_SCHEMA.md) - keine eigene Feldliste.
 PANOPTES_SEITE = r"""<!doctype html><html lang=de><head><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1"><title>EV-Cockpit — Panoptes-Einstellungen</title>
+<meta name=evc-neu content=1>
+<style>x</style>
 <style>
-body{margin:0;color:#EAF6F8;font:15px/1.5 system-ui,sans-serif}.w{max-width:760px;margin:0 auto;padding:22px 16px 80px}
-a{color:#5FD6E6}.card{background:rgba(255,255,255,.04);border:1px solid rgba(160,230,240,.16);border-radius:16px;padding:14px 16px;margin:14px 0}
-h1{font-size:24px;margin:.2em 0}h2{font-size:17px;margin:0 0 8px}.f{padding:10px 0;border-top:1px solid rgba(160,230,240,.08)}
-.f:first-of-type{border-top:0}.t{font-weight:600}.h{color:#A9C7CE;font-size:13px;margin-top:2px}
-input,select{background:rgba(0,0,0,.25);color:#EAF6F8;border:1px solid rgba(160,230,240,.22);border-radius:8px;padding:7px 9px;font-size:14px;margin-top:6px;max-width:100%;box-sizing:border-box}
-input[type=checkbox]{width:20px;height:20px}.lock{color:#A9C7CE;font-size:12.5px}.err{color:#FFC266;font-size:13px}
-.ok{color:#B5F23D}.leiste{position:sticky;bottom:0;background:#071a2b;padding:12px 0;display:flex;gap:10px;align-items:center}
-button{background:#B5F23D;color:#1d2a00;font-weight:700;border:0;border-radius:12px;padding:10px 16px;cursor:pointer}
-.best{background:rgba(255,194,102,.08);border:1px solid rgba(255,194,102,.35);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px}
+.f{padding:16px 0;border-top:1px solid var(--line)}.f:first-of-type{border-top:0}.t{font:700 17px 'Manrope',system-ui,sans-serif}.h{font-size:14px;margin-top:3px}
+.f input[type=checkbox]{margin-top:10px}.f input:not([type=checkbox]){margin-top:8px;max-width:420px}.lock{font-size:13px}.ok{background:none;border:0;padding:0;color:var(--lime)}
+.leiste{position:sticky;bottom:0;background:linear-gradient(0deg,#071a2b 70%,transparent);padding:14px 0 6px;display:flex;gap:12px;align-items:center;z-index:5}
+.best{background:rgba(255,194,102,.08);border:1px solid rgba(255,194,102,.4);border-radius:14px;padding:12px 14px;margin-top:10px;font-size:14px}
 </style></head><body><div class=w>
 <a href="/">← Cockpit</a>
 <h1>📡 Panoptes-Einstellungen</h1>
@@ -1781,6 +1777,7 @@ laden();
 # ---------------------------------------------------------------- Assistent (HTML)
 WIZARD = r"""<!doctype html><html lang=de><head><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1"><title>EV-Cockpit — Einrichtung</title>
+<meta name=evc-neu content=1>
 <style>
 :root{--blue:#5FD6E6;--cyan:#43c9db;--txt:#EAF6F8;--mut:#A9C7CE;--line:rgba(160,230,240,.18)}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(1100px 700px at 50% -8%,#0d3a4a,#071a2b 55%,#04101b);
@@ -4649,35 +4646,38 @@ def _same_origin_request(headers):
     return parsed.scheme in ("http", "https") and parsed.netloc.lower() == (headers.get("Host") or "").lower()
 
 ENERGY_PANEL = r'''<style>
-.energy-shell{margin:28px auto;max-width:1160px;padding:22px;background:#0A2238;border:1px solid #1d4152;border-radius:20px;color:#EAF6F8;
- font:15px/1.5 Inter,"Segoe UI Variable",Segoe UI,sans-serif;scroll-margin-top:84px}
-.energy-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}.energy-head h2{margin:0;font-size:22px}
-.energy-head p{margin:5px 0 0;color:#A9C7CE}.energy-form{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 10px}
-.energy-form input,.energy-form button{min-height:42px;padding:10px 12px;border-radius:10px;border:1px solid #1d4152;background:#0f2c40;color:#EAF6F8}
-.energy-form input{min-width:210px}.energy-form input[type=number]{min-width:90px;width:100px}.energy-form button{cursor:pointer;font-weight:700}
-.energy-form button.primary{background:#5FD6E6;border-color:#5FD6E6}.energy-form button:hover{border-color:#5FD6E6}
-.energy-auto{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 8px}.energy-auto button{min-height:48px;padding:0 18px;border:0;border-radius:12px;background:#5FD6E6;color:white;font-weight:800;cursor:pointer}
-.energy-auto button:disabled{opacity:.6;cursor:wait}.energy-auto span{color:#A9C7CE;font-size:12px}.energy-advanced{margin:10px 0;color:#A9C7CE;font-size:12px}
-.energy-advanced summary{cursor:pointer;width:max-content}.energy-placeholder{grid-column:1/-1;padding:20px;border:1px dashed #1d4152;border-radius:14px;color:#A9C7CE;background:#0F1728}
-.energy-message{margin:10px 0 14px;color:#A9C7CE;font-size:12px}.lp-ctl{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 6px}.lp-ctl button,.lp-ctl select{border:1px solid rgba(160,230,240,.22);background:rgba(255,255,255,.04);color:#EAF6F8;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:600;cursor:pointer}.lp-ctl .lp-on{background:#B5F23D;color:#1d2a00;border-color:#B5F23D}.lp-ctl .lp-off{color:#A9C7CE;font-weight:500}.energy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}
-.energy-card{background:#0f2c40;border:1px solid #1d4152;border-radius:14px;padding:14px;min-width:0}.energy-card .ek{color:#A9C7CE;font-size:10px;
- letter-spacing:1.2px;text-transform:uppercase;font-weight:800}.energy-card .ev{font-size:22px;font-weight:750;margin-top:5px;overflow-wrap:anywhere}
-.energy-card .es{color:#A9C7CE;font-size:12px;margin-top:5px}.vehicle-select{width:100%;display:grid;grid-template-columns:96px minmax(0,1fr) auto;
- grid-column:span 2;align-items:center;gap:12px;text-align:left;background:#0f2c40;border:1px solid #1d4152;color:#EAF6F8;border-radius:14px;padding:12px;cursor:pointer}
-.vehicle-select:hover{border-color:#5FD6E6;background:#202B42}.vehicle-select.active{border-color:#43c9db;box-shadow:inset 3px 0 #43c9db}
-.vehicle-art{height:52px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#0A2238}.vehicle-art svg{width:88px;height:44px}
-.vehicle-copy{min-width:0}.vehicle-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.vehicle-copy small{display:block;color:#A9C7CE;margin-top:3px;font-weight:500}
-.vehicle-soc{font:750 19px/1 Inter,"Segoe UI Variable",Segoe UI,sans-serif;color:#EAF6F8;white-space:nowrap}.vehicle-legal{color:#A9C7CE;font-size:11px;margin:8px 2px 0}
-.energy-sub{margin:22px 0 9px;font-size:11px;letter-spacing:1.5px;color:#A9C7CE}
-.wb-form{display:grid;gap:9px;margin:12px 0 4px;max-width:640px}.wb-form label{display:flex;flex-wrap:wrap;align-items:center;gap:8px;color:#A9C7CE;font-size:12.5px}
-.wb-form input,.wb-form select{min-height:38px;padding:8px 10px;border-radius:10px;border:1px solid #1d4152;background:#0f2c40;color:#EAF6F8;font:inherit;min-width:0;flex:1 1 200px}
-.wb-form input[type=number]{flex:0 0 80px}.wb-form button{min-height:40px;padding:9px 14px;border-radius:10px;border:1px solid #1d4152;background:#0f2c40;color:#EAF6F8;font-weight:700;cursor:pointer;justify-self:start}
-.wb-form button.primary{background:#B5F23D;color:#1d2a00;border:0}.wb-hinweis{color:#A9C7CE;font-size:11.5px}.wb-rollen{display:grid;gap:8px}
-.wb-eigen{border:1px dashed #1d4152;border-radius:10px;padding:6px 10px}.wb-eigen summary{cursor:pointer;color:#A9C7CE;font-size:12px}.wb-eigen label{margin-top:7px}
-.wb-auto{display:grid;gap:8px;margin:12px 0 6px;max-width:640px}.wb-auto button{min-height:40px;padding:9px 14px;border-radius:10px;border:0;background:#B5F23D;color:#1d2a00;font-weight:700;cursor:pointer;justify-self:start}
-.wb-auto button.wb-zweit,.wb-auto #wb-ha-liste button,.wb-auto #wb-tuya-erg button{background:#0f2c40;color:#EAF6F8;border:1px solid #1d4152}.wb-auto select{min-height:36px;border-radius:9px;background:#0f2c40;color:#EAF6F8;border:1px solid #1d4152;max-width:100%}
-.wb-roh{grid-column:1/-1;color:#A9C7CE;font-size:12px;overflow-wrap:anywhere}.energy-discovery{margin-top:12px;color:#A9C7CE;font-size:12px}
-@media(max-width:600px){.energy-shell{margin:20px 14px;padding:16px}.energy-form input{width:100%}.energy-form button{flex:1}.vehicle-select{grid-template-columns:76px minmax(0,1fr) auto}.vehicle-art svg{width:70px}}
+.energy-shell{margin:0;padding:0;background:none;border:0;color:var(--txt);scroll-margin-top:84px}
+.energy-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}.energy-head h2{margin:0;font:700 22px 'Sora',sans-serif;text-transform:none;letter-spacing:-.01em;color:var(--txt)}
+.energy-head p{margin:6px 0 0;color:var(--ink-2);font-size:15px}
+.energy-form{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 10px}.energy-form input{min-width:200px;flex:1 1 200px;width:auto}.energy-form input[type=number]{min-width:100px;flex:0 0 120px}
+.energy-form button.primary,.energy-auto button{background:var(--lime);color:var(--lime-ink)}
+.energy-auto{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:16px 0 8px}.energy-auto button{min-height:60px;padding:0 24px;font-size:17px}.energy-auto span{color:var(--ink-2);font-size:14px}
+.energy-advanced{margin:10px 0;color:var(--ink-2)}
+.energy-placeholder{grid-column:1/-1;padding:18px;border:1px dashed var(--line);border-radius:16px;color:var(--ink-2);background:rgba(4,16,27,.35);font-size:15px}
+.energy-message{margin:10px 0 14px;color:var(--ink-2);font-size:14px}
+.lp-ctl{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 8px}
+.lp-ctl button,.lp-ctl select{min-height:50px;border:1px solid var(--line);background:rgba(255,255,255,.085);color:var(--txt);border-radius:14px;padding:0 18px;font:700 15px 'Manrope',sans-serif;cursor:pointer;width:auto}
+.lp-ctl .lp-on{background:var(--lime);color:var(--lime-ink);border-color:transparent}.lp-ctl .lp-off{color:var(--ink-2);font-weight:600}
+.energy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.energy-card{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin:0;min-width:0}
+.energy-card .ek{color:var(--ink-3);font:700 12px 'Sora',sans-serif;letter-spacing:.08em;text-transform:uppercase}.energy-card .ev{font:700 26px 'Sora',sans-serif;margin-top:5px;overflow-wrap:anywhere}
+.energy-card .es{color:var(--ink-2);font-size:14px;margin-top:5px}
+.vehicle-select{width:100%;display:grid;grid-template-columns:96px minmax(0,1fr) auto;grid-column:span 2;align-items:center;gap:12px;text-align:left;background:rgba(255,255,255,.045);border:1px solid var(--line);color:var(--txt);border-radius:18px;padding:12px;cursor:pointer;min-height:76px;font-weight:500}
+.vehicle-select:hover{border-color:var(--aqua)}.vehicle-select.active{border-color:var(--lime)}
+.vehicle-art{height:52px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:rgba(4,16,27,.45)}.vehicle-art svg{width:88px;height:44px}
+.vehicle-copy{min-width:0;text-align:left}.vehicle-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px}.vehicle-copy small{display:block;color:var(--ink-2);margin-top:3px}
+.vehicle-soc{font:700 22px 'Sora',sans-serif;color:var(--txt);white-space:nowrap}.vehicle-legal{color:var(--ink-3);font-size:12.5px;margin:10px 2px 0}
+.energy-sub{margin:26px 0 10px;font:700 13px 'Sora',sans-serif;letter-spacing:.08em;color:var(--ink-2)}
+.wb-form{display:grid;gap:12px;margin:12px 0 4px;max-width:680px}.wb-form label{display:flex;flex-wrap:wrap;align-items:center;gap:10px;color:var(--ink-2);font-size:14px;margin:0}
+.wb-form input,.wb-form select{flex:1 1 220px;width:auto;min-width:0}.wb-form input[type=number]{flex:0 0 100px}
+.wb-form button{justify-self:start}.wb-form button.primary,.wb-auto button{background:var(--lime);color:var(--lime-ink)}
+.wb-hinweis{color:var(--ink-2);font-size:13.5px}.wb-rollen{display:grid;gap:10px}
+.wb-eigen{border:1px dashed var(--line);border-radius:14px;padding:4px 14px}
+.wb-auto{display:grid;gap:10px;margin:12px 0 6px;max-width:680px}.wb-auto button{justify-self:start}
+.wb-auto button.wb-zweit,.wb-auto #wb-ha-liste button,.wb-auto #wb-tuya-erg button{background:rgba(255,255,255,.085);color:var(--txt);border:1px solid var(--line)}
+.wb-auto select{max-width:100%}
+.wb-roh{grid-column:1/-1;color:var(--ink-2);font-size:13px;overflow-wrap:anywhere}.energy-discovery{margin-top:12px;color:var(--ink-2);font-size:14px}
+@media(max-width:600px){.vehicle-select{grid-template-columns:76px minmax(0,1fr) auto;grid-column:auto}.vehicle-art svg{width:70px}}
 </style><section id="energy-panel" class="energy-shell">
 <div class="energy-head"><div><h2>⚡ Energie &amp; Ladepunkte</h2>
 <p>Überblick für Wallboxen, PV, Speicher und Fahrzeuge via evcc. Steuern (Lademodus, Ziel-Ladestand) nur für Ladepunkte, die du einzeln freigibst, jedes Mal mit Rückfrage.</p></div><span id="evcc-health" class="chip">NICHT VERBUNDEN</span></div>
@@ -5178,6 +5178,15 @@ class H(BaseHTTPRequestHandler):
                 self._send(("Modell-Datei nicht geladen (%s)" % type(e).__name__).encode("utf-8"), "text/plain", 404)
         elif p == "/panoptes":
             self._send(_i18n(PANOPTES_SEITE))
+        elif p in ("/mehr", "/klassisch"):
+            self._send(_i18n(neu_look.hub_html(VERSION)))
+        elif p in neu_look.SEITEN:
+            # 1.21: Bereiche der frueheren alten Ansicht, je eine Seite im neuen Look
+            stil = KARTE_STIL if _kartenquelle() == "community" else ""
+            einw = {"fragen": _CFG.get("einwilligung_stand") != EINWILLIGUNG_STAND, "kartenquelle": _kartenquelle(),
+                    "modell3d": _CFG.get("modell3d") is True}
+            self._send(_i18n(neu_look.sektion_html(COCKPIT, p).replace("__KARTENSTIL__", stil).replace("__EINWILLIGUNG__", json.dumps(einw))
+                             .replace("<!--ENERGIE-PANEL-->", ENERGY_PANEL)))
         elif p == "/panoptes/einstellungen":
             # Alle Panoptes-Einstellungen, generisch aus dem Schema des Kerns (nur mit Kopplung)
             pv = _panoptes_verbindung()
@@ -5478,19 +5487,13 @@ class H(BaseHTTPRequestHandler):
             self._send(json.dumps(d), "application/json")
         elif p == "/setup" or not _CFG.get("vin"):
             self._wizard()
-        elif p != "/klassisch":
+        else:
             # Startseite "Mein Auto" (1.20): eine Seite im Panoptes-Look; alles Weitere: "Alle Funktionen" (Panoptes) und "Mehr"
             import html as _html
             import mein_auto_seite
             stil = KARTE_STIL if _kartenquelle() == "community" else ""       # nur mit Einwilligung (Regel 2)
             web = (_CFG.get("panoptes_url") or "").rstrip("/") if _panoptes_gekoppelt() else ""
             self._send(_i18n(mein_auto_seite.seite(stil, _html.escape(web, quote=True), COCKPIT)))
-        else:
-            stil = KARTE_STIL if _kartenquelle() == "community" else ""       # nur mit Einwilligung (Regel 2)
-            einw = {"fragen": _CFG.get("einwilligung_stand") != EINWILLIGUNG_STAND, "kartenquelle": _kartenquelle(),
-                    "modell3d": _CFG.get("modell3d") is True}
-            self._send(_i18n(COCKPIT.replace("__KARTENSTIL__", stil).replace("__EINWILLIGUNG__", json.dumps(einw))
-                             .replace("<!--ENERGIE-PANEL-->", ENERGY_PANEL)))
 
     def do_POST(self):
         u = urllib.parse.urlparse(self.path)

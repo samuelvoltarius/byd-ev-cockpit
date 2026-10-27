@@ -144,15 +144,9 @@ BODY_TEIL1 = r"""<body class=mein-auto>
   <span class=pill id=pw style="display:none"><i class="dot"></i><span id=pwt>–</span></span>
   <span class=pill id=pq><i class="dot aq"></i><span id=pqt>–</span></span>
   <button type=button class=btn id=refreshbtn onclick="manualRefresh()">↻ Aktualisieren</button>
-  <button type=button class=btn onclick="mehrUm(event)"><svg width=18 height=18><use href="#i-more"/></svg> Mehr</button>
+  <button type=button class=btn onclick="location.href='/mehr'"><svg width=18 height=18><use href="#i-more"/></svg> Mehr</button>
  </header>
- <nav id=mehr class=mehrmenu>
-  <a href="/setup">⚙️ Einstellungen<small>Quelle, Panoptes, Wallbox, Routenplaner-Kopplung</small></a>
-  <a href="/klassisch#d_energie">⚡ Wallbox &amp; Energie<small>Wallbox einrichten, evcc, Solar</small></a>
-  <a href="/klassisch">🧰 Weitere Funktionen<small>Ladekarten, Fahrtenbuch, Aufnahmen (alte Ansicht)</small></a>
-  <a href="/about">ℹ️ Über · Lizenzen · Datenschutz</a>
-  <a href="#" onclick="return sprache()">🌐 Deutsch / English</a>
- </nav>
+
  <div id=altband class=hinweis role=alert></div>
  <div class=grid>
   <section class="card c-hero">
@@ -220,8 +214,6 @@ let S=null,DATA_TS=0,MSGHOLD=0,HANDY_OK,LADEN_ZEILEN=[],TEMP=25,ROUTE_T=0,LB=nul
 const el=id=>document.getElementById(id);
 const z=(v,d)=>v==null?'–':Number(v).toFixed(d==null?0:d).replace('.',window.__LANG__==='en'?'.':',');
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function mehrUm(e){e.stopPropagation();el('mehr').classList.toggle('on');}
-document.addEventListener('click',()=>el('mehr').classList.remove('on'));
 function sprache(){try{localStorage.setItem('evc_lang',window.__LANG__==='en'?'de':'en');}catch(e){}location.reload();return false;}
 function modell(m){m=m||'';const lin=((m.match(/\(([^)]*)\)/)||[])[1]||'').trim();let nm=m.replace(/\([^)]*\)/,'').split('/')[0].trim();
  if(/dolphin surf|seagull/i.test(m))nm='BYD Dolphin Surf';return {nm:nm,lin:lin};}
@@ -391,7 +383,7 @@ const WB_QUELLE={ha:'Home Assistant',tuya:'Tuya (lokal)'};
 async function wbLaden(){const box=el('wb_box');
  try{const d=await (await fetch('/wallbox/status',{cache:'no-store'})).json();
   const lp=d&&d.ok&&d.quelle&&d.ladepunkte&&d.ladepunkte[0];LB=lp||null;
-  if(!lp){box.innerHTML=esc(__T('Keine Wallbox eingerichtet.'))+' <a href="/klassisch#d_energie" style="color:var(--aqua)">'+esc(__T('Einrichten'))+'</a>';return lp;}
+  if(!lp){box.innerHTML=esc(__T('Keine Wallbox eingerichtet.'))+' <a href="/energie" style="color:var(--aqua)">'+esc(__T('Einrichten'))+'</a>';return lp;}
   const f=lp.faehigkeiten||{},kw=lp.leistungW!=null?z(Math.round(lp.leistungW/100)/10,1)+' kW':'–';
   let h='<div style="color:var(--ink);font-size:14px;margin-bottom:6px"><b>'+esc(lp.titel||'Wallbox')+'</b> · '+esc(lp.erreichbar===false?__T('nicht erreichbar'):lp.laedt?__T('lädt'):__T('bereit'))+' · '+kw+(lp.stromA!=null?' · '+lp.stromA+' A':'')+(typeof lp.zielSoc==='number'?' · '+__T('Ziel')+' '+lp.zielSoc+' %':'')+'</div>';
   if(lp.erreichbar===false){h+='<div class=warnb>'+esc(__T(WB_FEHLER.ha_nicht_erreichbar))+'</div>';}
