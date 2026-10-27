@@ -1,28 +1,27 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="bd-auto">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark light">
 <title>Important notes – Panoptes, EV Cockpit, route planner</title>
 <meta name="description" content="Applies to Panoptes, the EV Cockpit and the route planner. As of 21 Oct 2026.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0e14'/%3E%3Cpath d='M18 4 8 18h6l-2 10 12-16h-7z' fill='%2338bdf8'/%3E%3C/svg%3E">
 <link rel="canonical" href="https://byd.serveone.at/panoptes/en/hinweise.html">
 <link rel="alternate" hreflang="de" href="https://byd.serveone.at/panoptes/hinweise.html">
 <link rel="alternate" hreflang="en" href="https://byd.serveone.at/panoptes/en/hinweise.html">
+<link rel="alternate" hreflang="x-default" href="https://byd.serveone.at/panoptes/hinweise.html">
 <meta property="og:title" content="Important notes – Panoptes, EV Cockpit, route planner">
 <meta property="og:description" content="Applies to Panoptes, the EV Cockpit and the route planner. As of 21 Oct 2026.">
+<link rel="stylesheet" href="/assets/byd-design.css?v=6">
 <style>
-:root{--bg:#0b0f14;--card:#131a22;--card2:#182029;--line:#243040;--txt:#e7edf3;--mut:#93a2b3;
- --grn:#28d17c;--grn2:#1aa862;--blue:#38bdf8;--amber:#ffb020;--lime:#c8f560;--link:#3aa0ff;--node:#16212c;--note-bg:#10241a;--note-bd:#1c4a33;--note-tx:#bfe6d2}
-@media (prefers-color-scheme: light){:root{--bg:#f4f7f9;--card:#ffffff;--card2:#eef3f6;--line:#d5dee6;--txt:#14202b;--mut:#55667a;
- --grn:#13995a;--grn2:#0e7d49;--blue:#0a7fb8;--amber:#a86a00;--lime:#4f7d00;--link:#0a66c2;--node:#ffffff;--note-bg:#e9f7ef;--note-bd:#b7e2c8;--note-tx:#1d4d33}}
+:root{--card:var(--panel);--card2:var(--panel-2);--txt:var(--text);--mut:var(--muted);--grn:var(--accent-2);--grn2:var(--accent-2);--blue:var(--accent);--amber:var(--warn);--lime:var(--accent-2);--link:var(--accent);--node:var(--panel);--note-bg:var(--panel);--note-bd:var(--line-2);--note-tx:var(--text)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--txt);font:17px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .wrap{max-width:980px;margin:0 auto;padding:22px 16px 70px}
 .top{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px;gap:12px}
 .top a{color:var(--mut);font-weight:600}
-header{text-align:center;padding:24px 0 6px}
+.kopfbereich{text-align:center;padding:28px 0 6px}.kopfbereich .bd-knoepfe{justify-content:center;margin:20px 0 4px}.drei{max-width:680px;margin:0 auto;text-align:left;font-size:18px}.drei p{margin:.35em 0}.bd-nav-dl{color:var(--accent-2)!important;font-weight:700!important}.wrap details.bd-auf{margin:14px 0}.wrap details.bd-auf .raster,.wrap details.bd-auf .verb,.wrap details.bd-auf .galerie{margin:6px 0 14px}
 .eyebrow{color:var(--grn);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
 h1{font-size:clamp(30px,6vw,48px);line-height:1.12;margin:.3em 0 .25em}
 .grad{background:linear-gradient(90deg,var(--grn),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -81,10 +80,23 @@ code{background:var(--card2);border:1px solid var(--line);border-radius:6px;padd
 </style>
 <script defer src="https://analytics.serveone.at/script.js" data-website-id="a7e62dac-cb0b-4ff5-a0cd-4a9b0778cf3b" data-domains="byd.serveone.at" data-do-not-track="true" data-exclude-search="true"></script>
 </head>
-<body>
+<body class="bd">
+<header class="bd-kopf">
+  <a class="bd-marke" href="/en/">⚡ BYD&nbsp;EU&nbsp;<span>Community</span></a>
+  <button class="bd-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="haupt-nav">☰</button>
+  <nav class="bd-menue" id="haupt-nav">
+    <a href="/en/#karte">Map</a>
+    <a href="/ev/">Route planner</a>
+    <a href="/panoptes/en/" aria-current="page">Panoptes</a>
+    <a href="/ev-cockpit/en/">EV Cockpit</a>
+    <a href="/en/guide">Guides</a>
+    <a class="bd-nav-dl" href="/panoptes/en/#install" data-umami-event="download-weiter" data-umami-event-quelle="kopf">⬇️ Download</a>
+    <a class="bd-sprache" href="/panoptes/hinweise.html" hreflang="de" lang="de" data-sprache="de">DE</a>
+  </nav>
+</header>
 <div class="wrap">
 
-  <div class="top"><a href="./">← Back to Panoptes</a><a href="../hinweise.html" hreflang="de">🌐 Deutsch</a></div>
+  <p style="margin:18px 0 0"><a href="./">← Back to Panoptes</a></p>
   <h1 style="font-size:clamp(28px,5vw,40px)">Important notes</h1><p class="lead">Applies to Panoptes, the EV Cockpit and the route planner. As of 21 Oct 2026.</p>
   <div class="card"><ol class="hw">
     <li><b>Hobby project.</b> Panoptes, EV Cockpit and the route planner are a private hobby project by Alfred Aigner. They are provided free of charge and without warranty.</li>
@@ -96,11 +108,13 @@ code{background:var(--card2);border:1px solid var(--line);border-radius:6px;padd
     <li><b>Not BYD.</b> This project is not affiliated with BYD and is not supported or reviewed by BYD. “BYD”, “DiLink” and all other names and trademarks mentioned belong to their respective owners.</li>
     <li><b>Your legal rights remain.</b> Liability for intent and gross negligence, for personal injury, and mandatory consumer rights are not limited by these notes.</li>
   </ol></div>
-  <script>document.addEventListener('click',function(e){var a=e.target.closest('a');var i=a&&a.querySelector('picture img');
-    if(i&&i.currentSrc){e.preventDefault();window.open(i.currentSrc,'_blank','noopener');}});</script>
-  <div class="foot">Private hobby project, no warranty, not affiliated with BYD. Use at your own risk.<br>
-    <a href="hinweise.html">Notes</a> · <a href="/impressum">Imprint (German)</a> · <a href="/datenschutz">Privacy (German)</a><br>
-    <span style="font-size:12.5px">Map data © OpenStreetMap contributors (ODbL). 3D car models partly by Nazh (CC BY 4.0), partly own work (CC0).</span></div>
 </div>
+<script>document.addEventListener('click',function(e){var a=e.target.closest('a');var i=a&&a.querySelector('picture img');
+  if(i&&i.currentSrc){e.preventDefault();window.open(i.currentSrc,'_blank','noopener');}});</script>
+<footer class="bd-fuss">
+  <nav><a href="/panoptes/en/hinweise.html">Notes</a><a href="/en/impressum">Imprint</a><a href="/en/datenschutz">Privacy</a><a href="/en/nutzungsbedingungen">Terms of use</a><a href="/en/guide">Guides</a><a href="/community/">Panoptes community</a><a href="https://chat.whatsapp.com/BzFXEFK2hj05vxX4nVTFPv?mode=gi_t" target="_blank" rel="noopener">WhatsApp group</a><a href="/panoptes/hinweise.html" hreflang="de" lang="de" data-sprache="de">Deutsch</a></nav>
+  <p class="bd-klein">Private hobby project, no warranty, not affiliated with BYD. Use at your own risk.<br>Map data © OpenStreetMap contributors (ODbL). 3D car models partly by Nazh (CC BY 4.0), partly own work (CC0).</p>
+</footer>
+<script src="/assets/byd-seite.js?v=1" defer></script>
 </body>
 </html>

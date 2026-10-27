@@ -9,7 +9,7 @@ import os
 import shutil
 import sys
 
-VERSION = "0.1.17"                 # aktuelle Version: nur hier pflegen (plus DL_SHA, DL_CERT, Hash im Dateinamen)
+# Version, Download-Link, Prüfsumme: NICHT hier, sondern in byd-community/public/versionen.json (siehe versionen_laden)
 HIER = os.path.dirname(os.path.abspath(__file__))
 ZIEL = os.path.join(HIER, "panoptes")
 VORSCHAU = ""                   # mit --vorschau: noindex (Vorschau unter nicht verlinktem Pfad)
@@ -152,9 +152,9 @@ T = {
         "h_anl": "Schritt für Schritt",
         "anl": [
             ("Vorher lesen.", "Panoptes ist für dein eigenes Auto gedacht, privat und auf eigenes Risiko. Lies die <a href=\"hinweise.html\">Hinweise</a>. Für die Installation schaltest du am Auto Entwickler-Funktionen ein. Ob das für deine Garantie eine Rolle spielt, klärst du im Zweifel mit deinem Händler."),
-            ("Herunterladen und prüfen.", "Lade die Datei <code>panoptes-{V}-4100f8d.apk</code> mit dem Knopf oben auf deinen PC. Vergleiche dann die Prüfsumme. Unter Windows tippst du in der Eingabeaufforderung <code>certutil -hashfile panoptes-{V}-4100f8d.apk SHA256</code>, am Mac oder unter Linux <code>shasum -a 256 panoptes-{V}-4100f8d.apk</code>. Die Ausgabe muss genau die Prüfsumme oben ergeben. Weicht sie ab, installiere die Datei <b>nicht</b>."),
+            ("Herunterladen und prüfen.", "Lade die Datei <code>{APK}</code> mit dem Knopf oben auf deinen PC. Vergleiche dann die Prüfsumme. Unter Windows tippst du in der Eingabeaufforderung <code>certutil -hashfile {APK} SHA256</code>, am Mac oder unter Linux <code>shasum -a 256 {APK}</code>. Die Ausgabe muss genau die Prüfsumme oben ergeben. Weicht sie ab, installiere die Datei <b>nicht</b>."),
             ("Entwickler-Freigabe (ADB) am Auto einschalten.", "Panoptes startet seine Hintergrunddienste, zum Beispiel für die Kameras, über die ADB-Schnittstelle des Autos. Diese Verbindung bleibt im Auto (127.0.0.1). Ab Werk ist die Schnittstelle aus. Eingeschaltet wird sie im BYD-Entwicklermenü, mit den Schaltern für USB-Debugging bzw. kabelloses ADB. Wie du in dieses Menü kommst, hängt stark von Modell und Software-Stand ab; bei neuerer BYD-Software ist es mit einem Code gesperrt. Geprüft haben wir diesen Schritt bisher nur am Dolphin Surf (DiLink 3). Ohne diese Freigabe läuft Panoptes nicht vollständig."),
-            ("App aufs Auto bringen.", "<b>Geprüfter Weg, mit PC:</b> Installiere am PC die Android-Plattform-Tools von Google (darin ist <code>adb</code>). PC und Auto müssen im selben Netz sein, zum Beispiel im WLAN-Hotspot deines Handys. Tippe dann <code>adb connect &lt;Adresse-des-Autos&gt;:5555</code> und <code>adb install -r panoptes-{V}-4100f8d.apk</code>. Die Adresse des Autos siehst du in den WLAN-Einstellungen am Auto oder in der Geräteliste deines Hotspots. Am Ende muss <code>Success</code> erscheinen. <b>Ohne PC (Community-Berichte, von uns nicht geprüft):</b> Manche BYD-Software-Stände installieren APK-Dateien direkt vom USB-Stick über den eingebauten Installationsdialog. Ordnername und Ablauf unterscheiden sich je nach Region und Software. Fragt Android nach „Installation aus unbekannten Quellen“, erlaubst du das nur für diese Installation."),
+            ("App aufs Auto bringen.", "<b>Geprüfter Weg, mit PC:</b> Installiere am PC die Android-Plattform-Tools von Google (darin ist <code>adb</code>). PC und Auto müssen im selben Netz sein, zum Beispiel im WLAN-Hotspot deines Handys. Tippe dann <code>adb connect &lt;Adresse-des-Autos&gt;:5555</code> und <code>adb install -r {APK}</code>. Die Adresse des Autos siehst du in den WLAN-Einstellungen am Auto oder in der Geräteliste deines Hotspots. Am Ende muss <code>Success</code> erscheinen. <b>Ohne PC (Community-Berichte, von uns nicht geprüft):</b> Manche BYD-Software-Stände installieren APK-Dateien direkt vom USB-Stick über den eingebauten Installationsdialog. Ordnername und Ablauf unterscheiden sich je nach Region und Software. Fragt Android nach „Installation aus unbekannten Quellen“, erlaubst du das nur für diese Installation."),
             ("Erster Start mit der Einrichtungshilfe.", "Öffne Panoptes am Bildschirm im Auto. Der Assistent führt dich Schritt für Schritt durch alles Nötige: Sprache, Hinweise bestätigen, <b>Autostart</b>, Anzeige über anderen Apps, Berechtigungen, <b>USB-Freigabe</b>, dein Auto und die Kameras, Wächter, Betriebsart, Kartenquelle, Daten teilen, Blitzer und Updates. Danach kommen freiwillige Extras: Telegram, Routenplaner, EV-Cockpit und Fernzugang. Nichts ist vorausgewählt. Was Daten nach außen schickt, bleibt aus, bis du es selbst einschaltest."),
             ("Autostart freigeben.", "Damit Panoptes nach dem Einsteigen von selbst läuft, muss es in der BYD-App-Verwaltung erlaubt sein. Die Einrichtungshilfe öffnet die richtige Seite; dort nimmst du bei Panoptes den Haken bei der Autostart-Sperre weg. <b>BYD setzt diesen Schalter nach jeder Installation und jedem Update zurück.</b> Panoptes erinnert dich dann. Auf DiLink 5 gibt es diese Verwaltung nicht, der Schritt entfällt."),
             ("USB-Freigabe bestätigen.", "Android fragt einmal „USB-Debugging zulassen?“. Setze den Haken bei <b>„Immer von diesem Computer zulassen“</b> und tippe auf <b>Zulassen</b>. Der „Computer“ ist dabei Panoptes selbst im Auto. Ohne Haken fragt Android nach jedem Neustart wieder."),
@@ -329,9 +329,9 @@ T = {
         "h_anl": "Step by step",
         "anl": [
             ("Read first.", "Panoptes is meant for your own car, for private use and at your own risk. Read the <a href=\"hinweise.html\">notes</a>. To install it you turn on developer functions in the car. If in doubt whether this matters for your warranty, ask your dealer."),
-            ("Download and check.", "Download <code>panoptes-{V}-4100f8d.apk</code> to your PC with the button above, then compare the checksum. On Windows type <code>certutil -hashfile panoptes-{V}-4100f8d.apk SHA256</code> in a command prompt, on a Mac or Linux <code>shasum -a 256 panoptes-{V}-4100f8d.apk</code>. The output must match the checksum above exactly. If it differs, do <b>not</b> install the file."),
+            ("Download and check.", "Download <code>{APK}</code> to your PC with the button above, then compare the checksum. On Windows type <code>certutil -hashfile {APK} SHA256</code> in a command prompt, on a Mac or Linux <code>shasum -a 256 {APK}</code>. The output must match the checksum above exactly. If it differs, do <b>not</b> install the file."),
             ("Turn on developer access (ADB) in the car.", "Panoptes starts its background services, for example for the cameras, through the car's ADB interface. This connection stays inside the car (127.0.0.1). It is off by default. You turn it on in the BYD developer menu, with the switches for USB debugging or wireless ADB. How to reach this menu depends a lot on model and software version; on newer BYD software it is locked with a code. So far we have only tested this step on the Dolphin Surf (DiLink 3). Without it Panoptes will not fully work."),
-            ("Get the app onto the car.", "<b>Tested way, with a PC:</b> install Google's Android platform tools on your PC (they contain <code>adb</code>). PC and car must be on the same network, for example your phone's Wi-Fi hotspot. Then type <code>adb connect &lt;car-address&gt;:5555</code> and <code>adb install -r panoptes-{V}-4100f8d.apk</code>. You find the car's address in its Wi-Fi settings or in your hotspot's device list. At the end it must say <code>Success</code>. <b>Without a PC (community reports, not tested by us):</b> some BYD software versions install APK files straight from a USB stick through the built-in installer. Folder name and procedure differ by region and software. If Android asks about “installing from unknown sources”, allow it only for this installation."),
+            ("Get the app onto the car.", "<b>Tested way, with a PC:</b> install Google's Android platform tools on your PC (they contain <code>adb</code>). PC and car must be on the same network, for example your phone's Wi-Fi hotspot. Then type <code>adb connect &lt;car-address&gt;:5555</code> and <code>adb install -r {APK}</code>. You find the car's address in its Wi-Fi settings or in your hotspot's device list. At the end it must say <code>Success</code>. <b>Without a PC (community reports, not tested by us):</b> some BYD software versions install APK files straight from a USB stick through the built-in installer. Folder name and procedure differ by region and software. If Android asks about “installing from unknown sources”, allow it only for this installation."),
             ("First start with the setup assistant.", "Open Panoptes on the car screen. The assistant guides you step by step through everything needed: language, confirming the notes, <b>autostart</b>, display over other apps, permissions, <b>USB access</b>, your car and cameras, guard, operating mode, map source, data sharing, speed cameras and updates. Then optional extras: Telegram, route planner, EV Cockpit and remote access. Nothing is preselected. Anything that sends data out stays off until you turn it on yourself."),
             ("Allow autostart.", "For Panoptes to start by itself when you get in, it has to be allowed in BYD's app management. The setup assistant opens the right page; untick the autostart block for Panoptes there. <b>BYD resets this switch after every installation and update.</b> Panoptes will remind you. DiLink 5 has no such app management, so the step is skipped."),
             ("Confirm USB access.", "Android asks once “Allow USB debugging?”. Tick <b>“Always allow from this computer”</b> and tap <b>Allow</b>. The “computer” is Panoptes itself in the car. Without the tick Android asks again after every restart."),
@@ -372,18 +372,68 @@ T = {
     },
 }
 
+NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich?", kurze Schritte, Details aufklappbar
+    "de": {
+        "hero_anl": "So installierst du es",
+        "drei": [("Was ist das?", "Eine kostenlose App, die am Bildschirm in deinem BYD läuft."),
+                 ("Für wen?", "Für BYD-Fahrer, die Wächter mit Kamera, Fahrtenbuch und Ladekosten wollen."),
+                 ("Wie fange ich an?", "Datei herunterladen und mit einem PC aufs Auto bringen. Wir zeigen dir jeden Schritt.")],
+        "h_fuer_mich": "Ist das was für mich?",
+        "fuer_mich": [("✅", "Du hast einen BYD", "mit einem neueren Bildschirm-System (DiLink 3, 4 oder 5). Am besten getestet ist der Dolphin Surf."),
+                      ("💻", "Du hast einen PC", "und etwa eine Stunde Zeit. Am Auto schaltest du einen Entwickler-Schalter ein."),
+                      ("⚠️", "Es ist eine Erprobung", "Ein privates Projekt, ohne Gewähr. Bitte lies vorher die <a href=\"hinweise.html\">Hinweise</a>.")],
+        "alle_funktionen": "Alle weiteren Funktionen ansehen",
+        "camp_detail": "🏕️ Camping-Modus im Detail (in Erprobung)",
+        "mehr_bilder": "Mehr Bilder ansehen",
+        "echtheit": "Echtheit der Datei prüfen (für Fortgeschrittene)",
+        "echtheit_text": "Wie du die Prüfsumme vergleichst, steht in der ausführlichen Anleitung unten (Schritt 2).",
+        "aelter": "Ich habe schon eine ältere Version",
+        "h_kurz": "In 5 Schritten aufs Auto",
+        "kurz": [("Hinweise lesen.", "Panoptes ist für dein eigenes Auto, privat und auf eigenes Risiko. <a href=\"hinweise.html\">Zu den Hinweisen</a>."),
+                 ("Entwickler-Schalter am Auto einschalten.", "Das ist der Entwickler-Zugang (ADB). Wie du hinkommst, hängt vom Modell ab: siehe <a href=\"/guide\">Anleitungen</a>."),
+                 ("Datei mit dem PC aufs Auto bringen.", "PC und Auto ins selbe WLAN, dann zwei Befehle. Sie stehen in der ausführlichen Anleitung."),
+                 ("Panoptes am Auto öffnen.", "Ein Assistent fragt dich alles. Nichts ist vorausgewählt."),
+                 ("Autostart erlauben.", "Damit Panoptes von selbst startet. Der Assistent öffnet die richtige Seite.")],
+        "ausfuehrlich": "Ausführliche Anleitung mit allen Befehlen (8 Schritte)",
+        "ds_detail": "Genau nachlesen: was geht wohin?",
+        "zus_detail": "Wie Panoptes mit Cockpit, Routenplaner, Karte und Wallbox verbunden ist",
+    },
+    "en": {
+        "hero_anl": "How to install",
+        "drei": [("What is this?", "A free app that runs on the screen in your BYD."),
+                 ("Who is it for?", "For BYD drivers who want a camera guard, a trip log and charging costs."),
+                 ("How do I start?", "Download the file and put it on the car with a PC. We show you every step.")],
+        "h_fuer_mich": "Is this for me?",
+        "fuer_mich": [("✅", "You have a BYD", "with a newer screen system (DiLink 3, 4 or 5). Best tested on the Dolphin Surf."),
+                      ("💻", "You have a PC", "and about an hour. You switch on a developer setting in the car."),
+                      ("⚠️", "It is a test version", "A private project without warranty. Please read the <a href=\"hinweise.html\">notes</a> first.")],
+        "alle_funktionen": "See all other features",
+        "camp_detail": "🏕️ Camping mode in detail (in testing)",
+        "mehr_bilder": "See more pictures",
+        "echtheit": "Check that the file is genuine (advanced)",
+        "echtheit_text": "How to compare the checksum is explained in the detailed guide below (step 2).",
+        "aelter": "I already have an older version",
+        "h_kurz": "Onto the car in 5 steps",
+        "kurz": [("Read the notes.", "Panoptes is for your own car, private and at your own risk. <a href=\"hinweise.html\">Read the notes</a>."),
+                 ("Switch on the developer setting in the car.", "This is the developer access (ADB). How to get there depends on the model: see the <a href=\"/en/guide\">guides</a>."),
+                 ("Put the file on the car with a PC.", "PC and car on the same Wi-Fi, then two commands. They are in the detailed guide."),
+                 ("Open Panoptes in the car.", "An assistant asks you everything. Nothing is preselected."),
+                 ("Allow autostart.", "So Panoptes starts by itself. The assistant opens the right page.")],
+        "ausfuehrlich": "Detailed guide with all commands (8 steps)",
+        "ds_detail": "In detail: what goes where?",
+        "zus_detail": "How Panoptes connects to the cockpit, route planner, map and wall box",
+    },
+}
+
+
 CSS = """
-:root{--bg:#0b0f14;--card:#131a22;--card2:#182029;--line:#243040;--txt:#e7edf3;--mut:#93a2b3;
- --grn:#28d17c;--grn2:#1aa862;--blue:#38bdf8;--amber:#ffb020;--lime:#c8f560;--link:#3aa0ff;--node:#16212c;--note-bg:#10241a;--note-bd:#1c4a33;--note-tx:#bfe6d2}
-@media (prefers-color-scheme: light){:root{--bg:#f4f7f9;--card:#ffffff;--card2:#eef3f6;--line:#d5dee6;--txt:#14202b;--mut:#55667a;
- --grn:#13995a;--grn2:#0e7d49;--blue:#0a7fb8;--amber:#a86a00;--lime:#4f7d00;--link:#0a66c2;--node:#ffffff;--note-bg:#e9f7ef;--note-bd:#b7e2c8;--note-tx:#1d4d33}}
+:root{--card:var(--panel);--card2:var(--panel-2);--txt:var(--text);--mut:var(--muted);--grn:var(--accent-2);--grn2:var(--accent-2);--blue:var(--accent);--amber:var(--warn);--lime:var(--accent-2);--link:var(--accent);--node:var(--panel);--note-bg:var(--panel);--note-bd:var(--line-2);--note-tx:var(--text)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--txt);font:17px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
 .wrap{max-width:980px;margin:0 auto;padding:22px 16px 70px}
 .top{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px;gap:12px}
 .top a{color:var(--mut);font-weight:600}
-header{text-align:center;padding:24px 0 6px}
+.kopfbereich{text-align:center;padding:28px 0 6px}.kopfbereich .bd-knoepfe{justify-content:center;margin:20px 0 4px}.drei{max-width:680px;margin:0 auto;text-align:left;font-size:18px}.drei p{margin:.35em 0}.bd-nav-dl{color:var(--accent-2)!important;font-weight:700!important}.wrap details.bd-auf{margin:14px 0}.wrap details.bd-auf .raster,.wrap details.bd-auf .verb,.wrap details.bd-auf .galerie{margin:6px 0 14px}
 .eyebrow{color:var(--grn);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
 h1{font-size:clamp(30px,6vw,48px);line-height:1.12;margin:.3em 0 .25em}
 .grad{background:linear-gradient(90deg,var(--grn),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -541,67 +591,157 @@ def diagramm_schmal(s):
     return "\n".join(o)
 
 
-def kopf(t, titel, desc, alt_de, alt_en, kanon):
+# ---- Gemeinsames Aussehen (byd-design.css), gleiches Menü und gleicher Fuß wie alle Seiten von byd.serveone.at ----
+# Vorlage: F:\byd-community\werkzeuge\bau_seiten.py (Homepage-Sitzung, 27.10.2026). Menü/Fuß hier gleich halten.
+CSS_V = "6"
+JS_V = "1"
+UMAMI = ('<script defer src="https://analytics.serveone.at/script.js" data-website-id="a7e62dac-cb0b-4ff5-a0cd-4a9b0778cf3b" '
+         'data-domains="byd.serveone.at" data-do-not-track="true" data-exclude-search="true"></script>')
+FAVICON = ("<link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E"
+           "%3Crect width='32' height='32' rx='8' fill='%230a0e14'/%3E%3Cpath d='M18 4 8 18h6l-2 10 12-16h-7z' fill='%2338bdf8'/%3E%3C/svg%3E\">")
+WA = "https://chat.whatsapp.com/BzFXEFK2hj05vxX4nVTFPv?mode=gi_t"
+MENUE = {
+    "de": {"start": "/", "eintraege": [("/#karte", "Karte"), ("/ev/", "Routenplaner"), ("/panoptes/", "Panoptes"),
+                                       ("/ev-cockpit/", "EV-Cockpit"), ("/guide", "Anleitungen")],
+           "menue": "Menü", "o": "en", "o_kurz": "EN", "o_lang": "English",
+           "fuss": [("/impressum", "Impressum"), ("/datenschutz", "Datenschutz"), ("/nutzungsbedingungen", "Nutzungsbedingungen"),
+                    ("/guide", "Anleitungen"), ("/community/", "Panoptes-Community"), (WA, "WhatsApp-Gruppe")],
+           "klein": "Privates Freizeitprojekt, kostenlos und ohne Gewähr. Nicht verbunden mit BYD Auto Co., Ltd. "
+                    "„BYD“ und Modellnamen sind Marken ihrer jeweiligen Inhaber."},
+    "en": {"start": "/en/", "eintraege": [("/en/#karte", "Map"), ("/ev/", "Route planner"), ("/panoptes/en/", "Panoptes"),
+                                          ("/ev-cockpit/en/", "EV Cockpit"), ("/en/guide", "Guides")],
+           "menue": "Menu", "o": "de", "o_kurz": "DE", "o_lang": "Deutsch",
+           "fuss": [("/en/impressum", "Imprint"), ("/en/datenschutz", "Privacy"), ("/en/nutzungsbedingungen", "Terms of use"),
+                    ("/en/guide", "Guides"), ("/community/", "Panoptes community"), (WA, "WhatsApp group")],
+           "klein": "Private hobby project, free and without warranty. Not affiliated with BYD Auto Co., Ltd. "
+                    "“BYD” and model names are trademarks of their respective owners."},
+}
+
+# Versionen: EINZIGE Stelle ist byd-community/public/versionen.json (live: https://byd.serveone.at/versionen.json).
+# Die Seite liest sie beim Laden neu (byd-seite.js); hier wird sie nur als Rückfall eingebacken.
+VERSIONEN_LOKAL = os.environ.get("BYD_VERSIONEN", r"F:\byd-community\public\versionen.json")
+
+
+def versionen_laden():
+    import json
+    if os.path.exists(VERSIONEN_LOKAL):
+        return json.load(open(VERSIONEN_LOKAL, encoding="utf-8"))["panoptes"]
+    import urllib.request
+    with urllib.request.urlopen("https://byd.serveone.at/versionen.json", timeout=10) as r:
+        return json.loads(r.read().decode("utf-8"))["panoptes"]
+
+
+PV = versionen_laden()
+VERSION = PV["version"]
+DL_APK = PV["apk_url"]
+DL_RELEASE = PV["release_url"]
+DL_QUELLE = "https://github.com/samuelvoltarius/panoptes"
+DL_SHA = PV["sha256"]
+DL_CERT = PV["zertifikat"]
+
+
+def sp(feld, wert):
+    """Wert mit Markierung, damit byd-seite.js ihn aus versionen.json auffrischen kann."""
+    return '<span data-ver="panoptes.%s">%s</span>' % (feld, html.escape(str(wert)))
+
+
+def kopf(t, titel, desc, alt_de, alt_en, kanon, aktiv_pfad, andere_url):
+    m = MENUE[t["lang"]]
+    links = []
+    for href, name in m["eintraege"]:
+        links.append('    <a href="%s"%s>%s</a>' % (href, ' aria-current="page"' if href == aktiv_pfad else "", name))
+    links.append('    <a class="bd-nav-dl" href="%s#%s" data-umami-event="download-weiter" data-umami-event-quelle="kopf">%s</a>'
+                 % (aktiv_pfad, t["dl_anker"], t["kopf_dl"]))
+    links.append('    <a class="bd-sprache" href="%s" hreflang="%s" lang="%s" data-sprache="%s">%s</a>'
+                 % (andere_url, m["o"], m["o"], m["o"], m["o_kurz"]))
     return """<!doctype html>
-<html lang="%s">
+<html lang="%s" class="bd-auto">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark light">%s
 <title>%s</title>
 <meta name="description" content="%s">
+%s
 <link rel="canonical" href="%s">
 <link rel="alternate" hreflang="de" href="%s">
 <link rel="alternate" hreflang="en" href="%s">
+<link rel="alternate" hreflang="x-default" href="%s">
 <meta property="og:title" content="%s">
 <meta property="og:description" content="%s">
+<link rel="stylesheet" href="/assets/byd-design.css?v=%s">
 <style>%s</style>
-<script defer src="https://analytics.serveone.at/script.js" data-website-id="a7e62dac-cb0b-4ff5-a0cd-4a9b0778cf3b" data-domains="byd.serveone.at" data-do-not-track="true" data-exclude-search="true"></script>
+%s
 </head>
-<body>
+<body class="bd">
+<header class="bd-kopf">
+  <a class="bd-marke" href="%s">⚡ BYD&nbsp;EU&nbsp;<span>Community</span></a>
+  <button class="bd-burger" type="button" aria-label="%s" aria-expanded="false" aria-controls="haupt-nav">☰</button>
+  <nav class="bd-menue" id="haupt-nav">
+%s
+  </nav>
+</header>
 <div class="wrap">
-""" % (t["lang"], VORSCHAU, html.escape(titel), html.escape(desc), kanon, alt_de, alt_en, html.escape(titel), html.escape(desc), CSS)
+""" % (t["lang"], VORSCHAU, html.escape(titel), html.escape(desc), FAVICON, kanon, alt_de, alt_en, alt_de,
+       html.escape(titel), html.escape(desc), CSS_V, CSS, UMAMI, m["start"], m["menue"], "\n".join(links))
 
 
-def fuss(t, pfad):
-    return """  <script>document.addEventListener('click',function(e){var a=e.target.closest('a');var i=a&&a.querySelector('picture img');
-    if(i&&i.currentSrc){e.preventDefault();window.open(i.currentSrc,'_blank','noopener');}});</script>
-  <div class="foot">%s<br>
-    <a href="%shinweise.html">%s</a> · <a href="/impressum">%s</a> · <a href="/datenschutz">%s</a><br>
-    <span style="font-size:12.5px">%s</span></div>
-</div>
+def fuss(t, andere_url):
+    m = MENUE[t["lang"]]
+    links = '<a href="%shinweise.html">%s</a>' % ("/panoptes/" if t["lang"] == "de" else "/panoptes/en/", t["f_hinweise"])
+    links += "".join('<a href="%s"%s>%s</a>' % (h, ' target="_blank" rel="noopener"' if h.startswith("http") else "", n)
+                     for h, n in m["fuss"])
+    links += '<a href="%s" hreflang="%s" lang="%s" data-sprache="%s">%s</a>' % (andere_url, m["o"], m["o"], m["o"], m["o_lang"])
+    return """</div>
+<script>document.addEventListener('click',function(e){var a=e.target.closest('a');var i=a&&a.querySelector('picture img');
+  if(i&&i.currentSrc){e.preventDefault();window.open(i.currentSrc,'_blank','noopener');}});</script>
+<footer class="bd-fuss">
+  <nav>%s</nav>
+  <p class="bd-klein">%s<br>%s</p>
+</footer>
+<script src="/assets/byd-seite.js?v=%s" defer></script>
 </body>
 </html>
-""" % (html.escape(t["footer"]), pfad, t["f_hinweise"], t["f_impressum"], t["f_datenschutz"], html.escape(t["lizenz"]))
+""" % (links, html.escape(t["footer"]), html.escape(t["lizenz"]), JS_V)
 
 
 BASIS = "https://byd.serveone.at/panoptes/"
-# Download: oeffentliches Repo samuelvoltarius/panoptes (Quellcode + Release 1:1, Koordination 23.10.2026)
-DL_APK = "https://github.com/samuelvoltarius/panoptes/releases/download/v" + VERSION + "/panoptes-" + VERSION + "-4100f8d.apk"
-DL_RELEASE = "https://github.com/samuelvoltarius/panoptes/releases/tag/v" + VERSION
-DL_QUELLE = "https://github.com/samuelvoltarius/panoptes"
-DL_SHA = "937656f1ba04a1cd1e4ae74821fbd9a043f74869c9526a880249954e84ecf323"
-DL_CERT = "287c31e78288a440be4d23eb59f58e415d77aca54def67e0e6bf271f1959be81"
+OBEN = ("🛡️", "📒", "🗺️", "💬", "🏠", "🏕️")      # diese 6 Funktionen sichtbar, der Rest aufklappbar
 
 
 def seite(t):
     p = t["pfad"]
-    kanon = BASIS + ("en/" if t["lang"] == "en" else "")
-    o = [kopf(t, t["title"], t["desc"], BASIS, BASIS + "en/", kanon)]
-    o.append('  <div class="top"><a href="/">%s</a><span class="topr"><a class="topdl" href="#%s" data-umami-event="download-weiter" data-umami-event-quelle="kopf">%s</a><a href="%s" hreflang="%s">🌐 %s</a></span></div>'
-             % (t["zurueck"], t["dl_anker"], t["kopf_dl"], t["andere"], "en" if t["lang"] == "de" else "de", t["andere_name"]))
-    o.append('  <header><div class="eyebrow">%s</div><h1>%s — <span class="grad">%s</span></h1><p class="sub">%s</p>'
-             '<div class="btns herobtns"><a class="btn dl gross" href="#%s" data-umami-event="download-weiter" data-umami-event-quelle="hero">%s</a><a class="btn gross" href="#%s">%s</a></div></header>'
-             % (t["eyebrow"], t["h1a"], t["h1b"], t["sub"], t["dl_anker"], t["hero_dl"], t["dl_anker"], t["hero_anl"]))
+    de = t["lang"] == "de"
+    kanon = BASIS + ("" if de else "en/")
+    hier = "/panoptes/" if de else "/panoptes/en/"
+    andere = "/panoptes/en/" if de else "/panoptes/"
+    o = [kopf(t, t["title"], t["desc"], BASIS, BASIS + "en/", kanon, hier, andere)]
+    # Kopf: 3 Sätze + große Knöpfe
+    o.append('  <header class="kopfbereich"><span class="bd-eyebrow">%s</span><h1>%s – <span class="bd-grad-text">%s</span></h1>'
+             % (t["eyebrow"], t["h1a"], t["h1b"]))
+    o.append('  <div class="drei">%s</div>' % "".join("<p><b>%s</b> %s</p>" % x for x in t["drei"]))
+    o.append('  <div class="bd-knoepfe"><a class="bd-knopf gross haupt" href="#%s" data-umami-event="download-weiter" data-umami-event-quelle="hero">%s</a>'
+             '<a class="bd-knopf gross leer" href="#schritte">%s</a></div></header>' % (t["dl_anker"], t["hero_dl"], t["hero_anl"]))
     o.append("  " + reihe([("start", "pc", t["hero_alt_pc"]), ("start", "handy", t["hero_alt_handy"])], p, sofort=True))
-    o.append('  <div class="note">%s</div>' % t["wichtig"])
-    # Funktionen
-    o.append('  <h2 id="funktionen">%s</h2>\n  <div class="raster">' % t["h_kann"])
-    for ic, h, txt in t["kann"]:
-        o.append('    <div class="feat"><div class="ic">%s</div><h3>%s</h3><p>%s</p></div>' % (ic, h, txt))
+    o.append('  <div class="bd-hinweis"><p>%s</p></div>' % t["wichtig"])
+    # Ist das was für mich?
+    o.append('  <h2 id="fuer-mich">%s</h2>\n  <div class="bd-kacheln">' % t["h_fuer_mich"])
+    for ic, h, txt in t["fuer_mich"]:
+        o.append('    <div class="bd-kachel"><span class="bd-symbol">%s</span><h3>%s</h3><p>%s</p></div>' % (ic, h, txt))
     o.append("  </div>")
-    # Camping
-    o.append('  <h2 id="camping">%s</h2><p class="lead">%s</p>\n  <div class="verb">' % (t["h_camp"], t["camp_lead"]))
+    # Funktionen: 6 oben, Rest aufklappbar
+    o.append('  <h2 id="funktionen">%s</h2>\n  <div class="raster">' % t["h_kann"])
+    oben = [x for x in t["kann"] if x[0] in OBEN]
+    rest = [x for x in t["kann"] if x[0] not in OBEN]
+    for ic, h, txt in oben:
+        o.append('    <div class="feat"><div class="ic">%s</div><h3>%s</h3><p>%s</p></div>' % (ic, h, txt))
+    o.append('  </div>\n  <details class="bd-auf"><summary>%s (%d)</summary>\n  <div class="raster">' % (t["alle_funktionen"], len(rest)))
+    for ic, h, txt in rest:
+        o.append('    <div class="feat"><div class="ic">%s</div><h3>%s</h3><p>%s</p></div>' % (ic, h, txt))
+    o.append("  </div></details>")
+    # Camping: ganz, aber aufklappbar (Anker #camping bleibt)
+    o.append('  <details class="bd-auf" id="camping"><summary>%s</summary><p class="lead">%s</p>\n  <div class="verb">'
+             % (t["camp_detail"], t["camp_lead"]))
     for h, txt in t["camp"]:
         o.append('    <div class="card"><h3>%s</h3>%s</div>' % (h, txt))
     o.append("  </div>")
@@ -609,85 +749,101 @@ def seite(t):
     for cap, bilder in t["camp_bilder"]:
         teile = reihe([x for x in bilder if x[1] != "handy"] + [x for x in bilder if x[1] == "handy"], p)
         o.append('    <figure>%s<figcaption><b>%s</b></figcaption></figure>' % (teile, html.escape(cap)))
-    o.append("  </div>")
-    # Galerie
+    o.append("  </div></details>")
+    # Bilder: 3 sichtbar, Rest aufklappbar
     o.append('  <h2 id="bilder">%s</h2><p class="lead">%s</p>\n  <div class="galerie">' % (t["h_bilder"], t["bilder_lead"]))
-    for cap, bilder in t["bilder"]:
+    for i, (cap, bilder) in enumerate(t["bilder"]):
+        if i == 3:
+            o.append('  </div>\n  <details class="bd-auf"><summary>%s (%d)</summary>\n  <div class="galerie">'
+                     % (t["mehr_bilder"], len(t["bilder"]) - 3))
         teile = reihe([x for x in bilder if x[1] != "handy"] + [x for x in bilder if x[1] == "handy"], p)
         o.append('    <figure>%s<figcaption><b>%s</b></figcaption></figure>' % (teile, html.escape(cap)))
-    o.append("  </div>")
-    # Zusammenhang
-    o.append('  <h2 id="zusammenhang">%s</h2><p class="lead">%s</p>' % (t["h_zus"], t["zus_lead"]))
+    o.append("  </div>" + ("</details>" if len(t["bilder"]) > 3 else ""))
+    # Was du brauchst
+    o.append('  <h2 id="brauchst">%s</h2>\n  <div class="card"><ul class="liste">%s</ul></div>'
+             % (t["h_brauch"], "".join("<li>%s</li>" % x for x in t["brauch"])))
+    # Download
+    o.append('  <span id="download"></span><h2 id="%s">%s<span class="bald">%s</span></h2>' % (t["dl_anker"], t["h_dl"], t["dl_bald"]))
+    o.append('  <div class="card"><p style="margin-top:0">%s</p>' % t["dl_text"])
+    o.append('    <div class="bd-knoepfe"><a class="bd-knopf gross haupt" href="%s" data-ver-href="panoptes.apk_url" data-umami-event="download" data-umami-event-quelle="apk">%s</a>'
+             '<a class="bd-knopf leer" href="%s" data-ver-href="panoptes.release_url">%s</a><a class="bd-knopf leer" href="%s">%s</a></div>'
+             % (DL_APK, t["dl_knopf"], DL_RELEASE, t["dl_release"], DL_QUELLE, t["dl_quelle"]))
+    o.append('    <details class="bd-auf"><summary>%s</summary><p class="hash">%s: <code>%s</code><br>%s: <code>%s</code></p><p>%s</p></details>'
+             % (t["echtheit"], t["dl_pruef"], sp("sha256", DL_SHA), t["dl_zert"], sp("zertifikat", DL_CERT), t["echtheit_text"]))
+    o.append('    <details class="bd-auf"><summary>%s</summary><p>%s</p></details></div>' % (t["aelter"], t["dl_update"]))
+    # Schritte: 5 kurze, ausführlich aufklappbar
+    o.append('  <h2 id="schritte">%s</h2>\n  <ol class="bd-schritte">' % t["h_kurz"])
+    for h, txt in t["kurz"]:
+        o.append("    <li><b>%s</b>%s</li>" % (h, txt))
+    o.append("  </ol>")
+    o.append('  <details class="bd-auf"><summary>%s</summary><ol class="anl">' % t["ausfuehrlich"])
+    for h, txt in t["anl"]:
+        o.append("    <li><b>%s</b> %s</li>" % (h, txt))
+    o.append("  </ol></details>")
+    o.append('  <details class="bd-auf"><summary>%s</summary><ul class="liste">%s</ul></details>'
+             % (t["h_stolper"], "".join("<li>%s</li>" % x for x in t["stolper"])))
+    o.append('  <div class="card"><p style="margin-top:0">%s</p><p style="margin-bottom:0">%s</p></div>' % (t["dl_code"], t["dl_ds"]))
+    # Daten: Kurzfassung sichtbar, Einzelheiten aufklappbar
+    o.append('  <h2 id="datenschutz">%s</h2><p class="lead">%s</p>' % (t["h_ds"], t["ds_lead"]))
+    o.append('  <details class="bd-auf"><summary>%s</summary><div class="tab"><table><tr><th>%s</th><th>%s</th><th>%s</th></tr>'
+             % ((t["ds_detail"],) + t["ds_kopf"]))
+    for wo, was, wann in t["ds"]:
+        o.append("    <tr><td><b>%s</b></td><td>%s</td><td>%s</td></tr>" % (html.escape(wo), html.escape(was), wann))
+    o.append("  </table></div></details>")
+    o.append('  <details class="bd-auf" id="zusammenhang"><summary>%s</summary><p class="lead">%s</p>' % (t["zus_detail"], t["zus_lead"]))
     o.append('  <div class="diagramm"><div class="breit">%s</div><div class="schmal">%s</div></div>\n  <div class="verb">'
              % (diagramm(t["svg"]), diagramm_schmal(t["svg"])))
     for nr, h, was, nicht in t["verb"]:
         o.append('    <div class="card"><h3><span class="nr">%s</span>%s</h3><p>%s</p><p class="nicht"><b>%s:</b> %s</p></div>'
                  % (nr, html.escape(h), html.escape(was), t["nicht"], html.escape(nicht.split(": ", 1)[1] if ": " in nicht[:20] else nicht)))
-    o.append("  </div>")
-    # Datenschutz
-    o.append('  <h2 id="datenschutz">%s</h2><p class="lead">%s</p>' % (t["h_ds"], t["ds_lead"]))
-    o.append('  <div class="tab"><table><tr><th>%s</th><th>%s</th><th>%s</th></tr>' % t["ds_kopf"])
-    for wo, was, wann in t["ds"]:
-        o.append("    <tr><td><b>%s</b></td><td>%s</td><td>%s</td></tr>" % (html.escape(wo), html.escape(was), wann))
-    o.append("  </table></div>")
-    # Stand der Entwicklung
-    o.append('  <h2 id="stand">%s</h2><p class="lead">%s</p>' % (t["h_stand"], t["stand_lead"]))
+    o.append("  </div></details>")
+    o.append('  <details class="bd-auf" id="stand"><summary>%s</summary><p class="lead">%s</p>' % (t["h_stand"], t["stand_lead"]))
     o.append('  <div class="tab"><table class="stand"><tr><th>%s</th><th>%s</th></tr>' % t["stand_kopf"])
     for was, wie in t["stand"]:
         o.append("    <tr><td>%s</td><td>%s</td></tr>" % (html.escape(was), html.escape(wie)))
-    o.append("  </table></div>")
-    # Was du brauchst + Download
-    o.append('  <h2 id="brauchst">%s</h2>\n  <div class="card"><ul class="liste">%s</ul></div>'
-             % (t["h_brauch"], "".join("<li>%s</li>" % x for x in t["brauch"])))
-    o.append('  <span id="download"></span><h2 id="%s">%s<span class="bald">%s</span></h2>' % (t["dl_anker"], t["h_dl"], t["dl_bald"]))
-    o.append('  <div class="card"><p style="margin-top:0">%s</p>' % t["dl_text"])
-    o.append('    <div class="btns"><a class="btn dl" href="%s" data-umami-event="download" data-umami-event-quelle="apk">%s</a><a class="btn" href="%s">%s</a><a class="btn" href="%s">%s</a></div>'
-             % (DL_APK, t["dl_knopf"], DL_RELEASE, t["dl_release"], DL_QUELLE, t["dl_quelle"]))
-    o.append('    <p class="hash">%s: <code>%s</code><br>%s: <code>%s</code></p>' % (t["dl_pruef"], DL_SHA, t["dl_zert"], DL_CERT))
-    o.append('    <div class="note" style="margin-bottom:0">%s</div></div>' % t["dl_update"])
-    o.append('  <h3 class="anl-h">%s</h3>\n  <div class="card"><ol class="anl">' % t["h_anl"])
-    for h, txt in t["anl"]:
-        o.append("    <li><b>%s</b> %s</li>" % (h, txt))
-    o.append("  </ol></div>")
-    o.append('  <h3 class="anl-h">%s</h3>\n  <div class="card"><ul class="liste">%s</ul></div>'
-             % (t["h_stolper"], "".join("<li>%s</li>" % x for x in t["stolper"])))
-    o.append('  <div class="card"><p style="margin-top:0">%s</p><p style="margin-bottom:0">%s</p></div>' % (t["dl_code"], t["dl_ds"]))
+    o.append("  </table></div></details>")
     # Hinweise
-    o.append('  <h2 id="hinweise">%s</h2>\n  <div class="card"><p style="margin-top:0">%s</p><p style="margin-bottom:0"><a href="%shinweise.html">%s →</a></p></div>'
-             % (t["h_hinweise"], html.escape(t["hinweise_kurz"]), "", t["alle_hinweise"]))
-    o.append('  <h2>%s</h2>\n  <div class="btns">%s</div>' % (t["h_links"], "".join('<a class="btn" href="%s">%s</a>' % l for l in t["links"])))
-    o.append(fuss(t, ""))
+    o.append('  <h2 id="hinweise">%s</h2>\n  <div class="card"><p style="margin-top:0">%s</p><p style="margin-bottom:0"><a href="hinweise.html">%s →</a></p></div>'
+             % (t["h_hinweise"], html.escape(t["hinweise_kurz"]), t["alle_hinweise"]))
+    o.append(fuss(t, andere))
     return "\n".join(o)
 
 
 def hinweise(t):
-    kanon = BASIS + ("en/" if t["lang"] == "en" else "") + "hinweise.html"
-    o = [kopf(t, t["hw_title"], t["hw_stand"], BASIS + "hinweise.html", BASIS + "en/hinweise.html", kanon)]
-    o.append('  <div class="top"><a href="./">%s</a><a href="%shinweise.html" hreflang="%s">🌐 %s</a></div>'
-             % (t["hw_zurueck"], t["andere"], "en" if t["lang"] == "de" else "de", t["andere_name"]))
+    de = t["lang"] == "de"
+    kanon = BASIS + ("" if de else "en/") + "hinweise.html"
+    andere = "/panoptes/en/hinweise.html" if de else "/panoptes/hinweise.html"
+    o = [kopf(t, t["hw_title"], t["hw_stand"], BASIS + "hinweise.html", BASIS + "en/hinweise.html", kanon,
+              "/panoptes/" if de else "/panoptes/en/", andere)]
+    o.append('  <p style="margin:18px 0 0"><a href="./">%s</a></p>' % t["hw_zurueck"])
     o.append('  <h1 style="font-size:clamp(28px,5vw,40px)">%s</h1><p class="lead">%s</p>\n  <div class="card"><ol class="hw">'
              % (t["hw_h1"], t["hw_stand"]))
     for h, txt in t["hw"]:
         o.append("    <li><b>%s</b> %s</li>" % (html.escape(h), html.escape(txt.replace("{name}", NAME))))
     o.append("  </ol></div>")
-    o.append(fuss(t, ""))
+    o.append(fuss(t, andere))
     return "\n".join(o)
 
 
-def version_einsetzen(x):
+def version_einsetzen(x, schluessel=""):
+    """{V} = Version, {APK} = Dateiname. In sichtbarem HTML mit Markierung (wird live aus versionen.json aufgefrischt)."""
     if isinstance(x, str):
-        return x.replace("{V}", VERSION)
+        if schluessel in ("title", "desc", "hw_title", "hw_stand"):
+            return x.replace("{V}", VERSION).replace("{APK}", PV["apk_datei"])
+        return x.replace("{V}", sp("version", VERSION)).replace("{APK}", sp("apk_datei", PV["apk_datei"]))
     if isinstance(x, list):
-        return [version_einsetzen(i) for i in x]
+        return [version_einsetzen(i, schluessel) for i in x]
     if isinstance(x, tuple):
-        return tuple(version_einsetzen(i) for i in x)
+        return tuple(version_einsetzen(i, schluessel) for i in x)
     if isinstance(x, dict):
-        return {k: version_einsetzen(v) for k, v in x.items()}
+        return {k: version_einsetzen(v, k) for k, v in x.items()}
     return x
 
 
 def main(bilder_quelle):
     global QUELLE, T
+    for lang in T:
+        T[lang].update(NEU[lang])
     T = version_einsetzen(T)
     QUELLE = bilder_quelle
     alt = os.path.join(ZIEL, "bilder")
