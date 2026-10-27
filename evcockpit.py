@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.20.3"
+VERSION = "1.20.4"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -1157,14 +1157,39 @@ def _preis_schalten(an):
     _PREIS_WACH.set()
 
 
+_TARIF = {"art": None, "ts": 0.0}
+_TARIF_OHNE_BOERSE = ("fest", "zeit", "zeittarif")
+
+
+def _tarif_art(auffrischen=True):
+    """Stromtarif laut Panoptes (/api/ladeplan -> tarif.art), hoechstens alle 10 Min., nur lesend. None = unbekannt."""
+    if auffrischen and time.time() - _TARIF["ts"] >= 600:
+        _TARIF["ts"] = time.time()
+        art = None
+        try:
+            pv = _panoptes_obj()
+            if pv is not None:
+                art = str((((pv._get("/api/ladeplan") or {}).get("tarif")) or {}).get("art") or "").lower() or None
+        except Exception:
+            art = None
+        _TARIF["art"] = art
+    return _TARIF["art"]
+
+
+def _preis_erlaubt(auffrischen=True):
+    """Boersenpreise nur, wenn der Schalter 'dynamischer Stromtarif' AN ist UND Panoptes keinen festen Preis/Zeittarif meldet."""
+    return bool(_CFG.get("show_price")) and _tarif_art(auffrischen) not in _TARIF_OHNE_BOERSE
+
+
 def _price_loop():
     """Aktualisiert die Preise. Laeuft NUR, wenn der Nutzer es angehakt hat."""
     while True:
         try:
-            if not _CFG.get("show_price"):
+            erlaubt = _preis_erlaubt()
+            if not erlaubt:
                 for k in _PREIS_FELDER:
                     _STATE.pop(k, None)
-            if _CFG.get("show_price"):
+            if erlaubt:
                 pts = _fetch_prices()
                 if pts:
                     now = time.time()
@@ -5408,7 +5433,8 @@ class H(BaseHTTPRequestHandler):
                 _TAKT["sichtbar_ts"] = time.time()
             d = dict(_STATE)
             d["abfrage"] = abfrage_status()
-            d["show_price"] = bool(_CFG.get("show_price"))
+            d["show_price"] = _preis_erlaubt(False)
+            d["tarif_art"] = _tarif_art(False)
             if _panoptes_gekoppelt() and _CAMPING["d"] is not None:
                 d["camping"] = {"da": True, "aktiv": bool(_CAMPING["d"].get("aktiv"))}
             if _STATE.get("_poll_ts"):

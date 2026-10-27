@@ -131,3 +131,24 @@ class WaechterFenster1203(unittest.TestCase):
         h = ev._i18n("<html><head><meta charset=utf-8></head><body></body></html>")
         self.assertIn("color-scheme:dark", h)
         self.assertIn("option:checked", h)
+
+
+class Boersenpreis1204(unittest.TestCase):
+    def test_nur_mit_schalter_und_ohne_festen_tarif(self):
+        alt_cfg, alt_t = dict(ev._CFG), dict(ev._TARIF)
+        try:
+            ev._TARIF.update(ts=9e18, art=None)
+            ev._CFG["show_price"] = False
+            self.assertFalse(ev._preis_erlaubt(False))
+            ev._CFG["show_price"] = True
+            self.assertTrue(ev._preis_erlaubt(False))
+            for art in ("fest", "zeit", "zeittarif"):
+                ev._TARIF["art"] = art
+                self.assertFalse(ev._preis_erlaubt(False), art)
+            ev._TARIF["art"] = "dynamisch"
+            self.assertTrue(ev._preis_erlaubt(False))
+        finally:
+            ev._CFG.clear()
+            ev._CFG.update(alt_cfg)
+            ev._TARIF.clear()
+            ev._TARIF.update(alt_t)

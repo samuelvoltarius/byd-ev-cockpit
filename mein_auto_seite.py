@@ -299,7 +299,8 @@ function zeichne(s){
  if(s._msg&&Date.now()>MSGHOLD)el('actmsg').textContent=s._msg;
  el('alle').style.display=s.panoptes_web?'':'none';
  if(s.update){el('updbar').style.display='block';el('updver').textContent=s.update.version;el('updwas').textContent=s.update.was_neu||'';el('updlink').href=s.update.url;}
- const pb=el('preis_box');if(s.show_price&&s.price_now!=null)pb.textContent=__T('jetzt')+' '+z(s.price_now,1)+' ct/kWh · '+__T('günstigste Stunde')+' '+(s.price_cheap_time||'–')+' ('+z(s.price_cheap_ct,1)+' ct)';
+ const pb=el('preis_box');if(!s.show_price&&s.tarif_art&&['fest','zeit','zeittarif'].includes(s.tarif_art))pb.textContent=__T('Fester Strompreis laut Panoptes – Börsenpreise werden nicht angezeigt.');
+ if(s.show_price&&s.price_now!=null)pb.textContent=__T('jetzt')+' '+z(s.price_now,1)+' ct/kWh · '+__T('günstigste Stunde')+' '+(s.price_cheap_time||'–')+' ('+z(s.price_cheap_ct,1)+' ct)';
  freshness();
 }
 function rel(ms){const m=Math.max(0,Math.round((Date.now()-ms)/60000)),en=window.__LANG__==='en';
