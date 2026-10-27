@@ -24,7 +24,7 @@ class TestJsSyntax(unittest.TestCase):
         node = shutil.which("node")
         if not node:
             self.skipTest("Node nicht installiert (nur Entwicklungsrechner)")
-        seiten = {"COCKPIT": ev.COCKPIT.replace("<!--ENERGIE-PANEL-->", ev.ENERGY_PANEL), "WIZARD": ev.WIZARD, "PANOPTES": ev.PANOPTES_SEITE, "ABOUT": ev.ABOUT}
+        seiten = {"COCKPIT": ev.COCKPIT.replace("<!--ENERGIE-PANEL-->", ev.ENERGY_PANEL), "WIZARD": ev.WIZARD, "PANOPTES": ev.PANOPTES_SEITE, "ABOUT": ev.ABOUT, "MEIN_AUTO": __import__("mein_auto_seite").seite("https://x/s.json", "http://100.1.2.3:8180")}
         for name, h in seiten.items():
             h = ev._i18n(h)
             for i, m in enumerate(re.finditer(r"<script(?![^>]*\bsrc=)(?![^>]*type=[\"']?(?:importmap|application/json))[^>]*>(.*?)</script>", h, re.S)):

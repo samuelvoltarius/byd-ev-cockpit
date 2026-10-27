@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.19.3"
+VERSION = "1.20.0"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -1515,7 +1515,8 @@ I18N_BODY = r'''<script>
 # Panoptes-Logo (das „P“ mit gruenem Blitz, aus Panoptes ee79988) als Favicon und Apple-Touch-Icon auf allen Seiten
 ICON_KOPF = '<link rel=icon href="/static/favicon.ico" sizes="any"><link rel=icon type="image/png" sizes="32x32" href="/static/favicon-32.png"><link rel=apple-touch-icon href="/static/apple-touch-icon.png"><meta name=theme-color content="#0A2238">'
 ICONS = {"logo-glyph.png": "image/png", "logo-glyph-hell.png": "image/png", "favicon-32.png": "image/png", "icon-192.png": "image/png",
-         "apple-touch-icon.png": "image/png", "favicon.ico": "image/x-icon", "ev-cockpit.ico": "image/x-icon"}
+         "apple-touch-icon.png": "image/png", "favicon.ico": "image/x-icon", "ev-cockpit.ico": "image/x-icon",
+         "panoptes-logo.svg": "image/svg+xml"}
 
 
 def _i18n(h):
@@ -5386,6 +5387,7 @@ class H(BaseHTTPRequestHandler):
             d["sentry_on"] = bool(_CFG.get("sentry"))
             d["panoptes_an"] = _panoptes_gekoppelt()
             d["handy_an"] = bool(_CFG.get("panoptes_handy_jwt")) and _panoptes_gekoppelt()
+            d["panoptes_web"] = (_CFG.get("panoptes_url") or "").rstrip("/") if _panoptes_gekoppelt() else ""
             d["planer"] = dict(_PLANER.status if _PLANER else {},
                                an=bool(_CFG.get("planer") and _CFG.get("planer_token")))
             if _MSG["text"] and time.time() - _MSG["ts"] < 120:
@@ -5393,6 +5395,13 @@ class H(BaseHTTPRequestHandler):
             self._send(json.dumps(d), "application/json")
         elif p == "/setup" or not _CFG.get("vin"):
             self._wizard()
+        elif p != "/klassisch":
+            # Startseite "Mein Auto" (1.20): eine Seite im Panoptes-Look; alles Weitere: "Alle Funktionen" (Panoptes) und "Mehr"
+            import html as _html
+            import mein_auto_seite
+            stil = KARTE_STIL if _kartenquelle() == "community" else ""       # nur mit Einwilligung (Regel 2)
+            web = (_CFG.get("panoptes_url") or "").rstrip("/") if _panoptes_gekoppelt() else ""
+            self._send(_i18n(mein_auto_seite.seite(stil, _html.escape(web, quote=True))))
         else:
             stil = KARTE_STIL if _kartenquelle() == "community" else ""       # nur mit Einwilligung (Regel 2)
             einw = {"fragen": _CFG.get("einwilligung_stand") != EINWILLIGUNG_STAND, "kartenquelle": _kartenquelle(),
