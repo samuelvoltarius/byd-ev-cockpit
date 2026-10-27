@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.20.0"
+VERSION = "1.20.1"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -1359,7 +1359,7 @@ def _frischer_zustand():
         return None
 
 
-def _run_cmd(action):
+def _run_cmd(action, temp=None):
     """action: heat | cool | off. Laeuft im eigenen Thread und pausiert solange den Poller,
     weil BYD nur EINEN Vorgang gleichzeitig erlaubt (sonst 6024)."""
     labels = {"heat": "🔥 Heizen", "cool": "❄️ Kühlen", "off": "⏹️ Klima aus",
@@ -1377,7 +1377,8 @@ def _run_cmd(action):
         if action in ("heat", "off", "lock") and _CFG.get("panoptes_handy_jwt") and _panoptes_gekoppelt():
             # Weg ueber Panoptes (/api/handy/v1): Panoptes prueft Recht, Gate, Echo, Ratenlimit. Kein Cloud-Gate hier.
             import panoptes_source as ps
-            akt = {"heat": ("klima_an", {"tempC": int(HEAT_TEMP), "minuten": 10}), "off": ("klima_aus", {}), "lock": ("zusperren", {})}[action]
+            tc = int(round(max(17.0, min(33.0, float(temp or HEAT_TEMP)))))        # Panoptes: 17-33 C
+            akt = {"heat": ("klima_an", {"tempC": tc, "minuten": 10}), "off": ("klima_aus", {}), "lock": ("zusperren", {})}[action]
             r = ps.handy_aktion(_CFG["panoptes_url"], _CFG["panoptes_handy_jwt"], akt[0], akt[1])
             if r["ok"] and r.get("bestaetigt"):
                 t = "✅ " + labels[action] + " – Panoptes hat es bestätigt"
@@ -1405,7 +1406,9 @@ def _run_cmd(action):
                 elif action == "off":
                     asyncio.run(_climate(off=True))
                 else:
-                    asyncio.run(_climate(temp=HEAT_TEMP if action == "heat" else COOL_TEMP))
+                    # BYD-Cloud: pybyd ClimateStartParams nimmt 15-31 C (pybyd-Doku); hier 17-31, Standard 26 C
+                    asyncio.run(_climate(temp=max(17.0, min(31.0, float(temp))) if (action == "heat" and temp) else
+                                         (HEAT_TEMP if action == "heat" else COOL_TEMP)))
             _MSG.update({"text": "✅ " + labels.get(action, "Befehl") +
                          " angekommen — das Auto braucht ein paar Sekunden", "ts": time.time()})
         except Exception as e:
@@ -5402,7 +5405,7 @@ class H(BaseHTTPRequestHandler):
             import mein_auto_seite
             stil = KARTE_STIL if _kartenquelle() == "community" else ""       # nur mit Einwilligung (Regel 2)
             web = (_CFG.get("panoptes_url") or "").rstrip("/") if _panoptes_gekoppelt() else ""
-            self._send(_i18n(mein_auto_seite.seite(stil, _html.escape(web, quote=True))))
+            self._send(_i18n(mein_auto_seite.seite(stil, _html.escape(web, quote=True), COCKPIT)))
         else:
             stil = KARTE_STIL if _kartenquelle() == "community" else ""       # nur mit Einwilligung (Regel 2)
             einw = {"fragen": _CFG.get("einwilligung_stand") != EINWILLIGUNG_STAND, "kartenquelle": _kartenquelle(),
@@ -6171,7 +6174,11 @@ class H(BaseHTTPRequestHandler):
             nutzer_aktion()
             a = (urllib.parse.parse_qs(u.query).get("a") or [""])[0]
             if a in ERLAUBTE_BEFEHLE and a not in NIE:     # Aufsperren gibt es nie (Alfred, 21.10.)
-                _run_cmd(a)
+                try:
+                    wunsch = float((urllib.parse.parse_qs(u.query).get("t") or [""])[0] or 0) or None
+                except ValueError:
+                    wunsch = None
+                _run_cmd(a, wunsch if a == "heat" else None)
                 self._send(json.dumps({"ok": True}), "application/json")
             else:
                 self._send(json.dumps({"ok": False}), "application/json")
