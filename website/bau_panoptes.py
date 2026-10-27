@@ -27,6 +27,20 @@ T = {
         "wichtig": "<b>Neu, Oktober 2026:</b> Panoptes gibt es jetzt öffentlich als <b>Erprobungsversion 0.1.16.1</b>, mit Quellcode und <a href=\"#installieren\">Schritt-für-Schritt-Anleitung</a>. Getestet ist es bisher vor allem auf einem BYD Dolphin Surf (DiLink 3). Panoptes ist ein privates Freizeitprojekt und nicht von BYD. Bitte lies vor der Installation die <a href=\"hinweise.html\">Hinweise</a>.",
         "hero_alt_pc": "Panoptes-Startseite am PC: Ladestand, Reichweite, Karte und Ladekosten",
         "hero_alt_handy": "Panoptes-Startseite am Handy: Ladestand und Reichweite",
+        "h_camp": "Camping-Modus <span class=\"bald\">in Erprobung</span>",
+        "camp_lead": "Seit 0.1.16.1: Du schläfst im Auto, und Panoptes passt auf Strom, Wächter und Bildschirm auf. Heizen ist noch in Erprobung und bleibt aus, bis du es in den Einstellungen freigibst.",
+        "camp": [
+            ("Was er tut", "<ul class=\"liste\"><li><b>Wächter „bewohnt“:</b> Solange Camping läuft, schreckt der Wächter nicht ab (kein Bildschirm, Licht oder Hupe) und meldet keinen Erschütterungsalarm, wenn du dich bewegst.</li><li><b>Nachtbildschirm:</b> Nach einer einstellbaren Zeit ohne Berührung wird der Bildschirm fast schwarz, mit großer Uhr und ein paar Zahlen. Ohne Töne.</li><li><b>Akku-Schutz und Restdauer:</b> Du legst eine Untergrenze fest (ab Werk 20 %). Panoptes zeigt, wie lange der Akku für die Heizung reicht, und hört vor der Grenze auf. Das Auto schaltet Panoptes nie ab.</li></ul>"),
+            ("Einschalten", "<ul class=\"liste\"><li>Per Tipp am Bildschirm im Auto, nur im Stand (Gang P).</li><li>Am Handy über die Oberfläche von Panoptes.</li><li>Über Telegram mit <code>/camping</code>.</li><li>Eine Planung (zu festen Zeiten) über das EV-Cockpit folgt mit 0.1.17.</li><li>Beim Losfahren endet Camping von selbst.</li></ul>"),
+            ("Heizen: in Erprobung", "<p><b>Panoptes heizt erst, wenn du es in den Einstellungen freigibst.</b> Bis dahin läuft ein Probelauf: Panoptes zeigt nur, was es tun würde, und schaltet nichts.</p><ul class=\"liste\"><li><b>Auto an:</b> Panoptes schaltet die Klimaanlage direkt.</li><li><b>Auto aus:</b> über die BYD-Cloud, dafür brauchst du ein BYD-Konto. Das weckt das Auto bei jedem Heizgang.</li></ul>"),
+            ("Grenzen", "<ul class=\"liste\"><li><b>Kein Innenraumfühler:</b> Der Dolphin Surf hat keinen. Panoptes zeigt deshalb nie eine Innentemperatur und heizt in Intervallen nach der Außentemperatur („alle x Minuten für y Minuten“). Optional kannst du einen externen Fühler dazunehmen.</li><li><b>Verbrauch:</b> Grob 1,5 bis 3 % Akku pro Stunde bei 0 °C, wenn geheizt wird. Das ist eine Schätzung, kein Messwert; Panoptes lernt aus deinem echten Verbrauch.</li><li><b>Nach DC-Ladeende:</b> BYD schaltet das Auto dann selbst ab.</li><li>Camping ersetzt keine Aufsicht. Lass nie Kinder oder Tiere allein im Auto.</li></ul>"),
+        ],
+        "camp_bilder_lead": "Die Bilder stammen aus einem Emulator, nicht aus einem Auto. Darum steht bei den Werten „nicht verfügbar“, und die Modellangabe oben ist die des Emulators. Im Auto siehst du hier deine echten Werte. Klick auf ein Bild zum Vergrößern.",
+        "camp_bilder": [
+            ("Camping-Seite am Bildschirm im Auto: Einschalten, Akku, Heizdauer; oben der Hinweis „Probelauf“.", [("camping", "display", "Camping-Seite von Panoptes: Camping ist aus, Knopf Einschalten, Hinweis Probelauf, Werte noch nicht verfügbar")]),
+            ("Einstellungen: Wärme, Heizweg, Akku-Untergrenze, 12-V-Warnung.", [("camping-einstellungen", "display", "Camping-Einstellungen: Wärme, Heizweg Probelauf, Vorheizen, Akku-Untergrenze 20 Prozent, 12-Volt-Warnung")]),
+            ("Nachtbildschirm: fast schwarz, große Uhr, Rückmeldung „Zu kalt / Passt / Zu warm“. Daneben die Camping-Seite am Handy.", [("nacht", "display", "Nachtbildschirm: schwarzer Hintergrund, große Uhr und Datum, Tasten Zu kalt, Passt, Zu warm"), ("camping", "handy", "Camping-Seite am Handy bei 390 Pixel Breite")]),
+        ],
         "h_kann": "Was Panoptes kann",
         "kann": [
             ("🚗", "Am Bildschirm im Auto", "Panoptes läuft als eigene App im Vollbild, mit großen Tasten. Während der Fahrt sind Einstellungen gesperrt; Start, Karte und Wächter bleiben erreichbar."),
@@ -46,6 +60,7 @@ T = {
             ("🧭", "Verbindung zum Routenplaner", "Panoptes lässt sich mit deinem Konto auf <a href=\"/ev/\">byd.serveone.at/ev/</a> verbinden: Code am Auto anzeigen, am Handy bestätigen, fertig. Jederzeit trennbar."),
             ("🖥️", "EV-Cockpit am PC", "Das <a href=\"/ev-cockpit/\">EV-Cockpit</a> zeigt die Daten von Panoptes am PC, auch Ladungen und Kosten, und kann die Einstellungen ändern. Koppeln bestätigst du mit einem Tipp und einer vierstelligen Prüfzahl."),
             ("⬆️", "Updates in der App", "Panoptes sucht auf Wunsch selbst nach neuen Versionen. Installiert wird nur, wenn das Auto steht und die Zündung aus ist. Ab 0.1.13 verändert Panoptes keine dauerhaften Android-Einstellungen mehr (etwa „Bildschirm immer an“); früher gesetzte Werte lassen sich zurücksetzen."),
+            ("🏕️", "Camping-Modus <span class=\"bald\">in Erprobung</span>", "Wächter „bewohnt“, Nachtbildschirm, Akku-Schutz mit Restdauer. Einschalten per Tipp, am Handy oder mit /camping in Telegram. Geheizt wird erst nach deiner Freigabe in den Einstellungen. <a href=\"#camping\">Mehr dazu</a>"),
             ("🌐", "Fünf Sprachen", "Deutsch, Englisch, Französisch, Italienisch und Niederländisch."),
         ],
         "h_bilder": "So sieht Panoptes aus",
@@ -111,6 +126,8 @@ T = {
             ("Wallbox direkt (go-e, Shelly, KEBA, Heidelberg, openWB, Easee, Zaptec), Orte als Navi-Favoriten", "gebaut (0.1.12), nur mit Testgeräten geprüft"),
             ("Keine dauerhaften Eingriffe in Android-Einstellungen mehr", "gebaut (0.1.13)"),
             ("Notzugang", "gebaut (0.1.14), ab Werk aus"),
+            ("Camping-Modus: Wächter „bewohnt“, Nachtbildschirm, Akku-Schutz", "gebaut (0.1.16.1), im Emulator geprüft, noch nicht im Auto"),
+            ("Camping: Heizen (Intervall nach Außentemperatur)", "in Erprobung, ab Werk als Probelauf; heizt erst nach Freigabe"),
             ("Home Assistant als eigene Verbindung", "geplant"),
         ],
         "h_brauch": "Was du brauchst",
@@ -184,6 +201,20 @@ T = {
         "wichtig": "<b>New, October 2026:</b> Panoptes is now publicly available as <b>test version 0.1.16.1</b>, with source code and a <a href=\"#install\">step-by-step guide</a>. So far it has mainly been tested on a BYD Dolphin Surf (DiLink 3). Panoptes is a private hobby project and not made by BYD. Please read the <a href=\"hinweise.html\">notes</a> before installing.",
         "hero_alt_pc": "Panoptes home on a PC: charge level, range, map and charging costs",
         "hero_alt_handy": "Panoptes home on a phone: charge level and range",
+        "h_camp": "Camping mode <span class=\"bald\">in testing</span>",
+        "camp_lead": "Since 0.1.16.1: you sleep in the car, and Panoptes looks after power, the guard and the screen. Heating is still in testing and stays off until you allow it in the settings.",
+        "camp": [
+            ("What it does", "<ul class=\"liste\"><li><b>Guard \u201coccupied\u201d:</b> While camping runs, the guard does not scare anyone off (no screen, lights or horn) and raises no shake alarm when you move.</li><li><b>Night screen:</b> After a time without touch that you can set, the screen turns almost black, with a big clock and a few numbers. No sounds.</li><li><b>Battery protection and time left:</b> You set a lower limit (20 % by default). Panoptes shows how long the battery lasts for heating and stops before the limit. Panoptes never switches the car off.</li></ul>"),
+            ("Switching on", "<ul class=\"liste\"><li>With a tap on the car screen, only while parked (gear P).</li><li>On your phone, in Panoptes\u2019 web interface.</li><li>In Telegram with <code>/camping</code>.</li><li>Scheduling (at set times) from the EV Cockpit follows with 0.1.17.</li><li>Camping ends by itself when you drive off.</li></ul>"),
+            ("Heating: in testing", "<p><b>Panoptes only heats once you allow it in the settings.</b> Until then it runs a dry run: it only shows what it would do and switches nothing.</p><ul class=\"liste\"><li><b>Car on:</b> Panoptes switches the climate control directly.</li><li><b>Car off:</b> through the BYD cloud, which needs a BYD account. This wakes the car for every heating run.</li></ul>"),
+            ("Limits", "<ul class=\"liste\"><li><b>No cabin sensor:</b> the Dolphin Surf has none. Panoptes therefore never shows an interior temperature and heats in intervals based on the outside temperature (\u201cevery x minutes for y minutes\u201d). You can add an external sensor if you like.</li><li><b>Consumption:</b> roughly 1.5 to 3 % battery per hour at 0 \u00b0C while heating. That is an estimate, not a measurement; Panoptes learns from your real consumption.</li><li><b>After DC charging ends:</b> BYD then switches the car off by itself.</li><li>Camping is no substitute for supervision. Never leave children or animals alone in the car.</li></ul>"),
+        ],
+        "camp_bilder_lead": "The pictures come from an emulator, not from a car. That is why the values read \u201cnot available\u201d and the model name at the top is the emulator\u2019s. In the car you see your real values here. Click a picture to enlarge it. The interface is shown in German.",
+        "camp_bilder": [
+            ("Camping page on the car screen: switch on, battery, heating time; the \u201cdry run\u201d notice at the top.", [("camping", "display", "Panoptes camping page: camping is off, Switch on button, dry run notice, values not yet available")]),
+            ("Settings: warmth, heating route, battery limit, 12 V warning.", [("camping-einstellungen", "display", "Camping settings: warmth, heating route dry run, pre-heating, battery limit 20 percent, 12-volt warning")]),
+            ("Night screen: almost black, big clock, feedback \u201ctoo cold / fine / too warm\u201d. Next to it the camping page on a phone.", [("nacht", "display", "Night screen: black background, big clock and date, buttons too cold, fine, too warm"), ("camping", "handy", "Camping page on a phone at 390 pixels wide")]),
+        ],
         "h_kann": "What Panoptes does",
         "kann": [
             ("🚗", "On the car screen", "Panoptes runs as its own full-screen app with large buttons. While driving, settings are locked; home, map and guard stay available."),
@@ -203,6 +234,7 @@ T = {
             ("🧭", "Route planner link", "Connect Panoptes to your account on <a href=\"/ev/\">byd.serveone.at/ev/</a>: show a code in the car, confirm on your phone, done. Disconnect at any time."),
             ("🖥️", "EV Cockpit on your PC", "The <a href=\"/ev-cockpit/\">EV Cockpit</a> shows Panoptes data on your PC, including charging sessions and costs, and can change its settings. You confirm the pairing with one tap and a four-digit check number."),
             ("⬆️", "Updates in the app", "If you like, Panoptes looks for new versions itself. Installing only happens while the car is parked with the ignition off. From 0.1.13 Panoptes no longer changes permanent Android settings (such as \u201cscreen always on\u201d); values set earlier can be reset."),
+            ("🏕️", "Camping mode <span class=\"bald\">in testing</span>", "Guard \u201coccupied\u201d, night screen, battery protection with time left. Switch on with a tap, on your phone or with /camping in Telegram. Heating only starts after you allow it in the settings. <a href=\"#camping\">More</a>"),
             ("🌐", "Five languages", "German, English, French, Italian and Dutch."),
         ],
         "h_bilder": "What Panoptes looks like",
@@ -268,6 +300,8 @@ T = {
             ("Wallbox directly (go-e, Shelly, KEBA, Heidelberg, openWB, Easee, Zaptec), places as navigation favourites", "built (0.1.12), only checked with test devices"),
             ("No more permanent changes to Android settings", "built (0.1.13)"),
             ("Emergency access", "built (0.1.14), off by default"),
+            ("Camping mode: guard \u201coccupied\u201d, night screen, battery protection", "built (0.1.16.1), checked in an emulator, not yet in a car"),
+            ("Camping: heating (intervals by outside temperature)", "in testing, dry run by default; only heats after you allow it"),
             ("Home Assistant as its own connection", "planned"),
         ],
         "h_brauch": "What you need",
@@ -554,6 +588,16 @@ def seite(t):
     o.append('  <h2 id="funktionen">%s</h2>\n  <div class="raster">' % t["h_kann"])
     for ic, h, txt in t["kann"]:
         o.append('    <div class="feat"><div class="ic">%s</div><h3>%s</h3><p>%s</p></div>' % (ic, h, txt))
+    o.append("  </div>")
+    # Camping
+    o.append('  <h2 id="camping">%s</h2><p class="lead">%s</p>\n  <div class="verb">' % (t["h_camp"], t["camp_lead"]))
+    for h, txt in t["camp"]:
+        o.append('    <div class="card"><h3>%s</h3>%s</div>' % (h, txt))
+    o.append("  </div>")
+    o.append('  <p class="lead">%s</p>\n  <div class="galerie">' % t["camp_bilder_lead"])
+    for cap, bilder in t["camp_bilder"]:
+        teile = reihe([x for x in bilder if x[1] != "handy"] + [x for x in bilder if x[1] == "handy"], p)
+        o.append('    <figure>%s<figcaption><b>%s</b></figcaption></figure>' % (teile, html.escape(cap)))
     o.append("  </div>")
     # Galerie
     o.append('  <h2 id="bilder">%s</h2><p class="lead">%s</p>\n  <div class="galerie">' % (t["h_bilder"], t["bilder_lead"]))
