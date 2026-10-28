@@ -413,6 +413,9 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
             ("go-e Cloud (go-e GmbH, *.api.v3.go-e.io)", "Status und Befehle deiner go-e-Wallbox (laden ja/nein, Ladestrom, Leistung) und dein API-Token. Der Token wird einmal per Handy direkt an dein Auto übergeben und liegt dort verschlüsselt; er geht nie über Panoptes-Server.", "nur wenn du bei der Wallbox „go-e Charger (Cloud)“ wählst und ausdrücklich einwilligst (Standard aus). Einwilligung ausschalten oder Gerät entfernen beendet es sofort."),
             ("Wallbox-Konto (Wallbox Chargers S.L., api.wall-box.com / user-api.wall-box.com)", "Anmeldung mit deinem Wallbox-Konto (E-Mail und Passwort, verschlüsselt im Auto gespeichert), Status und Befehle deines Ladegeräts. Inoffizielle Schnittstelle (wie bei Home Assistant).", "nur wenn du „Wallbox Pulsar / Commander (Cloud)“ wählst und ausdrücklich einwilligst (Standard aus). Einwilligung ausschalten oder Gerät entfernen beendet es sofort."),
         ],
+        # Brücke (Koordination 28.10.2026): eigener Anker #bruecke, der Zustimmungssatz in Panoptes 0.1.24 verlinkt hierher
+        "bruecke_h": "Handy übers Internet (Brücke)",
+        "bruecke": "Unterwegs erreicht die Handy-App dein Auto über einen kleinen Vermittlungsdienst auf unserem Server. Er ist aus, bis du ihn im Auto einschaltest. <b>Ende-zu-Ende verschlüsselt</b>: Der Server reicht nur unlesbare Daten weiter und sieht keine Fahrzeugdaten, Orte oder Befehle. <b>Keine IP-Protokolle</b>, pro Stunde nur eine Zählzeile für den ganzen Dienst. Server bei Hetzner in Deutschland. Schaltest du die Brücke aus, wird dein Postfach sofort gelöscht. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (eine Funktion, die du selbst einschaltest). <a href=\"/datenschutz#bruecke\">Alle Einzelheiten</a>",
         "zus_detail": "Wie Panoptes mit Cockpit, Routenplaner, Karte und Wallbox verbunden ist",
     },
     "en": {
@@ -452,6 +455,8 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
             ("go-e Cloud (go-e GmbH, *.api.v3.go-e.io)", "Status and commands of your go-e wallbox (charging on/off, charging current, power) and your API token. The token is handed to your car once via your phone and stored there encrypted; it never passes through Panoptes servers.", "only if you choose “go-e Charger (Cloud)” for your wallbox and explicitly consent (off by default). Turning consent off or removing the device stops it immediately."),
             ("Wallbox account (Wallbox Chargers S.L., api.wall-box.com / user-api.wall-box.com)", "Login with your Wallbox account (e-mail and password, stored encrypted in the car), status and commands of your charger. Unofficial interface (as used by Home Assistant).", "only if you choose “Wallbox Pulsar / Commander (Cloud)” and explicitly consent (off by default). Turning consent off or removing the device stops it immediately."),
         ],
+        "bruecke_h": "Phone over the internet (bridge)",
+        "bruecke": "On the road, the phone app reaches your car through a small relay service on our server. It is off until you switch it on in the car. <b>End-to-end encrypted</b>: the server only forwards unreadable data and cannot see vehicle data, places or commands. <b>No IP logs</b>, only one count line per hour for the whole service. Server at Hetzner in Germany. If you switch the bridge off, your mailbox is deleted at once. Legal basis: Art. 6(1)(b) GDPR (a feature you switch on yourself). <a href=\"/en/datenschutz#bruecke\">All details</a>",
         "zus_detail": "How Panoptes connects to the cockpit, route planner, map and wall box",
     },
 }
@@ -830,6 +835,7 @@ def seite(t):
     for wo, was, wann in zeilen:
         o.append("    <tr><td><b>%s</b></td><td>%s</td><td>%s</td></tr>" % (html.escape(wo), html.escape(was), wann))
     o.append("  </table></div></details>")
+    o.append('  <div class="card" id="bruecke"><h3 style="margin-top:0">%s</h3><p style="margin-bottom:0">%s</p></div>' % (t["bruecke_h"], t["bruecke"]))
     o.append('  <details class="bd-auf" id="zusammenhang"><summary>%s</summary><p class="lead">%s</p>' % (t["zus_detail"], t["zus_lead"]))
     o.append('  <div class="diagramm"><div class="breit">%s</div><div class="schmal">%s</div></div>\n  <div class="verb">'
              % (diagramm(t["svg"]), diagramm_schmal(t["svg"])))
