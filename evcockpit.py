@@ -465,11 +465,41 @@ def _panoptes_gekoppelt():
     return bool(_CFG.get("panoptes") and _CFG.get("panoptes_url") and (_CFG.get("panoptes_code") or _CFG.get("panoptes_jwt")))
 
 
+_BRUECKE_FELDER = ("bruecke_p", "bruecke_a_pub", "bruecke_h_priv", "bruecke_h_pub", "bruecke_g_handy", "bruecke_server")
+_WEG = {"key": None}
+
+
+def _bruecke_zugang():
+    """Zugang zur Panoptes-Bruecke aus dem Profil (alle sechs Felder gesetzt) oder None."""
+    c = {k[len("bruecke_"):]: _CFG.get(k) for k in _BRUECKE_FELDER}
+    return c if all(c.values()) else None
+
+
+def _weg_einrichten():
+    """1.22: Hat das Profil einen Bruecken-Zugang, geht jeder Aufruf an Panoptes erst direkt (Tailnet/LAN, kurz), sonst ueber die
+    Bruecke (ns1, Ende-zu-Ende verschluesselt). Ohne Zugang bleibt alles wie bisher (nur direkt)."""
+    import panoptes_source as ps
+    z = _bruecke_zugang()
+    key = (tuple(sorted(z.items())) if z else None, _CFG.get("panoptes_url"))
+    if _WEG["key"] == key:
+        return ps.WEG
+    _WEG["key"] = key
+    if ps.WEG is not None and getattr(ps.WEG, "bruecke", None) is not None:
+        ps.WEG.bruecke.schliessen()
+    if z and _CFG.get("panoptes_url"):
+        import bruecke_client as bc
+        ps.WEG = bc.Weg(_CFG["panoptes_url"], bc.Bruecke(z), ps._http_direkt, ps._roh_direkt)
+    else:
+        ps.WEG = None
+    return ps.WEG
+
+
 def _panoptes_obj():
     """Kopplung (Vertrag v1.1): Der Kopplungs-Code ist einmal verwendbar - nach dem Tausch zaehlt nur der JWT,
     der Code wird aus der Konfiguration geloescht."""
     if not _panoptes_gekoppelt():
         return None
+    _weg_einrichten()
     from panoptes_source import Panoptes
     key = (_CFG.get("panoptes_url"), _CFG.get("panoptes_code") or "jwt")
     if _PANOPTES["key"] != key:
@@ -5062,6 +5092,10 @@ class H(BaseHTTPRequestHandler):
         art, rid = ("video" if p.startswith("/waechter/clip/") else "thumb"), p.rsplit("/", 1)[1]
         if pv is None or not waechter.ID.fullmatch(rid):
             return self._send(b"", "text/plain", 404)
+        import panoptes_source as _ps
+        if _ps.WEG is not None and _ps.WEG.aktiv == "bruecke":
+            # Bilder und Videos gehen erst mit Panoptes 0.1.25 ueber die Bruecke (BRUECKE_MEDIEN); bis dahin nur direkt (Heimnetz/Tailscale)
+            return self._send(b"", "text/plain", 404)
         if art == "thumb":
             b = _VORSCHAU.get(rid)
             if b is None:
@@ -5504,6 +5538,9 @@ class H(BaseHTTPRequestHandler):
             d["lan_url"] = ("http://%s:%d" % (lan_ip(), WEBPORT)) if _CFG.get("lan") else ""
             d["sentry_on"] = bool(_CFG.get("sentry"))
             d["panoptes_an"] = _panoptes_gekoppelt()
+            import panoptes_source as _ps
+            d["weg"] = (_ps.WEG.aktiv if _ps.WEG is not None else "") if _panoptes_gekoppelt() else ""
+            d["weg_fehler"] = (_ps.WEG.letzter_fehler if _ps.WEG is not None else "") if d["weg"] != "direkt" else ""
             d["handy_an"] = bool(_CFG.get("panoptes_handy_jwt")) and _panoptes_gekoppelt()
             d["panoptes_web"] = (_CFG.get("panoptes_url") or "").rstrip("/") if _panoptes_gekoppelt() else ""
             d["planer"] = dict(_PLANER.status if _PLANER else {},

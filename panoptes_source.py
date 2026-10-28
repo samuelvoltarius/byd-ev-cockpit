@@ -30,7 +30,16 @@ class KopplungAbgelaufen(NichtAngemeldet):
     """Zugang abgelaufen und der (einmal verwendbare) Kopplungs-Code ist verbraucht -> in Panoptes neu koppeln."""
 
 
+WEG = None      # 1.22: bruecke_client.Weg des gekoppelten Panoptes (direkt, sonst ueber die Bruecke); None = nur direkt
+
+
 def _http(url, daten=None, jwt="", timeout=TIMEOUT, methode=None):
+    if WEG is not None and WEG.gehoert(url):
+        return WEG.http(url, daten, jwt=jwt, timeout=timeout, methode=methode)
+    return _http_direkt(url, daten, jwt, timeout, methode)
+
+
+def _http_direkt(url, daten=None, jwt="", timeout=TIMEOUT, methode=None):
     kopf = {"Accept": "application/json", "User-Agent": "ev-cockpit"}
     if daten is not None:
         kopf["Content-Type"] = "application/json"
@@ -347,6 +356,12 @@ def neue_pruefzahl():
 
 
 def _roh(url, daten=None, timeout=TIMEOUT, jwt=""):
+    if WEG is not None and WEG.gehoert(url):
+        return WEG.roh(url, daten, timeout=timeout, jwt=jwt)
+    return _roh_direkt(url, daten, timeout, jwt)
+
+
+def _roh_direkt(url, daten=None, timeout=TIMEOUT, jwt=""):
     """(Status, JSON) ohne Ausnahme bei HTTP-Fehlern; Netzfehler werfen weiter."""
     kopf = {"Accept": "application/json", "User-Agent": "ev-cockpit", "Content-Type": "application/json"}
     if jwt:

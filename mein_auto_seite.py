@@ -249,7 +249,7 @@ function zeichne(s){
   s.gear==='P'?__T('geparkt'):(s.gear?__T('Gang')+' '+s.gear:'')].filter(Boolean).join(' · ');
  const wz=WZ[s.waechter_zustand],pw=el('pw');
  if(s.panoptes_an){pw.style.display='';el('pwt').textContent=__T('Wächter')+' '+(wz?__T(wz[0]):'–');pw.querySelector('.dot').className='dot '+(wz&&wz[1]||'');}else pw.style.display='none';
- el('pqt').textContent=s.quelle||'–';
+ el('pqt').textContent=(s.quelle||'–')+(s.weg?' · '+__T(s.weg==='bruecke'?'Brücke':'direkt'):'');
  const soc=s.soc==null?null:Math.round(s.soc);
  el('soc').textContent=soc==null?'–':soc;el('gauge').style.setProperty('--lvl',(soc==null?0:soc)+'%');
  const kwh=(s.battery_kwh&&soc!=null)?s.battery_kwh*soc/100:null;
@@ -285,7 +285,7 @@ function zeichne(s){
  el('t_reifen2').textContent=s.reifen&&s.reifen.stufe?(s.reifen.stufe==='gruen'?__T('in Ordnung'):__T('bitte prüfen')):(ty.length?__T('kleinster Wert aller vier Reifen'):'');
  el('t_waech_v').textContent=wz?__T(wz[0]):(s.panoptes_an?'–':__T('nicht verbunden'));el('t_waech_v').className='v '+(wz&&wz[1]||'');
  const w=s.waechter_letzt;el('t_waech2').textContent=w&&w.timestamp?__T('Letztes Ereignis')+' '+rel(w.timestamp):__T('noch kein Ereignis');
- const wi=el('t_waech_img');if(w&&w.id&&w.available){wi.style.display='block';if(wi.dataset.id!==w.id){wi.dataset.id=w.id;wi.innerHTML='<img alt="" loading=lazy src="/waechter/bild/'+esc(w.id)+'" onerror="this.remove()"><span>'+esc(rel(w.timestamp))+'</span>';}else{const sp=wi.querySelector('span');if(sp)sp.textContent=rel(w.timestamp);}}else wi.style.display='none';
+ const wi=el('t_waech_img');if(s.weg==='bruecke')wi.style.display='none';else if(w&&w.id&&w.available){wi.style.display='block';if(wi.dataset.id!==w.id){wi.dataset.id=w.id;wi.innerHTML='<img alt="" loading=lazy src="/waechter/bild/'+esc(w.id)+'" onerror="this.remove()"><span>'+esc(rel(w.timestamp))+'</span>';}else{const sp=wi.querySelector('span');if(sp)sp.textContent=rel(w.timestamp);}}else wi.style.display='none';
  el('t_pos2').textContent=s.latitude!=null?z(s.latitude,4)+', '+z(s.longitude,4):__T('Standort unbekannt');
  karte(s);
  const W=[];
@@ -468,10 +468,11 @@ function wmZu(){el('wm').classList.remove('on');WM.offen=false;document.body.sty
 function wmGeh(d){const n=WM.i+d;if(n<0||n>=WM.l.length)return;WM.i=n;wmZeige();}
 function wmZeige(){
  const a=WM.l[WM.i],pl=el('wm_play'),inf=el('wm_info');
- el('wm_neu').disabled=WM.i<=0;el('wm_alt').disabled=WM.i>=WM.l.length-1;el('wm_abs').disabled=!a||!a.available;
+ el('wm_neu').disabled=WM.i<=0;el('wm_alt').disabled=WM.i>=WM.l.length-1;el('wm_abs').disabled=!a||!a.available||!!(S&&S.weg==='bruecke');
  if(!a){pl.innerHTML='<div class=leer>'+esc(__T(WM.fehler||'Noch kein Ereignis.'))+'</div>';inf.innerHTML='';el('wm_strip').innerHTML='';return;}
  const art=WM_ART[a.type]||['🎥',a.type||''];
- pl.innerHTML=a.available?'<img alt="" src="/waechter/bild/'+esc(a.id)+'"><button type=button class=gross onclick="wmAbspielen()" aria-label="'+esc(__T('Abspielen'))+'">▶</button>':'<div class=leer>'+esc(__T('Datenträger fehlt – die Aufnahme ist gerade nicht lesbar.'))+'</div>';
+ const bruecke=!!(S&&S.weg==='bruecke');
+ pl.innerHTML=bruecke?'<div class=leer>'+esc(__T('Über die Brücke gibt es noch keine Bilder und Videos. Im Heimnetz oder über Tailscale geht es.'))+'</div>':a.available?'<img alt="" src="/waechter/bild/'+esc(a.id)+'"><button type=button class=gross onclick="wmAbspielen()" aria-label="'+esc(__T('Abspielen'))+'">▶</button>':'<div class=leer>'+esc(__T('Datenträger fehlt – die Aufnahme ist gerade nicht lesbar.'))+'</div>';
  const ch=[ '<span>'+art[0]+' '+esc(__T(art[1]))+'</span>','<span>🕒 '+esc(wmZeit(a.timestamp))+' · '+esc(rel(a.timestamp))+'</span>'];
  wmWer(a).forEach(k=>ch.push('<span>'+WM_WER[k][0]+' '+esc(__T(WM_WER[k][1]))+'</span>'));
  if(a.cameraId!=null)ch.push('<span>📷 '+esc(__T('Kamera'))+' '+(Number(a.cameraId)+1)+'</span>');

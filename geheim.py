@@ -19,7 +19,8 @@ import sys
 # Felder, die nie im Klartext auf die Platte sollen
 FELDER = ("password", "control_pin", "panoptes_jwt", "panoptes_code", "planer_token",
           "ha_src_token", "ha_pass", "pv_token", "charger_token", "ha_refresh",
-          "wallbox_ha_token", "wallbox_tuya_keys", "panoptes_handy_jwt")
+          "wallbox_ha_token", "wallbox_tuya_keys", "panoptes_handy_jwt",
+          "bruecke_h_priv", "bruecke_g_handy", "bruecke_p")
 PREFIX = "dpapi:"
 KC = "keychain:"
 DIENST = "EV-Cockpit"
