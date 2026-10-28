@@ -1513,7 +1513,7 @@ def _frischer_zustand():
 def _run_cmd(action, temp=None):
     """action: heat | cool | off. Laeuft im eigenen Thread und pausiert solange den Poller,
     weil BYD nur EINEN Vorgang gleichzeitig erlaubt (sonst 6024)."""
-    labels = {"heat": "🔥 Heizen", "cool": "❄️ Kühlen", "off": "⏹️ Klima aus",
+    labels = {"heat": "🔥 Heizen", "cool": "❄️ Kühlen", "off": "⏹️ Klima aus", "heat_stop": "⏹️ Heizen stoppen",
               "batt_on": "🔋 Batterie vorheizen", "batt_off": "🔋 Batterie-Heizung aus",
               "lock": "🔒 Zusperren",
               "seat_off": "💺 Sitzheizung aus", "seat_lo": "💺 Sitzheizung Stufe 1",
@@ -1541,6 +1541,21 @@ def _run_cmd(action, temp=None):
                 t = "ℹ️ " + name + " gesendet – das Auto hat es noch nicht zurückgemeldet. Bitte kurz prüfen."
             else:
                 t = "⛔ " + name + " nicht gesendet: " + ps.HANDY_GRUENDE.get(r["grund"], "Panoptes lehnt ab (%s)" % r["grund"])
+            _MSG.update({"text": t, "ts": time.time()})
+            return
+        if action == "heat_stop":
+            # Stoppen ist sicher (Panoptes 0.1.26, Aktion "heizen_stoppen"): Klima UND Akku-Heizen, ohne Rueckfrage. Nur ueber Panoptes.
+            import panoptes_source as ps
+            if not (_CFG.get("panoptes_handy_jwt") and _panoptes_gekoppelt()):
+                _MSG.update({"text": "⛔ Heizen stoppen nicht gesendet: erst „Steuern einrichten“ (Panoptes ab 0.1.26).", "ts": time.time()})
+                return
+            r = ps.handy_aktion(_CFG["panoptes_url"], _CFG["panoptes_handy_jwt"], "heizen_stoppen", {})
+            if r["ok"] and r.get("bestaetigt"):
+                t = "✅ Heizen gestoppt – Panoptes hat es bestätigt"
+            elif r["ok"]:
+                t = "ℹ️ Stopp gesendet – das Auto hat es noch nicht zurückgemeldet. Bitte kurz prüfen."
+            else:
+                t = "⛔ Heizen stoppen nicht gesendet: " + ps.HANDY_GRUENDE.get(r["grund"], "Panoptes lehnt ab (%s)" % r["grund"])
             _MSG.update({"text": t, "ts": time.time()})
             return
         if action in ("heat", "off", "lock") and _CFG.get("panoptes_handy_jwt") and _panoptes_gekoppelt():

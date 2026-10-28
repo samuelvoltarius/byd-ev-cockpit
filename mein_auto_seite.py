@@ -75,6 +75,12 @@ body{margin:0;color:var(--ink);min-height:100vh}
 .aus{opacity:.5}
 input[type=range]{width:100%;accent-color:#B5F23D;padding:0}
 .skala{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3)}
+.sollbar{display:flex;gap:4px;align-items:flex-end;height:46px;margin:10px 0 4px}
+.sollbar i{flex:1;height:20px;border-radius:3px;opacity:.28;cursor:pointer}
+.sollbar i.k{background:#4aa3ff}.sollbar i.w{background:#ff5a4a}.sollbar i.m{background:#9aa3ad;height:30px}
+.sollbar i.an{opacity:1}.sollbar i.jetzt{height:44px}
+.sollwort{font-size:22px;font-weight:700;text-align:center;margin:2px 0 8px}
+.btn.rot{background:#d83a2e;color:#fff;border-color:#d83a2e}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}.seg button{padding:8px 14px;font:600 13px 'Manrope',system-ui,sans-serif;border:0;border-right:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}.seg button:last-child{border:0}.seg button[disabled]{opacity:.45;cursor:not-allowed}
 .wimg{display:none;position:relative;margin-top:8px;height:96px;border-radius:10px;overflow:hidden;background:#0d2c40}.wimg img{width:100%;height:100%;object-fit:cover;display:block}.wimg span{position:absolute;left:6px;bottom:5px;font-size:11px;font-weight:600;padding:1px 7px;border-radius:99px;background:rgba(5,16,28,.72);color:var(--ink)}
 .wm{position:fixed;inset:0;z-index:50;background:rgba(3,10,18,.97);overflow:auto;display:none}.wm.on{display:block}
@@ -166,9 +172,10 @@ BODY_TEIL1 = r"""<body class=mein-auto>
   <section class="card c-4">
    <div class=carimg id=car><div class=ph>Auto …</div></div><div class=cname id=cname></div>
    <div class=acts id=acts>
-    <button type=button class="act primary" id=a_heat onclick="cmd('heat')" style="display:none"><svg><use href="#i-snow"/></svg>Vorheizen</button>
+    <button type=button class="act primary" id=a_heat onclick="cmd('heat',Math.max(26,TEMP))" style="display:none"><svg><use href="#i-snow"/></svg>Vorheizen</button>
     <button type=button class=act id=a_lock onclick="zusperren()" style="display:none"><svg><use href="#i-lock"/></svg>Zusperren</button>
     <button type=button class=act id=a_off onclick="cmd('off')" style="display:none"><svg><use href="#i-snow"/></svg>Klima aus</button>
+    <button type=button class="act" id=a_stop onclick="cmd('heat_stop')" style="display:none;background:#d83a2e;color:#fff"><svg><use href="#i-snow"/></svg>Heizen stoppen</button>
    </div>
    <div style="margin-top:8px"><button type=button class=btn id=a_setup onclick="handyKoppeln()" style="display:none" disabled>🔗 Steuern einrichten</button></div>
    <div class=actmsg id=actmsg></div>
@@ -185,10 +192,15 @@ LADEN_AUF = r"""<div class=zwei><div>
 
 KLIMA_AUF = r"""<div class=zwei><div>
   <div class=lab>Temperatur</div>
-  <input type=range id=temp min=17 max=33 value=25 oninput="tempZeigen()"><div class=skala><span>17 °C</span><span>25 °C (neutral)</span><span>33 °C</span></div>
-  <div class=row2><button type=button class="btn lime big" id=k_heat onclick="cmd('heat')">🔥 Heizen auf <span id=temp_v>25</span> °C</button>
+  <div class=sollwort id=sollwort>Neutral</div>
+  <div class=sollbar id=sollbar></div><div class=skala><span>Kühlen</span><span>Neutral</span><span>Heizen</span></div>
+  <div class=row2><button type=button class="btn big" onclick="sollSchritt(-1)">❄️ Kühler</button>
+   <button type=button class="btn big" onclick="sollSetzen(25)">Neutral</button>
+   <button type=button class="btn big" onclick="sollSchritt(1)">🔥 Wärmer</button></div>
+  <div class=row2><button type=button class="btn lime big" id=k_heat onclick="cmd('heat')">▶ Klima starten</button>
    <button type=button class="btn big" id=k_cool onclick="cmd('cool')" style="display:none">❄️ Kühlen</button>
    <button type=button class="btn big" onclick="cmd('off')">⏹ Klima aus</button></div>
+  <div class=row2><button type=button class="btn big rot" id=k_stop onclick="cmd('heat_stop')" style="display:none;width:100%">⏹ Heizen stoppen</button></div>
   <div class=hint id=k_hint>Nur bei ausgeschaltetem Auto.</div>
   <div id=k_batt style="display:none"><div class=lab>Batterie</div>
    <div class=row2><button type=button class="btn big" onclick="cmd('batt_on')">🔋 Vorheizen</button><button type=button class="btn big" onclick="cmd('batt_off')">Aus</button></div>
@@ -279,7 +291,7 @@ function zeichne(s){
  el('t_laden_m').innerHTML=LADEN_ZEILEN.map(esc).join('<br>');
  // Klima
  el('t_klima_v').textContent=s.klima_on==='ON'?__T('an'):s.klima_on==='OFF'?__T('aus'):__T('unbekannt');
- el('t_klima_m').textContent=[s.temp_out!=null?__T('Außen')+' '+z(s.temp_out,0)+' °C':'',__T('Vorheizen auf')+' '+TEMP+' °C'].filter(Boolean).join(' · ');
+ el('t_klima_m').textContent=[s.temp_out!=null?__T('Außen')+' '+z(s.temp_out,0)+' °C':'',sollText(TEMP,!!s.handy_an)].filter(Boolean).join(' · ');
  // Camping
  const cp=s.camping||{};el('t_camping').style.display=cp.da?'':'none';
  if(cp.da){el('t_camping_v').textContent=cp.aktiv?__T('läuft'):__T('aus');}
@@ -309,7 +321,7 @@ function zeichne(s){
  sicht('a_heat',F.klima||hy);sicht('a_off',F.klima||hy);sicht('a_lock',F.lock||hy);sicht('a_setup',!!s.panoptes_an&&!hy);
  sicht('seatP',hy);sicht('seatC',!hy&&!!F.seat);sicht('ventC',!hy&&!!F.seatvent);sicht('seatN',!hy&&!F.seat);sicht('k_cool',!hy&&!!F.klima);sicht('k_batt',!hy&&!!F.batt);
  el('k_hint').textContent=hy?__T('10 Minuten, nur bei ausgeschaltetem Auto. Läuft über Panoptes.'):(F.klima?__T('Über die BYD-Cloud fest höchstens 31 °C, nur bei ausgeschaltetem Auto.'):__T('Zum Vorheizen erst „Steuern einrichten“ (oben).'));
- el('k_heat').disabled=!(F.klima||hy);
+ el('k_heat').disabled=!(F.klima||hy);const heizt=hy&&(s.klima_on==='ON'||s.battery_heat==='ON');sicht('k_stop',heizt);sicht('a_stop',heizt);tempZeigen();
  if(s.panoptes_an&&!hy&&HANDY_OK===undefined){HANDY_OK=null;fetch('/panoptes/handy/pruefen',{method:'POST',body:'{}'}).then(r=>r.json()).then(r=>{HANDY_OK=r.vorhanden;handyKnopf();}).catch(()=>{HANDY_OK=undefined;});}
  handyKnopf();
  if(typeof rSocVomAuto==='function')rSocVomAuto(s);
@@ -372,13 +384,21 @@ async function karte(s){
  }catch(e){MAPOBJ=0;m.textContent='📍';}}
 // Schnellknoepfe: gleiche geprueften Wege wie bisher (/cmd), Panoptes-Weg wenn mit "Steuern einrichten" gekoppelt
 function zusperren(){if(confirm(__T('Auto wirklich zusperren?')))cmd('lock');}
-function tempZeigen(){TEMP=parseInt(el('temp').value,10)||25;el('temp_v').textContent=TEMP;if(S)el('t_klima_m').textContent=[S.temp_out!=null?__T('Außen')+' '+z(S.temp_out,0)+' °C':'',__T('Vorheizen auf')+' '+TEMP+' °C'].filter(Boolean).join(' · ');}
+// Sollwert wie das Display im Auto: 17 Striche, 17 = staerkstes Kuehlen, 25 = Mitte (neutral), 26-33 = Heizstufen 1-8. Nie "°C" fuer diesen Wert.
+function sollText(t,stufen){const n=Math.abs(t-25);return t===25?__T('Neutral'):(t>25?__T('Heizen'):__T('Kühlen'))+(stufen?' '+__T('Stufe')+' '+n:'');}
+function tempZeigen(){const b=el('sollbar');if(!b)return;
+ if(!b.firstChild){for(let v=17;v<=33;v++){const i=document.createElement('i');i.className=v<25?'k':v>25?'w':'m';i.onclick=()=>sollSetzen(v);i.dataset.v=v;b.appendChild(i);}}
+ [...b.children].forEach(i=>{const v=+i.dataset.v;i.classList.toggle('an',TEMP<25?(v>=TEMP&&v<=25):TEMP>25?(v>=25&&v<=TEMP):v===25);i.classList.toggle('jetzt',v===TEMP);});
+ const hy=!!(S&&S.handy_an);el('sollwort').textContent=sollText(TEMP,hy);
+ if(S)el('t_klima_m').textContent=[S.temp_out!=null?__T('Außen')+' '+z(S.temp_out,0)+' °C':'',sollText(TEMP,hy)].filter(Boolean).join(' · ');}
+function sollSetzen(v){TEMP=Math.max(17,Math.min(33,v));tempZeigen();}
+function sollSchritt(d){sollSetzen(TEMP+d);}
 const SITZ={f:'Fahrer',b:'Beifahrer'};
 function sitz(w,n){if(!confirm(__T('Sitzheizung')+' '+__T(SITZ[w])+' → '+(n?__T('Stufe')+' '+n:__T('aus'))+'?'))return;cmd('sitz_'+w+'_'+n);}
-async function cmd(a){
+async function cmd(a,t){
  const m=el('actmsg');MSGHOLD=Date.now()+6000;m.textContent='⏳ '+__T('Sende …');
  const bs=[...document.querySelectorAll('.act')];bs.forEach(b=>b.classList.add('busy'));
- try{const r=await fetch('/cmd?a='+encodeURIComponent(a)+(a==='heat'?'&t='+TEMP:''),{method:'POST'});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||__T('Befehl abgelehnt'));
+ try{const r=await fetch('/cmd?a='+encodeURIComponent(a)+(a==='heat'?'&t='+(t||TEMP):''),{method:'POST'});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||__T('Befehl abgelehnt'));
   m.textContent='✓ '+__T('Befehl angenommen · Fahrzeugstatus wird aktualisiert');}
  catch(ex){m.textContent='⚠️ '+ex.message;}
  finally{bs.forEach(b=>b.classList.remove('busy'));}

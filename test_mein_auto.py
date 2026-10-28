@@ -21,7 +21,7 @@ class MeinAuto(unittest.TestCase):
         self.assertEqual(pos, sorted(pos))
 
     def test_schnellknoepfe_genau_drei(self):
-        self.assertEqual(re.findall(r"id=(a_[a-z]+) onclick", H), ["a_heat", "a_lock", "a_off", "a_setup"])   # a_setup = einmal koppeln
+        self.assertEqual(re.findall(r"id=(a_[a-z]+) onclick", H), ["a_heat", "a_lock", "a_off", "a_stop", "a_setup"])   # a_setup = einmal koppeln, a_stop = Heizen stoppen (nur sichtbar, solange geheizt wird)
         self.assertIn("cmd('heat')", H)
         self.assertIn("cmd('off')", H)
         self.assertIn("zusperren()", H)
@@ -89,8 +89,8 @@ class Bedienkacheln121(unittest.TestCase):
         self.assertIn("id=\"t_route\"", h)
 
     def test_klima_temperatur_17_bis_33(self):
-        self.assertIn("min=17 max=33 value=25", H)
-        self.assertIn("'&t='+TEMP", H)
+        self.assertIn("v=17;v<=33", H)             # 1.22.1: Balken statt Regler, 17 bis 33 bleibt
+        self.assertIn("'&t='+(t||TEMP)", H)
 
     def test_laden_kachel_rueckfrage_und_freigabe(self):
         for t in ("bestaetigung_noetig", "/wallbox/freigabe", "/wallbox/steuern", "Steuern erlauben", "lp_box", "/panoptes/ladeplan"):
@@ -141,6 +141,39 @@ class Bedienkacheln121(unittest.TestCase):
             ev._CFG.update(gesichert)
             ev._HOLD_UNTIL = 0             # _run_cmd haelt den Poller 45 s an - hier nicht an andere Tests weitergeben
         self.assertEqual([g[1]["tempC"] for g in gesehen], [22, 33, 26])
+
+    def test_sollwert_wie_das_display_ohne_grad(self):
+        # 1.22.1: 17 Striche (8 blau | Mitte | 8 rot), Text "Heizen Stufe N", fuer den Sollwert nie "°C"
+        self.assertIn("id=sollbar", H)
+        self.assertIn("for(let v=17;v<=33;v++)", H)
+        self.assertIn("function sollText(t,stufen)", H)
+        self.assertNotIn("Heizen auf <span", H)
+        self.assertNotIn("Vorheizen auf", H)
+        for w in ("Wärmer", "Kühler", "Neutral"):
+            self.assertIn(w, H)
+        self.assertIn("Math.max(26,TEMP)", H)            # Vorheizen = mindestens 26
+
+    def test_heizen_stoppen_ueber_panoptes(self):
+        import panoptes_source as ps
+        import time
+        self.assertIn("id=k_stop", H)
+        self.assertIn("cmd('heat_stop')", H)
+        gesichert = dict(ev._CFG)
+        ev._CFG.update(panoptes=True, panoptes_url="http://127.0.0.1:9", panoptes_jwt="x", panoptes_handy_jwt="H")
+        gesehen = []
+        alt = ps.handy_aktion
+        ps.handy_aktion = lambda url, jwt, a, f=None, **k: (gesehen.append((a, f)) or {"ok": True, "weg": "lokal", "bestaetigt": True})
+        try:
+            ev._run_cmd("heat_stop")
+            time.sleep(0.5)
+        finally:
+            ps.handy_aktion = alt
+            ev._CFG.clear()
+            ev._CFG.update(gesichert)
+            ev._HOLD_UNTIL = 0
+        self.assertEqual(gesehen, [("heizen_stoppen", {})])
+        self.assertIn("heat_stop", __import__("sicherheit").ERLAUBTE_BEFEHLE)
+
 
 class WaechterFenster1203(unittest.TestCase):
     def test_kachel_oeffnet_fenster_im_cockpit(self):
