@@ -3336,7 +3336,7 @@ html{background:#0a0e14}body{background:#0a0e14!important}
  </div>
 </div>
 <script src="/static/leaflet.js"></script>
-<script src="/static/panoptes-karte-1.1.0.js" integrity="sha384-WFV5q2HBex9eBQHZgdppShpKNwUGDJS+1xYid+boekvLEIzWPflpxKMRzPjeDs0m"></script>
+<script src="/static/panoptes-karte-1.1.1.js" integrity="sha384-i7tp5p6jes/kbADjH9gwYmNPknft/RmizAR/xMc7JmRcO9jbn0ESYGQRAB9FshfQ"></script>
 <script>
 const SIL={
 klein:'<svg viewBox="0 0 320 130" xmlns="http://www.w3.org/2000/svg"><g transform="translate(16,14)"><path d="M 8,96 L 10,70 C 12,57 22,49 40,46 L 66,43 L 96,15 C 102,8 112,5 126,5 L 200,5 C 214,5 224,9 230,17 L 250,45 L 272,51 C 284,55 288,65 288,76 L 288,96 Z" fill="#5FD6E6"/><circle cx="60" cy="96" r="19" fill="#071a2b"/><circle cx="60" cy="96" r="12" fill="#5FD6E6"/><circle cx="240" cy="96" r="19" fill="#071a2b"/><circle cx="240" cy="96" r="12" fill="#5FD6E6"/></g></svg>',
@@ -3427,7 +3427,7 @@ function basiskarte(m){
   el.appendChild(d);});
 }
 
-// Live-Belegung: gemeinsames Kartenmodul panoptes-karte 1.1.0 (gleich wie /ev/ und Panoptes; Vertrag
+// Live-Belegung: gemeinsames Kartenmodul panoptes-karte 1.1.1 (gleich wie /ev/ und Panoptes; Vertrag
 // https://byd.serveone.at/tiles/lib/README.md). Die Anfrage laeuft ueber den lokalen Server (/live/umkreis),
 // der die eigenen Ladekarten anhaengt; die Pflicht-Quellenangabe (z. B. EnBW CC BY 4.0) steht in der Kartenfusszeile.
 // Das "?" fuer OSM-Saeulen nur ab Zoom 11 (v2.1) erledigt das Modul selbst.
@@ -5364,7 +5364,7 @@ class H(BaseHTTPRequestHandler):
             if f.exists() and name in ICONS:
                 return self._send(f.read_bytes(), ICONS[name])
             if f.exists() and name in ("leaflet.js", "leaflet.css", "maplibre-gl.js", "maplibre-gl.css",
-                                       "pmtiles.js", "leaflet-maplibre-gl.js", "panoptes-karte-1.1.0.js"):
+                                       "pmtiles.js", "leaflet-maplibre-gl.js", "panoptes-karte-1.1.1.js"):
                 self._send(f.read_bytes(),
                            "text/css" if name.endswith(".css") else "application/javascript")
             else:

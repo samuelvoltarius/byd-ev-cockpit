@@ -10,10 +10,10 @@ import unittest
 import planer_bridge as pb
 
 HIER = os.path.dirname(os.path.abspath(__file__))
-PRUEF = os.path.join(HIER, "pruefdaten", "panoptes-karte-1.1.0.pruefdaten.json")
-MODUL = os.path.join(HIER, "static", "panoptes-karte-1.1.0.js")
-SHA = {PRUEF: "b515406370d56d1db71028fef0ff69b39bb2b317ff8854b7be8f764c5a0adcca",
-       MODUL: "0801623fec901132cbeb725872b72e799a14ec4b6b49f45c5600ee6f6a80e2eb"}
+PRUEF = os.path.join(HIER, "pruefdaten", "panoptes-karte-1.1.1.pruefdaten.json")
+MODUL = os.path.join(HIER, "static", "panoptes-karte-1.1.1.js")
+SHA = {PRUEF: "84421768f1378f934bfc41775d99e843b9995e8cc0a210b7a20045866b179e82",
+       MODUL: "9956ae2f065758f3a7d6a7befd1a3bcf81ca0b351dd8313dacefad15a3e8aebf"}
 
 
 class TestGemeinsam(unittest.TestCase):
