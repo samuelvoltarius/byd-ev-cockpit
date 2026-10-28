@@ -25,13 +25,13 @@ DURCHGEREICHT = ("authorization", "content-type", "accept", "accept-language", "
 # Gruende, die der Nutzer lesen darf (Regel DAU: sagen, was zu tun ist)
 GRUND_TEXT = {
     "auto_offline": "Das Auto ist gerade nicht erreichbar – vielleicht kein Empfang. Später noch einmal.",
-    "limit": "Zu viele Anfragen über die Brücke. Bitte kurz warten.",
-    "zugang": "Die Brücke kennt dieses Gerät nicht mehr. Bitte das Cockpit neu mit Panoptes verbinden.",
-    "geloescht": "Die Brücke wurde in Panoptes ausgeschaltet oder dieses Gerät entfernt. Bitte neu verbinden.",
-    "netz": "Der Brücken-Server ist gerade nicht erreichbar.",
-    "handshake": "Die sichere Verbindung zum Auto kam nicht zustande. Bitte neu mit Panoptes verbinden.",
-    "zeit": "Das Auto antwortet über die Brücke nicht.",
-    "format": "Die Brücke hat eine unerwartete Antwort geschickt.",
+    "limit": "Gerade zu viele Anfragen. Bitte kurz warten.",
+    "zugang": "Die Verbindung über das Internet gilt nicht mehr. Bitte noch einmal mit Panoptes verbinden.",
+    "geloescht": "Die Verbindung über das Internet wurde in Panoptes ausgeschaltet. Bitte noch einmal verbinden.",
+    "netz": "Das Internet-Netz zum Auto ist gerade nicht erreichbar.",
+    "handshake": "Die sichere Verbindung zum Auto kam nicht zustande. Bitte noch einmal mit Panoptes verbinden.",
+    "zeit": "Das Auto antwortet gerade nicht.",
+    "format": "Das Auto hat unerwartet geantwortet. Bitte noch einmal versuchen.",
 }
 
 
@@ -228,7 +228,8 @@ class Weg:
     """Wahl des Wegs zu EINEM Panoptes (basis = dessen Direkt-Adresse, z. B. http://100.x.x.x:8180). Erst direkt (kurz), dann Bruecke.
     Scheitert der Direktweg, wird er erst nach `pause_s` wieder versucht. aktiv: "direkt" | "bruecke" | "" (noch nichts)."""
 
-    def __init__(self, basis, bruecke, direkt_http, direkt_roh, uhr=time.time, pause_s=60.0, direkt_timeout=2.5):
+    def __init__(self, basis, bruecke, direkt_http, direkt_roh, uhr=time.time, pause_s=60.0, direkt_timeout=2.5, jwt_bruecke=None):
+        self.jwt_bruecke = jwt_bruecke            # Ueber die Bruecke gilt NUR der Zugang (JWT) der Handy-Kopplung, die den Handshake gemacht hat
         self.basis = (basis or "").rstrip("/")
         self.bruecke, self.direkt_http, self.direkt_roh, self.uhr = bruecke, direkt_http, direkt_roh, uhr
         self.pause_s, self.direkt_timeout = pause_s, direkt_timeout
@@ -247,6 +248,8 @@ class Weg:
         if self.bruecke is None:
             raise urllib.error.URLError("kein Weg")
         kopf = {"Content-Type": "application/json", "Accept": "application/json"}
+        if self.jwt_bruecke is not None:
+            jwt = self.jwt_bruecke() or ""
         if jwt:
             kopf["Authorization"] = "Bearer " + jwt
         try:

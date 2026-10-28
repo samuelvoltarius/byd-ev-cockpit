@@ -488,10 +488,60 @@ def _weg_einrichten():
         ps.WEG.bruecke.schliessen()
     if z and _CFG.get("panoptes_url"):
         import bruecke_client as bc
-        ps.WEG = bc.Weg(_CFG["panoptes_url"], bc.Bruecke(z), ps._http_direkt, ps._roh_direkt)
+        ps.WEG = bc.Weg(_CFG["panoptes_url"], bc.Bruecke(z), ps._http_direkt, ps._roh_direkt,
+                        jwt_bruecke=lambda: _CFG.get("panoptes_handy_jwt", ""))
     else:
         ps.WEG = None
     return ps.WEG
+
+
+_BR = {"versuch": 0.0, "grund": ""}
+
+
+def _bruecke_hinweis():
+    """Was die Startseite zur Verbindung unterwegs sagen soll: "" (nichts), "einrichten" (Knopf), "neu" (gilt nicht mehr, Knopf)."""
+    if not (_panoptes_gekoppelt() and _CFG.get("panoptes_handy_jwt")):
+        return ""
+    import panoptes_source as ps
+    if _bruecke_zugang() is None:
+        return "einrichten"
+    if ps.WEG is not None and ps.WEG.letzter_fehler in ("zugang", "geloescht", "handshake"):
+        return "neu"
+    return ""
+
+
+def _bruecke_einrichten():
+    """1.22: Zugang fuer unterwegs holen (Regel DAU: ein Knopf, kein Abtippen). Braucht die Fernbedien-Kopplung ("Steuern einrichten") und
+    einmal den DIREKTEN Weg zum Auto (Heimnetz/Tailscale/Hotspot). Das Auto muss "Handy-App unterwegs nutzen" an haben (Opt-in am Auto).
+    -> {"ok": bool, "grund": "", "text": ""}"""
+    import bruecke_client as bc
+    import panoptes_source as ps
+    _BR["versuch"] = time.time()
+    if not _panoptes_gekoppelt():
+        return {"ok": False, "grund": "nicht_gekoppelt", "text": "Erst mit Panoptes verbinden."}
+    if not _CFG.get("panoptes_handy_jwt"):
+        return {"ok": False, "grund": "handy_fehlt", "text": "Erst „Steuern einrichten“ auf der Startseite."}
+    z = bc.neue_schluessel()
+    try:
+        code, d = ps._roh_direkt(_CFG["panoptes_url"].rstrip("/") + "/api/handy/v1/bruecke",
+                                 {"h_pub": z["h_pub"], "g_handy": z["g_handy"]}, timeout=8, jwt=_CFG["panoptes_handy_jwt"])
+    except Exception:
+        return {"ok": False, "grund": "kein_weg", "text": "Das Auto ist gerade nicht erreichbar. Einmal zu Hause im WLAN (oder im Auto) probieren."}
+    d = d if isinstance(d, dict) else {}
+    b = d.get("bruecke") if code == 200 and d.get("ok") else None
+    if isinstance(b, dict) and b.get("p") and b.get("a_pub") and b.get("server"):
+        _CFG.update(bruecke_p=b["p"], bruecke_a_pub=b["a_pub"], bruecke_server=b["server"],
+                    bruecke_h_priv=z["h_priv"], bruecke_h_pub=z["h_pub"], bruecke_g_handy=z["g_handy"])
+        save_cfg(_CFG)
+        _weg_einrichten()
+        return {"ok": True, "grund": "", "text": "Fertig: Das Cockpit erreicht dein Auto jetzt auch unterwegs."}
+    g = str(d.get("grund") or ("http_%s" % code))
+    text = {"bruecke_aus": "Am Auto ist „Handy-App unterwegs nutzen“ noch aus. Bitte in Panoptes (Einstellungen → Gerät koppeln) einschalten.",
+            "server_nicht_erreichbar": "Der Internet-Dienst für unterwegs antwortet gerade nicht. Bitte später noch einmal.",
+            "schluessel": "Das hat nicht geklappt. Bitte noch einmal versuchen."}.get(g)
+    if code in (403, 404) and not d.get("grund"):
+        text = "Dein Panoptes kann das noch nicht (ab Version 0.1.21)."
+    return {"ok": False, "grund": g, "text": text or "Das hat nicht geklappt (%s)." % g}
 
 
 def _panoptes_obj():
@@ -590,6 +640,11 @@ def _panoptes_runde(cache):
     pv = _panoptes_obj()
     if pv is None:
         return False
+    if _CFG.get("panoptes_handy_jwt") and _bruecke_zugang() is None and time.time() - _BR["versuch"] > 1800:
+        try:
+            _BR["grund"] = _bruecke_einrichten()["grund"]        # von allein, hoechstens alle 30 Min.; ohne Erfolg bleibt es still
+        except Exception:
+            pass
     t0 = time.time()
     _abfrage_zaehlen()                   # jede Abfrage weckt die App im Auto -> ehrlich mitzaehlen
     st = pv.lies()
@@ -5540,6 +5595,7 @@ class H(BaseHTTPRequestHandler):
             d["panoptes_an"] = _panoptes_gekoppelt()
             import panoptes_source as _ps
             d["weg"] = (_ps.WEG.aktiv if _ps.WEG is not None else "") if _panoptes_gekoppelt() else ""
+            d["bruecke_hinweis"] = _bruecke_hinweis()
             d["weg_fehler"] = (_ps.WEG.letzter_fehler if _ps.WEG is not None else "") if d["weg"] != "direkt" else ""
             d["handy_an"] = bool(_CFG.get("panoptes_handy_jwt")) and _panoptes_gekoppelt()
             d["panoptes_web"] = (_CFG.get("panoptes_url") or "").rstrip("/") if _panoptes_gekoppelt() else ""
@@ -5717,6 +5773,11 @@ class H(BaseHTTPRequestHandler):
                 return self._send(json.dumps({"ok": True}), "application/json")
             except Exception as e:
                 return self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json", 400)
+        if u.path == "/bruecke/einrichten":
+            nutzer_aktion()
+            r = _bruecke_einrichten()
+            _BR["grund"] = r["grund"]
+            return self._send(json.dumps(r), "application/json")
         if u.path == "/jetzt":
             nutzer_aktion()
             return self._send(json.dumps({"ok": True}), "application/json")

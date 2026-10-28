@@ -152,6 +152,7 @@ BODY_TEIL1 = r"""<body class=mein-auto>
  </header>
 
  <div id=altband class=hinweis role=alert></div>
+ <div id=wegband class=hinweis role=status></div>
  <div class=grid>
   <section class="card c-hero">
    <div class=gauge id=gauge style="--lvl:0%"><div class=water></div><div class=val><b><span id=soc>–</span><small>%</small></b><span id=kwh>&nbsp;</span></div></div>
@@ -230,6 +231,10 @@ let S=null,DATA_TS=0,MSGHOLD=0,HANDY_OK,LADEN_ZEILEN=[],TEMP=25,ROUTE_T=0,LB=nul
 const el=id=>document.getElementById(id);
 const z=(v,d)=>v==null?'–':Number(v).toFixed(d==null?0:d).replace('.',window.__LANG__==='en'?'.':',');
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function unterwegsVerbinden(b){b.disabled=true;const m=el('wegmsg');m.textContent='⏳';
+ try{const r=await (await fetch('/bruecke/einrichten',{method:'POST',body:'{}'})).json();m.textContent=(r.ok?'✅ ':'⚠️ ')+__T(r.text||'');if(r.ok)setTimeout(manualRefresh,800);}
+ catch(e){m.textContent='⚠️ '+__T('Das Cockpit erreicht sich selbst nicht – bitte neu starten.');}
+ b.disabled=false;}
 function sprache(){try{localStorage.setItem('evc_lang',window.__LANG__==='en'?'de':'en');}catch(e){}location.reload();return false;}
 function modell(m){m=m||'';const lin=((m.match(/\(([^)]*)\)/)||[])[1]||'').trim();let nm=m.replace(/\([^)]*\)/,'').split('/')[0].trim();
  if(/dolphin surf|seagull/i.test(m))nm='BYD Dolphin Surf';return {nm:nm,lin:lin};}
@@ -249,7 +254,9 @@ function zeichne(s){
   s.gear==='P'?__T('geparkt'):(s.gear?__T('Gang')+' '+s.gear:'')].filter(Boolean).join(' · ');
  const wz=WZ[s.waechter_zustand],pw=el('pw');
  if(s.panoptes_an){pw.style.display='';el('pwt').textContent=__T('Wächter')+' '+(wz?__T(wz[0]):'–');pw.querySelector('.dot').className='dot '+(wz&&wz[1]||'');}else pw.style.display='none';
- el('pqt').textContent=(s.quelle||'–')+(s.weg?' · '+__T(s.weg==='bruecke'?'Brücke':'direkt'):'');
+ const wb=el('wegband'),wh=s.bruecke_hinweis;
+ if(wh==='einrichten'||wh==='neu'){wb.style.display='block';wb.innerHTML=(wh==='neu'?esc(__T('Die Verbindung unterwegs gilt nicht mehr.')):esc(__T('Damit das Cockpit dein Auto auch unterwegs erreicht, einmal verbinden.')))+' <button type=button class="btn lime" onclick="unterwegsVerbinden(this)">'+esc(__T(wh==='neu'?'Neu verbinden':'Unterwegs verbinden'))+'</button><span id=wegmsg style="margin-left:10px"></span>';}else wb.style.display='none';
+ el('pqt').textContent=(s.quelle||'–')+(s.weg?' · '+__T(s.weg==='bruecke'?'über Internet':'direkt'):'');
  const soc=s.soc==null?null:Math.round(s.soc);
  el('soc').textContent=soc==null?'–':soc;el('gauge').style.setProperty('--lvl',(soc==null?0:soc)+'%');
  const kwh=(s.battery_kwh&&soc!=null)?s.battery_kwh*soc/100:null;
@@ -472,7 +479,7 @@ function wmZeige(){
  if(!a){pl.innerHTML='<div class=leer>'+esc(__T(WM.fehler||'Noch kein Ereignis.'))+'</div>';inf.innerHTML='';el('wm_strip').innerHTML='';return;}
  const art=WM_ART[a.type]||['🎥',a.type||''];
  const bruecke=!!(S&&S.weg==='bruecke');
- pl.innerHTML=bruecke?'<div class=leer>'+esc(__T('Über die Brücke gibt es noch keine Bilder und Videos. Im Heimnetz oder über Tailscale geht es.'))+'</div>':a.available?'<img alt="" src="/waechter/bild/'+esc(a.id)+'"><button type=button class=gross onclick="wmAbspielen()" aria-label="'+esc(__T('Abspielen'))+'">▶</button>':'<div class=leer>'+esc(__T('Datenträger fehlt – die Aufnahme ist gerade nicht lesbar.'))+'</div>';
+ pl.innerHTML=bruecke?'<div class=leer>'+esc(__T('Unterwegs gibt es noch keine Bilder und Videos. Zu Hause im WLAN geht es.'))+'</div>':a.available?'<img alt="" src="/waechter/bild/'+esc(a.id)+'"><button type=button class=gross onclick="wmAbspielen()" aria-label="'+esc(__T('Abspielen'))+'">▶</button>':'<div class=leer>'+esc(__T('Datenträger fehlt – die Aufnahme ist gerade nicht lesbar.'))+'</div>';
  const ch=[ '<span>'+art[0]+' '+esc(__T(art[1]))+'</span>','<span>🕒 '+esc(wmZeit(a.timestamp))+' · '+esc(rel(a.timestamp))+'</span>'];
  wmWer(a).forEach(k=>ch.push('<span>'+WM_WER[k][0]+' '+esc(__T(WM_WER[k][1]))+'</span>'));
  if(a.cameraId!=null)ch.push('<span>📷 '+esc(__T('Kamera'))+' '+(Number(a.cameraId)+1)+'</span>');
