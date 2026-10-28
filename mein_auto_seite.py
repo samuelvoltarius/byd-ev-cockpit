@@ -195,12 +195,12 @@ KLIMA_AUF = r"""<div class=zwei><div>
   <div class=lab>Temperatur</div>
   <div class=sollwort id=sollwort>Neutral</div>
   <div class=sollbar id=sollbar></div><div class=skala><span>Kühlen</span><span>Neutral</span><span>Heizen</span></div>
-  <div class=row2><button type=button class="btn big" onclick="sollSchritt(-1)">❄️ Kühler</button>
-   <button type=button class="btn big" onclick="sollSetzen(25)">Neutral</button>
-   <button type=button class="btn big" onclick="sollSchritt(1)">🔥 Wärmer</button></div>
-  <div class=row2><button type=button class="btn lime big" id=k_heat onclick="cmd('heat')">▶ Klima starten</button>
+  <div class=row2><button type=button class="btn big" style="flex:1;justify-content:center;padding:9px 4px;white-space:nowrap;gap:4px" onclick="sollSchritt(-1)">❄️ Kühler</button>
+   <button type=button class="btn big" style="flex:1;justify-content:center;padding:9px 4px;white-space:nowrap;gap:4px" onclick="sollSetzen(25)">Neutral</button>
+   <button type=button class="btn big" style="flex:1;justify-content:center;padding:9px 4px;white-space:nowrap;gap:4px" onclick="sollSchritt(1)">🔥 Wärmer</button></div>
+  <div class=row2><button type=button class="btn lime big" style="flex:2;justify-content:center" id=k_heat onclick="cmd('heat')">▶ Klima starten</button>
    <button type=button class="btn big" id=k_cool onclick="cmd('cool')" style="display:none">❄️ Kühlen</button>
-   <button type=button class="btn big" onclick="cmd('off')">⏹ Klima aus</button></div>
+   <button type=button class="btn big" style="flex:1;justify-content:center;white-space:nowrap;padding:9px 6px" onclick="cmd('off')">⏹ Klima aus</button></div>
   <div class=row2><button type=button class="btn big rot" id=k_stop onclick="cmd('heat_stop')" style="display:none;width:100%">⏹ Heizen stoppen</button></div>
   <div class=hint id=k_hint>Nur bei ausgeschaltetem Auto.</div>
   <div id=k_batt style="display:none"><div class=lab>Batterie</div>
