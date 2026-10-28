@@ -397,6 +397,10 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
         "ausfuehrlich": "Ausführliche Anleitung mit allen Befehlen (8 Schritte)",
         "ds_detail": "Genau nachlesen: was geht wohin?",
         # ab 0.1.21 (Kern 12): aWATTar-Börsenpreise; Telegram-Anmeldung, /wo, HTTPS/CT, Sitzheizung (Kern 12, DATENSCHUTZ_0.1.21_ENTWURF.md)
+        # ab 0.1.22 (Kern 11, DATENSCHUTZ_GEWOHNHEITEN_ZEILE.md): Gewohnheiten, nur lokal im Auto
+        "ds_ab_0122": [
+            ('Nirgends – bleibt im Auto', 'Gewohnheiten: welche Bedienung (z. B. Klima, Sitzheizung, Wallbox, Wächter) wann, an welchem Ort (zu Hause oder ein gespeicherter Ort, keine Koordinaten), Außentemperatur, Akkustand, von wo bedient (Bildschirm, Handy, Cockpit, Tasten im Auto)', 'Nur wenn du beim Einrichten „Gewohnheiten merken“ bejaht hast. 60 Tage aufbewahrt, „Alles vergessen“ löscht sofort, jederzeit abschaltbar'),
+        ],
         "ds_ab_0121": [
             ("aWATTar (aWATTar GmbH bzw. Deutschland GmbH, api.awattar.at / api.awattar.de)", "Panoptes holt höchstens einmal je Stunde (meist einmal am Tag) die öffentlichen Börsenstrompreise für AT bzw. DE. Es gibt kein Konto, und es werden keine Daten über dich oder dein Auto gesendet; aWATTar sieht nur die Internetadresse des Autos.", "nur wenn du im Ladeplan „Ich habe einen dynamischen Stromtarif“ einschaltest (Standard aus) und als Strompreis zu Hause „Börsenpreis“ wählst. Schalter „dynamischer Stromtarif“ aus: ab sofort kein Abruf mehr."),
             ('Telegram: Anmeldung an der Weboberfläche', 'Eine kurze Nachricht an deinen eigenen Telegram-Chat mit einer 4-stelligen Prüfzahl und zwei Knöpfen (Erlauben/Ablehnen). Kein Gerätename, kein Browsername, keine IP-Adresse.', 'Nur wenn du im Browser auf „Per Telegram anmelden“ drückst und Telegram in Panoptes eingerichtet ist.'),
@@ -434,6 +438,9 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
                  ("Allow autostart.", "So Panoptes starts by itself. The assistant opens the right page.")],
         "ausfuehrlich": "Detailed guide with all commands (8 steps)",
         "ds_detail": "In detail: what goes where?",
+        "ds_ab_0122": [
+            ('Nowhere – stays in the car', 'Habits: which control (e.g. climate, seat heating, wallbox, guardian) at what time, at which place (home or a saved place, no coordinates), outside temperature, battery level, where it was operated from (screen, phone, cockpit, car buttons)', 'Only if you said yes to “Remember habits” during setup. Kept for 60 days, “Forget everything” deletes it at once, can be switched off at any time'),
+        ],
         "ds_ab_0121": [
             ("aWATTar (aWATTar GmbH / Deutschland GmbH, api.awattar.at / api.awattar.de)", "Panoptes fetches the public exchange electricity prices for AT or DE at most once per hour (usually once a day). There is no account, and no data about you or your car is sent; aWATTar only sees the car’s internet address.", "only if you switch on “I have a dynamic electricity tariff” in the charge plan (off by default) and choose “Exchange price” as your home electricity price. Switch “dynamic electricity tariff” off: no more requests from then on."),
             ('Telegram: web interface sign-in', 'A short message to your own Telegram chat with a 4-digit check number and two buttons (Allow/Deny). No device name, no browser name, no IP address.', 'Only when you tap “Sign in with Telegram” in the browser and Telegram is set up in Panoptes.'),
@@ -818,6 +825,8 @@ def seite(t):
         zeilen[-1:-1] = t.get("ds_ab_0120", [])
     if tuple(int(x) for x in VERSION.split(".")[:3]) >= (0, 1, 21):
         zeilen[-1:-1] = t.get("ds_ab_0121", [])
+    if tuple(int(x) for x in VERSION.split(".")[:3]) >= (0, 1, 22):
+        zeilen[-1:-1] = t.get("ds_ab_0122", [])
     for wo, was, wann in zeilen:
         o.append("    <tr><td><b>%s</b></td><td>%s</td><td>%s</td></tr>" % (html.escape(wo), html.escape(was), wann))
     o.append("  </table></div></details>")
