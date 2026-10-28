@@ -485,7 +485,7 @@ function wmZeige(){
  if(a.cameraId!=null)ch.push('<span>📷 '+esc(__T('Kamera'))+' '+(Number(a.cameraId)+1)+'</span>');
  const o=wmOrt(a);if(o)ch.push('<span>📍 '+esc(o)+'</span>');
  inf.innerHTML=ch.join('');
- el('wm_strip').innerHTML=WM.l.map((x,k)=>'<button type=button class="wmth'+(k===WM.i?' on':'')+'" onclick="WM.i='+k+';wmZeige()">'+(x.available?'<img loading=lazy alt="" src="/waechter/bild/'+esc(x.id)+'">':'')+'<div>'+(WM_ART[x.type]||['🎥'])[0]+' '+esc(wmZeit(x.timestamp))+'<small>'+esc(rel(x.timestamp))+'</small></div></button>').join('');}
+ el('wm_strip').innerHTML=WM.l.map((x,k)=>'<button type=button class="wmth'+(k===WM.i?' on':'')+'" onclick="WM.i='+k+';wmZeige()">'+(x.available&&!bruecke?'<img loading=lazy alt="" src="/waechter/bild/'+esc(x.id)+'">':'')+'<div>'+(WM_ART[x.type]||['🎥'])[0]+' '+esc(wmZeit(x.timestamp))+'<small>'+esc(rel(x.timestamp))+'</small></div></button>').join('');}
 function wmAbspielen(){const a=WM.l[WM.i];if(!a||!a.available)return;const pl=el('wm_play');
  pl.innerHTML='<video controls autoplay playsinline src="/waechter/clip/'+esc(a.id)+'" poster="/waechter/bild/'+esc(a.id)+'"></video>';
  const v=pl.querySelector('video');v.onerror=()=>{pl.innerHTML='<div class=leer>'+esc(__T('Das Video lässt sich gerade nicht laden. Bitte später noch einmal.'))+'</div>';};}
