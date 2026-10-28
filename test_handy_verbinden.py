@@ -33,11 +33,18 @@ class HandyVerbinden(unittest.TestCase):
 
     def test_fehler_in_klartext(self):
         for post, teil in (({"_status": 404}, "aktualisieren"), ({"_status": 429}, "warten"),
-                           ({"_status": 403, "ok": False}, "Recht"), ({"_status": 409, "ok": False, "grund": "bruecke_aus"}, "unterwegs"),
+                           ({"_status": 403, "ok": False}, "Recht"), ({"_status": 409, "ok": False, "grund": "bruecke_aus"}, "einschalten"),
+                           ({"_status": 409, "ok": False, "grund": "laeuft_schon"}, "läuft schon"),
+                           ({"_status": 403, "ok": False, "grund": "nur_cockpit"}, "Cockpit-Kopplung"),
                            ({"ok": True, "id": "kaputt"}, "noch einmal")):
             r = hv.anfragen(Pv(post=post), "x", "1")
             self.assertFalse(r["ok"])
             self.assertIn(teil, r["text"], post)
+
+    def test_status_bruecke_aus_zwischen_erlauben_und_abholen(self):
+        r = hv.status(Pv(get={"_status": 409, "ok": False, "grund": "bruecke_aus"}), ID)
+        self.assertEqual(r["status"], "fehler")
+        self.assertIn("einschalten", r["text"])
 
     def test_status_wartet_abgelehnt_abgelaufen(self):
         for st in ("wartet", "abgelehnt", "abgelaufen", "abgeholt"):

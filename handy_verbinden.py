@@ -2,8 +2,8 @@
 """1.22: Knopf "Handy verbinden": Das Cockpit holt ueber seine Kopplung beim Auto einen QR (QR v2) fuer eine NEUE Handy-Kopplung (art=handy)
 und zeigt ihn gross an. Erlaubt wird NUR am Auto bzw. in Telegram (Pruefzahl), nie automatisch; das Cockpit speichert den QR nicht.
 
-Vertrag (ENTWURF, von Panoptes noch nicht gebaut - Kern 12):
-  POST /api/kopplung/weiteres-geraet  {"art":"handy","geraet":"<Name>","pruefzahl":"1234"}  -> {ok, id (r-<16 hex>), gueltigBis} | {ok:false, grund}; 409 bruecke_aus
+Vertrag (Panoptes 0.1.25, kern12-0125 ae6c586c):
+  POST /api/kopplung/weiteres-geraet  {"art":"handy","geraet":"<Name>","pruefzahl":"1234"}  -> {ok, id (r-<16 hex>), gueltigBis} | {ok:false, grund}; 401 kopplung, 403 nur_cockpit, 409 bruecke_aus|laeuft_schon, 429
   GET  /api/kopplung/weiteres-geraet/<id>  -> {status: wartet|erlaubt|abgelehnt|abgelaufen|abgeholt, qr: "https://byd.serveone.at/p/#k=..."}   (qr genau einmal)
 Die Kopplung muss art=cockpit sein (nur direkt erreichbar; ueber die Bruecke gilt nur der Handy-Zugang)."""
 import re
@@ -16,7 +16,9 @@ GRUENDE = {
     "nicht_erlaubt": "Panoptes erlaubt dem Cockpit das noch nicht. Bitte in Panoptes unter „Gekoppelte Geräte“ das Recht geben.",
     "ratenlimit": "Zu viele Anfragen. Bitte kurz warten.",
     "nicht_vorhanden": "Dein Panoptes kann das noch nicht. Bitte Panoptes aktualisieren.",
-    "bruecke_aus": "Am Auto ist „Handy-App unterwegs nutzen“ noch aus. Ohne das klappt die Verbindung nur zu Hause im WLAN.",
+    "bruecke_aus": "Am Auto ist „Handy-App unterwegs nutzen“ noch aus. Bitte in Panoptes einschalten und noch einmal versuchen.",
+    "laeuft_schon": "Es läuft schon eine Anfrage. Bitte am Auto oder in Telegram „Erlauben“ tippen – oder 5 Minuten warten.",
+    "nur_cockpit": "Das geht nur mit der Cockpit-Kopplung. Bitte das Cockpit neu mit Panoptes verbinden.",
 }
 
 
@@ -26,6 +28,8 @@ def anfragen(pv, geraet, pruefzahl):
     st = d.get("_status")
     if st in (404, 405):
         return {"ok": False, "text": GRUENDE["nicht_vorhanden"]}
+    if st in (409, 403) and str(d.get("grund")) in GRUENDE:
+        return {"ok": False, "text": GRUENDE[str(d.get("grund"))]}
     if st == 409:
         return {"ok": False, "text": GRUENDE["bruecke_aus"]}
     if st == 429:
@@ -42,6 +46,8 @@ def status(pv, aid):
     if not re.fullmatch(r"r-[0-9a-f]{16}", aid or ""):
         return {"status": "fehler"}
     d = pv._get(PFAD + "/" + aid)
+    if isinstance(d, dict) and d.get("grund") in GRUENDE:
+        return {"status": "fehler", "text": GRUENDE[d["grund"]]}
     st = d.get("status") if isinstance(d, dict) else None
     if st == "erlaubt":
         qr = str(d.get("qr") or "")
@@ -87,7 +93,7 @@ async function warte(n){
  try{const r=await (await fetch('/handy/qr/status',{method:'POST',body:JSON.stringify({id:ID})})).json();
   if(r.status==='erlaubt'){el('s2').style.display='none';el('qr').innerHTML=r.svg;el('s3').style.display='';ID=null;return;}
   if(r.status==='abgelehnt'||r.status==='abgelaufen'||r.status==='fehler'||n>65){
-   el('msg2').innerHTML='⚠️ '+esc(__T(r.status==='abgelehnt'?'Abgelehnt.':'Das hat nicht geklappt oder war zu langsam.'))+' <button type=button onclick="location.reload()">Noch einmal</button>';return;}}
+   el('msg2').innerHTML='⚠️ '+esc(__T(r.text||(r.status==='abgelehnt'?'Abgelehnt.':'Das hat nicht geklappt oder war zu langsam.')))+' <button type=button onclick="location.reload()">Noch einmal</button>';return;}}
  catch(e){}
  setTimeout(()=>warte(n+1),2000);}
 function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
