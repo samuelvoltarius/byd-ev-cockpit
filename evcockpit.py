@@ -394,6 +394,7 @@ from sicherheit import befehl_erlaubt, aus_letzter_abfrage, ERLAUBTE_BEFEHLE, NI
 from live_saeulen import Live
 import neu_look
 import anpassen
+import handy_verbinden
 
 _LIVE = Live()
 
@@ -496,6 +497,7 @@ def _weg_einrichten():
 
 
 _BR = {"versuch": 0.0, "grund": ""}
+_QR_ANFRAGE = {"id": "", "bis": 0.0}
 
 
 def _bruecke_hinweis():
@@ -5291,6 +5293,8 @@ class H(BaseHTTPRequestHandler):
                 self._send(("Modell-Datei nicht geladen (%s)" % type(e).__name__).encode("utf-8"), "text/plain", 404)
         elif p == "/panoptes":
             self._send(_i18n(PANOPTES_SEITE))
+        elif p == "/handy":
+            self._send(_i18n(handy_verbinden.SEITE))
         elif p == "/layout":
             self._send(json.dumps(anpassen.bereinigen(_CFG.get("layout"))), "application/json")
         elif p in ("/mehr", "/klassisch"):
@@ -5773,6 +5777,33 @@ class H(BaseHTTPRequestHandler):
                 return self._send(json.dumps({"ok": True}), "application/json")
             except Exception as e:
                 return self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json", 400)
+        if u.path == "/handy/qr/anfrage":
+            # Neue Handy-Kopplung (QR): erlaubt wird nur am Auto/in Telegram; hier nur anfragen und die Pruefzahl zeigen
+            try:
+                import panoptes_source as ps
+                pv = _panoptes_obj() if _panoptes_gekoppelt() else None
+                if pv is None:
+                    return self._send(json.dumps({"ok": False, "text": "Erst mit Panoptes verbinden (Mehr → Einstellungen)."}), "application/json")
+                pz = ps.neue_pruefzahl()
+                r = handy_verbinden.anfragen(pv, ps.geraetename(), pz)
+                if r.get("ok"):
+                    _QR_ANFRAGE.update(id=r["id"], bis=time.time() + 700)
+                    r["pruefzahl"] = pz
+                return self._send(json.dumps(r), "application/json")
+            except Exception as e:
+                return self._send(json.dumps({"ok": False, "text": "Panoptes antwortet nicht (%s). Bitte noch einmal versuchen." % type(e).__name__}), "application/json")
+        if u.path == "/handy/qr/status":
+            try:
+                pv = _panoptes_obj() if _panoptes_gekoppelt() else None
+                aid = (json.loads(raw or "{}").get("id") or "")
+                if pv is None or aid != _QR_ANFRAGE.get("id") or time.time() > _QR_ANFRAGE.get("bis", 0):
+                    return self._send(json.dumps({"status": "abgelaufen"}), "application/json")
+                r = handy_verbinden.status(pv, aid)
+                if r["status"] != "wartet":
+                    _QR_ANFRAGE.update(id="")
+                return self._send(json.dumps(r), "application/json")
+            except Exception:
+                return self._send(json.dumps({"status": "fehler"}), "application/json")
         if u.path == "/bruecke/einrichten":
             nutzer_aktion()
             r = _bruecke_einrichten()

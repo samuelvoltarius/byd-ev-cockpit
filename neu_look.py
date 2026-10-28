@@ -95,6 +95,7 @@ ICONS = r"""<svg width="0" height="0" style="position:absolute">
  <symbol id="n-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
  <symbol id="n-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
  <symbol id="n-bell" viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15zM10 21h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+ <symbol id="n-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M11 18.5h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
  <symbol id="n-card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18M7 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
  <symbol id="n-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14.5 9a3 3 0 0 0-5 1.5c0 3 5 1.5 5 4.5a3 3 0 0 1-5 1.5M12 6.5v1.5M12 16v1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
 </svg>"""
@@ -223,6 +224,7 @@ KACHELN = (
     ("/fahrten", "book", "Fahrtenbuch", "Fahrten ansehen, als CSV"),
     ("/aufnahmen", "eye", "Wächter", "Aufnahmen ansehen"),
     ("/karte", "map", "Karte", "Ladesäulen in der Nähe"),
+    ("/handy", "phone", "Handy verbinden", "Panoptes-App mit QR koppeln"),
     ("/takt", "bell", "Abfrage & Meldungen", "Wie oft nachfragen, Laden fertig"),
     ("/about", "info", "Über", "Lizenzen, Datenschutz, Version"),
 )
