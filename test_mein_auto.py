@@ -78,6 +78,10 @@ class Nachbesserung120(unittest.TestCase):
 
 
 class Bedienkacheln121(unittest.TestCase):
+    def setUp(self):
+        import panoptes_source as ps
+        ps._STUFE_CACHE.update(t=1e18, url="http://127.0.0.1:9", ok=False)       # kein Netz in den Tests
+
     def test_route_und_camping_sind_uebernommen_nicht_neu(self):
         for t in ("function rPlanen", "function rZeigen", "async function rAnAuto", "id=rziel", "id=rbtn", "id=rstopps",
                   "function campingZeichnen", "async function cpPost", "id=cp_status", "id=cp_plan", "function cpPlan"):
@@ -174,6 +178,28 @@ class Bedienkacheln121(unittest.TestCase):
         self.assertEqual(gesehen, [("heizen_stoppen", {})])
         self.assertIn("heat_stop", __import__("sicherheit").ERLAUBTE_BEFEHLE)
 
+
+    def test_stufe_nur_wenn_panoptes_es_meldet(self):
+        import panoptes_source as ps
+        import time
+        gesichert = dict(ev._CFG)
+        ev._CFG.update(panoptes=True, panoptes_url="http://127.0.0.1:9", panoptes_jwt="x", panoptes_handy_jwt="H")
+        alt, alt_r = ps.handy_aktion, ps._roh
+        gesehen = []
+        ps.handy_aktion = lambda url, jwt, a, f=None, **k: (gesehen.append((a, f)) or {"ok": True, "weg": "lokal", "bestaetigt": True})
+        try:
+            for meldet in (False, True):
+                ps._STUFE_CACHE.update(t=0.0, url="", ok=False)
+                ps._roh = lambda url, daten=None, timeout=0, jwt="", m=meldet: (200, {"klima": {"stufe": 1}} if m else {})
+                ev._run_cmd("heat", 29)
+                time.sleep(0.5)
+        finally:
+            ps.handy_aktion, ps._roh = alt, alt_r
+            ps._STUFE_CACHE.update(t=0.0, url="", ok=False)
+            ev._CFG.clear()
+            ev._CFG.update(gesichert)
+            ev._HOLD_UNTIL = 0
+        self.assertEqual([g[1] for g in gesehen], [{"tempC": 29, "minuten": 10}, {"tempC": 29, "minuten": 10, "stufe": 13}])
 
 class WaechterFenster1203(unittest.TestCase):
     def test_kachel_oeffnet_fenster_im_cockpit(self):

@@ -1562,7 +1562,10 @@ def _run_cmd(action, temp=None):
             # Weg ueber Panoptes (/api/handy/v1): Panoptes prueft Recht, Gate, Echo, Ratenlimit. Kein Cloud-Gate hier.
             import panoptes_source as ps
             tc = int(round(max(17.0, min(33.0, float(temp or HEAT_TEMP)))))        # Panoptes: 17-33 C
-            akt = {"heat": ("klima_an", {"tempC": tc, "minuten": 10}), "off": ("klima_aus", {}), "lock": ("zusperren", {})}[action]
+            kf = {"tempC": tc, "minuten": 10}
+            if action == "heat" and ps.klima_stufe_gemeldet(_CFG["panoptes_url"], _CFG["panoptes_handy_jwt"]):
+                kf["stufe"] = tc - 16                 # Stufe 1-17 (0.1.26), nur wenn Panoptes es selbst meldet
+            akt = {"heat": ("klima_an", kf), "off": ("klima_aus", {}), "lock": ("zusperren", {})}[action]
             r = ps.handy_aktion(_CFG["panoptes_url"], _CFG["panoptes_handy_jwt"], akt[0], akt[1])
             if r["ok"] and r.get("bestaetigt"):
                 t = "✅ " + labels[action] + " – Panoptes hat es bestätigt"

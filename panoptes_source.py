@@ -449,6 +449,27 @@ def handy_aktion(url, jwt, aktion, felder=None, http=_http):
     return {"ok": False, "grund": str(d.get("grund") or "unbekannt")[:40]}
 
 
+_STUFE_CACHE = {"t": 0.0, "url": "", "ok": False}
+
+
+def klima_stufe_gemeldet(url, jwt, roh=None, uhr=time.time):
+    """Panoptes ab 0.1.26 meldet in /api/system/capabilities `klima.stufe = 1` (Sollwert als Stufe 1-17). NUR dann darf `stufe` zu
+    klima_an mitgeschickt werden; sonst nur tempC wie bisher. Jeder Fehler/jede fehlende Meldung = False. 10 Minuten gemerkt."""
+    u = (url or "").rstrip("/")
+    c = _STUFE_CACHE
+    if c["url"] == u and uhr() - c["t"] < 600:
+        return c["ok"]
+    ok = False
+    try:
+        code, d = (roh or _roh)(u + "/api/system/capabilities", None, jwt=jwt)
+        k = ((d or {}).get("klima") or {}) if code == 200 and isinstance(d, dict) else {}
+        ok = isinstance(k, dict) and k.get("stufe") == 1
+    except Exception:
+        ok = False
+    c.update(t=uhr(), url=u, ok=ok)
+    return ok
+
+
 HANDY_AB = (0, 1, 19, 1)          # erste Panoptes-Version mit /api/handy/v1
 
 
