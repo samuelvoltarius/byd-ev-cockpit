@@ -405,7 +405,7 @@ def kopplung_status(url, aid, roh=_roh):
     return {"status": st if st in ("wartet", "abgeholt", "abgelehnt", "abgelaufen") else "fehler"}
 
 
-HANDY_AKTIONEN = ("klima_an", "klima_aus", "zusperren", "sitzheizung", "heizen_stoppen")        # NIE "aufsperren": das gibt es im Cockpit nicht (Regel)
+HANDY_AKTIONEN = ("klima_an", "klima_aus", "zusperren", "sitzheizung", "heizen_stoppen", "update_starten")        # NIE "aufsperren": das gibt es im Cockpit nicht (Regel)
 HANDY_GRUENDE = {
     "nicht_erlaubt": "Dieses Gerät darf das nicht. In Panoptes unter „Gekoppelte Geräte“ das Recht einschalten.",
     "nicht_vorhanden": "Das kommt mit Panoptes 0.1.19.1 – dein Panoptes kann es noch nicht.",
@@ -424,6 +424,18 @@ HANDY_GRUENDE = {
     "nicht_unterstuetzt": "Das kann dieses Auto nicht.",
     "cloud_nicht_erreichbar": "Die BYD-Cloud antwortet gerade nicht.",
     "fehlgeschlagen": "Der Befehl hat nicht geklappt.",
+    # Panoptes aktualisieren (0.1.26.1)
+    "faehrt": "Das Auto fährt. Das Update geht nur, wenn es in P steht und aus ist.",
+    "nicht_in_p": "Das Auto steht nicht in P. Das Update geht nur in P bei ausgeschaltetem Auto.",
+    "zuendung_an": "Das Auto ist eingeschaltet. Das Update geht nur, wenn es aus ist.",
+    "zustand_unbekannt": "Ob das Auto in P steht und aus ist, weiß Panoptes gerade nicht. Bitte kurz warten.",
+    "wartet_wlan": "Panoptes wartet auf WLAN. Das Update startet nur im WLAN.",
+    "zu_alt": "Diese Panoptes-Version ist zu alt für ein Update von hier.",
+    "nicht_bereit": "Panoptes ist für das Update gerade nicht bereit. Bitte später noch einmal.",
+    "kein_update": "Es gibt gerade kein neueres Panoptes.",
+    "laeuft_schon": "Das Update läuft schon.",
+    "andere_version": "Es gibt inzwischen eine andere Version. Bitte neu ansehen.",
+    "bestaetigung_fehlt": "Die Rückfrage fehlt. Bitte noch einmal.",
 }
 
 
@@ -468,6 +480,32 @@ def klima_stufe_gemeldet(url, jwt, roh=None, uhr=time.time):
         ok = False
     c.update(t=uhr(), url=u, ok=ok)
     return ok
+
+
+_UPD_CACHE = {"t": 0.0, "url": ""}
+
+
+def update_fern(url, jwt, roh=None, uhr=time.time):
+    """Kann dieses Panoptes sich fernbedient aktualisieren? /api/system/capabilities -> update.fern == 1 (ab 0.1.26.1).
+    Nur ein gelesenes "ja" wird 10 Minuten gemerkt; Fehler (z.B. waehrend des Updates) gelten nur fuer diesen Aufruf als "nein"."""
+    u = (url or "").rstrip("/")
+    if _UPD_CACHE["url"] == u and uhr() - _UPD_CACHE["t"] < 600:
+        return True
+    try:
+        code, d = (roh or _roh)(u + "/api/system/capabilities", None, jwt=jwt)
+        k = ((d or {}).get("update") or {}) if code == 200 and isinstance(d, dict) else {}
+        ok = isinstance(k, dict) and k.get("fern") == 1
+    except Exception:
+        return False
+    if ok:
+        _UPD_CACHE.update(t=uhr(), url=u)
+    return ok
+
+
+def update_lesen(url, jwt, roh=None):
+    """GET /api/handy/v1/update?sprache=de (Vertrag HANDY_API_VERTRAG 8). -> dict | None. Netzfehler werden durchgereicht."""
+    code, d = (roh or _roh)(url.rstrip("/") + "/api/handy/v1/update?sprache=de", None, jwt=jwt)
+    return d if code == 200 and isinstance(d, dict) and d.get("ok") is True else None
 
 
 HANDY_AB = (0, 1, 19, 1)          # erste Panoptes-Version mit /api/handy/v1

@@ -159,6 +159,7 @@ BODY_TEIL1 = r"""<body class=mein-auto>
 
  <div id=altband class=hinweis role=alert></div>
  <div id=wegband class=hinweis role=status></div>
+ <div id=updband class=hinweis role=status style="display:none"></div>
  <div class=grid>
   <section class="card c-hero">
    <div class=gauge id=gauge style="--lvl:0%"><div class=water></div><div class=val><b><span id=soc>–</span><small>%</small></b><span id=kwh>&nbsp;</span></div></div>
@@ -239,6 +240,7 @@ BODY_TEIL3 = r"""
 
 JS = r"""<script>
 const KARTEN_STIL='__KARTENSTIL__',EINW={kartenquelle:'keine'};
+let UPDINIT=0,UPDT=0,UPDV='';
 let S=null,DATA_TS=0,MSGHOLD=0,HANDY_OK,LADEN_ZEILEN=[],TEMP=25,ROUTE_T=0,LB=null;
 const el=id=>document.getElementById(id);
 const z=(v,d)=>v==null?'–':Number(v).toFixed(d==null?0:d).replace('.',window.__LANG__==='en'?'.':',');
@@ -270,6 +272,7 @@ function zeichne(s){
  if(s.panoptes_an){pw.style.display='';el('pwt').textContent=__T('Wächter')+' '+(wz?__T(wz[0]):'–');pw.querySelector('.dot').className='dot '+(wz&&wz[1]||'');}else pw.style.display='none';
  const wb=el('wegband'),wh=s.bruecke_hinweis;
  if(wh==='einrichten'||wh==='neu'){wb.style.display='block';wb.innerHTML=(wh==='neu'?esc(__T(WEGTXT[s.weg_fehler]||'Die Verbindung unterwegs gilt nicht mehr.')):esc(__T('Damit das Cockpit dein Auto auch unterwegs erreicht, einmal verbinden.')))+' <button type=button class="btn lime big" onclick="'+(s.weg_fehler==='jwt'?'handyKoppeln()':'unterwegsVerbinden(this)')+'">'+esc(__T(s.weg_fehler==='entkoppelt'?'Neu koppeln':wh==='neu'?'Neu verbinden':'Unterwegs verbinden'))+'</button><span id=wegmsg style="margin-left:10px"></span>';}else wb.style.display='none';
+ if(!UPDINIT){UPDINIT=1;updPruefen();}
  el('pqt').textContent=(s.quelle||'–')+(s.weg?' · '+__T(s.weg==='bruecke'?'über Internet':'direkt'):'');
  const soc=s.soc==null?null:Math.round(s.soc);
  el('soc').textContent=soc==null?'–':soc;el('gauge').style.setProperty('--lvl',(soc==null?0:soc)+'%');
@@ -393,6 +396,17 @@ function tempZeigen(){const b=el('sollbar');if(!b)return;
  if(S)el('t_klima_m').textContent=[S.temp_out!=null?__T('Außen')+' '+z(S.temp_out,0)+' °C':'',sollText(TEMP,hy)].filter(Boolean).join(' · ');}
 function sollSetzen(v){TEMP=Math.max(17,Math.min(33,v));tempZeigen();}
 function sollSchritt(d){sollSetzen(TEMP+d);}
+// Panoptes aktualisieren (ab 0.1.26.1): nur sichtbar, wenn Panoptes es meldet; Pflicht-Rueckfrage vor dem Start
+function updZeigen(r){const b=el('updband');if(!r||!r.sichtbar){b.style.display='none';return;}b.style.display='block';UPDV=r.version||'';
+ b.innerHTML='⬆️ '+esc(__T(r.text||''))+(r.knopf?' <button type=button class="btn lime big" onclick="updFrage()">'+esc(__T('Panoptes aktualisieren'))+'</button>':'');}
+function updFrage(){el('updband').innerHTML='<b>'+esc(__T('Panoptes wird jetzt aktualisiert. Wächter und Verbindung sind ca. 3–8 Minuten weg.'))+'</b> <button type=button class="btn lime big" onclick="updStart()">'+esc(__T('Ja, jetzt aktualisieren'))+'</button> <button type=button class="btn big" onclick="updPruefen()">'+esc(__T('Abbrechen'))+'</button>';}
+async function updStart(){const b=el('updband');b.innerHTML='⏳ '+esc(__T('Sende …'));
+ try{const r=await (await fetch('/panoptes/update/starten',{method:'POST',body:JSON.stringify({version:UPDV})})).json();
+  b.innerHTML=(r.ok?'⬆️ ':'⚠️ ')+esc(__T(r.text||''));if(r.ok){clearTimeout(UPDT);UPDT=setTimeout(updPruefen,12000);}else UPDT=setTimeout(updPruefen,8000);}
+ catch(e){b.innerHTML='⚠️ '+esc(__T('Das Cockpit erreicht sich selbst nicht – bitte neu starten.'));}}
+async function updPruefen(){if(!(S&&S.handy_an))return;let r=null;
+ try{r=await (await fetch('/panoptes/update')).json();updZeigen(r);}catch(e){}
+ clearTimeout(UPDT);UPDT=setTimeout(updPruefen,r&&r.zustand==='laeuft'?12000:300000);}
 const SITZ={f:'Fahrer',b:'Beifahrer'};
 function sitz(w,n){if(!confirm(__T('Sitzheizung')+' '+__T(SITZ[w])+' → '+(n?__T('Stufe')+' '+n:__T('aus'))+'?'))return;cmd('sitz_'+w+'_'+n);}
 async function cmd(a,t){

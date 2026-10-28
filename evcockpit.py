@@ -500,6 +500,65 @@ _BR = {"versuch": 0.0, "grund": ""}
 _QR_ANFRAGE = {"id": "", "bis": 0.0}
 
 
+_UPD = {"start": 0.0}
+
+
+def _update_status():
+    """Panoptes aktualisieren (0.1.26.1, Vertrag 8): was die Startseite zeigt. Nur mit Handy-Kopplung und nur, wenn Panoptes es meldet."""
+    import panoptes_source as ps
+    if not (_CFG.get("panoptes_handy_jwt") and _panoptes_gekoppelt()):
+        return {"sichtbar": False}
+    url, jwt = _CFG["panoptes_url"], _CFG["panoptes_handy_jwt"]
+    lief = bool(_UPD["start"]) and time.time() - _UPD["start"] < 1800
+    gleich = {"sichtbar": True, "zustand": "laeuft", "knopf": False, "text": "Panoptes kommt gleich wieder …"}
+    try:
+        if not ps.update_fern(url, jwt):
+            return gleich if lief else {"sichtbar": False}
+        d = ps.update_lesen(url, jwt)
+    except Exception:
+        return gleich if lief else {"sichtbar": False}          # waehrend des Updates sind Netzfehler normal
+    if not d:
+        return gleich if lief else {"sichtbar": False}
+    z = d.get("zustand")
+    neu = d.get("neueste") if isinstance(d.get("neueste"), dict) else None
+    if z == "laeuft":
+        return gleich
+    if z == "fertig" and lief:
+        _UPD["start"] = 0.0
+        return {"sichtbar": True, "zustand": "fertig", "knopf": False, "text": "Panoptes ist jetzt auf Version %s." % str(d.get("installiert") or "")[:20]}
+    if z == "fehler" and lief:
+        _UPD["start"] = 0.0
+        return {"sichtbar": True, "zustand": "fehler", "knopf": bool(neu and d.get("darf") and d.get("moeglich")),
+                "version": str((neu or {}).get("version") or "")[:20], "text": str(d.get("text") or "Das Update hat nicht geklappt. Ein neuer Versuch ist möglich.")[:300]}
+    if not neu:
+        return {"sichtbar": False}
+    if not d.get("darf"):
+        return {"sichtbar": True, "knopf": False, "text": "Dieses Cockpit darf Panoptes nicht aktualisieren – am Auto erlauben."}
+    return {"sichtbar": True, "knopf": bool(d.get("moeglich")), "version": str(neu.get("version") or "")[:20], "text": str(d.get("text") or "")[:300]}
+
+
+def _update_starten(version):
+    """Nach der Rueckfrage im Cockpit. Die Version muss genau die aktuell angebotene sein; Panoptes prueft zusaetzlich alles selbst."""
+    import panoptes_source as ps
+    if not (_CFG.get("panoptes_handy_jwt") and _panoptes_gekoppelt()):
+        return {"ok": False, "text": "Dafür erst „Steuern einrichten“."}
+    url, jwt = _CFG["panoptes_url"], _CFG["panoptes_handy_jwt"]
+    try:
+        d = ps.update_lesen(url, jwt)
+    except Exception:
+        return {"ok": False, "text": ps.HANDY_GRUENDE["keine_antwort"]}
+    neu = (d or {}).get("neueste") if isinstance((d or {}).get("neueste"), dict) else None
+    if not neu or not d.get("darf"):
+        return {"ok": False, "text": ps.HANDY_GRUENDE["kein_update"] if not neu else "Dieses Cockpit darf Panoptes nicht aktualisieren – am Auto erlauben."}
+    if str(neu.get("version")) != str(version):
+        return {"ok": False, "text": ps.HANDY_GRUENDE["andere_version"]}
+    r = ps.handy_aktion(url, jwt, "update_starten", {"version": str(neu["version"]), "bestaetigt": True, "sprache": "de"})
+    if not r["ok"]:
+        return {"ok": False, "text": ps.HANDY_GRUENDE.get(r["grund"], "Panoptes lehnt ab (%s)" % r["grund"])}
+    _UPD["start"] = time.time()
+    return {"ok": True, "text": "Das Update läuft. Panoptes kommt gleich wieder."}
+
+
 def _handy_zugang_verlaengern():
     """Der Handy-Zugang (JWT, 30 Tage) wird still verlaengert, solange das Auto direkt erreichbar ist (Tailnet/WLAN). Hoechstens alle 6 Stunden,
     nur wenn er in weniger als 10 Tagen ablaeuft (oder das nicht lesbar ist). Geht es nicht, bleibt es still; abgelaufen heisst "Neu verbinden"."""
@@ -5496,6 +5555,11 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "error": "Suche fehlgeschlagen (%s)" % type(e).__name__}), "application/json")
         elif p == "/wallbox/einstellungen":
             self._send(json.dumps(_wb_einstellungen_lesen()), "application/json")
+        elif p == "/panoptes/update":
+            try:
+                self._send(json.dumps(_update_status()), "application/json")
+            except Exception:
+                self._send(json.dumps({"sichtbar": False}), "application/json")
         elif p == "/panoptes/ladeplan":
             # Ladeplan aus Panoptes (ab 0.1.20) nur lesen. "zu alt" nur bei 404; 401/403 heisst "Zugriff fehlt", nicht "zu alt".
             try:
@@ -5846,6 +5910,13 @@ class H(BaseHTTPRequestHandler):
                 return self._send(json.dumps(r), "application/json")
             except Exception as e:
                 return self._send(json.dumps({"ok": False, "text": "Panoptes antwortet nicht (%s). Bitte noch einmal versuchen." % type(e).__name__}), "application/json")
+        if u.path == "/panoptes/update/starten":
+            nutzer_aktion()
+            try:
+                v = str(json.loads(raw or "{}").get("version") or "")
+                return self._send(json.dumps(_update_starten(v)), "application/json")
+            except Exception:
+                return self._send(json.dumps({"ok": False, "text": "Das hat nicht geklappt."}), "application/json")
         if u.path == "/handy/qr/status":
             try:
                 pv = _panoptes_obj() if _panoptes_gekoppelt() else None

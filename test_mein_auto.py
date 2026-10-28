@@ -201,6 +201,57 @@ class Bedienkacheln121(unittest.TestCase):
             ev._HOLD_UNTIL = 0
         self.assertEqual([g[1] for g in gesehen], [{"tempC": 29, "minuten": 10}, {"tempC": 29, "minuten": 10, "stufe": 13}])
 
+    def test_panoptes_aktualisieren_nur_gegen_attrappe(self):
+        # 1.22.1 (Vertrag 8): sichtbar nur mit update.fern==1, Recht "update" und neuerer Version; Start nur mit Rueckfrage-Text im Seitencode
+        import panoptes_source as ps
+        for t in ("function updFrage", "Ja, jetzt aktualisieren", "Abbrechen", "Wächter und Verbindung sind ca. 3–8 Minuten weg."):
+            self.assertIn(t, H)
+        gesichert = dict(ev._CFG)
+        ev._CFG.update(panoptes=True, panoptes_url="http://127.0.0.1:9", panoptes_jwt="x", panoptes_handy_jwt="H")
+        alt = (ps._roh, ps.handy_aktion, ev._panoptes_gekoppelt)
+        ev._panoptes_gekoppelt = lambda: True
+        ps._UPD_CACHE.update(t=0.0, url="")
+        zustand = {"fern": 1, "upd": {"ok": True, "darf": True, "installiert": "0.1.26", "neueste": {"version": "0.1.26.1"}, "moeglich": True,
+                                       "zustand": None, "text": "Neue Version 0.1.26.1 ist da."}}
+        gesendet = []
+
+        def roh(url, daten=None, timeout=0, jwt=""):
+            if url.endswith("/api/system/capabilities"):
+                return 200, ({"update": {"fern": 1}} if zustand["fern"] else {})
+            return 200, zustand["upd"]
+        ps._roh = roh
+        ps.handy_aktion = lambda url, jwt, a, f=None, **k: (gesendet.append((a, f)) or {"ok": True, "weg": "lokal", "bestaetigt": False})
+        try:
+            r = ev._update_status()
+            self.assertTrue(r["sichtbar"] and r["knopf"] and r["version"] == "0.1.26.1")
+            zustand["upd"]["darf"] = False                                  # Recht fehlt -> Satz, kein Knopf
+            r = ev._update_status()
+            self.assertFalse(r["knopf"])
+            self.assertIn("am Auto erlauben", r["text"])
+            zustand["upd"]["darf"] = True
+            zustand["upd"]["neueste"] = None                                # nichts Neues -> unsichtbar
+            self.assertFalse(ev._update_status()["sichtbar"])
+            zustand["upd"]["neueste"] = {"version": "0.1.26.1"}
+            ps._UPD_CACHE.update(t=0.0, url="")
+            zustand["fern"] = 0                                             # Panoptes meldet es nicht -> unsichtbar
+            self.assertFalse(ev._update_status()["sichtbar"])
+            zustand["fern"] = 1
+            self.assertFalse(ev._update_starten("0.0.0")["ok"])             # falsche Version -> nichts gesendet
+            self.assertEqual(gesendet, [])
+            self.assertTrue(ev._update_starten("0.1.26.1")["ok"])
+            self.assertEqual(gesendet, [("update_starten", {"version": "0.1.26.1", "bestaetigt": True, "sprache": "de"})])
+            zustand["upd"]["zustand"] = "laeuft"
+            self.assertEqual(ev._update_status()["zustand"], "laeuft")
+            ps._roh = lambda *a, **k: (_ for _ in ()).throw(OSError("weg"))   # Netzfehler waehrend des Updates = "kommt gleich wieder"
+            self.assertEqual(ev._update_status()["zustand"], "laeuft")
+        finally:
+            ps._roh, ps.handy_aktion, ev._panoptes_gekoppelt = alt
+            ps._UPD_CACHE.update(t=0.0, url="")
+            ev._UPD["start"] = 0.0
+            ev._CFG.clear()
+            ev._CFG.update(gesichert)
+            ev._HOLD_UNTIL = 0
+
 class WaechterFenster1203(unittest.TestCase):
     def test_kachel_oeffnet_fenster_im_cockpit(self):
         h = mein_auto_seite.seite("", "http://100.1.2.3:8180", ev.COCKPIT)
