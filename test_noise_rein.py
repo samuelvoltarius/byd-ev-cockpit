@@ -205,5 +205,38 @@ class NoiseIK(unittest.TestCase):
         self.assertEqual(ref.get_handshake_hash(), res.hash)
 
 
+class PruefwerteKern10(unittest.TestCase):
+    """Byte-gleich mit der Referenz von Kern 10 (BrueckeNoiseTest): Schluessel 1..32, 33..64, 65..96, 97..128, Prolog panoptes-bruecke/1."""
+    MSG1 = ("64b101b1d0be5a8704bd078f9895001fc03e8e9f9522f188dd128d9846d48466822e8514e6389169bdfd10afecae5bded9cda3f0157ac1d03cd3620b3bb73a8"
+            "66421c9c63a37995f11597388d964de276fadba84a508d06f472a78d8cfd8b141aa1c90feda248edc32ed")
+    MSG2 = "244fe3b963e899dd295baffce248d3530f3a9a7479ba063002680ebfe7adad4985b4c79c930248ce911bbcaf33c3c69b39a64cf31427af67fc141b"
+    T1 = "18060777b4ff4a1e3894653ebd2ec49d2204bc21b8d463"
+    T2 = "0440d8d92c344a587b13268d281c6b369c961761803ec5"
+    T3 = "58d50a4f514a7b1794a4d0562448371c6709dd758e8c84"
+    HHASH = "de8da9cf6ac61fa72ef3cc4933143c2a9f103cd538c4c473deebbf3c4f9f2b6c"
+
+    def test_handshake_und_transport_wie_die_referenz(self):
+        si, sr, ei, er = (bytes(range(a, a + 32)) for a in (1, 33, 65, 97))
+        ini = nr.HandshakeIK(True, (si, nr.oeffentlich(si)), rs=nr.oeffentlich(sr), e=(ei, nr.oeffentlich(ei)))
+        res = nr.HandshakeIK(False, (sr, nr.oeffentlich(sr)), e=(er, nr.oeffentlich(er)))
+        m1 = ini.nachricht1(b"hallo auto")
+        self.assertEqual(m1.hex(), self.MSG1)
+        self.assertEqual(res.lese1(m1)[0], b"hallo auto")
+        m2 = res.nachricht2(b"hallo handy")
+        self.assertEqual(m2.hex(), self.MSG2)
+        self.assertEqual(ini.lese2(m2), b"hallo handy")
+        self.assertEqual(ini.hash.hex(), self.HHASH)
+        senden, empfangen = ini.teilen()
+        auto_senden, _ = res.teilen()
+        self.assertEqual(senden.verschluesseln(b"", b"anfrage").hex(), self.T1)
+        self.assertEqual(auto_senden.verschluesseln(b"", b"antwort").hex(), self.T2)
+        self.assertEqual(senden.verschluesseln(b"", b"anfrage").hex(), self.T3)
+
+    def test_blake2s_und_hmac_wie_die_referenz(self):
+        import hashlib
+        self.assertEqual(hashlib.blake2s(bytes(range(256)) * 3).hexdigest(), "b928a17862e211e99759ba8819280803a914cd3dee7c5d711a3b5185aa96a7b3")
+        self.assertEqual(nr._hmac(b"k" * 70, b"daten").hex(), "7a7b08c4a1142171acba52ab828082256b1bb919b0d9a9e3fa0a90655d86b938")
+
+
 if __name__ == "__main__":
     unittest.main()
