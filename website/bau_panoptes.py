@@ -415,7 +415,7 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
         ],
         # Brücke (Koordination 28.10.2026): eigener Anker #bruecke, der Zustimmungssatz in Panoptes 0.1.24 verlinkt hierher
         "bruecke_h": "Handy übers Internet (Brücke)",
-        "bruecke": "Unterwegs erreicht die Handy-App dein Auto über einen kleinen Vermittlungsdienst auf unserem Server. Er ist aus, bis du ihn im Auto einschaltest. <b>Ende-zu-Ende verschlüsselt</b>: Der Server reicht nur unlesbare Daten weiter und sieht keine Fahrzeugdaten, Orte oder Befehle. <b>Keine IP-Protokolle</b>, pro Stunde nur eine Zählzeile für den ganzen Dienst. Server bei Hetzner in Deutschland. Schaltest du die Brücke aus, wird dein Postfach sofort gelöscht. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (eine Funktion, die du selbst einschaltest). <a href=\"/datenschutz#bruecke\">Alle Einzelheiten</a>",
+        "bruecke": "Unterwegs erreicht die Handy-App dein Auto über einen kleinen Vermittlungsdienst auf unserem Server. Er ist aus, bis du ihn im Auto einschaltest. <b>Ende-zu-Ende verschlüsselt</b>: Der Server reicht nur unlesbare Daten weiter und sieht keine Fahrzeugdaten, Orte oder Befehle. <b>Keine IP-Protokolle</b>, pro Stunde nur eine Zählzeile für den ganzen Dienst. Server im Rechenzentrum von Hetzner in Falkenstein, Deutschland. Schaltest du die Brücke aus, wird dein Postfach gelöscht. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (eine Funktion, die du selbst einschaltest). <a href=\"/datenschutz#bruecke\">Alle Einzelheiten</a>",
         "zus_detail": "Wie Panoptes mit Cockpit, Routenplaner, Karte und Wallbox verbunden ist",
     },
     "en": {
@@ -456,7 +456,7 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
             ("Wallbox account (Wallbox Chargers S.L., api.wall-box.com / user-api.wall-box.com)", "Login with your Wallbox account (e-mail and password, stored encrypted in the car), status and commands of your charger. Unofficial interface (as used by Home Assistant).", "only if you choose “Wallbox Pulsar / Commander (Cloud)” and explicitly consent (off by default). Turning consent off or removing the device stops it immediately."),
         ],
         "bruecke_h": "Phone over the internet (bridge)",
-        "bruecke": "On the road, the phone app reaches your car through a small relay service on our server. It is off until you switch it on in the car. <b>End-to-end encrypted</b>: the server only forwards unreadable data and cannot see vehicle data, places or commands. <b>No IP logs</b>, only one count line per hour for the whole service. Server at Hetzner in Germany. If you switch the bridge off, your mailbox is deleted at once. Legal basis: Art. 6(1)(b) GDPR (a feature you switch on yourself). <a href=\"/en/datenschutz#bruecke\">All details</a>",
+        "bruecke": "On the road, the phone app reaches your car through a small relay service on our server. It is off until you switch it on in the car. <b>End-to-end encrypted</b>: the server only forwards unreadable data and cannot see vehicle data, places or commands. <b>No IP logs</b>, only one count line per hour for the whole service. Server in the Hetzner data centre in Falkenstein, Germany. If you switch the bridge off, your mailbox is deleted. Legal basis: Art. 6(1)(b) GDPR (a feature you switch on yourself). <a href=\"/en/datenschutz#bruecke\">All details</a>",
         "zus_detail": "How Panoptes connects to the cockpit, route planner, map and wall box",
     },
 }
