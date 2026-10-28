@@ -3,8 +3,8 @@
 und zeigt ihn gross an. Erlaubt wird NUR am Auto bzw. in Telegram (Pruefzahl), nie automatisch; das Cockpit speichert den QR nicht.
 
 Vertrag (ENTWURF, von Panoptes noch nicht gebaut - Kern 12):
-  POST /api/kopplung/weiteres-geraet  {"art":"handy","geraet":"<Name>","pruefzahl":"1234"}  -> {ok, id, gueltigBis} | {ok:false, grund}
-  GET  /api/kopplung/weiteres-geraet/<id>  -> {status: wartet|erlaubt|abgelehnt|abgelaufen, qr: "https://byd.serveone.at/p/#k=..."}   (qr nur einmal)
+  POST /api/kopplung/weiteres-geraet  {"art":"handy","geraet":"<Name>","pruefzahl":"1234"}  -> {ok, id (r-<16 hex>), gueltigBis} | {ok:false, grund}; 409 bruecke_aus
+  GET  /api/kopplung/weiteres-geraet/<id>  -> {status: wartet|erlaubt|abgelehnt|abgelaufen|abgeholt, qr: "https://byd.serveone.at/p/#k=..."}   (qr genau einmal)
 Die Kopplung muss art=cockpit sein (nur direkt erreichbar; ueber die Bruecke gilt nur der Handy-Zugang)."""
 import re
 
@@ -26,18 +26,20 @@ def anfragen(pv, geraet, pruefzahl):
     st = d.get("_status")
     if st in (404, 405):
         return {"ok": False, "text": GRUENDE["nicht_vorhanden"]}
+    if st == 409:
+        return {"ok": False, "text": GRUENDE["bruecke_aus"]}
     if st == 429:
         return {"ok": False, "text": GRUENDE["ratenlimit"]}
     if st in (401, 403) and not d.get("ok"):
         return {"ok": False, "text": GRUENDE.get(str(d.get("grund")), GRUENDE["nicht_erlaubt"])}
-    if d.get("ok") and re.fullmatch(r"[0-9a-f]{32}", str(d.get("id") or "")):
+    if d.get("ok") and re.fullmatch(r"r-[0-9a-f]{16}", str(d.get("id") or "")):
         return {"ok": True, "id": d["id"]}
     return {"ok": False, "text": GRUENDE.get(str(d.get("grund")), "Das hat nicht geklappt. Bitte noch einmal versuchen.")}
 
 
 def status(pv, aid):
     """-> {"status": wartet|erlaubt|abgelehnt|abgelaufen|fehler, "svg"?}. Der QR-Text wird nur in ein Bild umgewandelt, nicht gemerkt."""
-    if not re.fullmatch(r"[0-9a-f]{32}", aid or ""):
+    if not re.fullmatch(r"r-[0-9a-f]{16}", aid or ""):
         return {"status": "fehler"}
     d = pv._get(PFAD + "/" + aid)
     st = d.get("status") if isinstance(d, dict) else None
@@ -46,7 +48,7 @@ def status(pv, aid):
         if not qr.startswith(QR_START) or len(qr) > 1000:
             return {"status": "fehler"}
         return {"status": "erlaubt", "svg": qr_klein.svg(qr_klein.matrix(qr), rand=4)}
-    return {"status": st if st in ("wartet", "abgelehnt", "abgelaufen") else "fehler"}
+    return {"status": st if st in ("wartet", "abgelehnt", "abgelaufen", "abgeholt") else "fehler"}
 
 
 SEITE = """<!doctype html><html lang=de><head><meta charset=utf-8>

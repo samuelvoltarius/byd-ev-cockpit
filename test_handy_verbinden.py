@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import handy_verbinden as hv  # noqa: E402
 
 QR = hv.QR_START + "eyJ2IjoyLCJjIjoiMTIzNDU2IiwiYiI6eyJwIjoieHh4In19"
-ID = "a" * 32
+ID = "r-" + "a" * 16
 
 
 class Pv:
@@ -33,14 +33,14 @@ class HandyVerbinden(unittest.TestCase):
 
     def test_fehler_in_klartext(self):
         for post, teil in (({"_status": 404}, "aktualisieren"), ({"_status": 429}, "warten"),
-                           ({"_status": 403, "ok": False}, "Recht"), ({"ok": False, "grund": "bruecke_aus"}, "unterwegs"),
+                           ({"_status": 403, "ok": False}, "Recht"), ({"_status": 409, "ok": False, "grund": "bruecke_aus"}, "unterwegs"),
                            ({"ok": True, "id": "kaputt"}, "noch einmal")):
             r = hv.anfragen(Pv(post=post), "x", "1")
             self.assertFalse(r["ok"])
             self.assertIn(teil, r["text"], post)
 
     def test_status_wartet_abgelehnt_abgelaufen(self):
-        for st in ("wartet", "abgelehnt", "abgelaufen"):
+        for st in ("wartet", "abgelehnt", "abgelaufen", "abgeholt"):
             self.assertEqual(hv.status(Pv(get={"status": st}), ID), {"status": st})
         self.assertEqual(hv.status(Pv(get={"status": "komisch"}), ID), {"status": "fehler"})
         self.assertEqual(hv.status(Pv(get={}), "../x"), {"status": "fehler"})
