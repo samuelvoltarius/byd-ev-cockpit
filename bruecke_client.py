@@ -26,6 +26,8 @@ DURCHGEREICHT = ("authorization", "content-type", "accept", "accept-language", "
 GRUND_TEXT = {
     "auto_offline": "Das Auto ist gerade nicht erreichbar – vielleicht kein Empfang. Später noch einmal.",
     "limit": "Gerade zu viele Anfragen. Bitte kurz warten.",
+    "entkoppelt": "Dieses Cockpit ist beim Auto nicht mehr gekoppelt. Bitte neu koppeln.",
+    "jwt": "Die Erlaubnis zum Steuern ist abgelaufen. Bitte einmal neu erlauben.",
     "zugang": "Die Verbindung über das Internet gilt nicht mehr. Bitte noch einmal mit Panoptes verbinden.",
     "geloescht": "Die Verbindung über das Internet wurde in Panoptes ausgeschaltet. Bitte noch einmal verbinden.",
     "netz": "Das Internet-Netz zum Auto ist gerade nicht erreichbar.",
@@ -109,7 +111,12 @@ class Bruecke:
             ws.senden_text(json.dumps({"t": "hallo", "p": b64u(p), "z": b64u(g)}, separators=(",", ":")))
             hs = nr.HandshakeIK(True, (h_priv, h_pub), rs=a_pub, zufall=self.zufall)
             ws.senden_bin(hs.nachricht1())
-            art, d = self._lies_bruecke(ws)
+            try:
+                art, d = self._lies_bruecke(ws)
+            except BrueckeFehler as e:
+                if e.grund in ("netz", "zeit"):
+                    raise BrueckeFehler("entkoppelt")     # Server nahm uns an, das Auto antwortet nicht: es kennt diesen Schluessel nicht mehr
+                raise
             if art != "bin":
                 raise BrueckeFehler("handshake")
             hs.lese2(d)
@@ -258,7 +265,7 @@ class Weg:
         except BrueckeFehler as e:
             self.letzter_fehler = e.grund
             raise urllib.error.URLError(str(e))
-        self.aktiv, self.letzter_fehler = "bruecke", ""
+        self.aktiv, self.letzter_fehler = "bruecke", ("jwt" if r["s"] == 401 else "")      # 401 innen: der Handy-Zugang ist abgelaufen
         try:
             return r["s"], json.loads(r["b"].decode("utf-8") or "{}")
         except Exception:

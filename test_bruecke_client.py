@@ -202,7 +202,8 @@ class MitEchtemServer(unittest.TestCase):
         br = bc.Bruecke(self.cfg)
         with self.assertRaises(bc.BrueckeFehler) as e:
             br.anfrage("GET", "/x", timeout=1.5)
-        self.assertIn(e.exception.grund, ("zeit", "handshake", "netz"))
+        self.assertEqual(e.exception.grund, "entkoppelt")
+        self.assertIn("nicht mehr gekoppelt", str(e.exception))
 
     def test_falscher_auto_schluessel_scheitert_ohne_antwort(self):
         self.auto()
@@ -265,9 +266,22 @@ class OhneNetz(unittest.TestCase):
             bc.b64u_ent("zu kurz")
 
     def test_fehlertexte_sind_klartext(self):
-        for g in ("auto_offline", "limit", "zugang", "geloescht", "netz", "handshake", "zeit", "format"):
+        for g in ("auto_offline", "limit", "zugang", "geloescht", "netz", "handshake", "zeit", "format", "entkoppelt", "jwt"):
             self.assertIn(g, bc.GRUND_TEXT)
         self.assertIn("kein Empfang", str(bc.BrueckeFehler("auto_offline")))
+
+    def test_401_ueber_die_bruecke_heisst_zugang_abgelaufen(self):
+        class B:
+            def anfrage(self, *a, **k):
+                return {"s": 401, "h": {}, "b": b"{}"}
+
+        def kein_weg(*a, **k):
+            raise urllib.error.URLError("x")
+        w = bc.Weg("http://h:1", B(), kein_weg, kein_weg)
+        import panoptes_source as ps
+        with self.assertRaises(ps.NichtAngemeldet):
+            w.http("http://h:1/x", jwt="alt")
+        self.assertEqual(w.letzter_fehler, "jwt")
 
     def test_weg_ohne_bruecke_reicht_fehler_durch(self):
         def d_http(*a, **k):

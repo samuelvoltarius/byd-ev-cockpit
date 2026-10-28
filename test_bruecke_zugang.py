@@ -76,10 +76,58 @@ class Zugang(unittest.TestCase):
                        bruecke_g_handy="g" * 43, bruecke_server="https://byd.serveone.at/bruecke")
         ev._weg_einrichten()
         self.assertEqual(ev._bruecke_hinweis(), "")
-        ps.WEG.letzter_fehler = "geloescht"
-        self.assertEqual(ev._bruecke_hinweis(), "neu")
+        for g in ("geloescht", "entkoppelt", "jwt"):
+            ps.WEG.letzter_fehler = g
+            self.assertEqual(ev._bruecke_hinweis(), "neu", g)
         ev._CFG["panoptes_handy_jwt"] = ""
         self.assertEqual(ev._bruecke_hinweis(), "")
+
+    def _jwt(self, rest_s):
+        import base64
+        import time
+        kopf = base64.urlsafe_b64encode(b'{"alg":"none"}').decode().rstrip("=")
+        nutz = base64.urlsafe_b64encode(json_dumps({"exp": time.time() + rest_s}).encode()).decode().rstrip("=")
+        return kopf + "." + nutz + ".x"
+
+    def test_handy_zugang_wird_still_verlaengert_wenn_direkt_erreichbar(self):
+        ev._CFG["panoptes_handy_jwt"] = self._jwt(3 * 86400)
+        ev._BR.pop("erneuert", None)
+        gesehen = []
+        alt = ps._http_direkt
+        ps._http_direkt = lambda url, daten=None, jwt="", timeout=0, methode=None: (gesehen.append((url, jwt)) or {"jwt": "NEU"})
+        try:
+            self.assertTrue(ev._handy_zugang_verlaengern())
+            self.assertEqual(ev._CFG["panoptes_handy_jwt"], "NEU")
+            self.assertTrue(gesehen[0][0].endswith("/api/sitzung/erneuern"))
+            self.assertFalse(ev._handy_zugang_verlaengern())            # hoechstens alle 6 Stunden
+        finally:
+            ps._http_direkt = alt
+
+    def test_lang_gueltiger_zugang_bleibt_unberuehrt_und_fehler_bleiben_still(self):
+        ev._CFG["panoptes_handy_jwt"] = self._jwt(25 * 86400)
+        ev._BR.pop("erneuert", None)
+        self.assertFalse(ev._handy_zugang_verlaengern())
+        ev._CFG["panoptes_handy_jwt"] = self._jwt(2 * 86400)
+
+        def kaputt(*a, **k):
+            raise OSError("kein Tailnet")
+        alt = ps._http_direkt
+        ps._http_direkt = kaputt
+        try:
+            self.assertFalse(ev._handy_zugang_verlaengern())
+        finally:
+            ps._http_direkt = alt
+
+    def test_abgelaufen_beim_einrichten_in_klartext(self):
+        ps._roh_direkt = lambda *a, **k: (401, {})
+        r = ev._bruecke_einrichten()
+        self.assertEqual(r["grund"], "handy_abgelaufen")
+        self.assertIn("Steuern einrichten", r["text"])
+
+
+def json_dumps(o):
+    import json
+    return json.dumps(o)
 
 
 if __name__ == "__main__":

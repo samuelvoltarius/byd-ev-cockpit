@@ -231,6 +231,8 @@ let S=null,DATA_TS=0,MSGHOLD=0,HANDY_OK,LADEN_ZEILEN=[],TEMP=25,ROUTE_T=0,LB=nul
 const el=id=>document.getElementById(id);
 const z=(v,d)=>v==null?'–':Number(v).toFixed(d==null?0:d).replace('.',window.__LANG__==='en'?'.':',');
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+const WEGTXT={entkoppelt:'Dieses Cockpit ist beim Auto nicht mehr gekoppelt.',jwt:'Die Erlaubnis zum Steuern ist abgelaufen. Einmal neu erlauben – am Auto oder in Telegram.',
+ zugang:'Die Verbindung unterwegs gilt nicht mehr.',geloescht:'Die Verbindung unterwegs wurde in Panoptes ausgeschaltet.',handshake:'Die sichere Verbindung zum Auto kam nicht zustande.'};
 async function unterwegsVerbinden(b){b.disabled=true;const m=el('wegmsg');m.textContent='⏳';
  try{const r=await (await fetch('/bruecke/einrichten',{method:'POST',body:'{}'})).json();m.textContent=(r.ok?'✅ ':'⚠️ ')+__T(r.text||'');if(r.ok)setTimeout(manualRefresh,800);}
  catch(e){m.textContent='⚠️ '+__T('Das Cockpit erreicht sich selbst nicht – bitte neu starten.');}
@@ -255,7 +257,7 @@ function zeichne(s){
  const wz=WZ[s.waechter_zustand],pw=el('pw');
  if(s.panoptes_an){pw.style.display='';el('pwt').textContent=__T('Wächter')+' '+(wz?__T(wz[0]):'–');pw.querySelector('.dot').className='dot '+(wz&&wz[1]||'');}else pw.style.display='none';
  const wb=el('wegband'),wh=s.bruecke_hinweis;
- if(wh==='einrichten'||wh==='neu'){wb.style.display='block';wb.innerHTML=(wh==='neu'?esc(__T('Die Verbindung unterwegs gilt nicht mehr.')):esc(__T('Damit das Cockpit dein Auto auch unterwegs erreicht, einmal verbinden.')))+' <button type=button class="btn lime" onclick="unterwegsVerbinden(this)">'+esc(__T(wh==='neu'?'Neu verbinden':'Unterwegs verbinden'))+'</button><span id=wegmsg style="margin-left:10px"></span>';}else wb.style.display='none';
+ if(wh==='einrichten'||wh==='neu'){wb.style.display='block';wb.innerHTML=(wh==='neu'?esc(__T(WEGTXT[s.weg_fehler]||'Die Verbindung unterwegs gilt nicht mehr.')):esc(__T('Damit das Cockpit dein Auto auch unterwegs erreicht, einmal verbinden.')))+' <button type=button class="btn lime big" onclick="'+(s.weg_fehler==='jwt'?'handyKoppeln()':'unterwegsVerbinden(this)')+'">'+esc(__T(s.weg_fehler==='entkoppelt'?'Neu koppeln':wh==='neu'?'Neu verbinden':'Unterwegs verbinden'))+'</button><span id=wegmsg style="margin-left:10px"></span>';}else wb.style.display='none';
  el('pqt').textContent=(s.quelle||'–')+(s.weg?' · '+__T(s.weg==='bruecke'?'über Internet':'direkt'):'');
  const soc=s.soc==null?null:Math.round(s.soc);
  el('soc').textContent=soc==null?'–':soc;el('gauge').style.setProperty('--lvl',(soc==null?0:soc)+'%');

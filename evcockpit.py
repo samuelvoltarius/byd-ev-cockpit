@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.21.0"
+VERSION = "1.22.0"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -500,6 +500,36 @@ _BR = {"versuch": 0.0, "grund": ""}
 _QR_ANFRAGE = {"id": "", "bis": 0.0}
 
 
+def _handy_zugang_verlaengern():
+    """Der Handy-Zugang (JWT, 30 Tage) wird still verlaengert, solange das Auto direkt erreichbar ist (Tailnet/WLAN). Hoechstens alle 6 Stunden,
+    nur wenn er in weniger als 10 Tagen ablaeuft (oder das nicht lesbar ist). Geht es nicht, bleibt es still; abgelaufen heisst "Neu verbinden"."""
+    import base64
+    import panoptes_source as ps
+    j = _CFG.get("panoptes_handy_jwt") or ""
+    if not j or not _panoptes_gekoppelt() or time.time() - _BR.get("erneuert", 0.0) < 6 * 3600:
+        return False
+    try:
+        exp = json.loads(base64.urlsafe_b64decode(j.split(".")[1] + "==")).get("exp")
+        rest = float(exp) - time.time() if exp else None
+    except Exception:
+        rest = None
+    if rest is not None and rest > 10 * 86400:
+        return False
+    _BR["erneuert"] = time.time()
+    try:
+        d = ps._http_direkt(_CFG["panoptes_url"].rstrip("/") + "/api/sitzung/erneuern", {}, jwt=j, timeout=6)
+    except Exception:
+        return False
+    neu = str((d or {}).get("jwt") or (d or {}).get("token") or "")
+    if neu and neu != j:
+        _CFG["panoptes_handy_jwt"] = neu
+        save_cfg(_CFG)
+        if ps.WEG is not None and ps.WEG.letzter_fehler == "jwt":
+            ps.WEG.letzter_fehler = ""
+        return True
+    return False
+
+
 def _bruecke_hinweis():
     """Was die Startseite zur Verbindung unterwegs sagen soll: "" (nichts), "einrichten" (Knopf), "neu" (gilt nicht mehr, Knopf)."""
     if not (_panoptes_gekoppelt() and _CFG.get("panoptes_handy_jwt")):
@@ -507,7 +537,7 @@ def _bruecke_hinweis():
     import panoptes_source as ps
     if _bruecke_zugang() is None:
         return "einrichten"
-    if ps.WEG is not None and ps.WEG.letzter_fehler in ("zugang", "geloescht", "handshake"):
+    if ps.WEG is not None and ps.WEG.letzter_fehler in ("zugang", "geloescht", "handshake", "entkoppelt", "jwt"):
         return "neu"
     return ""
 
@@ -541,6 +571,8 @@ def _bruecke_einrichten():
     text = {"bruecke_aus": "Am Auto ist „Handy-App unterwegs nutzen“ noch aus. Bitte in Panoptes (Einstellungen → Gerät koppeln) einschalten.",
             "server_nicht_erreichbar": "Der Internet-Dienst für unterwegs antwortet gerade nicht. Bitte später noch einmal.",
             "schluessel": "Das hat nicht geklappt. Bitte noch einmal versuchen."}.get(g)
+    if code == 401:
+        return {"ok": False, "grund": "handy_abgelaufen", "text": "Die Erlaubnis zum Steuern ist abgelaufen. Bitte oben „Steuern einrichten“ noch einmal."}
     if code in (403, 404) and not d.get("grund"):
         text = "Dein Panoptes kann das noch nicht (ab Version 0.1.21)."
     return {"ok": False, "grund": g, "text": text or "Das hat nicht geklappt (%s)." % g}
@@ -642,6 +674,10 @@ def _panoptes_runde(cache):
     pv = _panoptes_obj()
     if pv is None:
         return False
+    try:
+        _handy_zugang_verlaengern()
+    except Exception:
+        pass
     if _CFG.get("panoptes_handy_jwt") and _bruecke_zugang() is None and time.time() - _BR["versuch"] > 1800:
         try:
             _BR["grund"] = _bruecke_einrichten()["grund"]        # von allein, hoechstens alle 30 Min.; ohne Erfolg bleibt es still
