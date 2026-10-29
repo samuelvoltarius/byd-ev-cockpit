@@ -143,6 +143,12 @@ T = {
         "h_dl": "Herunterladen und installieren",
         "dl_anker": "installieren",
         "dl_bald": "Erprobungsversion {V}",
+        # „Neu in …“-Kasten beim Download; erscheint nur, solange versionen.json genau diese Version meldet
+        "neu_version": "0.1.27", "neu_titel": "Neu in 0.1.27",
+        "neu": ["<b>Ereignis-Clip:</b> Bei einer Vollbremsung oder einem Stoß sichert die Kamera von selbst ein kurzes Video, etwa 20 Sekunden davor und danach. Panoptes fragt dann „Behalten?“. Sonst wird das Video nach 72 Stunden gelöscht. Es bleibt im Auto und wird nie von selbst verschickt. In der Schweiz ist es ab Werk aus.",
+                "<b>Wetter:</b> kommt jetzt nur noch über unseren eigenen Server, mit grobem Ort und ohne Kennung (siehe <a href=\"/datenschutz#wetter\">Datenschutz</a>).",
+                "<b>Karte:</b> startet ohne festen Ort, mit Blick auf Europa.",
+                "<b>Assistent:</b> antwortet einfacher, in normalem Text."],
         "dl_text": "Panoptes {V} ist eine <b>Erprobungsversion</b>. Panoptes läuft im Alltag in einem Testauto (BYD Dolphin Surf, DiLink 3), neue Versionen kommen dort nach und nach dazu. Auf anderen Modellen kann manches fehlen oder anders sein. Die Installation ist nichts für jeden: Du brauchst etwas Geduld, einen PC und musst am Auto eine Entwickler-Freigabe einschalten. Nutzung auf eigenes Risiko, siehe <a href=\"hinweise.html\">Hinweise</a>.",
         "dl_knopf": "⬇️ Panoptes {V} herunterladen (APK, 71 MB)",
         "hero_dl": "⬇️ Panoptes {V} herunterladen", "hero_anl": "Anleitung", "kopf_dl": "⬇️ Download",
@@ -320,6 +326,11 @@ T = {
         "h_dl": "Download and install",
         "dl_anker": "install",
         "dl_bald": "Test version {V}",
+        "neu_version": "0.1.27", "neu_titel": "New in 0.1.27",
+        "neu": ["<b>Event clip:</b> on hard braking or a bump the camera saves a short video by itself, about 20 seconds before and after. Panoptes then asks “Keep?”. Otherwise the video is deleted after 72 hours. It stays in the car and is never sent anywhere by itself. In Switzerland it is off by default.",
+                "<b>Weather:</b> now only comes via our own server, with a rough location and no identifier (see the <a href=\"/en/datenschutz#wetter\">privacy policy</a>).",
+                "<b>Map:</b> starts without a fixed place, looking at Europe.",
+                "<b>Assistant:</b> answers more simply, in plain text."],
         "dl_text": "Panoptes {V} is a <b>test version</b>. Panoptes runs in everyday use in a test car (BYD Dolphin Surf, DiLink 3), new versions are added there step by step. On other models some things may be missing or work differently. Installing it is not for everyone: you need some patience, a PC, and you have to turn on a developer setting in the car. Use at your own risk, see the <a href=\"hinweise.html\">notes</a>.",
         "dl_knopf": "⬇️ Download Panoptes {V} (APK, 71 MB)",
         "hero_dl": "⬇️ Download Panoptes {V}", "hero_anl": "Guide", "kopf_dl": "⬇️ Download",
@@ -801,6 +812,8 @@ def seite(t):
     # Download
     o.append('  <span id="download"></span><h2 id="%s">%s<span class="bald">%s</span></h2>' % (t["dl_anker"], t["h_dl"], t["dl_bald"]))
     o.append('  <div class="card"><p style="margin-top:0">%s</p>' % t["dl_text"])
+    if t.get("neu") and t.get("neu_version") == VERSION:
+        o.append('    <h3>%s</h3><ul class="liste">%s</ul>' % (t["neu_titel"], "".join("<li>%s</li>" % x for x in t["neu"])))
     if t.get("bekannt"):
         o.append('    <div class="bd-hinweis warn" id="bekannter-fehler"><p>%s</p></div>' % t["bekannt"])
     o.append('    <div class="bd-knoepfe"><a class="bd-knopf gross haupt" href="%s" data-ver-href="panoptes.apk_url" data-umami-event="download" data-umami-event-quelle="apk">%s</a>'
