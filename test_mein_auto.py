@@ -229,8 +229,10 @@ class Bedienkacheln121(unittest.TestCase):
             self.assertFalse(r["knopf"])
             self.assertIn("am Auto erlauben", r["text"])
             zustand["upd"]["darf"] = True
-            zustand["upd"]["neueste"] = None                                # nichts Neues -> unsichtbar
-            self.assertFalse(ev._update_status()["sichtbar"])
+            zustand["upd"]["neueste"] = None                                # nichts Neues -> "Panoptes ist aktuell", kein Knopf
+            r = ev._update_status()
+            self.assertTrue(r["sichtbar"] and not r["knopf"])
+            self.assertIn("aktuell", r["text"])
             zustand["upd"]["neueste"] = {"version": "0.1.26.1"}
             ps._UPD_CACHE.update(t=0.0, url="")
             zustand["fern"] = 0                                             # Panoptes meldet es nicht -> unsichtbar
@@ -251,6 +253,13 @@ class Bedienkacheln121(unittest.TestCase):
             ev._CFG.clear()
             ev._CFG.update(gesichert)
             ev._HOLD_UNTIL = 0
+
+    def test_klima_sollwert_vom_auto_gelesen(self):
+        import panoptes_source as ps
+        self.assertEqual(ps.aus_telemetrie({"climate_setpoint": 29}).get("klima_soll"), 29)
+        self.assertEqual(ps.aus_telemetrie({"climate_setpoint": 24}).get("klima_soll"), 24)
+        self.assertNotIn("klima_soll", ps.aus_telemetrie({"climate_setpoint": 99}))
+        self.assertIn("function klimaMeta(s,hy)", H)
 
 class WaechterFenster1203(unittest.TestCase):
     def test_kachel_oeffnet_fenster_im_cockpit(self):

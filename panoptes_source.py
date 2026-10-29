@@ -104,6 +104,9 @@ def aus_telemetrie(t):
     gun = _zahl(t.get("charging_gun"))            # 1 = getrennt, 2/3/4 = angesteckt, 5 = V2L-Adapter steckt
     if gun is not None and int(gun) in (1, 2, 3, 4, 5):
         st["plugged"] = "OFF" if int(gun) == 1 else "ON"
+    cs = _zahl(t.get("climate_setpoint"))         # Sollwert Fahrerseite 17-33 (Stufe = Wert - 16, 25 = Mitte), nie als Grad zeigen
+    if cs is not None and 17 <= cs <= 33:
+        st["klima_soll"] = int(cs)
     ac = _zahl(t.get("ac_on"))                    # 0 = aus, 1 = an
     if ac is not None and int(ac) in (0, 1):
         st["klima_on"] = "ON" if int(ac) == 1 else "OFF"

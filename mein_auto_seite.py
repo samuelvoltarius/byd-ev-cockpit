@@ -240,7 +240,7 @@ BODY_TEIL3 = r"""
 
 JS = r"""<script>
 const KARTEN_STIL='__KARTENSTIL__',EINW={kartenquelle:'keine'};
-let UPDINIT=0,UPDT=0,UPDV='';
+let UPDINIT=0,UPDT=0,UPDV='',TEMPUSER=0;
 let S=null,DATA_TS=0,MSGHOLD=0,HANDY_OK,LADEN_ZEILEN=[],TEMP=25,ROUTE_T=0,LB=null;
 const el=id=>document.getElementById(id);
 const z=(v,d)=>v==null?'–':Number(v).toFixed(d==null?0:d).replace('.',window.__LANG__==='en'?'.':',');
@@ -294,7 +294,8 @@ function zeichne(s){
  el('t_laden_m').innerHTML=LADEN_ZEILEN.map(esc).join('<br>');
  // Klima
  el('t_klima_v').textContent=s.klima_on==='ON'?__T('an'):s.klima_on==='OFF'?__T('aus'):__T('unbekannt');
- el('t_klima_m').textContent=[s.temp_out!=null?__T('Außen')+' '+z(s.temp_out,0)+' °C':'',sollText(TEMP,!!s.handy_an)].filter(Boolean).join(' · ');
+ if(s.klima_soll!=null&&!TEMPUSER)TEMP=s.klima_soll;
+ el('t_klima_m').textContent=[s.temp_out!=null?__T('Außen')+' '+z(s.temp_out,0)+' °C':'',klimaMeta(s,!!s.handy_an)].filter(Boolean).join(' · ');
  // Camping
  const cp=s.camping||{};el('t_camping').style.display=cp.da?'':'none';
  if(cp.da){el('t_camping_v').textContent=cp.aktiv?__T('läuft'):__T('aus');}
@@ -393,8 +394,9 @@ function tempZeigen(){const b=el('sollbar');if(!b)return;
  if(!b.firstChild){for(let v=17;v<=33;v++){const i=document.createElement('i');i.className=v<25?'k':v>25?'w':'m';i.onclick=()=>sollSetzen(v);i.dataset.v=v;b.appendChild(i);}}
  [...b.children].forEach(i=>{const v=+i.dataset.v;i.classList.toggle('an',TEMP<25?(v>=TEMP&&v<=25):TEMP>25?(v>=25&&v<=TEMP):v===25);i.classList.toggle('jetzt',v===TEMP);});
  const hy=!!(S&&S.handy_an);el('sollwort').textContent=sollText(TEMP,hy);
- if(S)el('t_klima_m').textContent=[S.temp_out!=null?__T('Außen')+' '+z(S.temp_out,0)+' °C':'',sollText(TEMP,hy)].filter(Boolean).join(' · ');}
-function sollSetzen(v){TEMP=Math.max(17,Math.min(33,v));tempZeigen();}
+ if(S)el('t_klima_m').textContent=[S.temp_out!=null?__T('Außen')+' '+z(S.temp_out,0)+' °C':'',klimaMeta(S,hy)].filter(Boolean).join(' · ');}
+function klimaMeta(s,hy){return s.klima_soll!=null?__T('Im Auto')+': '+sollText(s.klima_soll,hy):sollText(TEMP,hy);}
+function sollSetzen(v){TEMPUSER=1;TEMP=Math.max(17,Math.min(33,v));tempZeigen();}
 function sollSchritt(d){sollSetzen(TEMP+d);}
 // Panoptes aktualisieren (ab 0.1.26.1): nur sichtbar, wenn Panoptes es meldet; Pflicht-Rueckfrage vor dem Start
 function updZeigen(r){const b=el('updband');if(!r||!r.sichtbar){b.style.display='none';return;}b.style.display='block';UPDV=r.version||'';
