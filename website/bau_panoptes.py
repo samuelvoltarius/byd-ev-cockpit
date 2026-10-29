@@ -47,6 +47,7 @@ T = {
             ("🚗", "Am Bildschirm im Auto", "Panoptes läuft als eigene App im Vollbild, mit großen Tasten. Während der Fahrt sind Einstellungen gesperrt; Start, Karte und Wächter bleiben erreichbar."),
             ("🧩", "Einrichtungshilfe", "Ein Assistent führt dich beim ersten Start Schritt für Schritt durch Rechte, Wächter, Karte, Datenfreigaben und Updates. Nichts ist vorausgewählt; alles, was Daten nach außen schickt, bleibt aus, bis du es einschaltest. Was dein Auto nicht kann, überspringt er mit einer Erklärung."),
             ("🛡️", "Wächter mit KI-Erkennung", "Steht dein Auto, achten die Kameras auf das Umfeld. Du entscheidest selbst, wann aufgenommen wird: nur bei Erschütterung, mit KI-Erkennung überall oder nur an deinen privaten Orten wie Garage oder Einfahrt. Ohne Wahl nimmt er nur bei Erschütterung auf. Damit die 12-V-Batterie geschont wird, legt er sich schlafen; die Grenze richtet sich nach dem Batterietyp (Blei, AGM oder LFP)."),
+            ("📹", "Dashcam <span class=\"bald\">ab 0.1.27</span>", "Bei einer Vollbremsung oder einem Stoß sichert Panoptes von selbst einen kurzen Clip aus allen Kameras, etwa 20 Sekunden davor und danach. Ohne Daueraufnahme. Die Clips bleiben im Auto oder auf dem USB-Stick und werden nie verschickt. Panoptes fragt dann „Behalten?“, sonst wird der Clip nach 72 Stunden gelöscht. In der Schweiz ist die Dashcam ab Werk aus. Ob Aufnahmen beim Fahren bei dir erlaubt sind, ist je nach Land verschieden, siehe <a href=\"hinweise.html\">Hinweise</a>."),
             ("📒", "Fahrten und Laden", "Fahrten, Verbrauch und Ladungen werden im Auto mitgeschrieben. Panoptes zeigt die Kosten je Ladung, je Monat und als Ø Kosten je 100 km. Fehlt ein Preis, steht dort „Preis fehlt“ statt einer erfundenen Zahl; Gratis-Laden lässt sich ausdrücklich eintragen."),
             ("🔌", "„Wo hast du geladen?“", "Nach dem Laden fragt Panoptes im Stand, nie während der Fahrt, nach Station und Preis. Mit „Ort merken“ kennt es den Preis beim nächsten Mal. Die Frage lässt sich abschalten."),
             ("💳", "Deine Ladekarten im Auto", "Ladekarten und Netze, Mindestleistung, Stecker und Ankunfts-Ladestand stellst du im Auto ein. Der Routenplaner rechnet damit; gespeichert wird das nur im Auto."),
@@ -230,6 +231,7 @@ T = {
             ("🚗", "On the car screen", "Panoptes runs as its own full-screen app with large buttons. While driving, settings are locked; home, map and guard stay available."),
             ("🧩", "Setup assistant", "On first start an assistant guides you step by step through permissions, guard, map, data sharing and updates. Nothing is preselected; anything that sends data out stays off until you turn it on. Whatever your car cannot do is skipped with an explanation."),
             ("🛡️", "Guard with AI detection", "While your car is parked, the cameras watch its surroundings. You decide when it records: only on impact, with AI detection everywhere, or only at your own private places such as your garage or driveway. Without a choice it only records on impact. To protect the 12 V battery it goes to sleep; the threshold follows the battery type (lead-acid, AGM or LFP)."),
+            ("📹", "Dashcam <span class=\"bald\">from 0.1.27</span>", "On hard braking or a bump Panoptes saves a short clip from all cameras by itself, about 20 seconds before and after. No continuous recording. The clips stay in the car or on the USB stick and are never sent anywhere. Panoptes then asks “Keep?”, otherwise the clip is deleted after 72 hours. In Switzerland the dashcam is off by default. Whether recording while driving is allowed where you live differs by country, see the <a href=\"hinweise.html\">notes</a>."),
             ("📒", "Trips and charging", "Trips, consumption and charging sessions are recorded in the car. Panoptes shows the cost per session, per month and as average cost per 100 km. If a price is missing it says \u201cprice missing\u201d instead of inventing a number; free charging can be entered explicitly."),
             ("🔌", "\u201cWhere did you charge?\u201d", "After charging, Panoptes asks for the station and price while parked, never while driving. With \u201cremember place\u201d it knows the price next time. The question can be switched off."),
             ("💳", "Your charge cards in the car", "Charge cards and networks, minimum power, plug and arrival charge level are set in the car. The route planner uses them; they are only stored in the car."),
@@ -392,7 +394,7 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
         "h_fuer_mich": "Ist das was für mich?",
         "fuer_mich": [("✅", "Du hast einen BYD", "mit einem neueren Bildschirm-System (DiLink 3, 4 oder 5). Am besten getestet ist der Dolphin Surf."),
                       ("💻", "Du hast einen PC", "und etwa eine Stunde Zeit. Am Auto schaltest du einen Entwickler-Schalter ein."),
-                      ("⚠️", "Es ist eine Erprobung", "Ein privates Projekt, ohne Gewähr. Bitte lies vorher die <a href=\"hinweise.html\">Hinweise</a>.")],
+                      ("⚠️", "Panoptes ist noch in der Testphase", "Ein privates Freizeitprojekt, kostenlos und ohne Gewähr. Bitte lies vorher die <a href=\"hinweise.html\">Hinweise</a>.")],
         "alle_funktionen": "Alle weiteren Funktionen ansehen",
         "camp_detail": "🏕️ Camping-Modus im Detail (in Erprobung)",
         "mehr_bilder": "Mehr Bilder ansehen",
@@ -437,7 +439,7 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
         "h_fuer_mich": "Is this for me?",
         "fuer_mich": [("✅", "You have a BYD", "with a newer screen system (DiLink 3, 4 or 5). Best tested on the Dolphin Surf."),
                       ("💻", "You have a PC", "and about an hour. You switch on a developer setting in the car."),
-                      ("⚠️", "It is a test version", "A private project without warranty. Please read the <a href=\"hinweise.html\">notes</a> first.")],
+                      ("⚠️", "Panoptes is still being tested", "A private hobby project, free and without warranty. Please read the <a href=\"hinweise.html\">notes</a> first.")],
         "alle_funktionen": "See all other features",
         "camp_detail": "🏕️ Camping mode in detail (in testing)",
         "mehr_bilder": "See more pictures",
@@ -753,7 +755,7 @@ def fuss(t, andere_url):
 
 
 BASIS = "https://byd.serveone.at/panoptes/"
-OBEN = ("🛡️", "📒", "🗺️", "💬", "🏠", "🏕️")      # diese 6 Funktionen sichtbar, der Rest aufklappbar
+OBEN = ("🛡️", "📹", "📒", "🗺️", "💬", "🏠", "🏕️")      # diese 7 Funktionen sichtbar, der Rest aufklappbar
 
 
 def seite(t):
