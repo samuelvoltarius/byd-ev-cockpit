@@ -425,6 +425,10 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
                  ("Für wen?", "Für BYD-Fahrer, die Wächter mit Kamera, Fahrtenbuch und Ladekosten wollen."),
                  ("Wie fange ich an?", "Datei herunterladen und per USB-Stick aufs Auto bringen. Wir zeigen dir jeden Schritt.")],
         "h_fuer_mich": "Ist das was für mich?",
+        "wa_h": "WhatsApp-Community", "wa_knopf": "In die WhatsApp-Community",
+        "wa_was": "Was es gibt: Ankündigungen, Treffpunkt, Hilfe bei der Installation, Beta-Test und Tacho, Fehler und Wünsche, Wächter und Dashcam, Laden und Wallbox.",
+        "wa_hinweis": "Wer beitritt, sieht die Telefonnummer des Admins. Auch deine Nummer kann für andere sichtbar sein.",
+        "wa_frei": "Privates Projekt, nicht von BYD. Mehr dazu im <a href=\"/datenschutz#whatsapp\">Datenschutz</a>.",
         "fuer_mich": [("✅", "Du hast einen BYD", "mit einem neueren Bildschirm-System (DiLink 3, 4 oder 5). Am besten getestet ist der Dolphin Surf."),
                       ("🔌", "Du hast einen USB-Stick", "und etwa eine Stunde Zeit. Am Auto schaltest du einen Entwickler-Schalter ein, die Einrichtung führt dich durch."),
                       ("⚠️", "Panoptes ist noch in der Testphase", "Ein privates Freizeitprojekt, kostenlos und ohne Gewähr. Bitte lies vorher die <a href=\"hinweise.html\">Hinweise</a>.")],
@@ -470,6 +474,10 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
                  ("Who is it for?", "For BYD drivers who want a camera guard, a trip log and charging costs."),
                  ("How do I start?", "Download the file and put it on the car with a USB stick. We show you every step.")],
         "h_fuer_mich": "Is this for me?",
+        "wa_h": "WhatsApp community", "wa_knopf": "Join the WhatsApp community",
+        "wa_was": "What you get: announcements, a meeting place, help with installing, beta test and cluster, bugs and wishes, guard and dashcam, charging and wallbox.",
+        "wa_hinweis": "Anyone who joins sees the admin's phone number. Your number may also be visible to others.",
+        "wa_frei": "Private project, not made by BYD. More in the <a href=\"/en/datenschutz#whatsapp\">privacy policy</a>.",
         "fuer_mich": [("✅", "You have a BYD", "with a newer screen system (DiLink 3, 4 or 5). Best tested on the Dolphin Surf."),
                       ("🔌", "You have a USB stick", "and about an hour. You switch on a developer setting in the car, the setup guides you through it."),
                       ("⚠️", "Panoptes is still being tested", "A private hobby project, free and without warranty. Please read the <a href=\"hinweise.html\">notes</a> first.")],
@@ -788,6 +796,7 @@ def fuss(t, andere_url):
 
 
 BASIS = "https://byd.serveone.at/panoptes/"
+WHATSAPP = "https://chat.whatsapp.com/IQRtn9JViH4FhypAQsS3yK"
 OBEN = ("🛡️", "📹", "📒", "🗺️", "💬", "🏠", "🏕️")      # diese 7 Funktionen sichtbar, der Rest aufklappbar
 
 
@@ -812,6 +821,10 @@ def seite(t):
         o.append('    <div class="bd-kachel"><span class="bd-symbol">%s</span><h3>%s</h3><p>%s</p></div>' % (ic, h, txt))
     o.append("  </div>")
     # Funktionen: 6 oben, Rest aufklappbar
+    # WhatsApp-Community (Alfred, 30.10.2026): Link sichtbar im HTML, ohne Zaehlung
+    o.append('  <h2 id="whatsapp">%s</h2>\n  <p>%s</p>' % (t["wa_h"], t["wa_was"]))
+    o.append('  <div class="bd-knoepfe"><a class="bd-knopf gross leer" href="%s" target="_blank" rel="noopener">💬 %s</a></div>' % (WHATSAPP, t["wa_knopf"]))
+    o.append('  <div class="bd-hinweis"><p>%s</p><p>%s</p></div>' % (t["wa_hinweis"], t["wa_frei"]))
     o.append('  <h2 id="funktionen">%s</h2>\n  <div class="raster">' % t["h_kann"])
     oben = [x for x in t["kann"] if x[0] in OBEN]
     rest = [x for x in t["kann"] if x[0] not in OBEN]
