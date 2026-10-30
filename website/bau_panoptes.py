@@ -81,10 +81,10 @@ T = {
         "h_zus": "Wie alles zusammenhängt",
         "zus_lead": "Panoptes läuft im Auto. Alles andere ist freiwillig und lässt sich einzeln verbinden und wieder trennen.",
         "svg": {"auto": "Panoptes", "auto2": "im Auto", "cockpit": "EV-Cockpit", "cockpit2": "am PC", "planer": "Routenplaner", "planer2": "byd.serveone.at/ev/",
-                "karte": "Community-Karte", "karte2": "Kacheln, Ladesäulen", "tg": "Telegram-Bot", "tg2": "dein eigener", "ha": "Home Assistant", "ha2": "geplant",
+                "karte": "Community-Karte", "karte2": "Kacheln, Ladesäulen", "tg": "Telegram-Bot", "tg2": "dein eigener", "ha": "Home Assistant", "ha2": "dein eigener",
                 "wb": "Wallbox", "wb2": "Beta",
-                "t1": "Kopplung", "t2": "Konto, Ziel, Fahrtenbuch E2E", "t3": "Karte (wenn gewählt)", "t4": "Meldungen", "t5": "Heimnetz", "t6": "geplant", "t7": "Route, Ladekarten",
-                "aria": "Grafik: Panoptes im Auto in der Mitte, verbunden mit EV-Cockpit am PC, Routenplaner, Community-Karte, Telegram-Bot, Wallbox und geplant Home Assistant"},
+                "t1": "Kopplung", "t2": "Konto, Ziel, Fahrtenbuch E2E", "t3": "Karte (wenn gewählt)", "t4": "Meldungen", "t5": "Heimnetz", "t6": "direkt", "t7": "Route, Ladekarten",
+                "aria": "Grafik: Panoptes im Auto in der Mitte, verbunden mit EV-Cockpit am PC, Routenplaner, Community-Karte, Telegram-Bot, Wallbox und Home Assistant"},
         "verb": [
             ("1", "Panoptes ↔ EV-Cockpit (Kopplung)", "Du erlaubst das Cockpit einmal mit einer Prüfzahl, in Telegram oder auf der Panoptes-Seite. Dann holt das Cockpit Fahrzeugwerte, Einstellungen und das Fahrtenbuch direkt aus dem Auto, über dein Heimnetz oder Tailscale.",
              "Nicht dabei: Fernzugang, Passwort und Anschlüsse. Nichts davon läuft über unsere Server, das Fahrtenbuch bleibt auf deinem PC. Den Zugang hebt das Cockpit im Schlüsselbund deines Rechners auf. Was es sonst an Server schickt (Karte, 3D-Modell, Routenplaner, Zählung), entscheidest du mit eigenen Häkchen; ohne Häkchen nichts."),
@@ -96,12 +96,12 @@ T = {
              "Nicht dabei: Keine Videos auf unseren Servern, kein Umweg über das Projekt."),
             ("5", "Panoptes ↔ Wallbox (Beta)", "Panoptes spricht deine Wallbox im Heimnetz an, über evcc, Home Assistant, Tuya oder direkt. Steuern geht nur, wenn das Auto steht und du den Ladepunkt freigegeben hast, jede Änderung mit Rückfrage. Die Freigabe nimmst du jederzeit zurück.",
              "Nicht dabei: Nichts davon läuft über unsere Server. Zugangsdaten liegen verschlüsselt im Auto. Hersteller-Clouds (Easee, Zaptec, Tuya) nur mit deiner Einwilligung je Gerät."),
-            ("6", "Panoptes ↔ Home Assistant (geplant)", "Geplant ist eine direkte Verbindung zwischen deinem Auto und deinem eigenen Home Assistant. Für die Wallbox kann Panoptes Home Assistant schon heute nutzen.",
-             "Nicht dabei: Die Daten sollen nicht bei uns liegen."),
+            ("6", "Panoptes ↔ Home Assistant", "Dein Auto verbindet sich direkt mit deinem eigenen Home Assistant, ohne unsere Server. Dort siehst du Werte wie Ladestand und Reichweite, baust eigene Automationen und bekommst Meldungen. Das geht über MQTT, das du unter Panoptes einstellst. Eine eigene Integration für Home Assistant gibt es als Beta auf Anfrage über die <a href=\"/#wunsch\">Wunsch-Box</a>.",
+             "Nicht dabei: Die Daten liegen bei dir, nicht bei uns."),
             ("7", "EV-Cockpit ↔ Routenplaner", "Das Cockpit zeigt die bereitliegende Route und deine Ladekarten. Ist es mit Panoptes gekoppelt, meldet nur Panoptes den Ladestand, damit nichts doppelt ankommt.",
              "Nicht dabei: Deine Fahrten bleiben auf dem PC."),
         ],
-        "nicht": "Was nicht fließt",
+        "nicht": "Das bleibt privat",
         "h_ds": "Datenschutz: was wohin geht",
         "ds_lead": "Grundsatz: Deine Aufnahmen, Fahrten und Positionen bleiben im Auto. Schaust du Aufnahmen unterwegs am Handy an, laufen sie Ende-zu-Ende verschlüsselt durch unsere Brücke; der Server kann sie nicht lesen und speichert sie nicht. Was Daten nach außen schickt, ist standardmäßig aus; du schaltest es einzeln ein, und Panoptes sagt dir vorher, wohin die Daten gehen. Es gibt keine Werbung und kein Tracking.",
         "ds_kopf": ("Wohin", "Was", "Wann"),
@@ -125,19 +125,28 @@ T = {
             ("Weitere Dienste (BYD-Konto, MQTT/Smart Home, ABRP, Stadia Maps, KI-Assistent)", "je nach Dienst; an der Eingabe steht, wohin deine Anfragen gehen", "nur, wenn du sie selbst einrichtest"),
         ],
         "h_stand": "Stand der Entwicklung",
-        "stand_lead": "Ehrlich, was wo läuft. „Im Testbetrieb“ heißt: läuft seit Version 0.1.11 in einem Testauto (BYD Dolphin Surf). „Gebaut“ heißt: fertig in 0.1.12 bis 0.1.14, der Test im Auto steht noch aus.",
+        # PFLEGE: Diese Tabelle bei JEDER Version mitpruefen. Nur Belegtes (FADEN_KOORDINATION.md, ROADMAP.md, FREEZE_*.md), Unsicheres nach unten.
+        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.32. „Läuft im Testauto“ heißt: im Alltag in einem BYD Dolphin Surf (DiLink 3) belegt. „Fertig, im Testauto noch nicht geprüft“ heißt: gebaut und getestet, aber noch nicht im echten Auto bestätigt. „Beta“ heißt: läuft, hat aber Einschränkungen.",
         "stand_kopf": ("Funktion", "Stand"),
         "stand": [
-            ("Wächter, Karte, Telegram, Monatsbericht, Routenplaner, EV-Cockpit", "im Testbetrieb"),
-            ("Einrichtungshilfe, Ladekarten im Auto, „Wo hast du geladen?“, Kosten je 100 km", "im Testbetrieb"),
-            ("Orte, Umstieg von OverDrive, 12-V-Batterietyp, Schutz vor dem Löschen von Fahrten", "im Testbetrieb"),
-            ("Wallbox über evcc, Home Assistant, Tuya", "im Testbetrieb, aber nur mit Demo- und Testgeräten geprüft, noch nicht mit einer echten Wallbox"),
-            ("Wallbox direkt (go-e, Shelly, KEBA, Heidelberg, openWB, Easee, Zaptec), Orte als Navi-Favoriten", "gebaut (0.1.12), nur mit Testgeräten geprüft"),
-            ("Keine dauerhaften Eingriffe in Android-Einstellungen mehr", "gebaut (0.1.13)"),
-            ("Notzugang", "gebaut (0.1.14), ab Werk aus"),
-            ("Camping-Modus: Wächter „bewohnt“, Nachtbildschirm, Akku-Schutz", "im Testbetrieb (seit 0.1.16.1), Planen ab 0.1.17"),
-            ("Camping: Heizen (Intervall nach Außentemperatur)", "Beta, ab Werk als Probelauf; heizt erst nach Freigabe"),
-            ("Home Assistant als eigene Verbindung", "geplant"),
+            ("Wächter mit Personen-Erkennung, Abschreckung nur bei einer Person, Meldungen über Telegram", "Läuft im Testauto"),
+            ("Karte, Monatsbericht, Routenplaner, EV-Cockpit", "Läuft im Testauto"),
+            ("Fahrtenbuch, Ladekosten, Ladekarten im Auto, „Wo hast du geladen?“", "Läuft im Testauto"),
+            ("Einrichtungshilfe, Orte, Umstieg von OverDrive", "Läuft im Testauto"),
+            ("Handy-App über die Brücke: Auto sehen, Vorheizen, Live-Bild unterwegs", "Läuft im Testauto"),
+            ("Update direkt in der App", "Läuft im Testauto"),
+            ("Home Assistant über MQTT", "Läuft im Testauto"),
+            ("Camping-Modus: Wächter „bewohnt“, Nachtbildschirm, Akku-Schutz", "Läuft im Testauto"),
+            ("Dashcam-Clips bei Vollbremsung oder Stoß", "Fertig, im Testauto noch nicht geprüft: eingeschaltet, aber ein echter Auslöser ist noch nicht belegt"),
+            ("Hinweis auf neue Versionen am Bildschirm", "Fertig, im Testauto noch nicht geprüft: erscheint erst mit der nächsten Version"),
+            ("Fehler melden in der App", "Fertig, im Testauto noch nicht geprüft"),
+            ("Tacho-Test und Navi-App am Tacho", "Fertig, im Testauto noch nicht geprüft: geht nur auf manchen anderen BYD, nicht am Dolphin Surf"),
+            ("Videos und Fahrtenbuch-Tabelle in der Handy-App", "Fertig, im Testauto noch nicht geprüft"),
+            ("Notzugang", "Fertig, im Testauto noch nicht geprüft; ab Werk aus"),
+            ("Warnung bei schwacher 12-Volt-Batterie", "Beta: gerade nach Fehlalarmen neu abgestimmt"),
+            ("Wallbox über evcc, Home Assistant, Tuya oder direkt", "Beta: Verbindung im Testauto gesehen, Steuern an einer echten Wallbox noch nicht belegt"),
+            ("Camping: Heizen", "Beta: ab Werk nur Probelauf. Heizt nach deiner Freigabe, auf eigenen Wunsch auch bei ausgeschaltetem Auto über die BYD-Cloud"),
+            ("Eigene Integration für Home Assistant", "Beta, auf Anfrage"),
         ],
         "h_brauch": "Was du brauchst",
         "brauch": [
@@ -287,10 +296,10 @@ T = {
         "h_zus": "How it all fits together",
         "zus_lead": "Panoptes runs in the car. Everything else is optional and can be connected and disconnected one by one.",
         "svg": {"auto": "Panoptes", "auto2": "in the car", "cockpit": "EV Cockpit", "cockpit2": "on your PC", "planer": "Route planner", "planer2": "byd.serveone.at/ev/",
-                "karte": "Community map", "karte2": "tiles, chargers", "tg": "Telegram bot", "tg2": "your own", "ha": "Home Assistant", "ha2": "planned",
+                "karte": "Community map", "karte2": "tiles, chargers", "tg": "Telegram bot", "tg2": "your own", "ha": "Home Assistant", "ha2": "your own",
                 "wb": "Wallbox", "wb2": "beta",
-                "t1": "pairing", "t2": "account, destination, trip log E2E", "t3": "map (if chosen)", "t4": "notifications", "t5": "home network", "t6": "planned", "t7": "route, charge cards",
-                "aria": "Diagram: Panoptes in the car in the middle, connected to the EV Cockpit on a PC, the route planner, the community map, a Telegram bot, a wallbox and, planned, Home Assistant"},
+                "t1": "pairing", "t2": "account, destination, trip log E2E", "t3": "map (if chosen)", "t4": "notifications", "t5": "home network", "t6": "direct", "t7": "route, charge cards",
+                "aria": "Diagram: Panoptes in the car in the middle, connected to the EV Cockpit on a PC, the route planner, the community map, a Telegram bot, a wallbox and Home Assistant"},
         "verb": [
             ("1", "Panoptes ↔ EV Cockpit (pairing)", "You allow the cockpit once with a check number, in Telegram or on the Panoptes page. The cockpit then fetches vehicle data, settings and the trip log straight from the car, over your home network or Tailscale.",
              "Not included: remote access, password and ports. None of this goes through our servers; the trip log stays on your PC. The cockpit keeps the access key in your computer's keyring. Anything else it sends to servers (map, 3D model, route planner, usage count) needs its own tick; without a tick, nothing."),
@@ -302,12 +311,12 @@ T = {
              "Not included: no videos on our servers, no detour through the project."),
             ("5", "Panoptes ↔ wallbox (beta)", "Panoptes talks to your wallbox in your home network, via evcc, Home Assistant, Tuya or directly. Control only works while the car is parked and you have enabled the charge point, each change with confirmation. You can withdraw the permission at any time.",
              "Not included: none of this goes through our servers. Credentials are stored encrypted in the car. Manufacturer clouds (Easee, Zaptec, Tuya) only with your consent per device."),
-            ("6", "Panoptes ↔ Home Assistant (planned)", "A direct connection between your car and your own Home Assistant is planned. For the wallbox, Panoptes can already use Home Assistant today.",
-             "Not included: the data is not meant to be stored with us."),
+            ("6", "Panoptes ↔ Home Assistant", "Your car connects directly to your own Home Assistant, without our servers. There you see values like charge level and range, build your own automations and get notifications. This works over MQTT, which you set up in Panoptes. A dedicated Home Assistant integration is available as a beta on request through the <a href=\"/en/#wunsch\">wish box</a>.",
+             "Not included: The data stays with you, not with us."),
             ("7", "EV Cockpit ↔ route planner", "The cockpit shows the route waiting for you and your charge cards. When it is paired with Panoptes, only Panoptes reports the charge level, so nothing arrives twice.",
              "Not included: your trips stay on your PC."),
         ],
-        "nicht": "What does not flow",
+        "nicht": "What stays private",
         "h_ds": "Privacy: what goes where",
         "ds_lead": "Principle: your recordings, trips and positions stay in the car. If you watch recordings on your phone on the road, they pass through our bridge end-to-end encrypted; the server cannot read them and does not store them. Anything that sends data out is off by default; you turn each item on separately, and Panoptes tells you beforehand where the data goes. No ads, no tracking.",
         "ds_kopf": ("Where", "What", "When"),
@@ -331,19 +340,27 @@ T = {
             ("Other services (BYD account, MQTT/smart home, ABRP, Stadia Maps, AI assistant)", "depends on the service; the input field tells you where your requests go", "only if you set them up yourself"),
         ],
         "h_stand": "Development status",
-        "stand_lead": "Honestly, what runs where. \u201cIn test use\u201d means: running since version 0.1.11 in a test car (BYD Dolphin Surf). \u201cBuilt\u201d means: finished in 0.1.12 to 0.1.14, the test in the car is still pending.",
+        "stand_lead": "Honestly, what runs where, as of 0.1.32. \u201cRuns in the test car\u201d means: confirmed in everyday use in a BYD Dolphin Surf (DiLink 3). \u201cDone, not yet checked in the test car\u201d means: built and tested, but not yet confirmed in a real car. \u201cBeta\u201d means: it runs, but has limits.",
         "stand_kopf": ("Feature", "Status"),
         "stand": [
-            ("Guard, map, Telegram, monthly report, route planner, EV Cockpit", "in test use"),
-            ("Setup assistant, charge cards in the car, \u201cWhere did you charge?\u201d, cost per 100 km", "in test use"),
-            ("Places, switching from OverDrive, 12 V battery type, protection against deleting trips", "in test use"),
-            ("Wallbox via evcc, Home Assistant, Tuya", "in test use, but only checked with demo and test devices, not yet with a real wallbox"),
-            ("Wallbox directly (go-e, Shelly, KEBA, Heidelberg, openWB, Easee, Zaptec), places as navigation favourites", "built (0.1.12), only checked with test devices"),
-            ("No more permanent changes to Android settings", "built (0.1.13)"),
-            ("Emergency access", "built (0.1.14), off by default"),
-            ("Camping mode: guard \u201coccupied\u201d, night screen, battery protection", "in test use (since 0.1.16.1), scheduling from 0.1.17"),
-            ("Camping: heating (intervals by outside temperature)", "beta, dry run by default; only heats after you allow it"),
-            ("Home Assistant as its own connection", "planned"),
+            ("Guard with person detection, deterrent only for a person, Telegram notifications", "Runs in the test car"),
+            ("Map, monthly report, route planner, EV Cockpit", "Runs in the test car"),
+            ("Trip log, charging costs, charge cards in the car, \u201cWhere did you charge?\u201d", "Runs in the test car"),
+            ("Setup assistant, places, switching from OverDrive", "Runs in the test car"),
+            ("Phone app over the bridge: see the car, preheat, live picture on the road", "Runs in the test car"),
+            ("Update right in the app", "Runs in the test car"),
+            ("Home Assistant over MQTT", "Runs in the test car"),
+            ("Camping mode: guard \u201coccupied\u201d, night screen, battery protection", "Runs in the test car"),
+            ("Dashcam clips on hard braking or a bump", "Done, not yet checked in the test car: switched on, but a real trigger is not confirmed yet"),
+            ("Notice about new versions on the screen", "Done, not yet checked in the test car: only appears with the next version"),
+            ("Reporting a problem in the app", "Done, not yet checked in the test car"),
+            ("Cluster test and navigation app on the cluster", "Done, not yet checked in the test car: only works on some other BYD models, not on the Dolphin Surf"),
+            ("Videos and trip log table in the phone app", "Done, not yet checked in the test car"),
+            ("Emergency access", "Done, not yet checked in the test car; off by default"),
+            ("Warning for a weak 12-volt battery", "Beta: just retuned after false alarms"),
+            ("Wallbox via evcc, Home Assistant, Tuya or directly", "Beta: connection seen in the test car, control on a real wallbox not confirmed yet"),
+            ("Camping: heating", "Beta: dry run by default. Heats after you allow it, if you choose also with the car off via the BYD cloud"),
+            ("Own integration for Home Assistant", "Beta, on request"),
         ],
         "h_brauch": "What you need",
         "brauch": [
@@ -630,12 +647,12 @@ def diagramm(s):
          "planer": (670, 40, 210, 90, s["planer"], s["planer2"], False),
          "karte": (40, 410, 210, 90, s["karte"], s["karte2"], False),
          "tg": (690, 230, 190, 90, s["tg"], s["tg2"], False),
-         "ha": (670, 410, 210, 90, s["ha"], s["ha2"], True),
+         "ha": (670, 410, 210, 90, s["ha"], s["ha2"], False),
          "wb": (40, 230, 190, 90, s["wb"], s["wb2"], False)}
     mitte = lambda n: (k[n][0] + k[n][2] / 2, k[n][1] + k[n][3] / 2)
     kanten = [("auto", "cockpit", "1", s["t1"], False), ("auto", "planer", "2", s["t2"], False),
               ("auto", "karte", "3", s["t3"], False), ("auto", "tg", "4", s["t4"], False),
-              ("auto", "wb", "5", s["t5"], False), ("auto", "ha", "6", s["t6"], True), ("cockpit", "planer", "7", s["t7"], True)]
+              ("auto", "wb", "5", s["t5"], False), ("auto", "ha", "6", s["t6"], False), ("cockpit", "planer", "7", s["t7"], True)]
     o = ['<svg viewBox="0 0 910 520" role="img" aria-label="%s" xmlns="http://www.w3.org/2000/svg">' % e(s["aria"]),
          '<style>.kn{fill:var(--node);stroke:var(--line);stroke-width:1.5}.kn.haupt{stroke:var(--grn);stroke-width:2.5}'
          '.kn.bald{stroke-dasharray:6 5}.t1{fill:var(--txt);font:700 17px system-ui,sans-serif}.t2{fill:var(--mut);font:13px system-ui,sans-serif}'
@@ -666,7 +683,7 @@ def diagramm_schmal(s):
     e = html.escape
     knoten = [("1", s["cockpit"], s["cockpit2"], s["t1"], False), ("2", s["planer"], s["planer2"], s["t2"], False),
               ("3", s["karte"], s["karte2"], s["t3"], False), ("4", s["tg"], s["tg2"], s["t4"], False),
-              ("5", s["wb"], s["wb2"], s["t5"], False), ("6", s["ha"], s["ha2"], s["t6"], True)]
+              ("5", s["wb"], s["wb2"], s["t5"], False), ("6", s["ha"], s["ha2"], s["t6"], False)]
     h = 130 + len(knoten) * 96
     o = ['<svg viewBox="0 0 400 %d" role="img" aria-label="%s" xmlns="http://www.w3.org/2000/svg">' % (h, e(s["aria"])),
          '<style>.kn{fill:var(--node);stroke:var(--line);stroke-width:1.5}.kn.haupt{stroke:var(--grn);stroke-width:2.5}'
@@ -675,7 +692,7 @@ def diagramm_schmal(s):
          '.li.bald{stroke:var(--mut);stroke-dasharray:6 5}.nk{fill:var(--grn)}.nt{fill:#04110a;font:800 13px system-ui,sans-serif}</style>']
     letzte = 130 + (len(knoten) - 1) * 96 + 38
     o.append('<line class="li" x1="34" y1="60" x2="34" y2="%d"/><line class="li" x1="34" y1="60" x2="80" y2="60"/>' % (letzte - 96))
-    o.append('<line class="li bald" x1="34" y1="%d" x2="34" y2="%d"/>' % (letzte - 96, letzte))
+    o.append('<line class="li" x1="34" y1="%d" x2="34" y2="%d"/>' % (letzte - 96, letzte))
     o.append('<rect class="kn haupt" x="80" y="16" width="290" height="88" rx="16"/>')
     o.append('<text class="t1" x="225" y="55" text-anchor="middle">%s</text><text class="t2" x="225" y="80" text-anchor="middle">%s</text>'
              % (e(s["auto"]), e(s["auto2"])))
@@ -919,7 +936,7 @@ def seite(t):
              % (diagramm(t["svg"]), diagramm_schmal(t["svg"])))
     for nr, h, was, nicht in t["verb"]:
         o.append('    <div class="card"><h3><span class="nr">%s</span>%s</h3><p>%s</p><p class="nicht"><b>%s:</b> %s</p></div>'
-                 % (nr, html.escape(h), html.escape(was), t["nicht"], html.escape(nicht.split(": ", 1)[1] if ": " in nicht[:20] else nicht)))
+                 % (nr, html.escape(h), was if "<a " in was else html.escape(was), t["nicht"], html.escape(nicht.split(": ", 1)[1] if ": " in nicht[:20] else nicht)))
     o.append("  </div></details>")
     o.append('  <details class="bd-auf" id="stand"><summary>%s</summary><p class="lead">%s</p>' % (t["h_stand"], t["stand_lead"]))
     o.append('  <div class="tab"><table class="stand"><tr><th>%s</th><th>%s</th></tr>' % t["stand_kopf"])

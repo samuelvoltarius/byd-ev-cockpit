@@ -225,14 +225,14 @@ code{background:var(--card2);border:1px solid var(--line);border-radius:6px;padd
   </table></div></details>
   <div class="card" id="bruecke"><h3 style="margin-top:0">Handy und PC übers Internet (Brücke)</h3><p style="margin-bottom:0">Unterwegs erreicht die Handy-App oder das EV-Cockpit am PC dein Auto über einen kleinen Vermittlungsdienst auf unserem Server. Er ist aus, bis du ihn im Auto einschaltest. <b>Ende-zu-Ende verschlüsselt</b>: Der Server reicht nur unlesbare Daten weiter und sieht keine Fahrzeugdaten, Orte oder Befehle. <b>Keine IP-Protokolle</b>, pro Stunde nur eine Zählzeile für den ganzen Dienst. Server im Rechenzentrum von Hetzner in Falkenstein, Deutschland. Schaltest du die Brücke aus, wird dein Postfach gelöscht. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (eine Funktion, die du selbst einschaltest). <a href="/datenschutz#bruecke">Alle Einzelheiten</a></p></div>
   <details class="bd-auf" id="zusammenhang"><summary>Wie Panoptes mit Cockpit, Routenplaner, Karte und Wallbox verbunden ist</summary><p class="lead">Panoptes läuft im Auto. Alles andere ist freiwillig und lässt sich einzeln verbinden und wieder trennen.</p>
-  <div class="diagramm"><div class="breit"><svg viewBox="0 0 910 520" role="img" aria-label="Grafik: Panoptes im Auto in der Mitte, verbunden mit EV-Cockpit am PC, Routenplaner, Community-Karte, Telegram-Bot, Wallbox und geplant Home Assistant" xmlns="http://www.w3.org/2000/svg">
+  <div class="diagramm"><div class="breit"><svg viewBox="0 0 910 520" role="img" aria-label="Grafik: Panoptes im Auto in der Mitte, verbunden mit EV-Cockpit am PC, Routenplaner, Community-Karte, Telegram-Bot, Wallbox und Home Assistant" xmlns="http://www.w3.org/2000/svg">
 <style>.kn{fill:var(--node);stroke:var(--line);stroke-width:1.5}.kn.haupt{stroke:var(--grn);stroke-width:2.5}.kn.bald{stroke-dasharray:6 5}.t1{fill:var(--txt);font:700 17px system-ui,sans-serif}.t2{fill:var(--mut);font:13px system-ui,sans-serif}.li{stroke:var(--grn);stroke-width:2.2;fill:none}.li.bald{stroke:var(--mut);stroke-dasharray:6 5}.lb{fill:var(--mut);font:600 12.5px system-ui,sans-serif}.lbbg{fill:var(--bg)}.nk{fill:var(--grn)}.nt{fill:#04110a;font:800 12px system-ui,sans-serif}</style>
 <line class="li" x1="455" y1="275" x2="140" y2="85"/>
 <line class="li" x1="455" y1="275" x2="775" y2="85"/>
 <line class="li" x1="455" y1="275" x2="145" y2="455"/>
 <line class="li" x1="455" y1="275" x2="785" y2="275"/>
 <line class="li" x1="455" y1="275" x2="135" y2="275"/>
-<line class="li bald" x1="455" y1="275" x2="775" y2="455"/>
+<line class="li" x1="455" y1="275" x2="775" y2="455"/>
 <line class="li bald" x1="140" y1="85" x2="775" y2="85"/>
 <rect class="kn haupt" x="355" y="220" width="200" height="110" rx="16"/>
 <text class="t1" x="455" y="272" text-anchor="middle">Panoptes</text>
@@ -249,9 +249,9 @@ code{background:var(--card2);border:1px solid var(--line);border-radius:6px;padd
 <rect class="kn" x="690" y="230" width="190" height="90" rx="16"/>
 <text class="t1" x="785" y="272" text-anchor="middle">Telegram-Bot</text>
 <text class="t2" x="785" y="293" text-anchor="middle">dein eigener</text>
-<rect class="kn bald" x="670" y="410" width="210" height="90" rx="16"/>
+<rect class="kn" x="670" y="410" width="210" height="90" rx="16"/>
 <text class="t1" x="775" y="452" text-anchor="middle">Home Assistant</text>
-<text class="t2" x="775" y="473" text-anchor="middle">geplant</text>
+<text class="t2" x="775" y="473" text-anchor="middle">dein eigener</text>
 <rect class="kn" x="40" y="230" width="190" height="90" rx="16"/>
 <text class="t1" x="135" y="272" text-anchor="middle">Wallbox</text>
 <text class="t2" x="135" y="293" text-anchor="middle">Beta</text>
@@ -270,16 +270,16 @@ code{background:var(--card2);border:1px solid var(--line);border-radius:6px;padd
 <rect class="lbbg" x="252" y="264" width="85" height="22" rx="11"/>
 <circle class="nk" cx="262" cy="275" r="10"/><text class="nt" x="262" y="279" text-anchor="middle">5</text>
 <text class="lb" x="303" y="279" text-anchor="middle">Heimnetz</text>
-<rect class="lbbg" x="575" y="354" width="79" height="22" rx="11"/>
-<circle class="nk" cx="585" cy="365" r="10"/><text class="nt" x="585" y="369" text-anchor="middle">6</text>
-<text class="lb" x="623" y="369" text-anchor="middle">geplant</text>
+<rect class="lbbg" x="578" y="354" width="72" height="22" rx="11"/>
+<circle class="nk" cx="588" cy="365" r="10"/><text class="nt" x="588" y="369" text-anchor="middle">6</text>
+<text class="lb" x="623" y="369" text-anchor="middle">direkt</text>
 <rect class="lbbg" x="384" y="74" width="145" height="22" rx="11"/>
 <circle class="nk" cx="394" cy="85" r="10"/><text class="nt" x="394" y="89" text-anchor="middle">7</text>
 <text class="lb" x="465" y="89" text-anchor="middle">Route, Ladekarten</text>
-</svg></div><div class="schmal"><svg viewBox="0 0 400 706" role="img" aria-label="Grafik: Panoptes im Auto in der Mitte, verbunden mit EV-Cockpit am PC, Routenplaner, Community-Karte, Telegram-Bot, Wallbox und geplant Home Assistant" xmlns="http://www.w3.org/2000/svg">
+</svg></div><div class="schmal"><svg viewBox="0 0 400 706" role="img" aria-label="Grafik: Panoptes im Auto in der Mitte, verbunden mit EV-Cockpit am PC, Routenplaner, Community-Karte, Telegram-Bot, Wallbox und Home Assistant" xmlns="http://www.w3.org/2000/svg">
 <style>.kn{fill:var(--node);stroke:var(--line);stroke-width:1.5}.kn.haupt{stroke:var(--grn);stroke-width:2.5}.kn.bald{stroke-dasharray:6 5}.t1{fill:var(--txt);font:700 18px system-ui,sans-serif}.t2{fill:var(--mut);font:14px system-ui,sans-serif}.t3{fill:var(--grn);font:600 14px system-ui,sans-serif}.li{stroke:var(--grn);stroke-width:2.4;fill:none}.li.bald{stroke:var(--mut);stroke-dasharray:6 5}.nk{fill:var(--grn)}.nt{fill:#04110a;font:800 13px system-ui,sans-serif}</style>
 <line class="li" x1="34" y1="60" x2="34" y2="552"/><line class="li" x1="34" y1="60" x2="80" y2="60"/>
-<line class="li bald" x1="34" y1="552" x2="34" y2="648"/>
+<line class="li" x1="34" y1="552" x2="34" y2="648"/>
 <rect class="kn haupt" x="80" y="16" width="290" height="88" rx="16"/>
 <text class="t1" x="225" y="55" text-anchor="middle">Panoptes</text><text class="t2" x="225" y="80" text-anchor="middle">im Auto</text>
 <line class="li" x1="34" y1="168" x2="80" y2="168"/>
@@ -302,32 +302,40 @@ code{background:var(--card2);border:1px solid var(--line);border-radius:6px;padd
 <rect class="kn" x="80" y="514" width="290" height="76" rx="14"/>
 <text class="t1" x="98" y="544">Wallbox</text><text class="t2" x="98" y="569">Beta</text><text class="t3" x="352" y="544" text-anchor="end">Heimnetz</text>
 <circle class="nk" cx="34" cy="552" r="12"/><text class="nt" x="34" y="556" text-anchor="middle">5</text>
-<line class="li bald" x1="34" y1="648" x2="80" y2="648"/>
-<rect class="kn bald" x="80" y="610" width="290" height="76" rx="14"/>
-<text class="t1" x="98" y="640">Home Assistant</text><text class="t2" x="98" y="665">geplant</text><text class="t3" x="352" y="640" text-anchor="end">geplant</text>
+<line class="li" x1="34" y1="648" x2="80" y2="648"/>
+<rect class="kn" x="80" y="610" width="290" height="76" rx="14"/>
+<text class="t1" x="98" y="640">Home Assistant</text><text class="t2" x="98" y="665">dein eigener</text><text class="t3" x="352" y="640" text-anchor="end">direkt</text>
 <circle class="nk" cx="34" cy="648" r="12"/><text class="nt" x="34" y="652" text-anchor="middle">6</text>
 </svg></div></div>
   <div class="verb">
-    <div class="card"><h3><span class="nr">1</span>Panoptes ↔ EV-Cockpit (Kopplung)</h3><p>Du erlaubst das Cockpit einmal mit einer Prüfzahl, in Telegram oder auf der Panoptes-Seite. Dann holt das Cockpit Fahrzeugwerte, Einstellungen und das Fahrtenbuch direkt aus dem Auto, über dein Heimnetz oder Tailscale.</p><p class="nicht"><b>Was nicht fließt:</b> Fernzugang, Passwort und Anschlüsse. Nichts davon läuft über unsere Server, das Fahrtenbuch bleibt auf deinem PC. Den Zugang hebt das Cockpit im Schlüsselbund deines Rechners auf. Was es sonst an Server schickt (Karte, 3D-Modell, Routenplaner, Zählung), entscheidest du mit eigenen Häkchen; ohne Häkchen nichts.</p></div>
-    <div class="card"><h3><span class="nr">2</span>Panoptes ↔ Routenplaner</h3><p>Nach dem Verbinden kommt dein Ziel mit Ladestopps ins Auto. Panoptes meldet Ladestand, Verbrauchsfaktor und Fahrstatus, damit der Plan stimmt. Schaltest du es ein (standardmäßig aus) und rufst auf /ev/ dein Fahrtenbuch ab, kommt es Ende-zu-Ende verschlüsselt direkt vom Auto in deinen Browser.</p><p class="nicht"><b>Was nicht fließt:</b> Der Server kann das Fahrtenbuch nicht lesen; er bekommt nur verschlüsselte Daten und hält sie laut Routenplaner höchstens 2 Minuten im Arbeitsspeicher. Die ungefähre Position geht nur mit, wenn Panoptes unterwegs einen neuen Ladestopp vorschlägt.</p></div>
-    <div class="card"><h3><span class="nr">3</span>Panoptes ↔ Community-Karte</h3><p>Wenn du sie als Kartenquelle wählst, kommen Kartenkacheln und Ladesäulen-Daten von byd.serveone.at, mit Live-Belegung, wo es offene Daten gibt. Ohne Wahl lädt Panoptes keine Karte.</p><p class="nicht"><b>Was nicht fließt:</b> Fahrten und Aufnahmen. Der Server sieht nur deine IP-Adresse und den Kartenausschnitt. Geteilte Regeln gehen nur an den Community-Server, wenn du sie selbst teilst (standardmäßig aus).</p></div>
-    <div class="card"><h3><span class="nr">4</span>Panoptes → Telegram</h3><p>Dein eigener Bot schickt dir Meldungstexte. Bilder und Videos nur, wenn du das ausdrücklich einschaltest; dann liegen sie auf den Servern von Telegram.</p><p class="nicht"><b>Was nicht fließt:</b> Keine Videos auf unseren Servern, kein Umweg über das Projekt.</p></div>
-    <div class="card"><h3><span class="nr">5</span>Panoptes ↔ Wallbox (Beta)</h3><p>Panoptes spricht deine Wallbox im Heimnetz an, über evcc, Home Assistant, Tuya oder direkt. Steuern geht nur, wenn das Auto steht und du den Ladepunkt freigegeben hast, jede Änderung mit Rückfrage. Die Freigabe nimmst du jederzeit zurück.</p><p class="nicht"><b>Was nicht fließt:</b> Nichts davon läuft über unsere Server. Zugangsdaten liegen verschlüsselt im Auto. Hersteller-Clouds (Easee, Zaptec, Tuya) nur mit deiner Einwilligung je Gerät.</p></div>
-    <div class="card"><h3><span class="nr">6</span>Panoptes ↔ Home Assistant (geplant)</h3><p>Geplant ist eine direkte Verbindung zwischen deinem Auto und deinem eigenen Home Assistant. Für die Wallbox kann Panoptes Home Assistant schon heute nutzen.</p><p class="nicht"><b>Was nicht fließt:</b> Die Daten sollen nicht bei uns liegen.</p></div>
-    <div class="card"><h3><span class="nr">7</span>EV-Cockpit ↔ Routenplaner</h3><p>Das Cockpit zeigt die bereitliegende Route und deine Ladekarten. Ist es mit Panoptes gekoppelt, meldet nur Panoptes den Ladestand, damit nichts doppelt ankommt.</p><p class="nicht"><b>Was nicht fließt:</b> Deine Fahrten bleiben auf dem PC.</p></div>
+    <div class="card"><h3><span class="nr">1</span>Panoptes ↔ EV-Cockpit (Kopplung)</h3><p>Du erlaubst das Cockpit einmal mit einer Prüfzahl, in Telegram oder auf der Panoptes-Seite. Dann holt das Cockpit Fahrzeugwerte, Einstellungen und das Fahrtenbuch direkt aus dem Auto, über dein Heimnetz oder Tailscale.</p><p class="nicht"><b>Das bleibt privat:</b> Fernzugang, Passwort und Anschlüsse. Nichts davon läuft über unsere Server, das Fahrtenbuch bleibt auf deinem PC. Den Zugang hebt das Cockpit im Schlüsselbund deines Rechners auf. Was es sonst an Server schickt (Karte, 3D-Modell, Routenplaner, Zählung), entscheidest du mit eigenen Häkchen; ohne Häkchen nichts.</p></div>
+    <div class="card"><h3><span class="nr">2</span>Panoptes ↔ Routenplaner</h3><p>Nach dem Verbinden kommt dein Ziel mit Ladestopps ins Auto. Panoptes meldet Ladestand, Verbrauchsfaktor und Fahrstatus, damit der Plan stimmt. Schaltest du es ein (standardmäßig aus) und rufst auf /ev/ dein Fahrtenbuch ab, kommt es Ende-zu-Ende verschlüsselt direkt vom Auto in deinen Browser.</p><p class="nicht"><b>Das bleibt privat:</b> Der Server kann das Fahrtenbuch nicht lesen; er bekommt nur verschlüsselte Daten und hält sie laut Routenplaner höchstens 2 Minuten im Arbeitsspeicher. Die ungefähre Position geht nur mit, wenn Panoptes unterwegs einen neuen Ladestopp vorschlägt.</p></div>
+    <div class="card"><h3><span class="nr">3</span>Panoptes ↔ Community-Karte</h3><p>Wenn du sie als Kartenquelle wählst, kommen Kartenkacheln und Ladesäulen-Daten von byd.serveone.at, mit Live-Belegung, wo es offene Daten gibt. Ohne Wahl lädt Panoptes keine Karte.</p><p class="nicht"><b>Das bleibt privat:</b> Fahrten und Aufnahmen. Der Server sieht nur deine IP-Adresse und den Kartenausschnitt. Geteilte Regeln gehen nur an den Community-Server, wenn du sie selbst teilst (standardmäßig aus).</p></div>
+    <div class="card"><h3><span class="nr">4</span>Panoptes → Telegram</h3><p>Dein eigener Bot schickt dir Meldungstexte. Bilder und Videos nur, wenn du das ausdrücklich einschaltest; dann liegen sie auf den Servern von Telegram.</p><p class="nicht"><b>Das bleibt privat:</b> Keine Videos auf unseren Servern, kein Umweg über das Projekt.</p></div>
+    <div class="card"><h3><span class="nr">5</span>Panoptes ↔ Wallbox (Beta)</h3><p>Panoptes spricht deine Wallbox im Heimnetz an, über evcc, Home Assistant, Tuya oder direkt. Steuern geht nur, wenn das Auto steht und du den Ladepunkt freigegeben hast, jede Änderung mit Rückfrage. Die Freigabe nimmst du jederzeit zurück.</p><p class="nicht"><b>Das bleibt privat:</b> Nichts davon läuft über unsere Server. Zugangsdaten liegen verschlüsselt im Auto. Hersteller-Clouds (Easee, Zaptec, Tuya) nur mit deiner Einwilligung je Gerät.</p></div>
+    <div class="card"><h3><span class="nr">6</span>Panoptes ↔ Home Assistant</h3><p>Dein Auto verbindet sich direkt mit deinem eigenen Home Assistant, ohne unsere Server. Dort siehst du Werte wie Ladestand und Reichweite, baust eigene Automationen und bekommst Meldungen. Das geht über MQTT, das du unter Panoptes einstellst. Eine eigene Integration für Home Assistant gibt es als Beta auf Anfrage über die <a href="/#wunsch">Wunsch-Box</a>.</p><p class="nicht"><b>Das bleibt privat:</b> Die Daten liegen bei dir, nicht bei uns.</p></div>
+    <div class="card"><h3><span class="nr">7</span>EV-Cockpit ↔ Routenplaner</h3><p>Das Cockpit zeigt die bereitliegende Route und deine Ladekarten. Ist es mit Panoptes gekoppelt, meldet nur Panoptes den Ladestand, damit nichts doppelt ankommt.</p><p class="nicht"><b>Das bleibt privat:</b> Deine Fahrten bleiben auf dem PC.</p></div>
   </div></details>
-  <details class="bd-auf" id="stand"><summary>Stand der Entwicklung</summary><p class="lead">Ehrlich, was wo läuft. „Im Testbetrieb“ heißt: läuft seit Version 0.1.11 in einem Testauto (BYD Dolphin Surf). „Gebaut“ heißt: fertig in 0.1.12 bis 0.1.14, der Test im Auto steht noch aus.</p>
+  <details class="bd-auf" id="stand"><summary>Stand der Entwicklung</summary><p class="lead">Ehrlich, was wo läuft, Stand 0.1.32. „Läuft im Testauto“ heißt: im Alltag in einem BYD Dolphin Surf (DiLink 3) belegt. „Fertig, im Testauto noch nicht geprüft“ heißt: gebaut und getestet, aber noch nicht im echten Auto bestätigt. „Beta“ heißt: läuft, hat aber Einschränkungen.</p>
   <div class="tab"><table class="stand"><tr><th>Funktion</th><th>Stand</th></tr>
-    <tr><td>Wächter, Karte, Telegram, Monatsbericht, Routenplaner, EV-Cockpit</td><td>im Testbetrieb</td></tr>
-    <tr><td>Einrichtungshilfe, Ladekarten im Auto, „Wo hast du geladen?“, Kosten je 100 km</td><td>im Testbetrieb</td></tr>
-    <tr><td>Orte, Umstieg von OverDrive, 12-V-Batterietyp, Schutz vor dem Löschen von Fahrten</td><td>im Testbetrieb</td></tr>
-    <tr><td>Wallbox über evcc, Home Assistant, Tuya</td><td>im Testbetrieb, aber nur mit Demo- und Testgeräten geprüft, noch nicht mit einer echten Wallbox</td></tr>
-    <tr><td>Wallbox direkt (go-e, Shelly, KEBA, Heidelberg, openWB, Easee, Zaptec), Orte als Navi-Favoriten</td><td>gebaut (0.1.12), nur mit Testgeräten geprüft</td></tr>
-    <tr><td>Keine dauerhaften Eingriffe in Android-Einstellungen mehr</td><td>gebaut (0.1.13)</td></tr>
-    <tr><td>Notzugang</td><td>gebaut (0.1.14), ab Werk aus</td></tr>
-    <tr><td>Camping-Modus: Wächter „bewohnt“, Nachtbildschirm, Akku-Schutz</td><td>im Testbetrieb (seit 0.1.16.1), Planen ab 0.1.17</td></tr>
-    <tr><td>Camping: Heizen (Intervall nach Außentemperatur)</td><td>Beta, ab Werk als Probelauf; heizt erst nach Freigabe</td></tr>
-    <tr><td>Home Assistant als eigene Verbindung</td><td>geplant</td></tr>
+    <tr><td>Wächter mit Personen-Erkennung, Abschreckung nur bei einer Person, Meldungen über Telegram</td><td>Läuft im Testauto</td></tr>
+    <tr><td>Karte, Monatsbericht, Routenplaner, EV-Cockpit</td><td>Läuft im Testauto</td></tr>
+    <tr><td>Fahrtenbuch, Ladekosten, Ladekarten im Auto, „Wo hast du geladen?“</td><td>Läuft im Testauto</td></tr>
+    <tr><td>Einrichtungshilfe, Orte, Umstieg von OverDrive</td><td>Läuft im Testauto</td></tr>
+    <tr><td>Handy-App über die Brücke: Auto sehen, Vorheizen, Live-Bild unterwegs</td><td>Läuft im Testauto</td></tr>
+    <tr><td>Update direkt in der App</td><td>Läuft im Testauto</td></tr>
+    <tr><td>Home Assistant über MQTT</td><td>Läuft im Testauto</td></tr>
+    <tr><td>Camping-Modus: Wächter „bewohnt“, Nachtbildschirm, Akku-Schutz</td><td>Läuft im Testauto</td></tr>
+    <tr><td>Dashcam-Clips bei Vollbremsung oder Stoß</td><td>Fertig, im Testauto noch nicht geprüft: eingeschaltet, aber ein echter Auslöser ist noch nicht belegt</td></tr>
+    <tr><td>Hinweis auf neue Versionen am Bildschirm</td><td>Fertig, im Testauto noch nicht geprüft: erscheint erst mit der nächsten Version</td></tr>
+    <tr><td>Fehler melden in der App</td><td>Fertig, im Testauto noch nicht geprüft</td></tr>
+    <tr><td>Tacho-Test und Navi-App am Tacho</td><td>Fertig, im Testauto noch nicht geprüft: geht nur auf manchen anderen BYD, nicht am Dolphin Surf</td></tr>
+    <tr><td>Videos und Fahrtenbuch-Tabelle in der Handy-App</td><td>Fertig, im Testauto noch nicht geprüft</td></tr>
+    <tr><td>Notzugang</td><td>Fertig, im Testauto noch nicht geprüft; ab Werk aus</td></tr>
+    <tr><td>Warnung bei schwacher 12-Volt-Batterie</td><td>Beta: gerade nach Fehlalarmen neu abgestimmt</td></tr>
+    <tr><td>Wallbox über evcc, Home Assistant, Tuya oder direkt</td><td>Beta: Verbindung im Testauto gesehen, Steuern an einer echten Wallbox noch nicht belegt</td></tr>
+    <tr><td>Camping: Heizen</td><td>Beta: ab Werk nur Probelauf. Heizt nach deiner Freigabe, auf eigenen Wunsch auch bei ausgeschaltetem Auto über die BYD-Cloud</td></tr>
+    <tr><td>Eigene Integration für Home Assistant</td><td>Beta, auf Anfrage</td></tr>
   </table></div></details>
   <h2 id="hinweise">Hinweise</h2>
   <div class="card"><p style="margin-top:0">Privates Freizeitprojekt, kostenlos und ohne Gewähr. Nutzung auf eigenes Risiko und nur privat mit dem eigenen Fahrzeug. Für eine rechtmäßige Nutzung (Datenschutz, Kamera-Aufnahmen, Fernbefehle, Straßenverkehr) sind allein die Nutzer verantwortlich. Wächter-Aufnahmen sind nur für den eigenen Privatgrund gedacht, ohne öffentlichen Raum oder Nachbargrund. Soweit gesetzlich zulässig, übernimmt der Entwickler keine Haftung; Haftung für Vorsatz, grobe Fahrlässigkeit, Personenschäden und zwingende Verbraucherrechte bleiben unberührt. Nicht mit BYD verbunden; alle Marken gehören ihren Inhabern.</p><p style="margin-bottom:0"><a href="hinweise.html">Alle Hinweise lesen →</a></p></div>
