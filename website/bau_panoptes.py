@@ -129,7 +129,7 @@ T = {
         ],
         "h_stand": "Stand der Entwicklung",
         # PFLEGE: Diese Tabelle bei JEDER Version mitpruefen. Nur Belegtes (FADEN_KOORDINATION.md, ROADMAP.md, FREEZE_*.md), Unsicheres nach unten.
-        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.32.1. „Läuft im Testauto“ heißt: im Alltag in einem BYD Dolphin Surf (DiLink 3) belegt. „Fertig, im Testauto noch nicht geprüft“ heißt: gebaut und getestet, aber noch nicht im echten Auto bestätigt. „Beta“ heißt: läuft, hat aber Einschränkungen.",
+        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.33. „Läuft im Testauto“ heißt: im Alltag in einem BYD Dolphin Surf (DiLink 3) belegt. „Fertig, im Testauto noch nicht geprüft“ heißt: gebaut und getestet, aber noch nicht im echten Auto bestätigt. „Beta“ heißt: läuft, hat aber Einschränkungen.",
         "stand_kopf": ("Funktion", "Stand"),
         "stand": [
             ("Wächter mit Personen-Erkennung, Abschreckung nur bei einer Person, Meldungen über Telegram", "Läuft im Testauto"),
@@ -163,12 +163,11 @@ T = {
         "dl_anker": "installieren",
         "dl_bald": "Beta-Version {V}",
         # „Neu in …“-Kasten beim Download; erscheint nur, solange versionen.json genau diese Version meldet
-        "neu_version": "0.1.32.1", "neu_titel": "Neu in 0.1.32.1",
-        "neu": ["<b>Mehr Sicherheit:</b> Beim Koppeln kommen keine Zusatzrechte mehr von selbst dazu.",
-                "<b>Updates ohne WLAN</b> fragen vorher und nennen die Größe.",
-                "<b>Camping:</b> Heizart direkt am Bildschirm wählen.",
-                "<b>Kartensuche:</b> schickt weniger Daten und lässt sich abschalten.",
-                "<b>Aus 0.1.32:</b> Einrichtung in nur noch 7 kurzen Schritten, Meldungen fürs iPhone sind vorbereitet."],
+        "neu_version": "0.1.33", "neu_titel": "Neu in 0.1.33",
+        "neu": ["<b>Sparsamer:</b> weniger unnötige Abfragen im Hintergrund.",
+                "<b>Camping-Heizen</b> läuft zuverlässiger.",
+                "<b>Aufsperren für die Web-App</b> ist vorbereitet (Standard aus).",
+                "<b>Aus 0.1.32.1:</b> Beim Koppeln kommen keine Zusatzrechte mehr von selbst dazu, Updates ohne WLAN fragen vorher und nennen die Größe."],
         # Tacho-Test (Beta), Text von Kern Tacho 30.10.2026 (TACHO_BETA_WEBTEXT.md), freigegeben mit 0.1.30
         "tacho": {
             "h": "Navi auf dem Tacho – hilf uns testen <span class=\"bald\">Beta</span>",
@@ -349,7 +348,7 @@ T = {
             ("Other services (BYD account, MQTT/smart home, ABRP, Stadia Maps, AI assistant)", "depends on the service; the input field tells you where your requests go", "only if you set them up yourself"),
         ],
         "h_stand": "Development status",
-        "stand_lead": "Honestly, what runs where, as of 0.1.32.1. \u201cRuns in the test car\u201d means: confirmed in everyday use in a BYD Dolphin Surf (DiLink 3). \u201cDone, not yet checked in the test car\u201d means: built and tested, but not yet confirmed in a real car. \u201cBeta\u201d means: it runs, but has limits.",
+        "stand_lead": "Honestly, what runs where, as of 0.1.33. \u201cRuns in the test car\u201d means: confirmed in everyday use in a BYD Dolphin Surf (DiLink 3). \u201cDone, not yet checked in the test car\u201d means: built and tested, but not yet confirmed in a real car. \u201cBeta\u201d means: it runs, but has limits.",
         "stand_kopf": ("Feature", "Status"),
         "stand": [
             ("Guard with person detection, deterrent only for a person, Telegram notifications", "Runs in the test car"),
@@ -382,12 +381,11 @@ T = {
         "h_dl": "Download and install",
         "dl_anker": "install",
         "dl_bald": "Beta version {V}",
-        "neu_version": "0.1.32.1", "neu_titel": "New in 0.1.32.1",
-        "neu": ["<b>More security:</b> pairing no longer adds extra permissions by itself.",
-                "<b>Updates without Wi-Fi</b> ask first and show the size.",
-                "<b>Camping:</b> choose the heating type right on the screen.",
-                "<b>Map search:</b> sends less data and can be switched off.",
-                "<b>From 0.1.32:</b> setup in only 7 short steps, iPhone notifications are prepared."],
+        "neu_version": "0.1.33", "neu_titel": "New in 0.1.33",
+        "neu": ["<b>More economical:</b> fewer unnecessary background requests.",
+                "<b>Camping heating</b> runs more reliably.",
+                "<b>Unlocking for the web app</b> is prepared (off by default).",
+                "<b>From 0.1.32.1:</b> pairing no longer adds extra permissions by itself, updates without Wi-Fi ask first and show the size."],
         "tacho": {
             "h": "Navigation on your instrument cluster – help us test <span class=\"bald\">beta</span>",
             "intro": ["Do you drive a Seal, Atto 3, Han, Tang, Sealion or another BYD? On some cars Panoptes can show a navigation app like Google Maps, Waze or ABRP on the instrument cluster. We don't know yet exactly which cars support it. That's where you come in."],
