@@ -719,6 +719,10 @@ def _waechter_letztes(pv):
         _LETZT["zu_alt_bis"] = jetzt + 6 * 3600       # Panoptes vor 0.1.9: nicht staendig nachfragen
         _STATE["waechter_letzt"] = {"zu_alt": True}
         return
+    if a and a.get("grund") == "kamera_recht":        # Panoptes ab 0.1.30: Kopplung braucht das Recht "kamera"; den Satz von Panoptes zeigen
+        _LETZT["zu_alt_bis"] = jetzt + 600
+        _STATE["waechter_letzt"] = {"kamera_recht": True, "text": a.get("text") or ""}
+        return
     if not a:
         _STATE["waechter_letzt"] = {"keins": True}
         return
@@ -3561,7 +3565,7 @@ async function aufnLaden(seite){const m=document.getElementById('aufnmsg'),l=doc
  const q='seite='+seite+'&datum='+encodeURIComponent(document.getElementById('aufntag').value)+'&art='+encodeURIComponent(document.getElementById('aufnart').value)+(AUFN.tage?'':'&tage=1');
  try{const d=await (await fetch('/waechter/liste?'+q,{cache:'no-store'})).json();
   if(!d.ok){l.innerHTML='';document.getElementById('aufnmehr').style.display='none';
-   m.textContent=d.grund==='zu_alt'?__T('Aufnahmen gibt es im Cockpit ab Panoptes 0.1.9. Dein Panoptes ist älter – nach dem Update hier erneut öffnen.'):'⚠️ '+__T(d.error||'Panoptes antwortet nicht');return;}
+   m.textContent=d.grund==='kamera_recht'?'🔒 '+__T(d.text||'Kamera-Recht fehlt.')+' '+__T('Am Auto oder im Panoptes-Web bei diesem Cockpit „Aufnahmen“ einschalten, dann hier noch einmal öffnen.'):d.grund==='zu_alt'?__T('Aufnahmen gibt es im Cockpit ab Panoptes 0.1.9. Dein Panoptes ist älter – nach dem Update hier erneut öffnen.'):'⚠️ '+__T(d.error||'Panoptes antwortet nicht');return;}
   if(d.tage&&!AUFN.tage){AUFN.tage=true;const s=document.getElementById('aufntag');
    d.tage.forEach(t=>{const o=document.createElement('option');o.value=t.date;o.textContent=t.date.split('-').reverse().join('.')+(t.anzahl!=null?' ('+t.anzahl+')':'');s.appendChild(o);});}
   if(d.warming){m.textContent=__T('Panoptes baut die Liste gerade auf')+(d.progress!=null?' ('+d.progress+' %)':'')+' – '+__T('bitte gleich noch einmal ↻.');return;}
@@ -3584,6 +3588,7 @@ function aufnZeit(a){   // aus dem Zeitstempel, in der Sprache des Cockpits (Pan
  return ((a&&(a.dateFormatted||a.date))||'')+' '+((a&&(a.timeFormatted||a.time))||'');}
 function wletzt(s){const box=document.getElementById('wletztbox');box.style.display=s.panoptes_an?'block':'none';if(!s.panoptes_an)return;
  const w=s.waechter_letzt||{},t=document.getElementById('wletzttxt'),u=document.getElementById('wletztsub'),b=document.getElementById('wletztbild');
+ if(w.kamera_recht){t.textContent=__T('Aufnahmen gesperrt');u.textContent=__T(w.text||'Kamera-Recht fehlt.');b.textContent='🔒';return;}
  if(w.zu_alt){t.textContent=__T('Noch kein Ereignis');u.textContent=__T('Aufnahmen gibt es im Cockpit ab Panoptes 0.1.9.');b.textContent='';return;}
  if(!w.id){t.textContent=__T('Noch kein Ereignis');u.textContent='';b.textContent='🎥';return;}
  const min=Math.max(0,Math.round((Date.now()-(w.timestamp||0))/60000)),en=window.__LANG__==='en';

@@ -43,6 +43,21 @@ class TestWaechter(unittest.TestCase):
         e = urllib.error.HTTPError("u", 404, "nf", {}, None)
         self.assertEqual(w.liste(Pv(e))["grund"], "zu_alt")
 
+    def test_kamera_recht_fehlt_ab_0130(self):
+        # Panoptes ab 0.1.30: 403 mit grund nicht_erlaubt/recht kamera -> Satz von Panoptes zeigen, NICHT "zu alt"
+        sagt = {"_status": 403, "ok": False, "grund": "nicht_erlaubt", "recht": "kamera",
+                "text": "Kamera-Recht fehlt – in Panoptes unter Gekoppelte Geräte einschalten."}
+        d = w.liste(Pv(sagt))
+        self.assertEqual((d["ok"], d["grund"]), (False, "kamera_recht"))
+        self.assertIn("Kamera-Recht fehlt", d["text"])
+        import io
+        import json as _j
+        e = urllib.error.HTTPError("u", 403, "forbidden", {}, io.BytesIO(_j.dumps(sagt).encode()))
+        self.assertEqual(w.liste(Pv(e))["grund"], "kamera_recht")
+        self.assertEqual(w.letztes(Pv(sagt))["grund"], "kamera_recht")
+        self.assertIn("Kamera-Recht", w.letztes(Pv(sagt))["text"])
+        self.assertEqual(w.liste(Pv({"_status": 403, "grund": "nicht_erlaubt", "recht": "klima"}))["grund"], "zu_alt")   # anderes Recht bleibt wie bisher
+
     def test_warming(self):
         d = w.liste(Pv({"success": True, "warming": True, "progress": 40, "recordings": []}))
         self.assertTrue(d["warming"])

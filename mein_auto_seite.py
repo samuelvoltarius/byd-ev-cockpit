@@ -502,7 +502,7 @@ function wmWer(a){const s=new Set();(a.actors||[]).forEach(x=>{const k=String((x
 async function wmLaden(){
  WM.fehler='';
  try{const r=await Promise.all(['sentry','proximity'].map(a=>fetch('/waechter/liste?art='+a,{cache:'no-store'}).then(x=>x.json())));
-  let l=[];r.forEach(d=>{if(d&&d.ok)l=l.concat(d.aufnahmen||[]);else if(d&&d.grund==='zu_alt')WM.fehler='Dein Panoptes kann die Aufnahmen noch nicht zeigen (ab Version 0.1.9).';else if(d&&d.error)WM.fehler=d.error;});
+  let l=[];r.forEach(d=>{if(d&&d.ok)l=l.concat(d.aufnahmen||[]);else if(d&&d.grund==='kamera_recht')WM.fehler=(d.text||'Kamera-Recht fehlt.')+' Am Auto oder im Panoptes-Web bei diesem Cockpit „Aufnahmen“ einschalten, dann hier noch einmal öffnen.';else if(d&&d.grund==='zu_alt')WM.fehler='Dein Panoptes kann die Aufnahmen noch nicht zeigen (ab Version 0.1.9).';else if(d&&d.error)WM.fehler=d.error;});
   l.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));WM.l=l.slice(0,12);
  }catch(e){WM.fehler='Panoptes antwortet gerade nicht.';WM.l=[];}}
 async function wmAuf(){

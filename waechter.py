@@ -6,6 +6,7 @@ Freigegeben (Kern 3, kern-0190-cleanroom ae1ac1e): GET /api/recordings, /api/rec
 Grundsaetze: Liste und Vorschaubilder nur, wenn der Nutzer den Bereich oeffnet; ein Clip nur auf Klick; kein Live-Bild,
 kein Vorabladen, nichts auf Platte. Bei available:false (Datentraeger fehlt) wird nichts abgerufen.
 """
+import json
 import re
 import urllib.error
 import urllib.parse
@@ -29,6 +30,14 @@ def _knapp(a):
     return d
 
 
+def kamera_recht_fehlt(d):
+    """Ab Panoptes 0.1.30: 403 {"grund":"nicht_erlaubt","recht":"kamera","text":...} -> {"grund":"kamera_recht","text"} | None."""
+    if isinstance(d, dict) and d.get("grund") == "nicht_erlaubt" and d.get("recht") == "kamera":
+        t = str(d.get("text") or "Kamera-Recht fehlt – in Panoptes unter Gekoppelte Geräte einschalten.")[:200]
+        return {"grund": "kamera_recht", "text": t}
+    return None
+
+
 def liste(pv, seite=1, datum="", art="", groesse=SEITE):
     """Eine Seite der Aufnahmen. -> {ok, aufnahmen, seiten, seite, gesamt} | {ok:False, grund}"""
     q = {"page": max(1, int(seite or 1)), "pageSize": max(1, min(SEITE, int(groesse)))}
@@ -39,7 +48,17 @@ def liste(pv, seite=1, datum="", art="", groesse=SEITE):
     try:
         d = pv._get("/api/recordings?" + urllib.parse.urlencode(q))
     except urllib.error.HTTPError as e:
+        if e.code == 403:
+            try:
+                k = kamera_recht_fehlt(json.loads(e.read().decode("utf-8") or "{}"))
+            except Exception:
+                k = None
+            if k:
+                return dict(k, ok=False)
         return {"ok": False, "grund": "zu_alt" if e.code in (403, 404) else "fehler"}
+    k = kamera_recht_fehlt(d)
+    if k:
+        return dict(k, ok=False)
     if d.get("_status") == 403 or (d.get("success") is False and not d.get("recordings")):
         return {"ok": False, "grund": "zu_alt"}       # Panoptes vor 0.1.9: Kopplung darf Aufnahmen nicht lesen
     if d.get("warming"):
@@ -59,8 +78,8 @@ def letztes(pv, liste_=None):
     for art in EREIGNIS_ARTEN:
         d = liste_(pv, 1, "", art, 1)
         if not d.get("ok"):
-            if d.get("grund") == "zu_alt":
-                return {"grund": "zu_alt"}
+            if d.get("grund") in ("zu_alt", "kamera_recht"):
+                return {k: d[k] for k in ("grund", "text") if k in d}
             continue
         for a in d.get("aufnahmen") or []:
             if beste is None or (a.get("timestamp") or 0) > (beste.get("timestamp") or 0):
