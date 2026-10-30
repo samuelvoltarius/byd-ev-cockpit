@@ -145,17 +145,28 @@ T = {
         "dl_anker": "installieren",
         "dl_bald": "Erprobungsversion {V}",
         # „Neu in …“-Kasten beim Download; erscheint nur, solange versionen.json genau diese Version meldet
-        "neu_version": "0.1.29.1", "neu_titel": "Neu in 0.1.29 und 0.1.28",
-        "neu": ["<b>Neu in 0.1.29.1:</b> Der Bildschirm geht im geparkten Auto nur noch an, wenn ein Mensch da ist.",
-                "<b>Neu in 0.1.29:</b> Der Wächter erkennt Menschen nah am Auto besser.",
-                "<b>Neu in 0.1.29:</b> Das Protokoll zeigt, warum nichts aufgenommen wurde.",
-                "<b>Beim Einsteigen</b> zeigt der Bildschirm, was der Wächter aufgenommen hat.",
-                "<b>„Du wirst gefilmt“</b> erscheint öfter und früher.",
-                "<b>Dashcam:</b> löst beim Rangieren nicht mehr fälschlich aus und schickt dir eine Nachricht, wenn sie etwas gesichert hat. Clips am Handy ansehen und speichern geht mit der <a href=\"/app/\">Handy-App</a> (Beta 4).",
-                "<b>Warm zur Abfahrt:</b> Das Auto ist zur eingestellten Zeit warm.",
-                "<b>12-Volt-Warnung:</b> Panoptes warnt, wenn die kleine Batterie schwach wird.",
-                "<b>Alle Meldungen auf einer Seite</b>, das <b>Fahrtenbuch als Datei</b> und eine <b>einfachere Einrichtung</b>.",
-                "<b>Neu in 0.1.28.1:</b> Update und Camping gehen jetzt auch, wenn das Auto nach einer Fahrt geparkt ist."],
+        "neu_version": "0.1.30", "neu_titel": "Neu in 0.1.30",
+        "neu": ["<b>Mehr Schutz:</b> Aufnahmen gehen nur an Geräte, denen du es erlaubst.",
+                "<b>Neuer Test „Was kann mein Tacho?“</b>, siehe <a href=\"#tacho-test\">Navi auf dem Tacho</a>.",
+                "<b>Navi-App am Tacho</b> (Beta, nur manche Autos)."],
+        # Tacho-Test (Beta), Text von Kern Tacho 30.10.2026 (TACHO_BETA_WEBTEXT.md), freigegeben mit 0.1.30
+        "tacho": {
+            "h": "Navi auf dem Tacho – hilf uns testen <span class=\"bald\">Beta</span>",
+            "intro": ["Du fährst einen Seal, Atto 3, Han, Tang, Sealion oder einen anderen BYD? Panoptes kann auf manchen Autos eine Navi-App wie Google Maps, Waze oder ABRP auf den Tacho bringen. Auf welchen Autos das geht, wissen wir noch nicht genau. Dafür brauchen wir dich."],
+            "h_schritte": "So geht's (dauert eine Minute):",
+            "schritte": ["Auto parken, Gang <b>P</b>.",
+                         "In Panoptes: <b>Über Panoptes</b> → 7× auf die Versionsnummer tippen → <b>Testfunktionen</b> → <b>Tacho-Test</b>.",
+                         "<b>Test starten.</b> Panoptes schaut nur nach, was dein Tacho kann. Es wird nichts an den Tacho geschickt.",
+                         "Du siehst drei Antworten: Totwinkel am Tacho, Karte am Tacho, andere Apps am Tacho – jeweils ja oder nein und warum.",
+                         "<b>Ergebnis kopieren</b> und über die <a href=\"/#wunsch\">Wunsch-Box</a> an uns schicken."],
+            "bekommen": "<b>Was wir bekommen:</b> nur das, was du selbst kopierst und abschickst – Modell, Software-Stand und die drei Antworten. Keine Fahrgestellnummer, kein Konto, kein Ort.",
+            "h_gut": "Gut zu wissen:",
+            "gut": ["Das ist eine <b>Beta</b>. Standardmäßig ist alles <b>aus</b>.",
+                    "Die Navi-App am Tacho gibt es nur für Navi-Apps aus einer festen Liste. Videos gehen nie während der Fahrt.",
+                    "Bevor du sie einschalten kannst, machst du im Stand eine <b>Probe (20 Sekunden)</b> und bestätigst: „Alle Warnleuchten und das Tempo sind noch zu sehen.“ Sonst bleibt die Funktion aus.",
+                    "Ausschalten holt die normale Tacho-Anzeige sofort zurück – auch bei Zündung aus oder einem Fehler.",
+                    "Beim <b>Dolphin Surf</b> und <b>Seagull</b> geht es nach heutigem Stand nicht (der Tacho dort hat keine Fläche für fremde Bilder). Den Test kannst du trotzdem machen – auch ein „Nein“ hilft uns."],
+        },
         "dl_text": "Panoptes {V} ist eine <b>Erprobungsversion</b>. Panoptes läuft im Alltag in einem Testauto (BYD Dolphin Surf, DiLink 3), neue Versionen kommen dort nach und nach dazu. Auf anderen Modellen kann manches fehlen oder anders sein. Die Installation ist nichts für jeden: Du brauchst etwas Geduld, einen PC und musst am Auto eine Entwickler-Freigabe einschalten. Nutzung auf eigenes Risiko, siehe <a href=\"hinweise.html\">Hinweise</a>.",
         "dl_knopf": "⬇️ Panoptes {V} herunterladen (APK, 71 MB)",
         "hero_dl": "⬇️ Panoptes {V} herunterladen", "hero_anl": "Anleitung", "kopf_dl": "⬇️ Download",
@@ -334,17 +345,27 @@ T = {
         "h_dl": "Download and install",
         "dl_anker": "install",
         "dl_bald": "Test version {V}",
-        "neu_version": "0.1.29.1", "neu_titel": "New in 0.1.29 and 0.1.28",
-        "neu": ["<b>New in 0.1.29.1:</b> in the parked car the screen only turns on when a person is there.",
-                "<b>New in 0.1.29:</b> the guard detects people close to the car better.",
-                "<b>New in 0.1.29:</b> the log shows why nothing was recorded.",
-                "<b>When you get in</b> the screen shows what the guard has recorded.",
-                "<b>“You are being filmed”</b> appears more often and earlier.",
-                "<b>Dashcam:</b> no more false triggers when manoeuvring, and it sends you a message when it has saved something. You can watch and save clips on your phone with the <a href=\"/app/en/\">phone app</a> (beta 4).",
-                "<b>Warm for departure:</b> the car is warm at the time you set.",
-                "<b>12-volt warning:</b> Panoptes warns you when the small battery gets weak.",
-                "<b>All notifications on one page</b>, the <b>trip log as a file</b> and an <b>easier setup</b>.",
-                "<b>New in 0.1.28.1:</b> updates and camping now also work when the car is parked after a drive."],
+        "neu_version": "0.1.30", "neu_titel": "New in 0.1.30",
+        "neu": ["<b>More protection:</b> recordings only go to devices you allow.",
+                "<b>New test “What can my cluster do?”</b>, see <a href=\"#tacho-test\">navigation on the cluster</a>.",
+                "<b>Navigation app on the cluster</b> (beta, some cars only)."],
+        "tacho": {
+            "h": "Navigation on your instrument cluster – help us test <span class=\"bald\">beta</span>",
+            "intro": ["Do you drive a Seal, Atto 3, Han, Tang, Sealion or another BYD? On some cars Panoptes can show a navigation app like Google Maps, Waze or ABRP on the instrument cluster. We don't know yet exactly which cars support it. That's where you come in."],
+            "h_schritte": "How it works (takes a minute):",
+            "schritte": ["Park the car, gear <b>P</b>.",
+                         "In Panoptes: <b>About Panoptes</b> → tap the version number 7 times → <b>Test features</b> → <b>Cluster test</b>.",
+                         "<b>Start test.</b> Panoptes only checks what your cluster can do. Nothing is sent to the cluster.",
+                         "You get three answers: blind spot on the cluster, map on the cluster, other apps on the cluster – each yes or no, with a reason.",
+                         "<b>Copy result</b> and send it to us through the <a href=\"/en/#wunsch\">wish box</a>."],
+            "bekommen": "<b>What we receive:</b> only what you copy and send yourself – model, software version and the three answers. No VIN, no account, no location.",
+            "h_gut": "Good to know:",
+            "gut": ["This is a <b>beta</b>. Everything is <b>off</b> by default.",
+                    "Only navigation apps from a fixed list can go on the cluster. Videos never play while driving.",
+                    "Before you can switch it on, you run a <b>20-second trial</b> while parked and confirm: \"All warning lights and the speed are still visible.\" Otherwise the feature stays off.",
+                    "Switching off brings the normal cluster display back right away – also when you turn the car off or something goes wrong.",
+                    "On the <b>Dolphin Surf</b> and <b>Seagull</b> it does not work as far as we know today (their cluster has no area for outside images). You can still run the test – a \"no\" helps us too."],
+        },
         "dl_text": "Panoptes {V} is a <b>test version</b>. Panoptes runs in everyday use in a test car (BYD Dolphin Surf, DiLink 3), new versions are added there step by step. On other models some things may be missing or work differently. Installing it is not for everyone: you need some patience, a PC, and you have to turn on a developer setting in the car. Use at your own risk, see the <a href=\"hinweise.html\">notes</a>.",
         "dl_knopf": "⬇️ Download Panoptes {V} (APK, 71 MB)",
         "hero_dl": "⬇️ Download Panoptes {V}", "hero_anl": "Guide", "kopf_dl": "⬇️ Download",
@@ -811,6 +832,13 @@ def seite(t):
         teile = reihe([x for x in bilder if x[1] != "handy"] + [x for x in bilder if x[1] == "handy"], p)
         o.append('    <figure>%s<figcaption><b>%s</b></figcaption></figure>' % (teile, html.escape(cap)))
     o.append("  </div></details>")
+    # Tacho-Test (Beta), ab 0.1.30
+    if t.get("tacho"):
+        tc = t["tacho"]
+        o.append('  <h2 id="tacho-test">%s</h2>' % tc["h"])
+        o.append('  <div class="card">%s<h3>%s</h3><ol class="liste">%s</ol><p>%s</p><h3>%s</h3><ul class="liste">%s</ul></div>'
+                 % ("".join("<p>%s</p>" % x for x in tc["intro"]), tc["h_schritte"], "".join("<li>%s</li>" % x for x in tc["schritte"]),
+                    tc["bekommen"], tc["h_gut"], "".join("<li>%s</li>" % x for x in tc["gut"])))
     # Bilder: 3 sichtbar, Rest aufklappbar
     o.append('  <h2 id="bilder">%s</h2><p class="lead">%s</p>\n  <div class="galerie">' % (t["h_bilder"], t["bilder_lead"]))
     for i, (cap, bilder) in enumerate(t["bilder"]):
