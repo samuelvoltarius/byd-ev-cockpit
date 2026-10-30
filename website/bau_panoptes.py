@@ -146,11 +146,10 @@ T = {
         "dl_anker": "installieren",
         "dl_bald": "Beta-Version {V}",
         # „Neu in …“-Kasten beim Download; erscheint nur, solange versionen.json genau diese Version meldet
-        "neu_version": "0.1.31", "neu_titel": "Neu in 0.1.31",
-        "neu": ["<b>Neue Version?</b> Das Auto zeigt es dir am Bildschirm.",
-                "<b>Fehler melden</b> geht jetzt direkt in der App (Menü Hilfe).",
-                "<b>Weniger Fehlalarme</b> bei der 12-Volt-Batterie.",
-                "<b>Aus 0.1.30:</b> Aufnahmen und Kamerabilder sehen nur noch Geräte, denen du das ausdrücklich erlaubst."],
+        "neu_version": "0.1.32", "neu_titel": "Neu in 0.1.32",
+        "neu": ["<b>Einrichtung einfacher:</b> nur noch 7 kurze Schritte.",
+                "<b>Meldungen fürs iPhone</b> sind vorbereitet, aber noch nicht an einem echten iPhone geprüft.",
+                "<b>Aus 0.1.31:</b> Das Auto zeigt neue Versionen am Bildschirm, Fehler melden geht direkt in der App, weniger Fehlalarme bei der 12-Volt-Batterie."],
         # Tacho-Test (Beta), Text von Kern Tacho 30.10.2026 (TACHO_BETA_WEBTEXT.md), freigegeben mit 0.1.30
         "tacho": {
             "h": "Navi auf dem Tacho – hilf uns testen <span class=\"bald\">Beta</span>",
@@ -348,11 +347,10 @@ T = {
         "h_dl": "Download and install",
         "dl_anker": "install",
         "dl_bald": "Beta version {V}",
-        "neu_version": "0.1.31", "neu_titel": "New in 0.1.31",
-        "neu": ["<b>New version?</b> The car shows you on its screen.",
-                "<b>Reporting a problem</b> now works right in the app (Help menu).",
-                "<b>Fewer false alarms</b> for the 12-volt battery.",
-                "<b>From 0.1.30:</b> only devices you explicitly allow can see recordings and camera pictures."],
+        "neu_version": "0.1.32", "neu_titel": "New in 0.1.32",
+        "neu": ["<b>Easier setup:</b> only 7 short steps.",
+                "<b>iPhone notifications</b> are prepared, but not yet tested on a real iPhone.",
+                "<b>From 0.1.31:</b> the car shows new versions on its screen, reporting a problem works right in the app, fewer false alarms for the 12-volt battery."],
         "tacho": {
             "h": "Navigation on your instrument cluster – help us test <span class=\"bald\">beta</span>",
             "intro": ["Do you drive a Seal, Atto 3, Han, Tang, Sealion or another BYD? On some cars Panoptes can show a navigation app like Google Maps, Waze or ABRP on the instrument cluster. We don't know yet exactly which cars support it. That's where you come in."],
