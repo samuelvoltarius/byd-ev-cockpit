@@ -464,6 +464,7 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
                  ("Für wen?", "Für BYD-Fahrer, die Wächter mit Kamera, Fahrtenbuch und Ladekosten wollen."),
                  ("Wie fange ich an?", "Datei herunterladen und einmalig mit PC oder Laptop aufs Auto bringen. Wir zeigen dir jeden Schritt.")],
         "h_fuer_mich": "Ist das was für mich?",
+        "handy_link": "<b>Dein Auto am Handy:</b> als <a href=\"/app/\">Android-App</a> oder als <a href=\"/app/#iphone\">Web-App fürs iPhone</a>, beide BETA.",
         "wa_h": "WhatsApp-Community", "wa_knopf": "In die WhatsApp-Community",
         "wa_was": "Was es gibt: Ankündigungen, Treffpunkt, Hilfe bei der Installation, Beta-Test und Tacho, Fehler und Wünsche, Wächter und Dashcam, Laden und Wallbox.",
         "wa_hinweis": "Wer beitritt, sieht die Telefonnummer des Admins. Auch deine Nummer kann für andere sichtbar sein.",
@@ -513,6 +514,7 @@ NEU = {   # Homepage einfach (27.10.2026): 3 Sätze oben, "Ist das was für mich
                  ("Who is it for?", "For BYD drivers who want a camera guard, a trip log and charging costs."),
                  ("How do I start?", "Download the file and put it on the car once with a PC or laptop. We show you every step.")],
         "h_fuer_mich": "Is this for me?",
+        "handy_link": "<b>Your car on your phone:</b> as an <a href=\"/app/en/\">Android app</a> or as a <a href=\"/app/en/#iphone\">web app for iPhone</a>, both BETA.",
         "wa_h": "WhatsApp community", "wa_knopf": "Join the WhatsApp community",
         "wa_was": "What you get: announcements, a meeting place, help with installing, beta test and cluster, bugs and wishes, guard and dashcam, charging and wallbox.",
         "wa_hinweis": "Anyone who joins sees the admin's phone number. Your number may also be visible to others.",
@@ -860,6 +862,7 @@ def seite(t):
         o.append('    <div class="bd-kachel"><span class="bd-symbol">%s</span><h3>%s</h3><p>%s</p></div>' % (ic, h, txt))
     o.append("  </div>")
     # Funktionen: 6 oben, Rest aufklappbar
+    o.append('  <p>%s</p>' % t["handy_link"])
     # WhatsApp-Community (Alfred, 30.10.2026): Link sichtbar im HTML, ohne Zaehlung
     o.append('  <h2 id="whatsapp">%s</h2>\n  <p>%s</p>' % (t["wa_h"], t["wa_was"]))
     o.append('  <div class="bd-knoepfe"><a class="bd-knopf gross leer" href="%s" target="_blank" rel="noopener">💬 %s</a></div>' % (WHATSAPP, t["wa_knopf"]))
