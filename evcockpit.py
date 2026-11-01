@@ -5397,8 +5397,7 @@ class H(BaseHTTPRequestHandler):
                                                   % type(e).__name__}), "application/json")
                 m = modell3d.eintrag(mani, mid)
                 if not m:
-                    return self._send(json.dumps({"verfuegbar": False,
-                                                  "grund": "Für dieses Fahrzeug gibt es noch kein freigegebenes 3D-Modell."}),
+                    return self._send(json.dumps(modell3d.nicht_verfuegbar_info(mid)),
                                       "application/json")
                 d = modell3d.info(m, mani.get("paintPresets") or [])
                 pl = _STATE.get("pan_lack")

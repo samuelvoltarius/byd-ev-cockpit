@@ -47,6 +47,10 @@ class TestZuordnung(unittest.TestCase):
             "file": None, "sha256": None, "verfuegbar": False,
         }]}
         self.assertIsNone(m3.eintrag(manifest, "seal6-dmi-touring"))
+        fallback = m3.nicht_verfuegbar_info("seal6-dmi-touring")
+        self.assertFalse(fallback["verfuegbar"])
+        self.assertTrue(fallback["still"])
+        self.assertEqual(fallback["fallback"], "neutral")
 
 
 class TestManifest(unittest.TestCase):
@@ -66,6 +70,33 @@ class TestManifest(unittest.TestCase):
         client = m3.Manifest(hole=lambda url: calls.append(url) or raw, uhr=lambda: 1.0)
         self.assertEqual(client.get()["version"], 18)
         self.assertEqual(calls, [m3.MANIFEST_URL])
+
+    def test_validierter_cache_bleibt_bei_refreshfehler_offline_nutzbar(self):
+        jetzt = [1.0]
+        antworten = [json.dumps({"version": 17, "models": []}).encode("utf-8"), OSError("offline")]
+        def hole(_url):
+            antwort = antworten.pop(0)
+            if isinstance(antwort, Exception):
+                raise antwort
+            return antwort
+        client = m3.Manifest(hole=hole, uhr=lambda: jetzt[0])
+        erster = client.get()
+        jetzt[0] += m3.REFRESH_SEKUNDEN + 1
+        self.assertIs(client.get(), erster)
+        self.assertTrue(client.stale)
+        self.assertEqual(client.letzter_fehler, "OSError")
+
+    def test_cache_faengt_kaputtes_json_und_downgrade_ab_aber_nie_den_ersten_abruf(self):
+        for kaputt in (b"{", json.dumps({"version": 16, "models": []}).encode("utf-8")):
+            jetzt = [1.0]
+            antworten = [json.dumps({"version": 17, "models": []}).encode("utf-8"), kaputt]
+            client = m3.Manifest(hole=lambda _url: antworten.pop(0), uhr=lambda: jetzt[0])
+            gueltig = client.get()
+            jetzt[0] += m3.REFRESH_SEKUNDEN + 1
+            self.assertIs(client.get(), gueltig)
+            self.assertTrue(client.stale)
+        with self.assertRaises(ValueError):
+            m3.Manifest(hole=lambda _url: json.dumps({"version": 16, "models": []}).encode("utf-8")).get()
 
 
 class TestDatei(unittest.TestCase):

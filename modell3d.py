@@ -18,6 +18,8 @@ BASIS_URL = "https://byd.serveone.at/tiles/models/"
 MIN_MANIFEST_VERSION = 17
 MAX_BYTES = 8 * 1024 * 1024
 LIZENZEN_URL = "https://byd.serveone.at/tiles/models/MODELLE_LIZENZEN.md"
+REFRESH_SEKUNDEN = 6 * 3600
+FEHLER_RETRY_SEKUNDEN = 5 * 60
 
 # Cockpit-Modellname (Teilstring, klein) -> Manifest-id. Reihenfolge zaehlt: "Dolphin Surf" vor "Dolphin".
 ZUORDNUNG = (
@@ -72,6 +74,13 @@ def info(m, farben=()):
             "paint": m.get("paintMeshHint") or "bodypaint", "farben": list(farben)}
 
 
+def nicht_verfuegbar_info(mid):
+    """Bewusst fehlendes Asset: neutraler 2D-Fallback, kein transienter Ladefehler."""
+    return {"verfuegbar": False, "still": True, "fallback": "neutral",
+            "id": mid or "",
+            "grund": "Für dieses Fahrzeug gibt es noch kein freigegebenes 3D-Modell."}
+
+
 def _hole(url, timeout=30):
     req = urllib.request.Request(url, headers={"User-Agent": "ev-cockpit"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -104,9 +113,26 @@ class Manifest:
 
     def __init__(self, hole=_hole, uhr=time.time):
         self.hole, self.uhr, self.t, self.d = hole, uhr, 0.0, None
+        self.stale = False
+        self.letzter_fehler = ""
 
     def get(self):
-        if self.d is None or self.uhr() - self.t > 6 * 3600:
-            self.d = manifest_pruefen(json.loads(self.hole(MANIFEST_URL).decode("utf-8")))
-            self.t = self.uhr()
+        jetzt = self.uhr()
+        if self.d is None or jetzt - self.t > REFRESH_SEKUNDEN:
+            try:
+                neu = manifest_pruefen(json.loads(self.hole(MANIFEST_URL).decode("utf-8")))
+            except Exception as e:
+                if self.d is None:
+                    raise
+                # Der letzte Katalog wurde bereits strukturell als v17+ validiert.
+                # Offline/kaputte Antwort/Downgrade darf lokale, gepruefte GLB nicht
+                # unbenutzbar machen. Nach kurzer Zeit erneut versuchen, nicht pro Request.
+                self.stale = True
+                self.letzter_fehler = type(e).__name__
+                self.t = jetzt - REFRESH_SEKUNDEN + FEHLER_RETRY_SEKUNDEN
+                return self.d
+            self.d = neu
+            self.t = jetzt
+            self.stale = False
+            self.letzter_fehler = ""
         return self.d

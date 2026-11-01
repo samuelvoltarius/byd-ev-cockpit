@@ -77,6 +77,8 @@ Katalogversion 17 sowie spätere kompatible Aktualisierungen. Der **BYD Seal 6 D
 Kombi mit den offiziellen Batterievarianten 10,08 kWh (Boost) und 19,0 kWh (Comfort/Comfort Lite) auswählbar; er ist
 nicht mit dem Seal U DM-i oder der Seal-Limousine gleichgesetzt. Solange der gemeinsame Katalog kein rechtlich
 freigegebenes 3D-Modell dafür enthält, zeigt das Cockpit bewusst die neutrale Kombi-Silhouette bzw. dein eigenes Foto.
+Dieser bewusste Platzhalter erzeugt keine Ladefehler-Schleife. War ein Katalog ab v17 bereits erfolgreich geprüft,
+bleibt er bei einem späteren Netz- oder Katalogfehler offline nutzbar; das Cockpit versucht die Aktualisierung später erneut.
 Quelle: [BYD Europe – offizielle Vorstellung und technische Daten](https://media.byd.com/byd-launches-seal-6-dm-i-sedan-and-wagon-bringing-the-freedom-of-super-hybrid-technology/?lang=eng).
 
 ## Woher kommen die Daten? Du wählst

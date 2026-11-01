@@ -76,6 +76,8 @@ catalogue version 17 and later compatible updates. The **BYD Seal 6 DM-i Touring
 with the official 10.08 kWh (Boost) and 19.0 kWh (Comfort/Comfort Lite) battery variants; it is not aliased to the
 Seal U DM-i or the Seal saloon. Until the shared catalogue contains a legally cleared 3D model for it, the cockpit
 deliberately uses the neutral estate silhouette or your own photo.
+This intentional fallback does not trigger a loading-error retry loop. Once a v17+ catalogue has been validated, it
+remains usable offline after a later network or catalogue error, and the cockpit retries the update later.
 Source: [BYD Europe – official launch and specifications](https://media.byd.com/byd-launches-seal-6-dm-i-sedan-and-wagon-bringing-the-freedom-of-super-hybrid-technology/?lang=eng).
 
 ## Where does the data come from? You choose
