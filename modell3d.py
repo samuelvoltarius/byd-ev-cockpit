@@ -15,11 +15,16 @@ import urllib.request
 
 MANIFEST_URL = "https://byd.serveone.at/tiles/models/manifest.json"
 BASIS_URL = "https://byd.serveone.at/tiles/models/"
+MIN_MANIFEST_VERSION = 17
 MAX_BYTES = 8 * 1024 * 1024
 LIZENZEN_URL = "https://byd.serveone.at/tiles/models/MODELLE_LIZENZEN.md"
 
 # Cockpit-Modellname (Teilstring, klein) -> Manifest-id. Reihenfolge zaehlt: "Dolphin Surf" vor "Dolphin".
 ZUORDNUNG = (
+    ("seal 6 dm-i touring", "seal6-dmi-touring"),
+    ("seal 6 dmi touring", "seal6-dmi-touring"),
+    ("seal6 dm-i touring", "seal6-dmi-touring"),
+    ("seal6 dmi touring", "seal6-dmi-touring"),
     ("dolphin surf", "seagull"), ("seagull", "seagull"), ("dolphin", "dolphin"),
     ("atto 3", "atto3"), ("atto3", "atto3"), ("seal u", "seal-u"), ("sealion", "sealion7"),
     ("seal", "seal"), ("shark", "shark"), ("han", "han"), ("tang", "tang"),
@@ -44,6 +49,17 @@ def eintrag(manifest, mid):
                 return m
             return None
     return None
+
+
+def manifest_pruefen(manifest):
+    """Nur den gemeinsamen Katalog ab v17 akzeptieren; neuere Versionen bleiben kompatibel."""
+    if not isinstance(manifest, dict) or not isinstance(manifest.get("version"), int):
+        raise ValueError("Modell-Manifest hat keine gueltige Version")
+    if manifest["version"] < MIN_MANIFEST_VERSION:
+        raise ValueError("Modell-Manifest ist veraltet (mindestens v%d)" % MIN_MANIFEST_VERSION)
+    if not isinstance(manifest.get("models"), list):
+        raise ValueError("Modell-Manifest hat keine Modellliste")
+    return manifest
 
 
 def info(m, farben=()):
@@ -91,6 +107,6 @@ class Manifest:
 
     def get(self):
         if self.d is None or self.uhr() - self.t > 6 * 3600:
-            self.d = json.loads(self.hole(MANIFEST_URL).decode("utf-8"))
+            self.d = manifest_pruefen(json.loads(self.hole(MANIFEST_URL).decode("utf-8")))
             self.t = self.uhr()
         return self.d

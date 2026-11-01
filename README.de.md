@@ -72,6 +72,13 @@ Cockpit das Modell (~1 MB) einmal vom Community-Server (der sieht dabei deine IP
 per Prüfsumme und legt es auf deinem Rechner ab. Ohne Haken: neutrale Silhouette. Ein eigenes Foto hat Vorrang. Die Modelle stammen teils von Nazh Design (CC BY 4.0), teils sind es Eigenbauten des Panoptes-Projekts (CC0),
 Details unter „Über“.
 
+Das Cockpit liest denselben kanonischen Modellkatalog wie Panoptes direkt vom Community-Server und akzeptiert
+Katalogversion 17 sowie spätere kompatible Aktualisierungen. Der **BYD Seal 6 DM-i Touring** ist als eigenständiger
+Kombi mit den offiziellen Batterievarianten 10,08 kWh (Boost) und 19,0 kWh (Comfort/Comfort Lite) auswählbar; er ist
+nicht mit dem Seal U DM-i oder der Seal-Limousine gleichgesetzt. Solange der gemeinsame Katalog kein rechtlich
+freigegebenes 3D-Modell dafür enthält, zeigt das Cockpit bewusst die neutrale Kombi-Silhouette bzw. dein eigenes Foto.
+Quelle: [BYD Europe – offizielle Vorstellung und technische Daten](https://media.byd.com/byd-launches-seal-6-dm-i-sedan-and-wagon-bringing-the-freedom-of-super-hybrid-technology/?lang=eng).
+
 ## Woher kommen die Daten? Du wählst
 
 Gleich im zweiten Schritt des Assistenten fragt das Cockpit, woher es die Werte deines Autos holen soll:

@@ -71,6 +71,13 @@ Instead of a silhouette the cockpit shows your model in 3D: the same models as i
 (~1 MB) is then downloaded once from the community server (which sees your IP address and your car model), checked by
 checksum and stored on your computer. Without the tick: a neutral silhouette. Your own photo takes precedence. Models partly by Nazh Design (CC BY 4.0), partly built by the Panoptes project (CC0); details under "About".
 
+The cockpit reads the same canonical model catalogue as Panoptes directly from the community server and accepts
+catalogue version 17 and later compatible updates. The **BYD Seal 6 DM-i Touring** is selectable as a distinct estate
+with the official 10.08 kWh (Boost) and 19.0 kWh (Comfort/Comfort Lite) battery variants; it is not aliased to the
+Seal U DM-i or the Seal saloon. Until the shared catalogue contains a legally cleared 3D model for it, the cockpit
+deliberately uses the neutral estate silhouette or your own photo.
+Source: [BYD Europe – official launch and specifications](https://media.byd.com/byd-launches-seal-6-dm-i-sedan-and-wagon-bringing-the-freedom-of-super-hybrid-technology/?lang=eng).
+
 ## Where does the data come from? You choose
 
 Right in the second step of the wizard, the cockpit asks where to get your car's values from:

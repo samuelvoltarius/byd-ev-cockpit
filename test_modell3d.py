@@ -1,5 +1,6 @@
 """Tests 3D-Modelle (kein Netz)."""
 import hashlib
+import json
 import os
 import tempfile
 import unittest
@@ -22,6 +23,10 @@ class TestZuordnung(unittest.TestCase):
         self.assertEqual(m3.modell_id("BYD Dolphin (Comfort/Design)"), "dolphin")
         self.assertEqual(m3.modell_id("BYD Seal U EV (Design)"), "seal-u")
         self.assertEqual(m3.modell_id("BYD Seal (Excellence/AWD)"), "seal")
+        self.assertEqual(m3.modell_id("BYD Seal 6 DM-i Touring (Boost)"), "seal6-dmi-touring")
+        self.assertEqual(m3.modell_id("BYD Seal 6 DMI Touring (Comfort)"), "seal6-dmi-touring")
+        self.assertNotEqual(m3.modell_id("BYD Seal 6 DM-i Touring"), "seal")
+        self.assertNotEqual(m3.modell_id("BYD Seal 6 DM-i Touring"), "seal-u")
         self.assertEqual(m3.modell_id("BYD Atto 3"), "atto3")
         self.assertEqual(m3.modell_id("Anderes / unbekannt"), "")
 
@@ -35,6 +40,32 @@ class TestZuordnung(unittest.TestCase):
         i = m3.info(m3.eintrag(MANI, "seagull"))
         self.assertIn("Nazh Design", i["attribution"])
         self.assertEqual(i["paint"], "bodypaint")
+
+    def test_seal6_ohne_freigegebenes_asset_bleibt_beim_platzhalter(self):
+        manifest = {"version": 17, "models": MANI["models"] + [{
+            "id": "seal6-dmi-touring", "name": "BYD Seal 6 DM-i Touring",
+            "file": None, "sha256": None, "verfuegbar": False,
+        }]}
+        self.assertIsNone(m3.eintrag(manifest, "seal6-dmi-touring"))
+
+
+class TestManifest(unittest.TestCase):
+    def test_kanonischer_katalog_v17_und_neuer(self):
+        for version in (17, 18):
+            manifest = {"version": version, "models": []}
+            self.assertIs(m3.manifest_pruefen(manifest), manifest)
+
+    def test_alter_oder_strukturell_falscher_katalog_wird_abgewiesen(self):
+        for manifest in ({"version": 16, "models": []}, {"version": 17}, {"models": []}):
+            with self.assertRaises(ValueError):
+                m3.manifest_pruefen(manifest)
+
+    def test_manifest_client_nutzt_gemeinsamen_kanal_und_akzeptiert_updates(self):
+        calls = []
+        raw = json.dumps({"version": 18, "models": []}).encode("utf-8")
+        client = m3.Manifest(hole=lambda url: calls.append(url) or raw, uhr=lambda: 1.0)
+        self.assertEqual(client.get()["version"], 18)
+        self.assertEqual(calls, [m3.MANIFEST_URL])
 
 
 class TestDatei(unittest.TestCase):

@@ -15,6 +15,17 @@ H = mein_auto_seite.seite("https://x/stil.json", "http://100.1.2.3:8180", ev.COC
 
 
 class MeinAuto(unittest.TestCase):
+    def test_seal6_touring_ist_eigenstaendiger_kombi_mit_offiziellen_varianten(self):
+        self.assertEqual(ev.MODELS["BYD Seal 6 DM-i Touring (Boost)"], 10.08)
+        self.assertEqual(ev.MODELS["BYD Seal 6 DM-i Touring (Comfort/Comfort Lite)"], 19.0)
+        self.assertEqual(ev.BODY_TYPE["BYD Seal 6 DM-i Touring (Boost)"], "kombi")
+        self.assertEqual(ev.BODY_TYPE["BYD Seal 6 DM-i Touring (Comfort/Comfort Lite)"], "kombi")
+        self.assertIn("kombi:'<svg", ev.COCKPIT)
+
+    def test_platzhalter_hinweis_ist_lokalisiert(self):
+        de = "Für dieses Fahrzeug gibt es noch kein freigegebenes 3D-Modell."
+        self.assertEqual(ev._I18N[de], "There is no approved 3D model for this vehicle yet.")
+
     def test_kacheln_in_der_reihenfolge_des_mockups(self):
         folge = ['id="t_route"', 'id="t_laden"', 'id="t_klima"', 'id="t_camping"', "id=t_tuer", "id=t_reifen", "id=t_waech", "id=t_pos", "id=t_warn", "id=alle"]
         pos = [H.index(x) for x in folge]
