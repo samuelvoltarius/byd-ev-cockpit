@@ -63,6 +63,8 @@ T = {
             ("🖥️", "EV-Cockpit am PC", "Das <a href=\"/ev-cockpit/\">EV-Cockpit</a> zeigt die Daten von Panoptes am PC, auch Ladungen und Kosten, und kann die Einstellungen ändern. Koppeln bestätigst du mit einem Tipp und einer vierstelligen Prüfzahl."),
             ("⬆️", "Updates in der App", "Panoptes sucht auf Wunsch selbst nach neuen Versionen. Installiert wird nur, wenn das Auto steht und die Zündung aus ist. Ab 0.1.13 verändert Panoptes keine dauerhaften Android-Einstellungen mehr (etwa „Bildschirm immer an“); früher gesetzte Werte lassen sich zurücksetzen. Ab 0.1.36 bleiben die Logs bei Updates erhalten."),
             ("🏕️", "Camping-Modus <span class=\"bald\">Beta</span>", "Wächter „bewohnt“, Nachtbildschirm, Akku-Schutz mit Restdauer. Einschalten per Tipp, am Handy oder mit /camping in Telegram. Geheizt wird erst nach deiner Freigabe in den Einstellungen. <a href=\"#camping\">Mehr dazu</a>"),
+            ("🖼️", "Bildschirm <span class=\"bald\">ab 0.1.37</span>", "Eigenes Bild für den Startbildschirm. Bildschirm mit Zahlencode sperren (nur in P). Apps aus- und einschalten. USB-Stick lesen."),
+            ("🚀", "Panoptes Launcher <span class=\"bald\">ab 0.1.37</span>", "Eigene App, freiwillig: Startbildschirm mit Klima im Dock, Android Auto und CarPlay (wenn dein Auto sie hat) und Update-Hinweis. Installieren per Knopf in Panoptes, nie von selbst. Das Haus links führt immer zum BYD-Startbildschirm zurück. <a href=\"#tacho-launcher\">Bilder</a>"),
             ("🐾", "Tiermodus <span class=\"bald\">ab 0.1.36</span>", "Hält das Klima für dein Tier an und meldet Probleme aufs Handy und in Telegram. Nur eine Hilfe, keine Garantie, du bleibst verantwortlich."),
             ("🤖", "KI-Assistent", "Nur, wenn du ihn selbst einrichtest. Ab 0.1.36 darf er nur Klima, Sitzheizung und Sonnenrollo bedienen und Werte anzeigen. Nie Hupe, Licht, Blinker, Fenster, Kofferraum oder Wächter."),
             ("🧰", "Kleine Helfer <span class=\"bald\">ab 0.1.36</span>", "Bildschirm reinigen (30 Sekunden gesperrt, nur in P). Ziel aus einem Google-Maps- oder Waze-Link übernehmen. Dateien zwischen Handy und Auto (eigenes Recht, ab Werk aus, keine Apps). Panoptes prüft täglich seine Rechte und repariert, was geht."),
@@ -133,7 +135,7 @@ T = {
         ],
         "h_stand": "Stand der Entwicklung",
         # PFLEGE: Diese Tabelle bei JEDER Version mitpruefen. Nur Belegtes (FADEN_KOORDINATION.md, ROADMAP.md, FREEZE_*.md), Unsicheres nach unten.
-        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.36.1. „Läuft im Testauto“ heißt: im Alltag in einem BYD Dolphin Surf (DiLink 3) belegt. „Fertig, im Testauto noch nicht geprüft“ heißt: gebaut und getestet, aber noch nicht im echten Auto bestätigt. „Beta“ heißt: läuft, hat aber Einschränkungen.",
+        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.37. „Läuft im Testauto“ heißt: im Alltag in einem BYD Dolphin Surf (DiLink 3) belegt. „Fertig, im Testauto noch nicht geprüft“ heißt: gebaut und getestet, aber noch nicht im echten Auto bestätigt. „Beta“ heißt: läuft, hat aber Einschränkungen.",
         "stand_kopf": ("Funktion", "Stand"),
         "stand": [
             ("Wächter mit Personen-Erkennung, Abschreckung nur bei einer Person, Meldungen über Telegram", "Läuft im Testauto"),
@@ -153,6 +155,10 @@ T = {
             ("Notzugang", "Fertig, im Testauto noch nicht geprüft; ab Werk aus"),
             ("Warnung bei schwacher 12-Volt-Batterie", "Beta: gerade nach Fehlalarmen neu abgestimmt"),
             ("Wallbox über evcc, Home Assistant, Tuya oder direkt", "Beta: Verbindung im Testauto gesehen, Steuern an einer echten Wallbox noch nicht belegt"),
+            ("Bildschirm: eigenes Bild, Sperre mit Zahlencode, Apps aus und an, USB-Stick", "Fertig, im Testauto noch nicht geprüft"),
+            ("Tacho: „Was zeigt der Tacho?“, Anzeigen, „auch beim Fahren“ je App, „Tacho wieder normal“", "Fertig, im Testauto noch nicht geprüft: geht nur auf manchen anderen BYD, nicht am Dolphin Surf"),
+            ("Panoptes Launcher (eigene App)", "Fertig, im Testauto noch nicht geprüft"),
+            ("Sicherheitssysteme ausschalten nur nach Bestätigung", "Fertig, im Testauto noch nicht geprüft"),
             ("„Laut Säule“ und „Günstigste in der Nähe“", "Fertig, im Testauto noch nicht geprüft"),
             ("KI-Assistent nur für Klima, Sitzheizung und Sonnenrollo", "Fertig, im Testauto noch nicht geprüft"),
             ("Kleine Helfer: Bildschirm reinigen, Ziel aus Link, Dateien Handy ↔ Auto, Rechte-Prüfung", "Fertig, im Testauto noch nicht geprüft"),
@@ -172,11 +178,18 @@ T = {
         "dl_anker": "installieren",
         "dl_bald": "Beta-Version {V}",
         # „Neu in …“-Kasten beim Download; erscheint nur, solange versionen.json genau diese Version meldet
-        "neu_version": "0.1.36.1", "neu_titel": "Neu in 0.1.36.1",
-        "neu": ["<b>Fahrerdisplay:</b> Videos und andere Apps laufen nur noch im Stand, die Navigation läuft auch beim Fahren weiter.",
-                "<b>Abschaltbericht</b> kommt nur noch nach dem echten Abstellen, nicht nach einem Update, und als normale Info.",
-                "<b>Fehler behoben:</b> Ein Start-Skript im Auto konnte doppelte Zeilen bekommen.",
-                "<b>Aus 0.1.36:</b> Tiermodus (nur eine Hilfe, keine Garantie, du bleibst verantwortlich), „Laut Säule“ und „Günstigste in der Nähe“, KI-Assistent nur für Klima, Sitzheizung und Sonnenrollo, Kleine Helfer, Logs bleiben bei Updates."],
+        "neu_version": "0.1.37", "neu_titel": "Neu in 0.1.37",
+        "neu": ["<b>Bildschirm:</b> eigenes Bild für den Startbildschirm, Bildschirm mit Zahlencode sperren (nur in P), Apps aus- und einschalten, USB-Stick lesen.",
+                "<b>Tacho:</b> neue Auswahl „Was zeigt der Tacho?“ mit Anzeigen und Apps, Knopf „Tacho wieder normal“, Apps auf Wunsch auch beim Fahren (nach Hinweis). <a href=\"#tacho-launcher\">Bilder</a>",
+                "<b>Neuer Launcher</b> (eigene App, freiwillig): Klima im Dock, Android Auto und CarPlay, wenn dein Auto sie hat, Anzeige für Updates. Installieren per Knopf in Panoptes, nie von selbst.",
+                "<b>Sicherheitssysteme</b> (z. B. Spurhalten) ausschalten geht erst nach einer Bestätigung. Schon gespeicherte Automationen oder Tasten dafür brauchen nach dem Update einmal diese Bestätigung."],
+        # Abschnitt „Tacho und Launcher“ ab 0.1.37 (Koordination 03.11.2026), Bilder: Vorschau/Emulator, Musterdaten
+        "tl": {"h": "Tacho und Launcher <span class=\"bald\">ab 0.1.37</span>",
+               "lead": "Neu in 0.1.37. Die Bilder sind Vorschaubilder und Emulator-Aufnahmen mit Musterdaten, nicht aus einem Auto. Im Testauto noch nicht geprüft.",
+               "bilder": [("Panoptes-Tacho „Horizont“: Tempo, Akku, Reichweite und der nächste Abbiegepfeil. Es gibt fünf Anzeigen.", [("tacho-horizont", "tacho", "Panoptes-Tacho Horizont: 101 km/h, 64 Prozent Akku, 287 km Reichweite, in 350 m rechts")]),
+                          ("„Was zeigt der Tacho?“: ein Bild antippen. „Normal“ holt den BYD-Tacho zurück.", [("tacho-auswahl", "kachel", "Auswahl Was zeigt der Tacho: Normal, Klar, Sport, Nacht, Horizont, Route und freigegebene Apps")]),
+                          ("Panoptes Launcher: eigene App, freiwillig. Klima im Dock, Update-Hinweis. Das Haus links führt immer zum BYD-Startbildschirm zurück.", [("launcher", "lnc", "Panoptes Launcher mit Update-Hinweis, Fahrzeug, Musik und Klima im Dock")]),
+                          ("Bildschirm sperren: nur in P, entsperren mit deinem Zahlencode.", [("sperre", "display", "Display gesperrt: zum Entsperren lange drücken und PIN eingeben")])]},
         # Tacho-Test (Beta), Text von Kern Tacho 30.10.2026 (TACHO_BETA_WEBTEXT.md), freigegeben mit 0.1.30
         "tacho": {
             "h": "Navi auf dem Tacho – hilf uns testen <span class=\"bald\">Beta</span>",
@@ -190,8 +203,8 @@ T = {
             "bekommen": "<b>Was wir bekommen:</b> nur das, was du selbst abschickst – Modell, Software-Stand und die drei Antworten. Keine Fahrgestellnummer, kein Konto, kein Ort.",
             "h_gut": "Gut zu wissen:",
             "gut": ["Das ist eine <b>Beta</b>. Standardmäßig ist alles <b>aus</b>.",
-                    "Beim Fahren bleiben am Tacho nur Navi-Apps aus einer festen Liste (z. B. Google Maps, Waze, OsmAnd, ABRP). Andere freigegebene Apps wie Videos gehen ab 0.1.36.1 nur im Stand und stoppen beim Losfahren.",
-                    "Bevor du sie einschalten kannst, machst du im Stand eine <b>Probe (20 Sekunden)</b> und bestätigst: „Alle Warnleuchten und das Tempo sind noch zu sehen.“ Sonst bleibt die Funktion aus.",
+                    "Ab Werk bleiben beim Fahren am Tacho nur Navi-Apps aus einer festen Liste (z. B. Google Maps, Waze, OsmAnd, ABRP). Andere Apps laufen nur im Stand. Ab 0.1.37 kannst du je App „auch beim Fahren“ einschalten, nach einem Hinweis; dann bist du selbst verantwortlich. <b>Videos beim Fahren sind in vielen Ländern verboten.</b>",
+                    "Beim ersten Mal bestätigst du einen Hinweis: Tempo und Warnleuchten müssen sichtbar bleiben. Wenn nicht, tippst du auf <b>„Tacho wieder normal“</b>.",
                     "Ausschalten holt die normale Tacho-Anzeige sofort zurück – auch bei Zündung aus oder einem Fehler.",
                     "Beim <b>Dolphin Surf</b> und <b>Seagull</b> geht es nach heutigem Stand nicht (der Tacho dort hat keine Fläche für fremde Bilder). Den Test kannst du trotzdem machen – auch ein „Nein“ hilft uns."],
         },
@@ -292,6 +305,8 @@ T = {
             ("🖥️", "EV Cockpit on your PC", "The <a href=\"/ev-cockpit/\">EV Cockpit</a> shows Panoptes data on your PC, including charging sessions and costs, and can change its settings. You confirm the pairing with one tap and a four-digit check number."),
             ("⬆️", "Updates in the app", "If you like, Panoptes looks for new versions itself. Installing only happens while the car is parked with the ignition off. From 0.1.13 Panoptes no longer changes permanent Android settings (such as \u201cscreen always on\u201d); values set earlier can be reset. From 0.1.36 the logs are kept through updates."),
             ("🏕️", "Camping mode <span class=\"bald\">beta</span>", "Guard \u201coccupied\u201d, night screen, battery protection with time left. Switch on with a tap, on your phone or with /camping in Telegram. Heating only starts after you allow it in the settings. <a href=\"#camping\">More</a>"),
+            ("🖼️", "Screen <span class=\"bald\">from 0.1.37</span>", "Your own picture for the home screen. Lock the screen with a number code (only in P). Turn apps off and on. Read USB sticks."),
+            ("🚀", "Panoptes Launcher <span class=\"bald\">from 0.1.37</span>", "Separate app, optional: home screen with climate in the dock, Android Auto and CarPlay (if your car has them) and update notice. Install by button in Panoptes, never by itself. The house on the left always takes you back to the BYD home screen. <a href=\"#tacho-launcher\">Pictures</a>"),
             ("🐾", "Pet mode <span class=\"bald\">from 0.1.36</span>", "Keeps the climate running for your pet and reports problems to your phone and Telegram. Only an aid, no guarantee, you stay responsible."),
             ("🤖", "AI assistant", "Only if you set it up yourself. From 0.1.36 it may only control climate, seat heating and sunshade and show values. Never horn, lights, indicators, windows, boot or the guard."),
             ("🧰", "Small helpers <span class=\"bald\">from 0.1.36</span>", "Screen cleaning (locked for 30 seconds, only in P). Take over a destination from a Google Maps or Waze link. Files between phone and car (own permission, off by default, no apps). Panoptes checks its permissions daily and repairs what it can."),
@@ -361,7 +376,7 @@ T = {
             ("Other services (BYD account, MQTT/smart home, ABRP, Stadia Maps, AI assistant)", "depends on the service; the input field tells you where your requests go", "only if you set them up yourself"),
         ],
         "h_stand": "Development status",
-        "stand_lead": "Honestly, what runs where, as of 0.1.36.1. \u201cRuns in the test car\u201d means: confirmed in everyday use in a BYD Dolphin Surf (DiLink 3). \u201cDone, not yet checked in the test car\u201d means: built and tested, but not yet confirmed in a real car. \u201cBeta\u201d means: it runs, but has limits.",
+        "stand_lead": "Honestly, what runs where, as of 0.1.37. \u201cRuns in the test car\u201d means: confirmed in everyday use in a BYD Dolphin Surf (DiLink 3). \u201cDone, not yet checked in the test car\u201d means: built and tested, but not yet confirmed in a real car. \u201cBeta\u201d means: it runs, but has limits.",
         "stand_kopf": ("Feature", "Status"),
         "stand": [
             ("Guard with person detection, deterrent only for a person, Telegram notifications", "Runs in the test car"),
@@ -381,6 +396,10 @@ T = {
             ("Emergency access", "Done, not yet checked in the test car; off by default"),
             ("Warning for a weak 12-volt battery", "Beta: just retuned after false alarms"),
             ("Wallbox via evcc, Home Assistant, Tuya or directly", "Beta: connection seen in the test car, control on a real wallbox not confirmed yet"),
+            ("Screen: own picture, lock with number code, apps off and on, USB stick", "Done, not yet checked in the test car"),
+            ("Cluster: \u201cWhat does the cluster show?\u201d, displays, \u201calso while driving\u201d per app, \u201cCluster back to normal\u201d", "Done, not yet checked in the test car: only works on some other BYD models, not on the Dolphin Surf"),
+            ("Panoptes Launcher (separate app)", "Done, not yet checked in the test car"),
+            ("Turning off safety systems only after a confirmation", "Done, not yet checked in the test car"),
             ("\u201cLaut S\u00e4ule\u201d and \u201cCheapest nearby\u201d", "Done, not yet checked in the test car"),
             ("AI assistant only for climate, seat heating and sunshade", "Done, not yet checked in the test car"),
             ("Small helpers: screen cleaning, destination from a link, files phone \u2194 car, permission check", "Done, not yet checked in the test car"),
@@ -399,11 +418,17 @@ T = {
         "h_dl": "Download and install",
         "dl_anker": "install",
         "dl_bald": "Beta version {V}",
-        "neu_version": "0.1.36.1", "neu_titel": "New in 0.1.36.1",
-        "neu": ["<b>Driver display:</b> videos and other apps now only run while parked, navigation keeps running while driving.",
-                "<b>Parked report</b> now only comes after you really park, not after an update, and as a normal info message.",
-                "<b>Fixed:</b> a start script in the car could get duplicate lines.",
-                "<b>From 0.1.36:</b> pet mode (only an aid, no guarantee, you stay responsible), “Laut Säule” and “Cheapest nearby”, AI assistant only for climate, seat heating and sunshade, small helpers, logs kept through updates."],
+        "neu_version": "0.1.37", "neu_titel": "New in 0.1.37",
+        "neu": ["<b>Screen:</b> your own picture for the home screen, lock the screen with a number code (only in P), turn apps off and on, read USB sticks.",
+                "<b>Cluster:</b> new choice “What does the cluster show?” with displays and apps, button “Cluster back to normal”, apps also while driving if you want (after a notice). <a href=\"#tacho-launcher\">Pictures</a>",
+                "<b>New launcher</b> (separate app, optional): climate in the dock, Android Auto and CarPlay if your car has them, update notice. Install by button in Panoptes, never by itself.",
+                "<b>Safety systems</b> (e.g. lane keeping) can only be turned off after a confirmation. Automations or buttons you already saved for this need this confirmation once after the update."],
+        "tl": {"h": "Cluster and launcher <span class=\"bald\">from 0.1.37</span>",
+               "lead": "New in 0.1.37. The pictures are previews and emulator shots with sample data, not from a car. Not yet checked in the test car.",
+               "bilder": [("Panoptes cluster “Horizont”: speed, battery, range and the next turn arrow. There are five displays.", [("tacho-horizont", "tacho", "Panoptes cluster Horizont: 101 km/h, 64 percent battery, 287 km range, turn right in 350 m")]),
+                          ("“What does the cluster show?”: tap a picture. “Normal” brings back the BYD cluster.", [("tacho-auswahl", "kachel", "Choice What does the cluster show: Normal, Klar, Sport, Nacht, Horizont, Route and allowed apps")]),
+                          ("Panoptes Launcher: separate app, optional. Climate in the dock, update notice. The house on the left always takes you back to the BYD home screen.", [("launcher", "lnc", "Panoptes Launcher with update notice, vehicle, music and climate in the dock")]),
+                          ("Lock the screen: only in P, unlock with your number code.", [("sperre", "display", "Screen locked: long press and enter the PIN to unlock")])]},
         "tacho": {
             "h": "Navigation on your instrument cluster – help us test <span class=\"bald\">beta</span>",
             "intro": ["Do you drive a Seal, Atto 3, Han, Tang, Sealion or another BYD? On some cars Panoptes can show a navigation app like Google Maps, Waze or ABRP on the instrument cluster. We don't know yet exactly which cars support it. That's where you come in."],
@@ -416,8 +441,8 @@ T = {
             "bekommen": "<b>What we receive:</b> only what you send yourself – model, software version and the three answers. No VIN, no account, no location.",
             "h_gut": "Good to know:",
             "gut": ["This is a <b>beta</b>. Everything is <b>off</b> by default.",
-                    "While driving, the cluster only shows navigation apps from a fixed list (e.g. Google Maps, Waze, OsmAnd, ABRP). From 0.1.36.1, other allowed apps such as videos only run while parked and stop when you drive off.",
-                    "Before you can switch it on, you run a <b>20-second trial</b> while parked and confirm: \"All warning lights and the speed are still visible.\" Otherwise the feature stays off.",
+                    "By default, while driving the cluster only shows navigation apps from a fixed list (e.g. Google Maps, Waze, OsmAnd, ABRP). Other apps only run while parked. From 0.1.37 you can switch on “also while driving” for each app after a notice; you are then responsible yourself. <b>Watching videos while driving is illegal in many countries.</b>",
+                    "The first time, you confirm a notice: the speed and warning lights must stay visible. If they don't, tap <b>“Cluster back to normal”</b>.",
                     "Switching off brings the normal cluster display back right away – also when you turn the car off or something goes wrong.",
                     "On the <b>Dolphin Surf</b> and <b>Seagull</b> it does not work as far as we know today (their cluster has no area for outside images). You can still run the test – a \"no\" helps us too."],
         },
@@ -639,7 +664,7 @@ code{background:var(--card2);border:1px solid var(--line);border-radius:6px;padd
 """
 
 
-GROESSE = {"pc": (1440, 900), "handy": (780, 1688), "display": (1280, 720)}
+GROESSE = {"pc": (1440, 900), "handy": (780, 1688), "display": (1280, 720), "tacho": (960, 432), "kachel": (768, 600), "lnc": (1280, 696)}
 
 
 def reihe(bilder, pfad, sofort=False):
@@ -903,6 +928,13 @@ def seite(t):
         teile = reihe([x for x in bilder if x[1] != "handy"] + [x for x in bilder if x[1] == "handy"], p)
         o.append('    <figure>%s<figcaption><b>%s</b></figcaption></figure>' % (teile, html.escape(cap)))
     o.append("  </div></details>")
+    # Tacho und Launcher (Bilder), ab 0.1.37
+    if t.get("tl"):
+        tl = t["tl"]
+        o.append('  <h2 id="tacho-launcher">%s</h2><p class="lead">%s</p>\n  <div class="galerie">' % (tl["h"], tl["lead"]))
+        for cap, bilder in tl["bilder"]:
+            o.append('    <figure>%s<figcaption><b>%s</b></figcaption></figure>' % (reihe(bilder, p), html.escape(cap)))
+        o.append("  </div>")
     # Tacho-Test (Beta), ab 0.1.30
     if t.get("tacho"):
         tc = t["tacho"]
