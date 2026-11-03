@@ -129,7 +129,7 @@ T = {
         ],
         "h_stand": "Stand der Entwicklung",
         # PFLEGE: Diese Tabelle bei JEDER Version mitpruefen. Nur Belegtes (FADEN_KOORDINATION.md, ROADMAP.md, FREEZE_*.md), Unsicheres nach unten.
-        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.35. „Läuft im Testauto“ heißt: im Alltag in einem BYD Dolphin Surf (DiLink 3) belegt. „Fertig, im Testauto noch nicht geprüft“ heißt: gebaut und getestet, aber noch nicht im echten Auto bestätigt. „Beta“ heißt: läuft, hat aber Einschränkungen.",
+        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.36. „Läuft im Testauto“ heißt: im Alltag in einem BYD Dolphin Surf (DiLink 3) belegt. „Fertig, im Testauto noch nicht geprüft“ heißt: gebaut und getestet, aber noch nicht im echten Auto bestätigt. „Beta“ heißt: läuft, hat aber Einschränkungen.",
         "stand_kopf": ("Funktion", "Stand"),
         "stand": [
             ("Wächter mit Personen-Erkennung, Abschreckung nur bei einer Person, Meldungen über Telegram", "Läuft im Testauto"),
@@ -149,6 +149,7 @@ T = {
             ("Notzugang", "Fertig, im Testauto noch nicht geprüft; ab Werk aus"),
             ("Warnung bei schwacher 12-Volt-Batterie", "Beta: gerade nach Fehlalarmen neu abgestimmt"),
             ("Wallbox über evcc, Home Assistant, Tuya oder direkt", "Beta: Verbindung im Testauto gesehen, Steuern an einer echten Wallbox noch nicht belegt"),
+            ("Tiermodus: Klima für dein Tier", "Fertig, im Testauto noch nicht geprüft. Nur eine Hilfe, keine Garantie, du bleibst verantwortlich"),
             ("Camping: Heizen", "Beta: ab Werk nur Probelauf. Heizt nach deiner Freigabe, auf eigenen Wunsch auch bei ausgeschaltetem Auto über die BYD-Cloud"),
             ("Eigene Integration für Home Assistant (über HACS)", "Beta: unterwegs im Mobilfunk nur über Tailscale"),
         ],
@@ -163,11 +164,11 @@ T = {
         "dl_anker": "installieren",
         "dl_bald": "Beta-Version {V}",
         # „Neu in …“-Kasten beim Download; erscheint nur, solange versionen.json genau diese Version meldet
-        "neu_version": "0.1.35", "neu_titel": "Neu in 0.1.35",
-        "neu": ["<b>Ladekosten</b> enthalten jetzt den Ladeverlust (geschätzt). Mit „Laut Säule“ trägst du die Werte der Säule ein.",
-                "<b>Neu unter System:</b> „Protokoll: Wer hat was gemacht?“",
-                "<b>Neue Startansichten:</b> Panoptes, Fahren, Fahrzeug, Kompakt, Cockpit.",
-                "<b>Aus 0.1.33:</b> sparsamer im Hintergrund, Camping-Heizen zuverlässiger, Aufsperren für die Web-App vorbereitet (Standard aus)."],
+        "neu_version": "0.1.36", "neu_titel": "Neu in 0.1.36",
+        "neu": ["<b>Tiermodus:</b> hält das Klima für dein Tier an. Nur eine Hilfe, keine Garantie, du bleibst verantwortlich.",
+                "<b>Ladesäule erkennen:</b> Panoptes erkennt die Säule und zeigt in der Navi „Günstigste in der Nähe“.",
+                "<b>Abschaltbericht</b> in Telegram nach dem Abstellen. Ab Werk an, unter Telegram abschaltbar.",
+                "<b>Aus 0.1.35:</b> Ladekosten mit geschätztem Ladeverlust, Protokoll „Wer hat was gemacht?“, neue Startansichten."],
         # Tacho-Test (Beta), Text von Kern Tacho 30.10.2026 (TACHO_BETA_WEBTEXT.md), freigegeben mit 0.1.30
         "tacho": {
             "h": "Navi auf dem Tacho – hilf uns testen <span class=\"bald\">Beta</span>",
@@ -348,7 +349,7 @@ T = {
             ("Other services (BYD account, MQTT/smart home, ABRP, Stadia Maps, AI assistant)", "depends on the service; the input field tells you where your requests go", "only if you set them up yourself"),
         ],
         "h_stand": "Development status",
-        "stand_lead": "Honestly, what runs where, as of 0.1.35. \u201cRuns in the test car\u201d means: confirmed in everyday use in a BYD Dolphin Surf (DiLink 3). \u201cDone, not yet checked in the test car\u201d means: built and tested, but not yet confirmed in a real car. \u201cBeta\u201d means: it runs, but has limits.",
+        "stand_lead": "Honestly, what runs where, as of 0.1.36. \u201cRuns in the test car\u201d means: confirmed in everyday use in a BYD Dolphin Surf (DiLink 3). \u201cDone, not yet checked in the test car\u201d means: built and tested, but not yet confirmed in a real car. \u201cBeta\u201d means: it runs, but has limits.",
         "stand_kopf": ("Feature", "Status"),
         "stand": [
             ("Guard with person detection, deterrent only for a person, Telegram notifications", "Runs in the test car"),
@@ -368,6 +369,7 @@ T = {
             ("Emergency access", "Done, not yet checked in the test car; off by default"),
             ("Warning for a weak 12-volt battery", "Beta: just retuned after false alarms"),
             ("Wallbox via evcc, Home Assistant, Tuya or directly", "Beta: connection seen in the test car, control on a real wallbox not confirmed yet"),
+            ("Pet mode: climate for your pet", "Done, not yet checked in the test car. Only an aid, no guarantee, you stay responsible"),
             ("Camping: heating", "Beta: dry run by default. Heats after you allow it, if you choose also with the car off via the BYD cloud"),
             ("Own integration for Home Assistant (via HACS)", "Beta: on the road over mobile data only through Tailscale"),
         ],
@@ -381,11 +383,11 @@ T = {
         "h_dl": "Download and install",
         "dl_anker": "install",
         "dl_bald": "Beta version {V}",
-        "neu_version": "0.1.35", "neu_titel": "New in 0.1.35",
-        "neu": ["<b>Charging costs</b> now include the charging loss (estimated). With “Laut Säule” (as shown by the charger) you enter the charger's values.",
-                "<b>New under System:</b> “Protokoll: Wer hat was gemacht?” (log: who did what?)",
-                "<b>New start views:</b> Panoptes, Driving, Vehicle, Compact, Cockpit.",
-                "<b>From 0.1.33:</b> more economical in the background, camping heating more reliable, unlocking for the web app prepared (off by default)."],
+        "neu_version": "0.1.36", "neu_titel": "New in 0.1.36",
+        "neu": ["<b>Pet mode:</b> keeps the climate running for your pet. Only an aid, no guarantee, you stay responsible.",
+                "<b>Charger recognition:</b> Panoptes recognises the charger and shows “Cheapest nearby” in the navigation.",
+                "<b>Parked report</b> in Telegram after parking. On by default, can be switched off under Telegram.",
+                "<b>From 0.1.35:</b> charging costs with estimated charging loss, log “who did what?”, new start views."],
         "tacho": {
             "h": "Navigation on your instrument cluster – help us test <span class=\"bald\">beta</span>",
             "intro": ["Do you drive a Seal, Atto 3, Han, Tang, Sealion or another BYD? On some cars Panoptes can show a navigation app like Google Maps, Waze or ABRP on the instrument cluster. We don't know yet exactly which cars support it. That's where you come in."],
