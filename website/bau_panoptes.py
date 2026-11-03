@@ -133,7 +133,7 @@ T = {
         ],
         "h_stand": "Stand der Entwicklung",
         # PFLEGE: Diese Tabelle bei JEDER Version mitpruefen. Nur Belegtes (FADEN_KOORDINATION.md, ROADMAP.md, FREEZE_*.md), Unsicheres nach unten.
-        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.36. „Läuft im Testauto“ heißt: im Alltag in einem BYD Dolphin Surf (DiLink 3) belegt. „Fertig, im Testauto noch nicht geprüft“ heißt: gebaut und getestet, aber noch nicht im echten Auto bestätigt. „Beta“ heißt: läuft, hat aber Einschränkungen.",
+        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.36.1. „Läuft im Testauto“ heißt: im Alltag in einem BYD Dolphin Surf (DiLink 3) belegt. „Fertig, im Testauto noch nicht geprüft“ heißt: gebaut und getestet, aber noch nicht im echten Auto bestätigt. „Beta“ heißt: läuft, hat aber Einschränkungen.",
         "stand_kopf": ("Funktion", "Stand"),
         "stand": [
             ("Wächter mit Personen-Erkennung, Abschreckung nur bei einer Person, Meldungen über Telegram", "Läuft im Testauto"),
@@ -172,13 +172,11 @@ T = {
         "dl_anker": "installieren",
         "dl_bald": "Beta-Version {V}",
         # „Neu in …“-Kasten beim Download; erscheint nur, solange versionen.json genau diese Version meldet
-        "neu_version": "0.1.36", "neu_titel": "Neu in 0.1.36",
-        "neu": ["<b>Tiermodus:</b> hält das Klima für dein Tier an. Nur eine Hilfe, keine Garantie, du bleibst verantwortlich.",
-                "<b>Laden:</b> Panoptes erkennt die Säule. Mit „Laut Säule“ trägst du kWh und Kosten je Ladung ein. Dein Preis wird gemerkt und bei „Günstigste in der Nähe“ in der Navi genutzt, getrennt für AC und DC.",
-                "<b>KI-Assistent sicherer:</b> Er darf nur noch Klima, Sitzheizung und Sonnenrollo bedienen und Werte anzeigen. Nie Hupe, Licht, Blinker, Fenster, Kofferraum oder Wächter.",
-                "<b>Kleine Helfer:</b> Bildschirm reinigen (30 Sekunden gesperrt, nur in P), Ziel aus einem Google-Maps- oder Waze-Link, Dateien zwischen Handy und Auto (eigenes Recht, ab Werk aus, keine Apps), tägliche Prüfung der Rechte.",
-                "<b>Abschaltbericht</b> in Telegram nach dem Abstellen. Ab Werk an, unter Telegram abschaltbar.",
-                "<b>Logs</b> bleiben bei Updates erhalten. Clips merken sich, was sie ausgelöst hat (ohne Ort)."],
+        "neu_version": "0.1.36.1", "neu_titel": "Neu in 0.1.36.1",
+        "neu": ["<b>Fahrerdisplay:</b> Videos und andere Apps laufen nur noch im Stand, die Navigation läuft auch beim Fahren weiter.",
+                "<b>Abschaltbericht</b> kommt nur noch nach dem echten Abstellen, nicht nach einem Update, und als normale Info.",
+                "<b>Fehler behoben:</b> Ein Start-Skript im Auto konnte doppelte Zeilen bekommen.",
+                "<b>Aus 0.1.36:</b> Tiermodus (nur eine Hilfe, keine Garantie, du bleibst verantwortlich), „Laut Säule“ und „Günstigste in der Nähe“, KI-Assistent nur für Klima, Sitzheizung und Sonnenrollo, Kleine Helfer, Logs bleiben bei Updates."],
         # Tacho-Test (Beta), Text von Kern Tacho 30.10.2026 (TACHO_BETA_WEBTEXT.md), freigegeben mit 0.1.30
         "tacho": {
             "h": "Navi auf dem Tacho – hilf uns testen <span class=\"bald\">Beta</span>",
@@ -363,7 +361,7 @@ T = {
             ("Other services (BYD account, MQTT/smart home, ABRP, Stadia Maps, AI assistant)", "depends on the service; the input field tells you where your requests go", "only if you set them up yourself"),
         ],
         "h_stand": "Development status",
-        "stand_lead": "Honestly, what runs where, as of 0.1.36. \u201cRuns in the test car\u201d means: confirmed in everyday use in a BYD Dolphin Surf (DiLink 3). \u201cDone, not yet checked in the test car\u201d means: built and tested, but not yet confirmed in a real car. \u201cBeta\u201d means: it runs, but has limits.",
+        "stand_lead": "Honestly, what runs where, as of 0.1.36.1. \u201cRuns in the test car\u201d means: confirmed in everyday use in a BYD Dolphin Surf (DiLink 3). \u201cDone, not yet checked in the test car\u201d means: built and tested, but not yet confirmed in a real car. \u201cBeta\u201d means: it runs, but has limits.",
         "stand_kopf": ("Feature", "Status"),
         "stand": [
             ("Guard with person detection, deterrent only for a person, Telegram notifications", "Runs in the test car"),
@@ -401,13 +399,11 @@ T = {
         "h_dl": "Download and install",
         "dl_anker": "install",
         "dl_bald": "Beta version {V}",
-        "neu_version": "0.1.36", "neu_titel": "New in 0.1.36",
-        "neu": ["<b>Pet mode:</b> keeps the climate running for your pet. Only an aid, no guarantee, you stay responsible.",
-                "<b>Charging:</b> Panoptes recognises the charger. With “Laut Säule” (as shown by the charger) you enter kWh and cost per charge. Your price is remembered and used for “Cheapest nearby” in the navigation, separately for AC and DC.",
-                "<b>Safer AI assistant:</b> it may only control climate, seat heating and sunshade and show values. Never horn, lights, indicators, windows, boot or the guard.",
-                "<b>Small helpers:</b> screen cleaning (locked for 30 seconds, only in P), destination from a Google Maps or Waze link, files between phone and car (own permission, off by default, no apps), daily check of permissions.",
-                "<b>Parked report</b> in Telegram after parking. On by default, can be switched off under Telegram.",
-                "<b>Logs</b> are kept through updates. Clips remember what triggered them (without location)."],
+        "neu_version": "0.1.36.1", "neu_titel": "New in 0.1.36.1",
+        "neu": ["<b>Driver display:</b> videos and other apps now only run while parked, navigation keeps running while driving.",
+                "<b>Parked report</b> now only comes after you really park, not after an update, and as a normal info message.",
+                "<b>Fixed:</b> a start script in the car could get duplicate lines.",
+                "<b>From 0.1.36:</b> pet mode (only an aid, no guarantee, you stay responsible), “Laut Säule” and “Cheapest nearby”, AI assistant only for climate, seat heating and sunshade, small helpers, logs kept through updates."],
         "tacho": {
             "h": "Navigation on your instrument cluster – help us test <span class=\"bald\">beta</span>",
             "intro": ["Do you drive a Seal, Atto 3, Han, Tang, Sealion or another BYD? On some cars Panoptes can show a navigation app like Google Maps, Waze or ABRP on the instrument cluster. We don't know yet exactly which cars support it. That's where you come in."],
