@@ -91,7 +91,9 @@ def ergebnis(d):
             "warnungen": [w for w in (_text(x, 300) for x in (d.get("warnungen") or [])[:8]) if w],
             "hinweise": [w for w in (_text(x, 300) for x in (d.get("hinweise") or [])[:8]) if w],
             "quellen": [w for w in (_text(x, 80) for x in (d.get("quellen") or [])[:12]) if w],
-            "geometrie": _geo(d.get("geometrie"))}
+            "geometrie": _geo(d.get("geometrie")),
+            # Planer 754c099: Rueckfall-Routing (z. B. Ziel in einer Fussgaengerzone) -> nur ein Hinweis, kein Fehler; der Satz steht in warnungen
+            "routing_rueckfall": bool((d.get("route") or {}).get("routing_rueckfall")) if isinstance(d.get("route"), dict) else False}
 
 
 def aus_alt(k, start_name="", ziel_name=""):
@@ -251,7 +253,7 @@ function zeige(p,rc){el('p_erg').style.display='';el('p_automsg').textContent=''
  const vk=p.verkehr;el('p_vz').textContent=vk?(vk.verzoegerung_min?'+'+vk.verzoegerung_min+' min':__T('frei')):__T('unbekannt');
  el('p_verkehr').innerHTML=vk?((vk.meldungen||[]).map(x=>'<div class=pet><i>⚠️</i><div><b>'+esc(x.titel||'')+'</b><div class=z>'+esc((x.km!=null?__T('bei km')+' '+Math.round(x.km):'')+(x.verzoegerung_min?' · +'+x.verzoegerung_min+' min':''))+'</div></div></div>').join('')||'<div class=sub>'+esc(__T('Keine Staus gemeldet.'))+'</div>')
   +(vk.quelle?'<div class=sub style="font-size:12.5px">'+esc(vk.quelle)+'</div>':''):'<div class=sub>'+esc(__T('Zum Verkehr gibt es gerade keine Daten. Die Ankunft ist ohne Stau gerechnet.'))+'</div>';
- const hw=(p.warnungen||[]).map(x=>'⚠️ '+x).concat(p.hinweise||[]);el('p_hz').textContent=hw.length?String(hw.length):'';
+ const hw=(p.warnungen||[]).map(x=>'ⓘ '+x).concat(p.hinweise||[]);if(p.routing_rueckfall&&!(p.warnungen||[]).length)hw.unshift('ⓘ '+__T('Das letzte Stück ist vereinfacht berechnet, zum Beispiel weil das Ziel in einer Fußgängerzone liegt.'));el('p_hz').textContent=hw.length?String(hw.length):'';
  el('p_hinweise').innerHTML=hw.length?hw.map(x=>'<div class=pet><div>'+esc(x)+'</div></div>').join(''):'<div class=sub>'+esc(__T('Keine.'))+'</div>';
  el('p_quellen').textContent=(p.quellen||[]).length?__T('Daten')+': '+p.quellen.join(' · '):'';
  karte(p);el('p_reicht').scrollIntoView({block:'start',behavior:'smooth'});}
@@ -294,6 +296,7 @@ EN = {
     "unbekannt": "unknown", "Keine Staus gemeldet.": "No traffic jams reported.",
     "Zum Verkehr gibt es gerade keine Daten. Die Ankunft ist ohne Stau gerechnet.": "There is no traffic data right now. Arrival is calculated without jams.",
     "Keine.": "None.", "Daten": "Data",
+    "Das letzte Stück ist vereinfacht berechnet, zum Beispiel weil das Ziel in einer Fußgängerzone liegt.": "The last part is calculated in a simplified way, for example because the destination is in a pedestrian zone.",
     "Gesendet. Im Auto erscheint „Route übernehmen?“ – dort einmal tippen.": "Sent. The car shows “Take over route?” – tap it there once.",
     "Mit den Ladesäulen auf dieser Strecke kommst du so nicht ans Ziel.": "With the chargers on this route you will not reach the destination like this.",
     "Der Routenplaner sagt nicht, mit wie viel Akku du ankommst.": "The route planner does not say how much battery you will arrive with.",

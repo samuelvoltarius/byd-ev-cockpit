@@ -44,6 +44,13 @@ class TestErgebnis(unittest.TestCase):
         self.assertEqual(e["quellen"][1], "© OpenStreetMap-Mitwirkende (ODbL)")
         self.assertNotIn("neues_feld_aus_spaeterer_version", e)             # unbekannte Felder ignorieren
 
+    def test_routing_rueckfall_ist_hinweis(self):
+        e = pa.ergebnis(dict(BEISPIEL, route={"routing_rueckfall": True}, warnungen=["Ziel in einer Fußgängerzone: letzter Abschnitt Luftlinie."]))
+        self.assertTrue(e["routing_rueckfall"])
+        self.assertTrue(e["fahrbar"])                                  # kein Fehler
+        self.assertEqual(pa.reicht(e)["stufe"], "ja")
+        self.assertFalse(pa.ergebnis(BEISPIEL)["routing_rueckfall"])
+
     def test_unbekanntes_bleibt_none(self):
         e = pa.ergebnis({"vertrag": "plan-ergebnis/1", "plan_id": "nicht gueltig", "etappen": [{"art": "laden", "kosten": None, "live": None}],
                          "zeit": {"ankunft_ca": "morgen"}, "verkehr": None})
