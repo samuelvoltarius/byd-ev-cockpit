@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.24.0"
+VERSION = "1.24.1"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -534,10 +534,12 @@ def _update_status():
         return {"sichtbar": True, "zustand": "fehler", "knopf": bool(neu and d.get("darf") and d.get("moeglich")),
                 "version": str((neu or {}).get("version") or "")[:20], "text": str(d.get("text") or "Das Update hat nicht geklappt. Ein neuer Versuch ist möglich.")[:300]}
     if not neu:
-        return {"sichtbar": True, "knopf": False, "zustand": "aktuell", "text": "Panoptes ist aktuell (Version %s)." % str(d.get("installiert") or "")[:20]}
+        # 1.24.1 (Alfred): ist Panoptes aktuell, zeigt die Startseite KEINE Zeile. Der Text bleibt fuer die Seite "Updates".
+        return {"sichtbar": False, "knopf": False, "zustand": "aktuell", "text": "Panoptes ist aktuell (Version %s)." % str(d.get("installiert") or "")[:20]}
     if not d.get("darf"):
-        return {"sichtbar": True, "knopf": False, "text": "Dieses Cockpit darf Panoptes nicht aktualisieren – am Auto erlauben."}
-    return {"sichtbar": True, "knopf": bool(d.get("moeglich")), "version": str(neu.get("version") or "")[:20], "text": str(d.get("text") or "")[:300]}
+        return {"sichtbar": True, "knopf": False, "zustand": "verfuegbar", "text": "Dieses Cockpit darf Panoptes nicht aktualisieren – am Auto erlauben."}
+    return {"sichtbar": True, "knopf": bool(d.get("moeglich")), "zustand": "verfuegbar", "version": str(neu.get("version") or "")[:20],
+            "text": str(d.get("text") or "")[:300]}
 
 
 def _update_starten(version):

@@ -399,8 +399,10 @@ function klimaMeta(s,hy){return s.klima_soll!=null?__T('Im Auto')+': '+sollText(
 function sollSetzen(v){TEMPUSER=1;TEMP=Math.max(17,Math.min(33,v));tempZeigen();}
 function sollSchritt(d){sollSetzen(TEMP+d);}
 // Panoptes aktualisieren (ab 0.1.26.1): nur sichtbar, wenn Panoptes es meldet; Pflicht-Rueckfrage vor dem Start
+// 1.24.1: Symbol nach Zustand - Pfeil nur, wenn es wirklich ein Update gibt; "aktuell" kommt gar nicht erst als sichtbare Zeile
+const UPDSYM={verfuegbar:'⬆️ ',laeuft:'⏳ ',fertig:'✓ ',fehler:'⚠️ '};
 function updZeigen(r){const b=el('updband');if(!r||!r.sichtbar){b.style.display='none';return;}b.style.display='block';UPDV=r.version||'';
- b.innerHTML='⬆️ '+esc(__T(r.text||''))+(r.knopf?' <button type=button class="btn lime big" onclick="updFrage()">'+esc(__T('Panoptes aktualisieren'))+'</button>':'');}
+ b.innerHTML=(UPDSYM[r.zustand]||'')+esc(__T(r.text||''))+(r.knopf?' <button type=button class="btn lime big" onclick="updFrage()">'+esc(__T('Panoptes aktualisieren'))+'</button>':'');}
 function updFrage(){el('updband').innerHTML='<b>'+esc(__T('Panoptes wird jetzt aktualisiert. Wächter und Verbindung sind ca. 3–8 Minuten weg.'))+'</b> <button type=button class="btn lime big" onclick="updStart()">'+esc(__T('Ja, jetzt aktualisieren'))+'</button> <button type=button class="btn big" onclick="updPruefen()">'+esc(__T('Abbrechen'))+'</button>';}
 async function updStart(){const b=el('updband');b.innerHTML='⏳ '+esc(__T('Sende …'));
  try{const r=await (await fetch('/panoptes/update/starten',{method:'POST',body:JSON.stringify({version:UPDV})})).json();

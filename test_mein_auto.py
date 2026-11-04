@@ -224,15 +224,18 @@ class Bedienkacheln121(unittest.TestCase):
         try:
             r = ev._update_status()
             self.assertTrue(r["sichtbar"] and r["knopf"] and r["version"] == "0.1.26.1")
+            self.assertEqual(r["zustand"], "verfuegbar")
             zustand["upd"]["darf"] = False                                  # Recht fehlt -> Satz, kein Knopf
             r = ev._update_status()
             self.assertFalse(r["knopf"])
             self.assertIn("am Auto erlauben", r["text"])
             zustand["upd"]["darf"] = True
-            zustand["upd"]["neueste"] = None                                # nichts Neues -> "Panoptes ist aktuell", kein Knopf
+            zustand["upd"]["neueste"] = None                                # 1.24.1: nichts Neues -> KEINE Zeile auf der Startseite
             r = ev._update_status()
-            self.assertTrue(r["sichtbar"] and not r["knopf"])
-            self.assertIn("aktuell", r["text"])
+            self.assertFalse(r["sichtbar"])
+            self.assertFalse(r["knopf"])
+            self.assertEqual(r["zustand"], "aktuell")
+            self.assertIn("aktuell", r["text"])                             # Text bleibt fuer die Seite "Updates"
             zustand["upd"]["neueste"] = {"version": "0.1.26.1"}
             ps._UPD_CACHE.update(t=0.0, url="")
             zustand["fern"] = 0                                             # Panoptes meldet es nicht -> unsichtbar
@@ -350,3 +353,11 @@ class Anpassen121(unittest.TestCase):
         self.assertIn("/layout", H)
         for g in ("anpReset", "anpGr", "anpSicht", "anpBew", "anpZiehen"):
             self.assertIn("function " + g, H)
+
+
+class TestUpdateBandSymbol(unittest.TestCase):
+    def test_pfeil_nur_bei_verfuegbar(self):
+        import mein_auto_seite as m
+        self.assertIn("UPDSYM={verfuegbar:'⬆️ ',laeuft:'⏳ ',fertig:'✓ ',fehler:'⚠️ '}", m.JS)
+        self.assertIn("b.innerHTML=(UPDSYM[r.zustand]||'')+", m.JS)
+        self.assertNotIn("b.innerHTML='⬆️ '+", m.JS)

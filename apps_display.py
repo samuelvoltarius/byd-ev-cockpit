@@ -531,6 +531,7 @@ async function fLaden(){clearTimeout(FT);let r=null;
  if(r.panoptes.zustand==='laeuft'||r.launcher.zustand==='laeuft')FT=setTimeout(fLaden,30000);}
 // Panoptes vor 0.1.38.2: alter Weg (nur Panoptes, Recht update), Launcher nur Stand
 function pZeigen(r){const t=el('u_ptext'),k=el('u_pknopf');k.innerHTML='';
+ if(r&&r.zustand==='aktuell'){zst('u_pz',false,false);t.textContent=__T('Panoptes ist aktuell.');return;}
  if(!r||!r.sichtbar){t.textContent=__T('Dafür braucht das Cockpit die Kopplung „Steuern einrichten“ (Startseite) und Panoptes ab 0.1.26.1.');return;}
  UV=r.version||'';zst('u_pz',!!r.knopf,r.zustand==='laeuft');t.textContent=(r.zustand==='laeuft'?'⏳ ':'')+__T(r.text||'');
  if(r.knopf)k.innerHTML='<button type=button onclick="pFrage()">⬆️ '+esc(__T('Panoptes aktualisieren'))+'</button>';}
