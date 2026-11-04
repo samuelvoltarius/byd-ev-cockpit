@@ -152,7 +152,7 @@ T = {
             ("🏠", "Wallbox <span class=\"bald\">Beta</span>", "Deine Wallbox über evcc, Home Assistant oder Tuya einrichten, ab Version 0.1.12 auch direkt (z. B. go-e, KEBA, openWB, Easee, Zaptec): Ladestand sehen, Modus, Ladegrenze und Strom einstellen. Steuern nur, wenn das Auto steht, mit Rückfrage und je Ladepunkt eigens freigegeben. Bisher nur mit Demo- und Testgeräten geprüft."),
             ("📍", "Deine Orte", "Eine Liste für alles: Zuhause, Garage, Arbeit oder der Ladeplatz mit eigenem Preis. Je Ort legst du fest, ob er privat ist (Wächter), ein Ladepreis gilt oder er als Ziel im Navi steht. Die Orte verlassen das Auto nicht."),
             ("🌍", "Fernzugang", "Über Tailscale erreichst du dein Auto von überall. Eingerichtet wird das mit einem QR-Code am Bildschirm im Auto und deinem eigenen Tailscale-Konto. Für Fortgeschrittene gibt es ab 0.1.14 zusätzlich einen unabhängigen Notzugang, ab Werk aus."),
-            ("💬", "Meldungen über Telegram", "Dein eigener Bot meldet Wächter-Ereignisse, Laden, schwache Starterbatterie, Reifendruck und Updates. Jede Kategorie einzeln schaltbar, mit Ruhezeit für die Nacht. Ab 0.1.38.2: Schreib dem Bot irgendetwas, dann kommt ein Menü mit großen Knöpfen. Bilder und Videos nur, wenn du das einschaltest."),
+            ("💬", "Meldungen über Telegram", "Dein eigener Bot meldet Wächter-Ereignisse, Laden, schwache Starterbatterie, Reifendruck und Updates. Jede Kategorie einzeln schaltbar, mit Ruhezeit für die Nacht. Ab 0.1.38.2: Schreib dem Bot irgendetwas, dann kommt ein Menü mit großen Knöpfen. Bilder und Videos nur, wenn du das einschaltest. <a href=\"telegram.html\">So verbindest du Telegram</a>"),
             ("🗺️", "Karte mit Ladesäulen", "Du wählst selbst, woher die Karte kommt: vom Community-Server (mit Gelände und freien Ladeplätzen, wo Betreiber Daten liefern), von OpenStreetMap oder gar nicht. Solange du nichts wählst, bleibt die Karte leer. Blitzer zeigt sie nur in Österreich, ab Werk aus und mit Rechtshinweis."),
             ("🔋", "„Reicht es noch?“", "Mit einer Route aus dem Routenplaner, auch mit Zwischenzielen, sagt dir Panoptes unterwegs, ob der Akku bis zum nächsten Stopp reicht, und schlägt bei Bedarf einen Ladestopp vor."),
             ("📊", "Monatsbericht", "Gefahrene Kilometer, Verbrauch, Laden und Kosten, Standverlust und Wächter-Ereignisse eines Monats auf einen Blick, auch zum Drucken. Gerechnet wird im Auto."),
@@ -501,7 +501,7 @@ T = {
             ("🏠", "Wallbox <span class=\"bald\">beta</span>", "Set up your wallbox via evcc, Home Assistant or Tuya, and from version 0.1.12 also directly (e.g. go-e, KEBA, openWB, Easee, Zaptec): see the status, set mode, charge limit and current. Control only while the car is parked, with confirmation and enabled per charge point. So far only checked with demo and test devices."),
             ("📍", "Your places", "One list for everything: home, garage, work or the charging spot with its own price. For each place you decide whether it is private (guard), a charging price applies or it is a destination in the navigation. Places never leave the car."),
             ("🌍", "Remote access", "Reach your car from anywhere via Tailscale. Setup uses a QR code on the car screen and your own Tailscale account. For advanced users, 0.1.14 adds an independent emergency access, off by default."),
-            ("💬", "Telegram notifications", "Your own bot reports guard events, charging, a weak starter battery, tyre pressure and updates. Each category can be switched on its own, with quiet hours for the night. From 0.1.38.2: write anything to the bot and you get a menu with big buttons. Pictures and videos only if you turn that on."),
+            ("💬", "Telegram notifications", "Your own bot reports guard events, charging, a weak starter battery, tyre pressure and updates. Each category can be switched on its own, with quiet hours for the night. From 0.1.38.2: write anything to the bot and you get a menu with big buttons. Pictures and videos only if you turn that on. <a href=\"telegram.html\">How to connect Telegram</a>"),
             ("🗺️", "Map with chargers", "You choose where the map comes from: the community server (with terrain and free charging spots where operators provide data), OpenStreetMap, or none. Until you choose, the map stays empty. Speed cameras are shown in Austria only, off by default and with a legal notice."),
             ("🔋", "\u201cWill it make it?\u201d", "With a route from the route planner, including waypoints, Panoptes tells you on the road whether the battery will last to the next stop and suggests a charging stop if needed."),
             ("📊", "Monthly report", "Distance, consumption, charging and costs, standby loss and guard events of a month at a glance, also for printing. Calculated in the car."),
@@ -1237,6 +1237,145 @@ def seite(t):
     return "\n".join(o)
 
 
+# Unterseite „Telegram verbinden“ (04.11.2026). Fakten nur aus dem Code rel-0.1.38.5 (Belege: TELEGRAM_FAKTEN.md im Notizordner).
+TG = {
+    "de": {
+        "title": "Telegram verbinden – Panoptes",
+        "desc": "Was Panoptes über Telegram kann und wie du deinen eigenen Bot in wenigen Minuten verbindest.",
+        "zurueck": "← Zurück zu Panoptes",
+        "h1": "Telegram verbinden",
+        "lead": "Panoptes meldet sich über deinen <b>eigenen</b> Telegram-Bot. Den legst du einmal selbst an, kostenlos und ohne Programmieren. Dann koppelst du ihn mit einer PIN. Fertig.",
+        "kann_h": "Was kann Telegram?",
+        "kann": [
+            ("Meldungen", "Wächter-Alarm, Laden fertig oder Ladefehler, schwache Starterbatterie, Reifendruck, neue Updates, ein kurzer Bericht nach dem Abstellen. Jede Art schaltest du einzeln ein oder aus. Für die Nacht gibt es eine Ruhezeit."),
+            ("Menü mit großen Knöpfen", "Schreib dem Bot irgendetwas, zum Beispiel „Hallo“. Dann kommt ein Menü. Du tippst nur noch auf Knöpfe."),
+            ("Nachsehen", "Wie geht’s dem Auto? Wo steht es? Wie voll ist der Akku? Dazu ein Kamerabild und deine Aufnahmen, wenn du danach fragst."),
+            ("Wächter und Camping", "Den Wächter wecken oder schlafen legen. Camping ein- oder ausschalten, nur im Stand."),
+            ("Updates mit einem Knopf", "Gibt es eine neue Version, schreibt der Bot „Panoptes … ist da“ mit dem Knopf „Jetzt installieren“. Er fragt vorher noch einmal nach. Nie während der Fahrt. Sonst installiert Panoptes kurz nach dem Abstellen."),
+            ("Bilder und Videos", "Automatisch nur, wenn du „Bilder und Videos an Telegram senden“ einschaltest. Ab Werk ist das aus, dann kommt nur Text."),
+        ],
+        "nicht_h": "Was bewusst nicht geht",
+        "nicht": "Über Telegram kannst du das Auto <b>nicht</b> aufsperren oder zusperren. Auch Klima, Hupe, Licht, Fenster und Laden starten oder stoppen gehen nicht. Den Tiermodus kannst du ansehen, aber nicht ein- oder ausschalten.",
+        "menue_h": "So sieht das Menü aus",
+        "menue_lead": "Skizze, kein echter Chat. Knöpfe zu Befehlen, die du ausgeschaltet hast, siehst du gar nicht.",
+        "menue": ["Wie geht’s dem Auto?", "Wächter", "Wo steht es?", "Kamerabild", "Aufnahmen", "Akku", "Updates", "Mehr"],
+        "menue_mehr": "Unter „Mehr“: Camping, Tier im Auto, Link zu Panoptes, Dienste, Einstellungen sichern, Hilfe.",
+        "schritte_h": "So verbindest du es",
+        "vorher": "Du brauchst Telegram am Handy und Panoptes im Auto. Den Schlüssel trägst du in der Panoptes-Oberfläche ein, am Bildschirm im Auto oder am PC. Mit einer Anmeldung per Telegram am Handy geht das Einrichten nicht.",
+        "schritte": [
+            ("Seite öffnen.", "In Panoptes: <b>Regeln → Meldungen → Telegram-Meldungen</b>. Dort steht „Noch nicht eingerichtet“ und drei Schritte."),
+            ("Bot anlegen.", "Öffne in Telegram den Chat mit <b>@BotFather</b>. Das ist das offizielle Telegram-Konto mit blauem Haken. Schick ihm <code>/newbot</code>. Gib einen Namen ein, zum Beispiel <code>Mein Auto</code>. Dann einen Benutzernamen, der auf <code>bot</code> endet."),
+            ("Schlüssel einfügen.", "BotFather antwortet mit einem langen Schlüssel. Er sieht so aus: <code>123456789:AAH…</code>. Kopiere ihn, füge ihn in Panoptes ein und tippe auf <b>„Prüfen und speichern“</b>."),
+            ("PIN holen.", "Tippe auf <b>„Kopplung starten“</b>. Panoptes zeigt eine PIN mit 6 Ziffern."),
+            ("Koppeln.", "Am Handy auf <b>„In Telegram öffnen und „Start“ tippen“</b> tippen. Geht der Link nicht, schick dem Bot die Nachricht <code>/koppeln</code> und deine PIN, zum Beispiel <code>/koppeln 123456</code>."),
+            ("Fertig.", "Der Bot antwortet „Gekoppelt!“. Panoptes merkt das von selbst. Mit <b>„Testnachricht schicken“</b> prüfst du, ob alles ankommt."),
+        ],
+        "tipp": "<b>Tipp:</b> Schalte „Auch bei abgestelltem Auto erreichbar“ ein. Sonst kommen deine Befehle nur an, solange das Auto an ist.",
+        "bilder": [("telegram38", "display", "Panoptes mit Musterdaten: Telegram-Meldungen, noch nicht eingerichtet, drei Schritte"), ("telegram38", "handy", "Telegram einrichten am Handy, Musterdaten")],
+        "bilder_cap": "Die Seite Telegram-Meldungen in Panoptes (Musterdaten).",
+        "sicher_h": "Ist das sicher?",
+        "sicher": [
+            ("Nur du.", "Es ist dein eigener Bot. Genau ein Telegram-Konto kann gekoppelt sein. Nachrichten von anderen beachtet der Bot nicht."),
+            ("PIN.", "Die PIN gilt 10 Minuten und nur einmal. Danach holst du dir eine neue."),
+            ("Schlüssel.", "Der Schlüssel bleibt verschlüsselt im Auto. Wer ihn hat, kann deinen Bot steuern. Gib ihn niemandem weiter."),
+            ("Du entscheidest.", "Unter „Fernbefehle“ schaltest du einzelne Befehle aus: Wächter, Kamera, Standort, Akku, Dienste, Sicherung. Schickst du einen ausgeschalteten Befehl, sagt der Bot nur, dass er ausgeschaltet ist."),
+            ("Updates.", "Nur nach deiner Rückfrage und nur, wenn das Auto steht."),
+            ("Bilder.", "Schickst du Bilder oder Videos, liegen sie bei Telegram."),
+            ("Abkoppeln.", "Nur in Panoptes, unter „Bot wechseln oder entfernen“: „Anderes Telegram koppeln“ löst nur dein Konto, „Bot entfernen“ löscht auch den Schlüssel. Über Telegram selbst geht das nicht."),
+        ],
+    },
+    "en": {
+        "title": "Connect Telegram – Panoptes",
+        "desc": "What Panoptes can do through Telegram and how to connect your own bot in a few minutes.",
+        "zurueck": "← Back to Panoptes",
+        "h1": "Connect Telegram",
+        "lead": "Panoptes talks to you through your <b>own</b> Telegram bot. You create it once yourself, free and without coding. Then you pair it with a PIN. Done.",
+        "kann_h": "What can Telegram do?",
+        "kann": [
+            ("Alerts", "Guard alarm, charging finished or a charging error, weak starter battery, tyre pressure, new updates, a short report after you park. You switch each kind on or off on its own. There are quiet hours for the night."),
+            ("Menu with big buttons", "Write anything to the bot, for example “Hello”. A menu appears. From then on you just tap buttons."),
+            ("Check on the car", "How is the car? Where is it? How full is the battery? Plus a camera picture and your recordings when you ask for them."),
+            ("Guard and camping", "Wake the guard or let it sleep. Switch camping on or off, only while parked."),
+            ("Updates with one button", "When there is a new version, the bot writes “Panoptes … is here” with an “Install now” button. It asks once more first. Never while driving. Otherwise Panoptes installs shortly after you switch the car off."),
+            ("Pictures and videos", "Sent automatically only if you switch on “Send pictures and videos to Telegram”. It is off by default; then you get text only."),
+        ],
+        "nicht_h": "What deliberately does not work",
+        "nicht": "Through Telegram you <b>cannot</b> unlock or lock the car. Climate, horn, lights, windows and starting or stopping charging do not work either. You can look at pet mode, but not switch it on or off.",
+        "menue_h": "What the menu looks like",
+        "menue_lead": "A sketch, not a real chat. Buttons for commands you switched off are not shown at all.",
+        "menue": ["How is the car?", "Guard", "Where is it?", "Camera picture", "Recordings", "Battery", "Updates", "More"],
+        "menue_mehr": "Under “More”: camping, pet in the car, link to Panoptes, services, back up settings, help.",
+        "schritte_h": "How to connect it",
+        "vorher": "You need Telegram on your phone and Panoptes in the car. You enter the key in the Panoptes interface, on the car screen or on a PC. Setting up does not work if you signed in on your phone via Telegram.",
+        "schritte": [
+            ("Open the page.", "In Panoptes: <b>Rules → Alerts → Telegram alerts</b>. It says “Not set up yet” and shows three steps."),
+            ("Create a bot.", "In Telegram, open the chat with <b>@BotFather</b>, Telegram’s official account with the blue tick. Send it <code>/newbot</code>. Enter a name, for example <code>My car</code>. Then a username ending in <code>bot</code>."),
+            ("Paste the key.", "BotFather replies with a long key that looks like <code>123456789:AAH…</code>. Copy it, paste it into Panoptes and tap <b>“Check and save”</b>."),
+            ("Get the PIN.", "Tap <b>“Start pairing”</b>. Panoptes shows a 6-digit PIN."),
+            ("Pair.", "On your phone, tap <b>“Open in Telegram and tap ‘Start’”</b>. If the link does not work, send the bot <code>/pair</code> and your PIN, for example <code>/pair 123456</code>."),
+            ("Done.", "The bot replies “Paired!”. Panoptes notices this by itself. Use <b>“Send a test message”</b> to check that everything arrives."),
+        ],
+        "tipp": "<b>Tip:</b> Switch on “Reachable while the car is off”. Otherwise your commands only arrive while the car is on.",
+        "bilder": [("telegram38", "display", "Panoptes with sample data: Telegram alerts, not set up yet, three steps"), ("telegram38", "handy", "Setting up Telegram on a phone, sample data")],
+        "bilder_cap": "The Telegram alerts page in Panoptes (sample data, shown in German).",
+        "sicher_h": "Is it safe?",
+        "sicher": [
+            ("Only you.", "It is your own bot. Exactly one Telegram account can be paired. The bot ignores messages from anyone else."),
+            ("PIN.", "The PIN is valid for 10 minutes and only once. After that you get a new one."),
+            ("Key.", "The key stays encrypted in the car. Anyone who has it can control your bot. Never share it."),
+            ("You decide.", "Under “Remote commands” you switch off single commands: guard, camera, location, battery, services, backup. If you send a switched-off command, the bot only tells you it is switched off."),
+            ("Updates.", "Only after you confirm and only while the car is parked."),
+            ("Pictures.", "If you send pictures or videos, they are stored at Telegram."),
+            ("Unpair.", "Only in Panoptes, under “Change or remove the bot”: “Pair a different Telegram” only unlinks your account, “Remove bot” also deletes the key. You cannot do this from Telegram itself."),
+        ],
+    },
+}
+
+TG_CSS = """<style>
+.tgk{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:14px 0}
+.tgk .card{margin:0}.tgk h3{margin:0 0 6px;font-size:19px}.tgk p{margin:0}
+ol.tgs{list-style:none;counter-reset:s;padding:0;margin:14px 0}
+ol.tgs li{counter-increment:s;position:relative;padding:4px 0 14px 58px;margin:0;font-size:18px;line-height:1.55}
+ol.tgs li::before{content:counter(s);position:absolute;left:0;top:0;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;background:var(--accent-2,#c6f24e);color:#0b1620}
+.tgm{max-width:420px;border:1px solid var(--line);border-radius:18px;padding:14px;background:var(--card)}
+.tgm .tgq{margin:0 0 10px;color:var(--muted)}
+.tgm .tgb{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tgm span{display:block;text-align:center;padding:12px 8px;border-radius:12px;border:1px solid var(--line);background:var(--card2);font-weight:600}
+ul.tgsi{list-style:none;padding:0;margin:14px 0}ul.tgsi li{padding:10px 0;border-bottom:1px solid var(--line);font-size:18px;line-height:1.5}
+.tgnicht{border-left:4px solid var(--accent-2,#c6f24e)}
+</style>"""
+
+
+def telegram_seite(t):
+    de = t["lang"] == "de"
+    g = TG[t["lang"]]
+    kanon = BASIS + ("" if de else "en/") + "telegram.html"
+    andere = "/panoptes/en/telegram.html" if de else "/panoptes/telegram.html"
+    o = [kopf(t, g["title"], g["desc"], BASIS + "telegram.html", BASIS + "en/telegram.html", kanon,
+              "/panoptes/" if de else "/panoptes/en/", andere)]
+    o.append(TG_CSS)
+    o.append('  <p style="margin:18px 0 0"><a href="./">%s</a></p>' % g["zurueck"])
+    o.append('  <h1 style="font-size:clamp(30px,5vw,44px)">%s</h1><p class="lead">%s</p>' % (g["h1"], g["lead"]))
+    o.append('  <h2 id="kann">%s</h2>\n  <div class="tgk">' % g["kann_h"])
+    for h, txt in g["kann"]:
+        o.append('    <div class="card"><h3>%s</h3><p>%s</p></div>' % (h, txt))
+    o.append('  </div>\n  <div class="card tgnicht"><h3 style="margin:0 0 6px">%s</h3><p style="margin:0">%s</p></div>' % (g["nicht_h"], g["nicht"]))
+    o.append('  <h2 id="menue">%s</h2><p>%s</p>\n  <div class="tgm" role="img" aria-label="%s"><p class="tgq">%s</p><div class="tgb">%s</div></div><p>%s</p>'
+             % (g["menue_h"], g["menue_lead"], html.escape(g["menue_h"]), "Was möchtest du tun?" if de else "What would you like to do?",
+                "".join("<span>%s</span>" % html.escape(b) for b in g["menue"]), g["menue_mehr"]))
+    o.append('  <h2 id="verbinden">%s</h2><p>%s</p>\n  <ol class="tgs">' % (g["schritte_h"], g["vorher"]))
+    for h, txt in g["schritte"]:
+        o.append("    <li><b>%s</b> %s</li>" % (h, txt))
+    o.append('  </ol>\n  <div class="card">%s</div>' % g["tipp"])
+    o.append('  <figure style="margin:18px 0">%s<figcaption>%s</figcaption></figure>' % (reihe(g["bilder"], t["pfad"]), g["bilder_cap"]))
+    o.append('  <h2 id="sicher">%s</h2>\n  <ul class="tgsi">' % g["sicher_h"])
+    for h, txt in g["sicher"]:
+        o.append("    <li><b>%s</b> %s</li>" % (h, txt))
+    o.append("  </ul>")
+    o.append(fuss(t, andere))
+    return "\n".join(o)
+
+
 def hinweise(t):
     de = t["lang"] == "de"
     kanon = BASIS + ("" if de else "en/") + "hinweise.html"
@@ -1286,10 +1425,10 @@ def main(bilder_quelle):
             n += 1
     for lang, unter in (("de", ""), ("en", "en")):
         t = T[lang]
-        for name, inhalt in (("index.html", seite(t)), ("hinweise.html", hinweise(t))):
+        for name, inhalt in (("index.html", seite(t)), ("hinweise.html", hinweise(t)), ("telegram.html", telegram_seite(t))):
             with open(os.path.join(ZIEL, unter, name), "w", encoding="utf-8", newline="\n") as f:
                 f.write(inhalt)
-    print("ok:", n, "Bilder, 4 Seiten in", ZIEL)
+    print("ok:", n, "Bilder, 6 Seiten in", ZIEL)
 
 
 if __name__ == "__main__":
