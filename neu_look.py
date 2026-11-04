@@ -282,7 +282,7 @@ BEREICHE = (
                                   ("/#k-camping", "car", "Camping", "Über Nacht im Auto", "panoptes"))),
     ("guard", "eye", "Kameras & Wächter", (("/aufnahmen", "eye", "Wächter", "Aufnahmen ansehen", None),)),
     ("drive", "route", "Fahrten & Laden", (("/fahrten", "book", "Fahrtenbuch", "Fahrten ansehen, als CSV", None),
-                                            ("/#k-route", "route", "Route planen", "Mit Ladestopps", None),
+                                            ("/routenplaner", "route", "Route planen", "Mit Ladestopps, ins Auto schicken", None),
                                             ("/laden", "coin", "Laden & Kosten", "Kosten, Ladungen, Ladekarten", None),
                                             ("/energie", "plug", "Wallbox & Energie", "Wallbox, Solar, evcc", None),
                                             ("/karte", "map", "Karte", "Ladesäulen in der Nähe", None))),
@@ -321,6 +321,6 @@ EN = {
     "Regeln": "Rules", "Apps & Display": "Apps & display", "Einstellungen": "Settings",
     "Mein Auto": "My car", "Akku, Reichweite, Status": "Battery, range, status", "Klima & Sitze": "Climate & seats",
     "Vorklimatisieren, Sitzheizung, Zusperren": "Pre-condition, seat heating, lock", "Über Nacht im Auto": "Overnight in the car",
-    "Route planen": "Plan a route", "Mit Ladestopps": "With charging stops", "Tacho": "Instrument display",
+    "Route planen": "Plan a route", "Mit Ladestopps, ins Auto schicken": "With charging stops, send to the car", "Tacho": "Instrument display",
     "Startseite im Auto anordnen": "Arrange the home screen in the car", "Panoptes, Launcher, Cockpit": "Panoptes, launcher, Cockpit",
 }

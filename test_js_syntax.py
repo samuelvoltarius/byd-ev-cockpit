@@ -25,7 +25,7 @@ class TestJsSyntax(unittest.TestCase):
         if not node:
             self.skipTest("Node nicht installiert (nur Entwicklungsrechner)")
         seiten = {"COCKPIT": ev.COCKPIT.replace("<!--ENERGIE-PANEL-->", ev.ENERGY_PANEL), "WIZARD": ev.WIZARD, "PANOPTES": ev.PANOPTES_SEITE, "ABOUT": ev.ABOUT, "MEIN_AUTO": __import__("mein_auto_seite").seite("https://x/s.json", "http://100.1.2.3:8180", ev.COCKPIT),
-                  "TACHO": __import__("apps_display").TACHO_SEITE, "LAUNCHER": __import__("apps_display").LAUNCHER_SEITE, "UPDATES": __import__("apps_display").UPDATES_SEITE,
+                  "TACHO": __import__("apps_display").TACHO_SEITE, "LAUNCHER": __import__("apps_display").LAUNCHER_SEITE, "UPDATES": __import__("apps_display").UPDATES_SEITE, "PLANER": __import__("planer_ansicht").SEITE,
                   "HANDY": __import__("handy_verbinden").SEITE, "MEHR": __import__("neu_look").hub_html("1")}
         for name, h in seiten.items():
             h = ev._i18n(h)

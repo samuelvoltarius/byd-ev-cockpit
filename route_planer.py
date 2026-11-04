@@ -215,7 +215,21 @@ def grund(e):
     return "Routenplaner-Fehler (%s)" % type(e).__name__
 
 
+# 1.24 PLANER_VERTRAG.md §5: einheitliche Fehler {"ok":false, "code", "fehler"} -> ein Satz fuer den Menschen
+CODE_TEXT = {"werte": "Die Angaben passen nicht. Bitte Start und Ziel prüfen.",
+             "nur_mitglieder": "Das Cockpit ist nicht mehr mit dem Routenplaner verbunden. Bitte in den Einstellungen neu verbinden.",
+             "fremdes_auto": "Dieses Auto gehört nicht zu deinem Planer-Zugang.",
+             "plan_abgelaufen": "Der Plan ist abgelaufen. Bitte neu planen.",
+             "zu_oft": "Zu viele Anfragen – bitte eine Minute warten.",
+             "planer_fehler": "Der Routenplaner startet gerade neu. Bitte in 30 Sekunden noch einmal."}
+
+
 def planen(token, body, anfrage=pb._anfrage, warte=None):
+    return kurz(planen_roh(token, body, anfrage, warte))
+
+
+def planen_roh(token, body, anfrage=pb._anfrage, warte=None):
+    """POST plan -> Antwort des Planers (voll oder, mit body["ausgabe"]="kompakt", plan-ergebnis/1). Fehler als ValueError mit Klartext."""
     try:
         code, d = anfrage("plan", token, body, timeout=PLAN_TIMEOUT)
         if code in (502, 503, 504):              # Planer startet sanft neu (~1 s Luecke): einmal nach 2 s wiederholen
@@ -227,13 +241,15 @@ def planen(token, body, anfrage=pb._anfrage, warte=None):
         if isinstance(getattr(e, "reason", None), (socket.timeout, TimeoutError)):
             raise ValueError("Der Routenplaner hat nach %d s nicht geantwortet – bitte gleich noch einmal versuchen" % PLAN_TIMEOUT)
         raise ValueError("Routenplaner nicht erreichbar – Internetverbindung prüfen")
+    if (d or {}).get("code") in CODE_TEXT and code != 200:
+        raise ValueError(CODE_TEXT[d["code"]])
     if code == 429:
         raise ValueError("Zu viele Anfragen – bitte eine Minute warten")
     if code in (502, 503, 504):
         raise ValueError("Der Routenplaner wird gerade neu gestartet oder ist ausgelastet (HTTP %d) – bitte in einer Minute erneut" % code)
     if code != 200:
         raise ValueError((d or {}).get("fehler") or "Planer antwortet %s" % code)
-    return kurz(d)
+    return d or {}
 
 
 def orte(token, q, anfrage=pb._anfrage):
@@ -261,4 +277,19 @@ def an_auto(token, plan, auto="", anfrage=pb._anfrage):
     code, d = anfrage("an-auto", token, body)
     if code != 200 or not (d or {}).get("ok"):
         raise ValueError((d or {}).get("fehler") or "Planer antwortet %s" % code)
+    return d
+
+
+def an_auto_plan_id(token, plan_id, auto="", anfrage=pb._anfrage):
+    """PLANER_VERTRAG §2a: "ins Auto" uebernimmt GENAU den geplanten Plan (plan_id, 2 h im Planer). 410 -> neu planen."""
+    if not re.fullmatch(r"p_[A-Za-z0-9_-]{4,80}", str(plan_id or "")):
+        raise ValueError(CODE_TEXT["plan_abgelaufen"])
+    body = {"plan_id": plan_id}
+    if auto:
+        body["auto"] = auto
+    code, d = anfrage("an-auto", token, body)
+    if code in (404, 410):
+        raise ValueError(CODE_TEXT["plan_abgelaufen"])
+    if code != 200 or not (d or {}).get("ok"):
+        raise ValueError(CODE_TEXT.get((d or {}).get("code")) or (d or {}).get("fehler") or "Planer antwortet %s" % code)
     return d

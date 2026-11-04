@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.23.1"
+VERSION = "1.24.0"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -396,6 +396,7 @@ import neu_look
 import anpassen
 import handy_verbinden
 import apps_display
+import planer_ansicht
 
 _LIVE = Live()
 
@@ -1200,6 +1201,8 @@ _PAN_ID = {"t": 0.0, "auto": ""}
 
 
 _RPLAN = {}                    # letzte berechnete Route, nur im Arbeitsspeicher (fuer "Ins Auto schicken")
+_RP2 = {}                      # 1.24 Planer-Ansicht: letzter Plan (plan-ergebnis/1 bzw. Kurzform), nur im Arbeitsspeicher
+_RP_BREMSE = planer_ansicht.Bremse()
 _PROFIL = {"t": 0.0, "name": ""}
 
 
@@ -1762,6 +1765,7 @@ _I18N.update({
         "Solar appears automatically as soon as evcc or Home Assistant provides data.",
 })
 _I18N.update(apps_display.EN)
+_I18N.update(planer_ansicht.EN)
 _I18N.update(neu_look.EN)
 I18N_HEAD =("<script>window.__TR__=" + json.dumps(_I18N, ensure_ascii=False, separators=(',',':')) + ";"
     "window.__LANG__=(function(){try{var s=localStorage.getItem('evc_lang');if(s==='de'||s==='en')return s;}catch(e){}"
@@ -5474,6 +5478,15 @@ class H(BaseHTTPRequestHandler):
             self._send(_i18n(apps_display.TACHO_SEITE))
         elif p == "/launcher":
             self._send(_i18n(apps_display.LAUNCHER_SEITE))
+        elif p == "/routenplaner":
+            self._send(_i18n(planer_ansicht.SEITE))
+        elif p == "/rp/vorgaben":
+            # Was die Planer-Ansicht vorausfuellt: Start = Auto (nie die Ortung des PCs), Ladestand, Fahrzeug. Keine Koordinaten an den Browser.
+            import route_planer as rp
+            fzn = rp.fahrzeug_aus_laden(_LADEN["d"]) if _panoptes_gekoppelt() else None
+            self._send(json.dumps({"verbunden": bool(_CFG.get("planer") and _CFG.get("planer_token")), "auto": bool(_STATE.get("latitude")),
+                                   "soc": _STATE.get("soc"), "fahrzeug": str(fzn or _CFG.get("planer_fahrzeug") or "")[:80]}, ensure_ascii=False),
+                       "application/json")
         elif p == "/updates":
             self._send(_i18n(apps_display.UPDATES_SEITE))
         elif p == "/launcher/stand":
@@ -6132,6 +6145,54 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json", 403)
             except Exception as e:
                 self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json", 400)
+        elif u.path in ("/rp/plan", "/rp/an-auto"):
+            # 1.24 Planer-Ansicht (PLANER_VERTRAG.md): nur auf Tipp, hoechstens 10/min und eine laufende Planung; Schluessel bleibt hier
+            nutzer_aktion()
+            try:
+                if not (_CFG.get("planer") and _CFG.get("planer_token")):
+                    raise ValueError("Erst mit dem Routenplaner verbinden (Einstellungen → Extras)")
+                import route_planer as rp
+                tok, w = _CFG["planer_token"], json.loads(raw or "{}")
+                if u.path == "/rp/plan":
+                    pos = (_STATE.get("latitude"), _STATE.get("longitude")) if _STATE.get("latitude") else None
+                    fz = rp.fahrzeug_aus_laden(_LADEN["d"]) if _panoptes_gekoppelt() else None
+                    body = rp.anfrage_body(w, pos, _STATE.get("soc"), fz or _planer_profil(tok), _planer_kennung())
+                    body = rp.mit_laden(body, (_LADEN["d"] or {}) if _panoptes_gekoppelt() else {})
+                    body.update(ausgabe="kompakt", geometrie="kurz")
+                    nein = _RP_BREMSE.los()
+                    if nein:
+                        raise ValueError(nein)
+                    try:
+                        d = rp.planen_roh(tok, body)
+                    finally:
+                        _RP_BREMSE.fertig()
+                    sn = (str(w.get("start_name") or "") if w.get("start") else "Mein Auto")[:80]
+                    zn = str(w.get("ziel_name") or "")[:80]
+                    if d.get("vertrag") == planer_ansicht.VERTRAG:
+                        e, k = planer_ansicht.ergebnis(d), None
+                    else:                                # Planer noch ohne "kompakt": bisherige Kurzform umrechnen
+                        k = rp.kurz(d)
+                        e = planer_ansicht.aus_alt(k, sn, zn)
+                    for o, n in ((e["start"], sn), (e["ziel"], zn)):
+                        o["name"] = o.get("name") or n
+                    _RP2.clear()
+                    _RP2.update(e=e, k=k, start=body["start"], ziel=body["ziel"], fahrzeug=body["fahrzeug"], sn=sn, zn=zn, t=time.time())
+                    return self._send(json.dumps({"ok": True, "plan": e, "reicht": planer_ansicht.reicht(e)}, ensure_ascii=False), "application/json")
+                if not _RP2.get("e") or time.time() - _RP2["t"] > 7200:
+                    raise ValueError("Bitte zuerst eine Route berechnen")
+                if not _RP2["e"].get("fahrbar"):
+                    raise ValueError("So kommst du nicht ans Ziel. Bitte ein anderes Ziel oder einen Zwischenstopp wählen.")
+                if _RP2["e"].get("plan_id"):
+                    d = rp.an_auto_plan_id(tok, _RP2["e"]["plan_id"], _planer_kennung())
+                else:
+                    d = rp.an_auto(tok, rp.fuer_auto(_RP2["k"], _RP2["start"], _RP2["ziel"], _RP2["sn"], _RP2["zn"], _RP2["fahrzeug"]), _planer_kennung())
+                _ROUTE["t"] = 0
+                return self._send(json.dumps({"ok": True, "gueltig_bis": d.get("gueltig_bis")}), "application/json")
+            except ValueError as e:
+                return self._send(json.dumps({"ok": False, "error": str(e)[:200]}, ensure_ascii=False), "application/json")
+            except Exception as e:
+                import route_planer
+                return self._send(json.dumps({"ok": False, "error": route_planer.grund(e)}, ensure_ascii=False), "application/json")
         elif u.path in ("/route/plan", "/route/orte", "/route/an-auto"):
             # Route-Reiter: Schluessel bleibt hier; Koordinaten nur im Body, nie im Log (Regel 2: nur auf Klick)
             try:
