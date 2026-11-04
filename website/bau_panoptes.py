@@ -169,19 +169,22 @@ T = {
             ("🌐", "Fünf Sprachen", "Deutsch, Englisch, Französisch, Italienisch und Niederländisch."),
         ],
         "h_bilder": "So sieht Panoptes aus",
-        "bilder_lead": "Panoptes 0.1.38 am Bildschirm im Auto und am Handy, aufgenommen im Emulator mit Musterdaten, nicht aus einem Auto. Seiten ohne Daten zeigen „nicht verfügbar“ oder „--“. Nur die Karte ist noch ein älteres Bild aus 0.1.10. Klick auf ein Bild zum Vergrößern.",
+        "bilder_lead": "Panoptes 0.1.38 am Bildschirm im Auto und am Handy, aufgenommen im Emulator mit Musterdaten, nicht aus einem Auto. Bilder mit gelbem Band „Musterdaten“ kommen aus einem Demo-Profil: keine echten Fahrten, Orte oder Befehle, die Karte ist eine vereinfachte Musterkarte. Andere Seiten ohne Daten zeigen „nicht verfügbar“ oder „--“. Klick auf ein Bild zum Vergrößern.",
         "bilder": [
-            ("Start: Ladestand, Reichweite und Schnellknöpfe.", [("start38", "display", "Startseite am Bildschirm im Auto: Ladestand, Reichweite, Schnellknöpfe Zusperren, Vorklimatisieren, Blinken, Finden, Kofferraum"), ("start38", "handy", "Startseite am Handy")]),
+            ("Start: Ladestand, Reichweite und Schnellknöpfe.", [("startd38", "display", "Startseite mit Musterdaten: 86 Prozent, 236 km, Schnellknöpfe, Standort-Karte und Ladekosten"), ("startd38", "handy", "Startseite am Handy mit Musterdaten")]),
+            ("Fahrtenbuch: jede Fahrt mit Strecke, Dauer, Verbrauch und Kosten.", [("fahrt38", "display", "Eine Fahrt mit Musterdaten: 22 km, 25 Minuten, 14,56 kWh pro 100 km"), ("fahrt38", "handy", "Fahrt am Handy mit Musterdaten")]),
+            ("Karte und Navigation, hier mit einer vereinfachten Musterkarte.", [("karte38", "display", "Navigation mit vereinfachter Musterkarte, Suchfeld Wohin und Favoriten"), ("karte38", "handy", "Navigation am Handy mit Musterkarte")]),
+            ("Laden: Ladungen, Energie, Kosten und Wallbox.", [("laden38", "display", "Laden mit Musterdaten: Wallbox, 6 Ladungen, 149 kWh"), ("laden38", "handy", "Laden am Handy mit Musterdaten")]),
             ("Kameras & Wächter: ein großer Schalter, darunter die Aufnahmen von heute.", [("waechter38", "display", "Wächter am Bildschirm im Auto: Wächter ist aus, großer Knopf Wächter einschalten"), ("waechter38", "handy", "Wächter am Handy mit großem Schalter")]),
             ("Apps & Display → Display: „Was zeigt der Tacho?“ Ein Bild antippen.", [("display38", "display", "Seite Display: Tacho, Hintergrund und Sperre, Launcher; Auswahl Was zeigt der Tacho"), ("display38", "handy", "Seite Display am Handy")]),
-            ("Monatsbericht: Kilometer, Verbrauch, Laden, Standverlust und Wächter, auch zum Drucken.", [("bericht38", "display", "Monatsbericht November 2026 am Bildschirm im Auto"), ("bericht38", "handy", "Monatsbericht am Handy")]),
+            ("Monatsbericht: Kilometer, Verbrauch, Laden, Standverlust und Wächter, auch zum Drucken.", [("berichtd38", "display", "Monatsbericht Oktober 2026 mit Musterdaten: 1010 km, 14,6 kWh pro 100 km, 149 kWh geladen"), ("berichtd38", "handy", "Monatsbericht am Handy mit Musterdaten")]),
             ("Regeln: „Wenn … / Dann …“ selbst bauen.", [("regeln38", "display", "Wenn-dann-Regeln: noch keine Regel, Knopf Neue Regel"), ("regeln38", "handy", "Regeln am Handy")]),
             ("Telegram: in drei kurzen Schritten einrichten.", [("telegram38", "display", "Telegram-Meldungen einrichten in drei Schritten"), ("telegram38", "handy", "Telegram einrichten am Handy")]),
             ("Gerät koppeln: Handy oder EV-Cockpit, nur mit deiner Bestätigung.", [("koppeln38", "display", "Gerät koppeln: Knopf Neues Gerät koppeln, noch kein Gerät gekoppelt"), ("koppeln38", "handy", "Gerät koppeln am Handy")]),
             ("Einstellungen: „Was möchtest du einstellen?“, mit Suche.", [("system38", "display", "Alle Einstellungen: Verbindungen, Auto und Anzeige, App und Daten, Erweitert"), ("system38", "handy", "Alle Einstellungen am Handy")]),
             ("Einrichtung: unter „Noch einrichten“ stehen freiwillige Schritte.", [("einrichtung38", "display", "Einrichtung: Liste Noch einrichten mit freiwilligen Schritten"), ("einrichtung38", "handy", "Noch einrichten am Handy")]),
             ("Steuerung am Handy: Kacheln für Sicherheit, Kofferraum, Klima und Sitze.", [("steuerung38", "handy", "Steuerung am Handy mit Kacheln Sicherheit, Kofferraum, Klima, Sitze")]),
-            ("Älteres Bild (0.1.10): Karte mit Ladesäulen und freien Plätzen.", [("karte", "pc", "Karte mit Ladesäulen am PC"), ("karte", "display", "Karte am Bildschirm im Auto")]),
+            ("Apps & Display: zwei Apps nebeneinander am Bildschirm.", [("apps38", "display", "Apps nebeneinander mit Musterdaten: Fotos und Hörbücher"), ("apps38", "handy", "Apps nebeneinander am Handy")]),
         ],
         "handy": "am Handy", "pc": "am PC",
         "h_zus": "Wie alles zusammenhängt",
@@ -514,19 +517,22 @@ T = {
             ("🌐", "Five languages", "German, English, French, Italian and Dutch."),
         ],
         "h_bilder": "What Panoptes looks like",
-        "bilder_lead": "Panoptes 0.1.38 on the car screen and on a phone, taken in the emulator with sample data, not from a car. Pages without data show \u201cnot available\u201d or \u201c--\u201d. Only the map is still an older picture from 0.1.10. Click a picture to enlarge it.",
+        "bilder_lead": "Panoptes 0.1.38 on the car screen and on a phone, taken in the emulator with sample data, not from a car. Pictures with a yellow \u201csample data\u201d band come from a demo profile: no real trips, places or commands, the map is a simplified sample map. Other pages without data show \u201cnot available\u201d or \u201c--\u201d. Click a picture to enlarge it.",
         "bilder": [
-            ("Home: charge level, range and quick buttons.", [("start38", "display", "Home page on the car screen: charge level, range, quick buttons lock, pre-condition, flash, find, boot"), ("start38", "handy", "Home page on a phone")]),
+            ("Home: charge level, range and quick buttons.", [("startd38", "display", "Home page with sample data: 86 percent, 236 km, quick buttons, location map and charging costs"), ("startd38", "handy", "Home page on a phone with sample data")]),
+            ("Trip log: every trip with distance, duration, consumption and cost.", [("fahrt38", "display", "One trip with sample data: 22 km, 25 minutes, 14.56 kWh per 100 km"), ("fahrt38", "handy", "Trip on a phone with sample data")]),
+            ("Map and navigation, here with a simplified sample map.", [("karte38", "display", "Navigation with a simplified sample map, search field and favourites"), ("karte38", "handy", "Navigation on a phone with a sample map")]),
+            ("Charging: sessions, energy, costs and wallbox.", [("laden38", "display", "Charging with sample data: wallbox, 6 sessions, 149 kWh"), ("laden38", "handy", "Charging on a phone with sample data")]),
             ("Cameras & guard: one big switch, below it today's recordings.", [("waechter38", "display", "Guard on the car screen: guard is off, big button switch guard on"), ("waechter38", "handy", "Guard on a phone with a big switch")]),
             ("Apps & display → Display: “What does the cluster show?” Tap a picture.", [("display38", "display", "Page Display: cluster, background and lock, launcher; choice what the cluster shows"), ("display38", "handy", "Page Display on a phone")]),
-            ("Monthly report: distance, consumption, charging, standby loss and guard, also for printing.", [("bericht38", "display", "Monthly report November 2026 on the car screen"), ("bericht38", "handy", "Monthly report on a phone")]),
+            ("Monthly report: distance, consumption, charging, standby loss and guard, also for printing.", [("berichtd38", "display", "Monthly report October 2026 with sample data: 1010 km, 14.6 kWh per 100 km, 149 kWh charged"), ("berichtd38", "handy", "Monthly report on a phone with sample data")]),
             ("Rules: build your own “When … / Then …”.", [("regeln38", "display", "When-then rules: no rule yet, button new rule"), ("regeln38", "handy", "Rules on a phone")]),
             ("Telegram: set up in three short steps.", [("telegram38", "display", "Set up Telegram notifications in three steps"), ("telegram38", "handy", "Set up Telegram on a phone")]),
             ("Pair a device: phone or EV Cockpit, only with your confirmation.", [("koppeln38", "display", "Pair a device: button pair new device, no device paired yet"), ("koppeln38", "handy", "Pair a device on a phone")]),
             ("Settings: “What would you like to set?”, with search.", [("system38", "display", "All settings: connections, car and display, app and data, advanced"), ("system38", "handy", "All settings on a phone")]),
             ("Setup: optional steps under “Noch einrichten” (still to set up).", [("einrichtung38", "display", "Setup: list of optional steps still to set up"), ("einrichtung38", "handy", "Still to set up on a phone")]),
             ("Controls on a phone: tiles for security, boot, climate and seats.", [("steuerung38", "handy", "Controls on a phone with tiles security, boot, climate, seats")]),
-            ("Older picture (0.1.10): map with chargers and free spots.", [("karte", "pc", "Map with chargers on a PC"), ("karte", "display", "Map on the car screen")]),
+            ("Apps & display: two apps side by side on the screen.", [("apps38", "display", "Apps side by side with sample data: photos and audiobooks"), ("apps38", "handy", "Apps side by side on a phone")]),
         ],
         "handy": "on a phone", "pc": "on a PC",
         "h_zus": "How it all fits together",
@@ -1102,7 +1108,7 @@ def seite(t):
     o.append('  <div class="drei">%s</div>' % "".join("<p><b>%s</b> %s</p>" % x for x in t["drei"]))
     o.append('  <div class="bd-knoepfe"><a class="bd-knopf gross haupt" href="#%s" data-umami-event="download-weiter" data-umami-event-quelle="hero">%s</a>'
              '<a class="bd-knopf gross leer" href="#schritte">%s</a></div></header>' % (t["dl_anker"], t["hero_dl"], t["hero_anl"]))
-    o.append("  " + reihe([("start38", "display", t["hero_alt_pc"]), ("start38", "handy", t["hero_alt_handy"])], p, sofort=True))
+    o.append("  " + reihe([("startd38", "display", t["hero_alt_pc"]), ("startd38", "handy", t["hero_alt_handy"])], p, sofort=True))
     o.append('  <div class="bd-hinweis"><p>%s</p></div>' % t["wichtig"])
     # Ist das was für mich?
     o.append('  <h2 id="fuer-mich">%s</h2>\n  <div class="bd-kacheln">' % t["h_fuer_mich"])
