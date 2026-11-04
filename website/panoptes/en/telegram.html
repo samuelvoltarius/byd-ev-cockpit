@@ -118,7 +118,7 @@ ul.tgsi{list-style:none;padding:0;margin:14px 0}ul.tgsi li{padding:10px 0;border
     <div class="card"><h3>Menu with big buttons</h3><p>Write anything to the bot, for example “Hello”. A menu appears. From then on you just tap buttons.</p></div>
     <div class="card"><h3>Check on the car</h3><p>How is the car? Where is it? How full is the battery? Plus a camera picture and your recordings when you ask for them.</p></div>
     <div class="card"><h3>Guard and camping</h3><p>Wake the guard or let it sleep. Switch camping on or off, only while parked.</p></div>
-    <div class="card"><h3>Updates with one button</h3><p>When there is a new version, the bot writes “Panoptes … is here” with an “Install now” button. It asks once more first. Never while driving. Otherwise Panoptes installs shortly after you switch the car off.</p></div>
+    <div class="card"><h3>Update messages</h3><p>With “Only notify”, the bot writes “Panoptes … is here” with an “Install now” button and asks once more first. With “Fixes automatically”, small fixes install by themselves once the car has been off for at least 10 minutes, then Panoptes tells you. New features are reported and you decide. Never while driving.</p></div>
     <div class="card"><h3>Pictures and videos</h3><p>Sent automatically only if you switch on “Send pictures and videos to Telegram”. It is off by default; then you get text only.</p></div>
   </div>
   <div class="card tgnicht"><h3 style="margin:0 0 6px">What deliberately does not work</h3><p style="margin:0">Through Telegram you <b>cannot</b> unlock or lock the car. Climate, horn, lights, windows and starting or stopping charging do not work either. You can look at pet mode, but not switch it on or off.</p></div>
@@ -141,7 +141,7 @@ ul.tgsi{list-style:none;padding:0;margin:14px 0}ul.tgsi li{padding:10px 0;border
     <li><b>PIN.</b> The PIN is valid for 10 minutes and only once. After that you get a new one.</li>
     <li><b>Key.</b> The key stays encrypted in the car. Anyone who has it can control your bot. Never share it.</li>
     <li><b>You decide.</b> Under “Remote commands” you switch off single commands: guard, camera, location, battery, services, backup. If you send a switched-off command, the bot only tells you it is switched off.</li>
-    <li><b>Updates.</b> Only after you confirm and only while the car is parked.</li>
+    <li><b>Updates.</b> Never while driving. Automatically only if you set updates that way; otherwise only after you confirm.</li>
     <li><b>Pictures.</b> If you send pictures or videos, they are stored at Telegram.</li>
     <li><b>Unpair.</b> Only in Panoptes, under “Change or remove the bot”: “Pair a different Telegram” only unlinks your account, “Remove bot” also deletes the key. You cannot do this from Telegram itself.</li>
   </ul>
