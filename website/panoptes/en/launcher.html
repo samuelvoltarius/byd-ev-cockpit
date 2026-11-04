@@ -111,7 +111,7 @@ ul.tgsi{list-style:none;padding:0;margin:14px 0}ul.tgsi li{padding:10px 0;border
 .tgnicht{border-left:4px solid var(--accent-2,#c6f24e)}
 </style>
   <p style="margin:18px 0 0"><a href="./">← Back to Panoptes</a></p>
-  <h1 style="font-size:clamp(30px,5vw,44px)">Panoptes Launcher</h1><p class="lead">Your own home screen for the screen in your car, in the Panoptes style. It runs as a separate app next to the BYD home screen. It is optional and needs Panoptes.</p>
+  <h1 style="font-size:clamp(30px,5vw,44px)">Panoptes Launcher</h1><p class="lead">Your own home screen for the screen in your car, in the Panoptes style. It runs as a separate app next to the BYD home screen, or as your home screen if you want. It is optional and needs Panoptes.</p>
   <figure style="margin:18px 0"><div class="reihe"><a href="../bilder/launcher386-display-dunkel.webp?v=e46d202a" target="_blank" rel="noopener" class="breit allein" style="aspect-ratio:1280/720;width:100%"><picture><img src="../bilder/launcher386-display-dunkel.webp?v=e46d202a" alt="Panoptes Launcher with sample data: battery 86 percent, 262 km, navigation in 40 km to Vienna, guard on, clock, bottom bar with home button and climate" width="1280" height="720" loading="eager" fetchpriority="high"></picture></a></div><figcaption>The launcher with sample data, second page, shown in German. Not a real car.</figcaption></figure>
   <h2 id="kann">What can the launcher do?</h2>
   <div class="tgk">
@@ -119,7 +119,7 @@ ul.tgsi{list-style:none;padding:0;margin:14px 0}ul.tgsi li{padding:10px 0;border
     <div class="card"><h3>Bar at the bottom</h3><p>Home button, Panoptes, your favourite apps, climate, all apps and settings. Always in the same place.</p></div>
     <div class="card"><h3>Climate in the bar</h3><p>Temperature and fan with plus and minus, plus on and off. On some cars it shows heating and cooling levels instead of degrees.</p></div>
     <div class="card"><h3>Comfort</h3><p>Tap “Comfort: seats, steering wheel, defrost”: seat heating and seat ventilation for driver and passenger, steering wheel heating, recirculation or fresh air, defrost front and rear window. Only as far as your car reports it. If Panoptes cannot read a value, it does not guess.</p></div>
-    <div class="card"><h3>Apps side by side</h3><p>Some apps run next to the launcher. If an app cannot, it asks you whether to open it full screen.</p></div>
+    <div class="card"><h3>Apps side by side</h3><p>Spotify and other media apps open next to the launcher. If side by side is not possible, the app opens full screen.</p></div>
     <div class="card"><h3>Easy to set up</h3><p>In the car while parked, in the Panoptes interface under “Set up launcher”, or on your PC in the EV Cockpit from 1.23.</p></div>
   </div>
   <h2 id="installieren">How to install it</h2><p>You need Panoptes in the car. You get the launcher straight from Panoptes, there is nothing to download yourself.</p>
@@ -133,11 +133,11 @@ ul.tgsi{list-style:none;padding:0;margin:14px 0}ul.tgsi li{padding:10px 0;border
   <h2 id="zurueck">Back to the BYD screen</h2>
   <ul class="tgsi">
     <li><b>Home button.</b> The house icon on the far left of the bar always leads back to the BYD home screen. It cannot be removed.</li>
-    <li><b>Nothing is switched.</b> Panoptes never makes the launcher the default home screen by itself. The BYD home screen stays as it is.</li>
+    <li><b>As home screen.</b> From 0.1.38.7 there is a switch for this, off by default. If you switch it on, the launcher asks “Use Panoptes Launcher as home screen?”. With “Yes, keep” the Home key opens the launcher, with “No, back to BYD” everything stays as it was. Panoptes never switches anything by itself.</li>
     <li><b>Remove.</b> In Panoptes under Apps &amp; display → Display, tap “Remove” in the “Panoptes Launcher” card. Your launcher layout is lost.</li>
   </ul>
   <h2 id="noch-nicht">What does not work yet</h2>
-  <ul class="tgsi"><li>You cannot set it as the car’s default home screen yet. You open the launcher like an app.</li><li>Temperature control is not confirmed for every model. Fan and on/off still work.</li><li>Side by side does not work with every app.</li><li>If a value is missing, it shows a dash. It does not guess.</li></ul>
+  <ul class="tgsi"><li>Temperature control is not confirmed for every model. Fan and on/off still work.</li><li>Side by side does not work with every app; it then opens full screen.</li><li>If a value is missing, it shows a dash. It does not guess.</li></ul>
   <div class="card tgnicht"><b>While driving:</b> editing only works while parked (gear P). Video apps only start in P, unless you confirmed the notice “Verstanden, ich entscheide selbst” (I understand, I decide myself) in Panoptes.</div><p>Tested mainly on a BYD Dolphin Surf (DiLink 3). On other models some things may be missing or different.</p>
 </div>
 <script>document.addEventListener('click',function(e){var a=e.target.closest('a');var i=a&&a.querySelector('picture img');

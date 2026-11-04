@@ -111,7 +111,7 @@ ul.tgsi{list-style:none;padding:0;margin:14px 0}ul.tgsi li{padding:10px 0;border
 .tgnicht{border-left:4px solid var(--accent-2,#c6f24e)}
 </style>
   <p style="margin:18px 0 0"><a href="./">← Zurück zu Panoptes</a></p>
-  <h1 style="font-size:clamp(30px,5vw,44px)">Panoptes Launcher</h1><p class="lead">Ein eigener Startbildschirm für den Bildschirm in deinem Auto, im Panoptes-Stil. Er läuft als eigene App neben dem BYD-Startbildschirm. Er ist freiwillig und braucht Panoptes.</p>
+  <h1 style="font-size:clamp(30px,5vw,44px)">Panoptes Launcher</h1><p class="lead">Ein eigener Startbildschirm für den Bildschirm in deinem Auto, im Panoptes-Stil. Er läuft als eigene App neben dem BYD-Startbildschirm, auf Wunsch auch als Startbildschirm. Er ist freiwillig und braucht Panoptes.</p>
   <figure style="margin:18px 0"><div class="reihe"><a href="bilder/launcher386-display-dunkel.webp?v=e46d202a" target="_blank" rel="noopener" class="breit allein" style="aspect-ratio:1280/720;width:100%"><picture><img src="bilder/launcher386-display-dunkel.webp?v=e46d202a" alt="Panoptes Launcher mit Musterdaten: Akku 86 Prozent, 262 km, Navigation in 40 km Ziel Wien, Wächter an, Uhr, unten die Leiste mit Haus-Knopf und Klima" width="1280" height="720" loading="eager" fetchpriority="high"></picture></a></div><figcaption>Der Launcher mit Musterdaten, zweite Seite. Kein echtes Auto.</figcaption></figure>
   <h2 id="kann">Was kann der Launcher?</h2>
   <div class="tgk">
@@ -119,7 +119,7 @@ ul.tgsi{list-style:none;padding:0;margin:14px 0}ul.tgsi li{padding:10px 0;border
     <div class="card"><h3>Leiste unten</h3><p>Haus-Knopf, Panoptes, deine Lieblings-Apps, Klima, alle Apps und Einstellungen. Immer am gleichen Platz.</p></div>
     <div class="card"><h3>Klima in der Leiste</h3><p>Temperatur und Gebläse mit Plus und Minus, dazu An und Aus. Bei manchen Autos zeigt er Stufen wie „Heizen 2“, „Neutral“ oder „Kühlen 1“.</p></div>
     <div class="card"><h3>Komfort</h3><p>Tipp auf „Komfort: Sitze, Lenkrad, Entfrosten“: Sitzheizung und Sitzlüftung für Fahrer und Beifahrer, Lenkradheizung, Umluft oder Frischluft, Front- und Heckscheibe entfrosten. Nur, soweit dein Auto das meldet. Kann Panoptes einen Wert nicht lesen, wird nichts geraten.</p></div>
-    <div class="card"><h3>Apps nebeneinander</h3><p>Manche Apps laufen neben dem Launcher. Geht das bei einer App nicht, fragt er dich, ob er sie im Vollbild öffnen soll.</p></div>
+    <div class="card"><h3>Apps nebeneinander</h3><p>Spotify und andere Medien-Apps öffnen neben dem Launcher. Geht nebeneinander nicht, öffnet die App im Vollbild.</p></div>
     <div class="card"><h3>Bequem einrichten</h3><p>Am Auto im Stand, in der Panoptes-Oberfläche unter „Launcher einrichten“ oder am PC im EV-Cockpit ab 1.23.</p></div>
   </div>
   <h2 id="installieren">So installierst du ihn</h2><p>Du brauchst Panoptes im Auto. Den Launcher holst du direkt aus Panoptes, du musst nichts herunterladen.</p>
@@ -133,11 +133,11 @@ ul.tgsi{list-style:none;padding:0;margin:14px 0}ul.tgsi li{padding:10px 0;border
   <h2 id="zurueck">Zurück zum BYD-Bildschirm</h2>
   <ul class="tgsi">
     <li><b>Haus-Knopf.</b> Das Haus ganz links in der Leiste führt immer zurück zum BYD-Startbildschirm. Es lässt sich nicht entfernen.</li>
-    <li><b>Nichts wird umgestellt.</b> Panoptes macht den Launcher nie selbst zum Standard-Startbildschirm. Der BYD-Startbildschirm bleibt, wie er ist.</li>
+    <li><b>Als Startbildschirm.</b> Ab 0.1.38.7 gibt es dafür einen Schalter, ab Werk aus. Schaltest du ihn ein, fragt der Launcher „Panoptes Launcher als Startbildschirm?“. Mit „Ja, behalten“ öffnet die Home-Taste den Launcher, mit „Nein, zurück zu BYD“ bleibt alles, wie es war. Von selbst stellt Panoptes nichts um.</li>
     <li><b>Entfernen.</b> In Panoptes unter Apps &amp; Display → Display in der Karte „Panoptes Launcher“ auf „Entfernen“ tippen. Dein Launcher-Layout geht dabei verloren.</li>
   </ul>
   <h2 id="noch-nicht">Was noch nicht geht</h2>
-  <ul class="tgsi"><li>Als Standard-Startbildschirm des Autos einstellen geht noch nicht. Du öffnest den Launcher wie eine App.</li><li>Die Temperatur ist nicht bei jedem Modell bestätigt. Dann gehen Gebläse und An und Aus trotzdem.</li><li>Nebeneinander klappt nicht mit jeder App.</li><li>Fehlt ein Wert, zeigt er einen Strich. Er rät nichts.</li></ul>
+  <ul class="tgsi"><li>Die Temperatur ist nicht bei jedem Modell bestätigt. Dann gehen Gebläse und An und Aus trotzdem.</li><li>Nebeneinander klappt nicht mit jeder App; dann öffnet sie im Vollbild.</li><li>Fehlt ein Wert, zeigt er einen Strich. Er rät nichts.</li></ul>
   <div class="card tgnicht"><b>Beim Fahren:</b> Bearbeiten geht nur im Stand (Gang P). Video-Apps startet er nur in P, außer du hast in Panoptes den Hinweis „Verstanden, ich entscheide selbst“ bestätigt.</div><p>Erprobt vor allem auf einem BYD Dolphin Surf (DiLink 3). Auf anderen Modellen kann manches fehlen oder anders sein.</p>
 </div>
 <script>document.addEventListener('click',function(e){var a=e.target.closest('a');var i=a&&a.querySelector('picture img');
