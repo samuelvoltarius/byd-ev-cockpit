@@ -26,8 +26,8 @@ T = {
         "h1a": "Panoptes", "h1b": "dein BYD, wach und vernetzt",
         "sub": "Eine App, die direkt am Bildschirm in deinem Auto läuft. Dazu eine Oberfläche, die du am Handy oder PC öffnest: Wächter mit Kamera, Fahrten und Laden mit Kosten, deine Wallbox, Fernzugang, Meldungen über Telegram, eine eigene Karte mit Ladesäulen und die Verbindung zum Routenplaner.",
         "wichtig": "<b>Neu:</b> Panoptes gibt es jetzt öffentlich als <b>Beta-Version {V}</b>, mit Quellcode und <a href=\"#installieren\">Schritt-für-Schritt-Anleitung</a>. Getestet ist es bisher vor allem auf einem BYD Dolphin Surf (DiLink 3). Panoptes ist ein privates Freizeitprojekt und nicht von BYD. Bitte lies vor der Installation die <a href=\"hinweise.html\">Hinweise</a>.",
-        "hero_alt_pc": "Panoptes 0.1.38 am Bildschirm im Auto: Seite Display mit der Auswahl Was zeigt der Tacho",
-        "hero_alt_handy": "Panoptes 0.1.38 am Handy: Wächter mit großem Schalter",
+        "hero_alt_pc": "Panoptes 0.1.38 am Bildschirm im Auto: Startseite mit Ladestand, Reichweite und Schnellknöpfen",
+        "hero_alt_handy": "Panoptes 0.1.38 am Handy: Startseite",
         "h_camp": "Camping-Modus <span class=\"bald\">Beta</span>",
         "camp_lead": "Seit 0.1.16.1: Du schläfst im Auto, und Panoptes passt auf Strom, Wächter und Bildschirm auf. Heizen ist noch in der Beta-Phase. Ab Werk läuft nur ein Probelauf; die Heizart wählst du auf der Camping-Seite.",
         "camp": [
@@ -38,9 +38,9 @@ T = {
         ],
         "camp_bilder_lead": "Die Bilder stammen aus einem Emulator, nicht aus einem Auto. Darum steht bei den Werten „nicht verfügbar“, und die Modellangabe oben ist die des Emulators. Im Auto siehst du hier deine echten Werte. Klick auf ein Bild zum Vergrößern.",
         "camp_bilder": [
-            ("Camping-Seite am Bildschirm im Auto: Einschalten, Akku, Heizdauer; oben der Hinweis „Probelauf“.", [("camping", "display", "Camping-Seite von Panoptes: Camping ist aus, Knopf Einschalten, Hinweis Probelauf, Werte noch nicht verfügbar")]),
+            ("Camping-Seite am Bildschirm im Auto: Einschalten, Akku, Heizdauer; oben der Hinweis „Probelauf“.", [("camping38", "display", "Camping-Seite von Panoptes: Camping ist aus, Knopf Einschalten, Hinweis Probelauf, Werte noch nicht verfügbar")]),
             ("Einstellungen: Wärme, Heizweg, Akku-Untergrenze, 12-V-Warnung.", [("camping-einstellungen", "display", "Camping-Einstellungen: Wärme, Heizweg Probelauf, Vorheizen, Akku-Untergrenze 20 Prozent, 12-Volt-Warnung")]),
-            ("Nachtbildschirm: fast schwarz, große Uhr, Rückmeldung „Zu kalt / Passt / Zu warm“. Daneben die Camping-Seite am Handy.", [("nacht", "display", "Nachtbildschirm: schwarzer Hintergrund, große Uhr und Datum, Tasten Zu kalt, Passt, Zu warm"), ("camping", "handy", "Camping-Seite am Handy bei 390 Pixel Breite")]),
+            ("Nachtbildschirm: fast schwarz, große Uhr, Rückmeldung „Zu kalt / Passt / Zu warm“. Daneben die Camping-Seite am Handy.", [("nacht", "display", "Nachtbildschirm: schwarzer Hintergrund, große Uhr und Datum, Tasten Zu kalt, Passt, Zu warm"), ("camping38", "handy", "Camping-Seite am Handy bei 390 Pixel Breite")]),
         ],
         # Alle Funktionen nach den 7 Bereichen (FUNKTIONEN_ABGLEICH.md, 04.11.2026). PFLEGE bei jeder Version; Zeichen nur A (nur bestimmte Autos) und B (Beta), kein „Testauto“ (Alfred 04.11.2026).
         "alle": {"h": "Alles, was Panoptes {V} kann",
@@ -169,17 +169,19 @@ T = {
             ("🌐", "Fünf Sprachen", "Deutsch, Englisch, Französisch, Italienisch und Niederländisch."),
         ],
         "h_bilder": "So sieht Panoptes aus",
-        "bilder_lead": "Panoptes 0.1.38 am Bildschirm im Auto und am Handy, aufgenommen im Emulator mit Musterdaten, nicht aus einem Auto. Unter „Mehr Bilder“ stehen auch ältere Bilder aus 0.1.10, bis es neue gibt. Klick auf ein Bild zum Vergrößern.",
+        "bilder_lead": "Panoptes 0.1.38 am Bildschirm im Auto und am Handy, aufgenommen im Emulator mit Musterdaten, nicht aus einem Auto. Seiten ohne Daten zeigen „nicht verfügbar“ oder „--“. Nur die Karte ist noch ein älteres Bild aus 0.1.10. Klick auf ein Bild zum Vergrößern.",
         "bilder": [
+            ("Start: Ladestand, Reichweite und Schnellknöpfe.", [("start38", "display", "Startseite am Bildschirm im Auto: Ladestand, Reichweite, Schnellknöpfe Zusperren, Vorklimatisieren, Blinken, Finden, Kofferraum"), ("start38", "handy", "Startseite am Handy")]),
             ("Kameras & Wächter: ein großer Schalter, darunter die Aufnahmen von heute.", [("waechter38", "display", "Wächter am Bildschirm im Auto: Wächter ist aus, großer Knopf Wächter einschalten"), ("waechter38", "handy", "Wächter am Handy mit großem Schalter")]),
             ("Apps & Display → Display: „Was zeigt der Tacho?“ Ein Bild antippen.", [("display38", "display", "Seite Display: Tacho, Hintergrund und Sperre, Launcher; Auswahl Was zeigt der Tacho"), ("display38", "handy", "Seite Display am Handy")]),
+            ("Monatsbericht: Kilometer, Verbrauch, Laden, Standverlust und Wächter, auch zum Drucken.", [("bericht38", "display", "Monatsbericht November 2026 am Bildschirm im Auto"), ("bericht38", "handy", "Monatsbericht am Handy")]),
+            ("Regeln: „Wenn … / Dann …“ selbst bauen.", [("regeln38", "display", "Wenn-dann-Regeln: noch keine Regel, Knopf Neue Regel"), ("regeln38", "handy", "Regeln am Handy")]),
+            ("Telegram: in drei kurzen Schritten einrichten.", [("telegram38", "display", "Telegram-Meldungen einrichten in drei Schritten"), ("telegram38", "handy", "Telegram einrichten am Handy")]),
+            ("Gerät koppeln: Handy oder EV-Cockpit, nur mit deiner Bestätigung.", [("koppeln38", "display", "Gerät koppeln: Knopf Neues Gerät koppeln, noch kein Gerät gekoppelt"), ("koppeln38", "handy", "Gerät koppeln am Handy")]),
             ("Einstellungen: „Was möchtest du einstellen?“, mit Suche.", [("system38", "display", "Alle Einstellungen: Verbindungen, Auto und Anzeige, App und Daten, Erweitert"), ("system38", "handy", "Alle Einstellungen am Handy")]),
             ("Einrichtung: unter „Noch einrichten“ stehen freiwillige Schritte.", [("einrichtung38", "display", "Einrichtung: Liste Noch einrichten mit freiwilligen Schritten"), ("einrichtung38", "handy", "Noch einrichten am Handy")]),
             ("Steuerung am Handy: Kacheln für Sicherheit, Kofferraum, Klima und Sitze.", [("steuerung38", "handy", "Steuerung am Handy mit Kacheln Sicherheit, Kofferraum, Klima, Sitze")]),
             ("Älteres Bild (0.1.10): Karte mit Ladesäulen und freien Plätzen.", [("karte", "pc", "Karte mit Ladesäulen am PC"), ("karte", "display", "Karte am Bildschirm im Auto")]),
-            ("Älteres Bild (0.1.10): Monatsbericht mit Kilometern, Verbrauch, Laden und Wächter.", [("monatsbericht", "pc", "Monatsbericht am PC"), ("monatsbericht", "display", "Monatsbericht am Bildschirm im Auto")]),
-            ("Älteres Bild (0.1.10): Gerät koppeln mit Prüfzahl.", [("geraete", "pc", "Gerät koppeln: das EV-Cockpit möchte sich verbinden, Prüfzahl 4711")]),
-            ("Älteres Bild (0.1.10): Telegram, jede Meldungsart einzeln.", [("telegram", "handy", "Telegram-Meldungen am Handy, jede Art einzeln schaltbar")]),
         ],
         "handy": "am Handy", "pc": "am PC",
         "h_zus": "Wie alles zusammenhängt",
@@ -368,8 +370,8 @@ T = {
         "h1a": "Panoptes", "h1b": "your BYD, awake and connected",
         "sub": "An app that runs right on your car's screen, plus an interface you open on your phone or PC: a camera guard, trips and charging with costs, your wallbox, remote access, Telegram notifications, its own map with chargers and a link to the route planner.",
         "wichtig": "<b>New:</b> Panoptes is now publicly available as <b>beta version {V}</b>, with source code and a <a href=\"#install\">step-by-step guide</a>. So far it has mainly been tested on a BYD Dolphin Surf (DiLink 3). Panoptes is a private hobby project and not made by BYD. Please read the <a href=\"hinweise.html\">notes</a> before installing.",
-        "hero_alt_pc": "Panoptes 0.1.38 on the car screen: page Display with the choice what the cluster shows",
-        "hero_alt_handy": "Panoptes 0.1.38 on a phone: guard with a big switch",
+        "hero_alt_pc": "Panoptes 0.1.38 on the car screen: home page with charge level, range and quick buttons",
+        "hero_alt_handy": "Panoptes 0.1.38 on a phone: home page",
         "h_camp": "Camping mode <span class=\"bald\">beta</span>",
         "camp_lead": "Since 0.1.16.1: you sleep in the car, and Panoptes looks after power, the guard and the screen. Heating is still in beta. By default only a dry run runs; you choose the heating type on the camping page.",
         "camp": [
@@ -380,9 +382,9 @@ T = {
         ],
         "camp_bilder_lead": "The pictures come from an emulator, not from a car. That is why the values read \u201cnot available\u201d and the model name at the top is the emulator\u2019s. In the car you see your real values here. Click a picture to enlarge it. The interface is shown in German.",
         "camp_bilder": [
-            ("Camping page on the car screen: switch on, battery, heating time; the \u201cdry run\u201d notice at the top.", [("camping", "display", "Panoptes camping page: camping is off, Switch on button, dry run notice, values not yet available")]),
+            ("Camping page on the car screen: switch on, battery, heating time; the \u201cdry run\u201d notice at the top.", [("camping38", "display", "Panoptes camping page: camping is off, Switch on button, dry run notice, values not yet available")]),
             ("Settings: warmth, heating route, battery limit, 12 V warning.", [("camping-einstellungen", "display", "Camping settings: warmth, heating route dry run, pre-heating, battery limit 20 percent, 12-volt warning")]),
-            ("Night screen: almost black, big clock, feedback \u201ctoo cold / fine / too warm\u201d. Next to it the camping page on a phone.", [("nacht", "display", "Night screen: black background, big clock and date, buttons too cold, fine, too warm"), ("camping", "handy", "Camping page on a phone at 390 pixels wide")]),
+            ("Night screen: almost black, big clock, feedback \u201ctoo cold / fine / too warm\u201d. Next to it the camping page on a phone.", [("nacht", "display", "Night screen: black background, big clock and date, buttons too cold, fine, too warm"), ("camping38", "handy", "Camping page on a phone at 390 pixels wide")]),
         ],
         "alle": {"h": "Everything Panoptes {V} can do",
                  "lead": "By area. No label means: done.",
@@ -510,17 +512,19 @@ T = {
             ("🌐", "Five languages", "German, English, French, Italian and Dutch."),
         ],
         "h_bilder": "What Panoptes looks like",
-        "bilder_lead": "Panoptes 0.1.38 on the car screen and on a phone, taken in the emulator with sample data, not from a car. Under \u201cmore pictures\u201d there are also older pictures from 0.1.10 until new ones exist. Click a picture to enlarge it.",
+        "bilder_lead": "Panoptes 0.1.38 on the car screen and on a phone, taken in the emulator with sample data, not from a car. Pages without data show \u201cnot available\u201d or \u201c--\u201d. Only the map is still an older picture from 0.1.10. Click a picture to enlarge it.",
         "bilder": [
+            ("Home: charge level, range and quick buttons.", [("start38", "display", "Home page on the car screen: charge level, range, quick buttons lock, pre-condition, flash, find, boot"), ("start38", "handy", "Home page on a phone")]),
             ("Cameras & guard: one big switch, below it today's recordings.", [("waechter38", "display", "Guard on the car screen: guard is off, big button switch guard on"), ("waechter38", "handy", "Guard on a phone with a big switch")]),
             ("Apps & display → Display: “What does the cluster show?” Tap a picture.", [("display38", "display", "Page Display: cluster, background and lock, launcher; choice what the cluster shows"), ("display38", "handy", "Page Display on a phone")]),
+            ("Monthly report: distance, consumption, charging, standby loss and guard, also for printing.", [("bericht38", "display", "Monthly report November 2026 on the car screen"), ("bericht38", "handy", "Monthly report on a phone")]),
+            ("Rules: build your own “When … / Then …”.", [("regeln38", "display", "When-then rules: no rule yet, button new rule"), ("regeln38", "handy", "Rules on a phone")]),
+            ("Telegram: set up in three short steps.", [("telegram38", "display", "Set up Telegram notifications in three steps"), ("telegram38", "handy", "Set up Telegram on a phone")]),
+            ("Pair a device: phone or EV Cockpit, only with your confirmation.", [("koppeln38", "display", "Pair a device: button pair new device, no device paired yet"), ("koppeln38", "handy", "Pair a device on a phone")]),
             ("Settings: “What would you like to set?”, with search.", [("system38", "display", "All settings: connections, car and display, app and data, advanced"), ("system38", "handy", "All settings on a phone")]),
             ("Setup: optional steps under “Noch einrichten” (still to set up).", [("einrichtung38", "display", "Setup: list of optional steps still to set up"), ("einrichtung38", "handy", "Still to set up on a phone")]),
             ("Controls on a phone: tiles for security, boot, climate and seats.", [("steuerung38", "handy", "Controls on a phone with tiles security, boot, climate, seats")]),
             ("Older picture (0.1.10): map with chargers and free spots.", [("karte", "pc", "Map with chargers on a PC"), ("karte", "display", "Map on the car screen")]),
-            ("Older picture (0.1.10): monthly report with distance, consumption, charging and guard.", [("monatsbericht", "pc", "Monthly report on a PC"), ("monatsbericht", "display", "Monthly report on the car screen")]),
-            ("Older picture (0.1.10): pair a device with a check number.", [("geraete", "pc", "Pairing: the EV Cockpit wants to connect, check number 4711")]),
-            ("Older picture (0.1.10): Telegram, every kind of message on its own.", [("telegram", "handy", "Telegram notifications on a phone, each kind switchable")]),
         ],
         "handy": "on a phone", "pc": "on a PC",
         "h_zus": "How it all fits together",
@@ -1094,7 +1098,7 @@ def seite(t):
     o.append('  <div class="drei">%s</div>' % "".join("<p><b>%s</b> %s</p>" % x for x in t["drei"]))
     o.append('  <div class="bd-knoepfe"><a class="bd-knopf gross haupt" href="#%s" data-umami-event="download-weiter" data-umami-event-quelle="hero">%s</a>'
              '<a class="bd-knopf gross leer" href="#schritte">%s</a></div></header>' % (t["dl_anker"], t["hero_dl"], t["hero_anl"]))
-    o.append("  " + reihe([("display38", "display", t["hero_alt_pc"]), ("waechter38", "handy", t["hero_alt_handy"])], p, sofort=True))
+    o.append("  " + reihe([("start38", "display", t["hero_alt_pc"]), ("start38", "handy", t["hero_alt_handy"])], p, sofort=True))
     o.append('  <div class="bd-hinweis"><p>%s</p></div>' % t["wichtig"])
     # Ist das was für mich?
     o.append('  <h2 id="fuer-mich">%s</h2>\n  <div class="bd-kacheln">' % t["h_fuer_mich"])
