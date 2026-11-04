@@ -5477,6 +5477,10 @@ class H(BaseHTTPRequestHandler):
             self._send(_i18n(apps_display.UPDATES_SEITE))
         elif p == "/launcher/stand":
             self._send(json.dumps(apps_display.launcher_update_stand(_panoptes_obj() if _panoptes_gekoppelt() else None), ensure_ascii=False), "application/json")
+        elif p == "/updates/fern":
+            q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+            self._send(json.dumps(apps_display.fern_lesen(_panoptes_obj() if _panoptes_gekoppelt() else None, (q.get("sprache") or ["de"])[0]),
+                                  ensure_ascii=False), "application/json")
         elif p == "/updates/cockpit":
             u = _STATE.get("update") or {}
             self._send(json.dumps({"version": VERSION, "pruefen": bool(_CFG.get("update_check")), "neu": u.get("version") or "",
@@ -5974,6 +5978,17 @@ class H(BaseHTTPRequestHandler):
                 return self._send(json.dumps({"ok": True}), "application/json")
             except Exception as e:
                 return self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json", 400)
+        if u.path == "/updates/fern/starten":
+            # UPDATE_API_CLIENTS.md: nur nach dem Ja der Rueckfrage auf der Seite, nur die angebotene Version; Regeln prueft Panoptes
+            nutzer_aktion()
+            try:
+                w = json.loads(raw or "{}")
+                w = w if isinstance(w, dict) else {}
+            except Exception:
+                w = {}
+            r = apps_display.fern_starten(_panoptes_obj() if _panoptes_gekoppelt() else None, w.get("was"), w.get("version"),
+                                          w.get("bestaetigt"), w.get("mobil"), w.get("sprache") or "de")
+            return self._send(json.dumps(r, ensure_ascii=False), "application/json")
         if u.path in ("/tacho/waehlen", "/tacho/normal", "/launcher/speichern", "/launcher/standard", "/launcher/oeffnen"):
             # 1.23 Apps & Display: Tacho-Auswahl und Launcher-Layout ueber die Kopplung (Rechte tacho/launcher, nur der Besitzer schaltet sie ein).
             # Nur Anzeigen im Auto, nie ein Fahrzeugbefehl; nur auf Klick.

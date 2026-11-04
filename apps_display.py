@@ -239,6 +239,65 @@ def launcher_update_stand(pv):
     return {"ok": True, "installiert": True, "text": "Der Launcher ist aktuell."}
 
 
+# ---------------------------------------------------------------- Updates aus der Ferne (UPDATE_API_CLIENTS.md, ab Panoptes 0.1.38.2)
+# Ein Pfad fuer Panoptes UND Launcher, Recht "update" (nur der Besitzer schaltet es ein). Der Kern startet nur, was sein Updater kennt;
+# das Cockpit schickt nie eine Datei oder Adresse, nur {was, version (= neueste.version), bestaetigt, mobil} - und nur nach der Rueckfrage.
+FERN_PFAD = "/api/appupdate/fern"
+FERN_WAS = ("panoptes", "launcher")
+VERSION_MUSTER = re.compile(r"^[0-9][0-9A-Za-z.\-]{0,30}$")
+
+
+def _sprache(s):
+    return s if s in ("de", "en", "fr", "it", "nl") else "de"
+
+
+def _fern_teil(t):
+    t = t if isinstance(t, dict) else {}
+    neu = t.get("neueste") if isinstance(t.get("neueste"), dict) else None
+    version = str((neu or {}).get("version") or "")
+    if neu is not None and not VERSION_MUSTER.match(version):
+        neu = None
+    zustand = t.get("zustand") if t.get("zustand") in ("laeuft", "fertig", "fehler") else None
+    darf = t.get("darf") is True
+    try:
+        groesse = int((neu or {}).get("groesseBytes") or 0)
+    except (TypeError, ValueError):
+        groesse = 0
+    return {"darf": darf, "neu": version if neu else "", "groesse": max(groesse, 0), "zustand": zustand,
+            "mobilFrage": t.get("mobilFrage") is True, "text": str(t.get("text") or "")[:400],
+            "knopf": bool(darf and neu and zustand != "laeuft")}
+
+
+@_sicher
+def fern_lesen(pv, sprache="de"):
+    st, d = _anfrage(pv, FERN_PFAD + "?sprache=" + _sprache(sprache))
+    if st in (404, 405):
+        return {"ok": False, "alt": True}                    # Panoptes vor 0.1.38.2: Seite nimmt den alten Weg
+    if st != 200 or d.get("ok") is False:
+        return _fehler(st, d)
+    return {"ok": True, "panoptes": _fern_teil(d.get("panoptes")), "launcher": _fern_teil(d.get("launcher"))}
+
+
+@_sicher
+def fern_starten(pv, was, version, bestaetigt, mobil=False, sprache="de"):
+    """Nur nach dem Ja im Cockpit (bestaetigt muss True sein), nur fuer genau die angebotene Version."""
+    if was not in FERN_WAS or not VERSION_MUSTER.match(str(version or "")) or bestaetigt is not True:
+        return {"ok": False, "text": "Das geht nicht."}
+    st, d = _anfrage(pv, FERN_PFAD + "?sprache=" + _sprache(sprache),
+                     {"was": was, "version": str(version), "bestaetigt": True, "mobil": mobil is True})
+    if st == 404:
+        return {"ok": False, "text": TEXT_ALT}
+    try:
+        groesse = int(d.get("groesseBytes") or 0)
+    except (TypeError, ValueError):
+        groesse = 0
+    r = {"ok": d.get("ok") is True, "vorgemerkt": d.get("vorgemerkt") is True, "zustand": d.get("zustand") if d.get("zustand") == "laeuft" else None,
+         "mobilFrage": d.get("mobilFrage") is True, "groesse": max(groesse, 0), "text": str(d.get("text") or "")[:400]}
+    if not r["text"] and not r["ok"]:
+        r["text"] = _fehler(st, d)["text"]
+    return r
+
+
 # ---------------------------------------------------------------- Seiten
 
 TACHO_SEITE = """<!doctype html><html lang=de><head><meta charset=utf-8>
@@ -439,12 +498,35 @@ UPDATES_SEITE = """<!doctype html><html lang=de><head><meta charset=utf-8>
 <h1>Updates</h1>
 <div class=sub>Hier siehst du, ob es neue Versionen gibt. Installiert wird nur, wenn du es bestätigst.</div>
 <div class=card><h3>Panoptes im Auto</h3><div class=sub id=u_ptext>⏳ Frage das Auto …</div><div id=u_pknopf></div></div>
-<div class=card><h3>Panoptes-Launcher</h3><div class=sub id=u_ltext>⏳ Frage das Auto …</div></div>
+<div class=card><h3>Panoptes-Launcher</h3><div class=sub id=u_ltext>⏳ Frage das Auto …</div><div id=u_lknopf></div></div>
 <div class=card><h3>EV-Cockpit</h3><div class=sub id=u_ctext></div><div id=u_cknopf></div></div>
 </div>
 <script>
-const el=id=>document.getElementById(id);let UV='',UT=null;
+const el=id=>document.getElementById(id);let UV='',UT=null,F=null,FT=null;const SPR=()=>(window.__LANG__==='en'?'en':'de');
 function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function mb(b,was){return b>0?Math.max(1,Math.round(b/1e6))+' MB':(was==='panoptes'?'70 MB':'20 MB');}
+// Ab Panoptes 0.1.38.2: /api/appupdate/fern (UPDATE_API_CLIENTS.md). Texte kommen fertig vom Kern; die Rueckfrage ist dieselbe wie bei Telegram.
+function fZeigen(was){const t=F[was],tx=el(was==='panoptes'?'u_ptext':'u_ltext'),k=el(was==='panoptes'?'u_pknopf':'u_lknopf');
+ tx.textContent=(t.zustand==='laeuft'?'⏳ ':'')+(t.text||(t.neu?'':__T(was==='panoptes'?'Panoptes ist aktuell.':'Der Launcher ist aktuell.')));
+ k.innerHTML=t.knopf?'<button type=button onclick="fFrage(\\''+was+'\\',false,0)">⬆️ '+esc(__T('Jetzt installieren'))+'</button>':'';}
+function fFrage(was,mobil,groesse){const t=F[was],k=el(was==='panoptes'?'u_pknopf':'u_lknopf');
+ const satz=was==='panoptes'?__T('Panoptes {version} jetzt installieren?').replace('{version}',t.neu)+' '+__T('Das dauert etwa 3–8 Minuten. In der Zeit ist der Wächter aus. Ist das Auto gerade an, installiert Panoptes nach dem Abstellen.')
+  :__T('Launcher {version} jetzt installieren?').replace('{version}',t.neu)+' '+__T('Das dauert etwa eine Minute. Während der Fahrt geht es nicht.');
+ const zus=(mobil||t.mobilFrage)?'<br>'+esc(__T('Das Auto hat gerade kein WLAN. Das Update braucht etwa {Größe} mobile Daten.').replace('{Größe}',mb(groesse||t.groesse,was))):'';
+ k.innerHTML='<div class=warn><b>'+esc(satz)+'</b>'+zus+'</div><button type=button onclick="fStart(\\''+was+'\\','+(mobil||t.mobilFrage?'true':'false')+')">✅ '+esc(__T('Ja, installieren'))
+  +'</button> <button type=button class=sec onclick="fLaden()">✖️ '+esc(__T('Nein'))+'</button>';}
+async function fStart(was,mobil){const t=F[was],k=el(was==='panoptes'?'u_pknopf':'u_lknopf'),tx=el(was==='panoptes'?'u_ptext':'u_ltext');k.innerHTML='';tx.textContent='⏳ '+__T('Sende …');
+ try{const r=await (await fetch('/updates/fern/starten',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({was:was,version:t.neu,bestaetigt:true,mobil:!!mobil,sprache:SPR()})})).json();
+  if(!r.ok&&r.mobilFrage&&!mobil){t.mobilFrage=true;fFrage(was,true,r.groesse);tx.textContent=r.text||'';return;}
+  tx.textContent=(r.ok?'⬆️ ':'⚠️ ')+(r.text||__T('Das hat nicht geklappt.'));clearTimeout(FT);FT=setTimeout(fLaden,30000);}
+ catch(e){tx.textContent='⚠️ '+__T('Das Cockpit erreicht sich selbst nicht – bitte neu starten.');}}
+async function fLaden(){clearTimeout(FT);let r=null;
+ try{r=await (await fetch('/updates/fern?sprache='+SPR())).json();}catch(e){}
+ if(r&&r.alt){pLaden();lLaden();return;}
+ if(!r||!r.ok){el('u_ptext').textContent=__T((r&&r.text)||'Das Auto antwortet gerade nicht. Bitte später noch einmal.');el('u_ltext').textContent='';el('u_pknopf').innerHTML='';el('u_lknopf').innerHTML='';return;}
+ F=r;fZeigen('panoptes');fZeigen('launcher');
+ if(r.panoptes.zustand==='laeuft'||r.launcher.zustand==='laeuft')FT=setTimeout(fLaden,30000);}
+// Panoptes vor 0.1.38.2: alter Weg (nur Panoptes, Recht update), Launcher nur Stand
 function pZeigen(r){const t=el('u_ptext'),k=el('u_pknopf');k.innerHTML='';
  if(!r||!r.sichtbar){t.textContent=__T('Dafür braucht das Cockpit die Kopplung „Steuern einrichten“ (Startseite) und Panoptes ab 0.1.26.1.');return;}
  UV=r.version||'';t.textContent=(r.zustand==='laeuft'?'⏳ ':'')+__T(r.text||'');
@@ -461,7 +543,7 @@ async function lLaden(){try{const r=await (await fetch('/launcher/stand')).json(
 async function cLaden(){try{const r=await (await fetch('/updates/cockpit')).json();
  el('u_ctext').textContent=r.neu?__T('Neue Version')+' '+r.neu+' '+__T('ist da.')+' '+(r.was_neu||''):(r.pruefen?__T('Das Cockpit ist aktuell')+' ('+r.version+').':__T('Version')+' '+r.version+'. '+__T('Die Suche nach Updates ist aus (Einstellungen).'));
  el('u_cknopf').innerHTML=r.neu?'<a class=btn href="'+esc(r.url)+'" target=_blank rel=noopener>'+esc(__T('Herunterladen'))+' →</a>':'';}catch(e){}}
-pLaden();lLaden();cLaden();
+fLaden();cLaden();
 </script></body></html>"""
 
 
@@ -525,5 +607,12 @@ EN = {
     LAUNCHER_NUR_AM_AUTO: "The launcher update is only possible in the car at the moment.", "Der Launcher ist aktuell.": "The launcher is up to date.",
     "Neue Version": "New version", "ist da.": "is available.", "Das Cockpit ist aktuell": "The Cockpit is up to date", "Version": "Version",
     "Die Suche nach Updates ist aus (Einstellungen).": "Checking for updates is off (Settings).", "Herunterladen": "Download",
+    "Jetzt installieren": "Install now", "Ja, installieren": "Yes, install", "Nein": "No", "Panoptes ist aktuell.": "Panoptes is up to date.",
+    "Panoptes {version} jetzt installieren?": "Install Panoptes {version} now?",
+    "Das dauert etwa 3–8 Minuten. In der Zeit ist der Wächter aus. Ist das Auto gerade an, installiert Panoptes nach dem Abstellen.":
+        "This takes about 3–8 minutes. The guard is off during that time. If the car is on right now, Panoptes installs after you switch it off.",
+    "Launcher {version} jetzt installieren?": "Install launcher {version} now?",
+    "Das dauert etwa eine Minute. Während der Fahrt geht es nicht.": "This takes about one minute. It is not possible while driving.",
+    "Das Auto hat gerade kein WLAN. Das Update braucht etwa {Größe} mobile Daten.": "The car has no Wi-Fi right now. The update needs about {Größe} of mobile data.",
     "Erst mit Panoptes verbinden (Mehr → Einstellungen).": "Connect to Panoptes first (More → Settings).",
 }

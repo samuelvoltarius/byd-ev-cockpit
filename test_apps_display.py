@@ -173,8 +173,54 @@ class TestUpdates(unittest.TestCase):
         self.assertIn("/panoptes/update/starten", h)
         self.assertIn("Ja, jetzt aktualisieren", h)
         self.assertLess(h.index("function pFrage"), h.index("function pStart"))
-        self.assertNotIn("installieren'", h)
+        self.assertNotIn("aktion:'installieren'", h)
+        self.assertNotIn("/api/appupdate/launcher", h)
         self.assertIn('href="/updates"', neu_look.hub_html("1"))
+
+
+FERN = {"ok": True, "darf": True,
+        "panoptes": {"ok": True, "darf": True, "installiert": "0.1.38.1", "neueste": {"version": "0.1.38.2", "groesseBytes": 70123456},
+                     "zustand": None, "moeglich": False, "grund": "zuendung_an", "mobilFrage": False, "text": "Update geht nur, wenn das Auto aus ist."},
+        "launcher": {"ok": True, "darf": True, "installiertVc": 4, "neueste": {"version": "0.1.38.2"}, "zustand": "laeuft", "mobilFrage": False, "text": "läuft"}}
+
+
+class TestFern(unittest.TestCase):
+    def test_lesen_knopf_nach_vertrag(self):
+        pv = FakePv({("GET", "/api/appupdate/fern?sprache=en"): (200, FERN)})
+        r = ad.fern_lesen(pv, "en")
+        self.assertTrue(r["panoptes"]["knopf"])                       # zuendung_an: Knopf trotzdem, Kern merkt vor
+        self.assertEqual(r["panoptes"]["neu"], "0.1.38.2")
+        self.assertFalse(r["launcher"]["knopf"])                      # laeuft schon
+        pv = FakePv({("GET", "/api/appupdate/fern?sprache=de"): (200, dict(FERN, panoptes=dict(FERN["panoptes"], darf=False)))})
+        self.assertFalse(ad.fern_lesen(pv, "xx")["panoptes"]["knopf"])     # ohne Recht kein Knopf; unbekannte Sprache -> de
+
+    def test_altes_panoptes(self):
+        self.assertTrue(ad.fern_lesen(FakePv({}))["alt"])
+
+    def test_starten_nur_bestaetigt_und_mit_gueltiger_version(self):
+        pv = FakePv({("POST", "/api/appupdate/fern?sprache=de"): (200, {"ok": True, "vorgemerkt": True, "text": "vorgemerkt"})})
+        for a in (("panoptes", "0.1.38.2", False), ("panoptes", "0.1.38.2", "true"), ("x", "0.1.38.2", True), ("launcher", "../a", True), ("launcher", None, True)):
+            self.assertFalse(ad.fern_starten(pv, *a)["ok"], a)
+        self.assertEqual(pv.aufrufe, [])
+        r = ad.fern_starten(pv, "panoptes", "0.1.38.2", True)
+        self.assertTrue(r["vorgemerkt"])
+        self.assertEqual(pv.aufrufe[0][2], {"was": "panoptes", "version": "0.1.38.2", "bestaetigt": True, "mobil": False})
+
+    def test_mobil_und_recht(self):
+        pv = FakePv({("POST", "/api/appupdate/fern?sprache=de"): (200, {"ok": False, "grund": "wartet_wlan", "mobilFrage": True, "groesseBytes": 9000000, "text": "kein WLAN"})})
+        r = ad.fern_starten(pv, "launcher", "0.1.38.2", True, True)
+        self.assertEqual((r["mobilFrage"], r["groesse"]), (True, 9000000))
+        self.assertTrue(pv.aufrufe[0][2]["mobil"])
+        pv = FakePv({("POST", "/api/appupdate/fern?sprache=de"): (403, {"ok": False, "grund": "nicht_erlaubt", "text": "Dieses Gerät darf keine Updates starten."})})
+        self.assertEqual(ad.fern_starten(pv, "launcher", "0.1.38.2", True)["text"], "Dieses Gerät darf keine Updates starten.")
+
+    def test_seite_fragt_vor_dem_start(self):
+        h = ad.UPDATES_SEITE
+        self.assertLess(h.index("function fFrage"), h.index("function fStart"))
+        self.assertIn("bestaetigt:true", h)
+        self.assertEqual(h.count("fetch('/updates/fern/starten'"), 1)
+        self.assertIn("fStart(", h[h.index("function fFrage"):h.index("async function fStart")])     # Start nur aus der Rueckfrage
+        self.assertNotIn("fStart(", h[h.index("function fZeigen"):h.index("function fFrage")])
 
 
 class TestSicherheit(unittest.TestCase):
@@ -182,8 +228,9 @@ class TestSicherheit(unittest.TestCase):
         src = open(os.path.join(os.path.dirname(__file__), "apps_display.py"), encoding="utf-8").read()
         src = src[:src.index("EN = {")]            # Code und Seiten, ohne die Uebersetzungstabelle
         pfade = set(re.findall(r'"(/api/[^"]*)"', src))
-        self.assertEqual(pfade, {"/api/tacho/auswahl", "/api/tacho/normal", "/api/launcher/v1/layout", "/api/appupdate/launcher"})
-        for wort in ("vehicle", "aufsperren", "unlock", "installieren", "entfernen\"", "hupe", "horn"):
+        self.assertEqual(pfade, {"/api/tacho/auswahl", "/api/tacho/normal", "/api/launcher/v1/layout", "/api/appupdate/launcher", "/api/appupdate/fern"})
+        self.assertNotIn('"aktion": "installieren"', src)
+        for wort in ("vehicle", "aufsperren", "unlock", "entfernen\"", "hupe", "horn", "apk"):
             self.assertNotIn(wort, src.lower().replace("installiert", ""), wort)
 
     def test_alle_texte_haben_englisch(self):
