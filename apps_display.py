@@ -497,16 +497,19 @@ UPDATES_SEITE = """<!doctype html><html lang=de><head><meta charset=utf-8>
 <style>x</style></head><body><div class=w>
 <h1>Updates</h1>
 <div class=sub>Hier siehst du, ob es neue Versionen gibt. Installiert wird nur, wenn du es bestätigst.</div>
-<div class=card><h3>Panoptes im Auto</h3><div class=sub id=u_ptext>⏳ Frage das Auto …</div><div id=u_pknopf></div></div>
-<div class=card><h3>Panoptes-Launcher</h3><div class=sub id=u_ltext>⏳ Frage das Auto …</div><div id=u_lknopf></div></div>
-<div class=card><h3>EV-Cockpit</h3><div class=sub id=u_ctext></div><div id=u_cknopf></div></div>
+<div class=card id=u_pk><h3>Panoptes im Auto<span class=abzustand id=u_pz></span></h3><div class=sub id=u_ptext>⏳ Frage das Auto …</div><div id=u_pknopf></div></div>
+<div class=card id=u_lk><h3>Panoptes-Launcher<span class=abzustand id=u_lz></span></h3><div class=sub id=u_ltext>⏳ Frage das Auto …</div><div id=u_lknopf></div></div>
+<div class=card id=u_ck><h3>EV-Cockpit<span class=abzustand id=u_cz></span></h3><div class=sub id=u_ctext></div><div id=u_cknopf></div></div>
 </div>
 <script>
 const el=id=>document.getElementById(id);let UV='',UT=null,F=null,FT=null;const SPR=()=>(window.__LANG__==='en'?'en':'de');
 function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+// 1.23.1: Zustand rechts im (eingeklappten) Kopf; laeuft ein Update, klappt seine Karte selbst auf (EINKLAPPEN_MUSTER Regel 5)
+function zst(id,neu,laeuft){const z=el(id);if(!z)return;z.textContent=laeuft?__T('Läuft …'):neu?__T('Neue Version'):__T('Aktuell');z.className='abzustand'+(neu||laeuft?' neu':'');
+ if(laeuft&&window.EvcEinklappen)EvcEinklappen.oeffne(id==='u_pz'?'u_pk':'u_lk',false);}
 function mb(b,was){return b>0?Math.max(1,Math.round(b/1e6))+' MB':(was==='panoptes'?'70 MB':'20 MB');}
 // Ab Panoptes 0.1.38.2: /api/appupdate/fern (UPDATE_API_CLIENTS.md). Texte kommen fertig vom Kern; die Rueckfrage ist dieselbe wie bei Telegram.
-function fZeigen(was){const t=F[was],tx=el(was==='panoptes'?'u_ptext':'u_ltext'),k=el(was==='panoptes'?'u_pknopf':'u_lknopf');
+function fZeigen(was){const t=F[was];zst(was==='panoptes'?'u_pz':'u_lz',!!t.neu,t.zustand==='laeuft');const tx=el(was==='panoptes'?'u_ptext':'u_ltext'),k=el(was==='panoptes'?'u_pknopf':'u_lknopf');
  tx.textContent=(t.zustand==='laeuft'?'⏳ ':'')+(t.text||(t.neu?'':__T(was==='panoptes'?'Panoptes ist aktuell.':'Der Launcher ist aktuell.')));
  k.innerHTML=t.knopf?'<button type=button onclick="fFrage(\\''+was+'\\',false,0)">⬆️ '+esc(__T('Jetzt installieren'))+'</button>':'';}
 function fFrage(was,mobil,groesse){const t=F[was],k=el(was==='panoptes'?'u_pknopf':'u_lknopf');
@@ -529,7 +532,7 @@ async function fLaden(){clearTimeout(FT);let r=null;
 // Panoptes vor 0.1.38.2: alter Weg (nur Panoptes, Recht update), Launcher nur Stand
 function pZeigen(r){const t=el('u_ptext'),k=el('u_pknopf');k.innerHTML='';
  if(!r||!r.sichtbar){t.textContent=__T('Dafür braucht das Cockpit die Kopplung „Steuern einrichten“ (Startseite) und Panoptes ab 0.1.26.1.');return;}
- UV=r.version||'';t.textContent=(r.zustand==='laeuft'?'⏳ ':'')+__T(r.text||'');
+ UV=r.version||'';zst('u_pz',!!r.knopf,r.zustand==='laeuft');t.textContent=(r.zustand==='laeuft'?'⏳ ':'')+__T(r.text||'');
  if(r.knopf)k.innerHTML='<button type=button onclick="pFrage()">⬆️ '+esc(__T('Panoptes aktualisieren'))+'</button>';}
 function pFrage(){el('u_pknopf').innerHTML='<div class=warn><b>'+esc(__T('Panoptes wird jetzt aktualisiert. Wächter und Verbindung sind ca. 3–8 Minuten weg.'))+'</b></div>'
  +'<button type=button onclick="pStart()">'+esc(__T('Ja, jetzt aktualisieren'))+'</button> <button type=button class=sec onclick="pLaden()">'+esc(__T('Abbrechen'))+'</button>';}
@@ -539,8 +542,8 @@ async function pStart(){el('u_pknopf').innerHTML='';el('u_ptext').textContent='�
  catch(e){el('u_ptext').textContent='⚠️ '+__T('Das Cockpit erreicht sich selbst nicht – bitte neu starten.');}}
 async function pLaden(){let r=null;try{r=await (await fetch('/panoptes/update')).json();pZeigen(r);}catch(e){}
  clearTimeout(UT);if(r&&r.zustand==='laeuft')UT=setTimeout(pLaden,12000);}
-async function lLaden(){try{const r=await (await fetch('/launcher/stand')).json();el('u_ltext').textContent=(r.neu?__T('Neue Version')+' '+r.neu+' '+__T('ist da.')+' ':'')+__T(r.text||'');}catch(e){el('u_ltext').textContent='⚠️';}}
-async function cLaden(){try{const r=await (await fetch('/updates/cockpit')).json();
+async function lLaden(){try{const r=await (await fetch('/launcher/stand')).json();if(r.ok)zst('u_lz',!!r.neu,false);el('u_ltext').textContent=(r.neu?__T('Neue Version')+' '+r.neu+' '+__T('ist da.')+' ':'')+__T(r.text||'');}catch(e){el('u_ltext').textContent='⚠️';}}
+async function cLaden(){try{const r=await (await fetch('/updates/cockpit')).json();if(r.neu||r.pruefen)zst('u_cz',!!r.neu,false);
  el('u_ctext').textContent=r.neu?__T('Neue Version')+' '+r.neu+' '+__T('ist da.')+' '+(r.was_neu||''):(r.pruefen?__T('Das Cockpit ist aktuell')+' ('+r.version+').':__T('Version')+' '+r.version+'. '+__T('Die Suche nach Updates ist aus (Einstellungen).'));
  el('u_cknopf').innerHTML=r.neu?'<a class=btn href="'+esc(r.url)+'" target=_blank rel=noopener>'+esc(__T('Herunterladen'))+' →</a>':'';}catch(e){}}
 fLaden();cLaden();
@@ -605,7 +608,7 @@ EN = {
     "Panoptes wird jetzt aktualisiert. Wächter und Verbindung sind ca. 3–8 Minuten weg.":
         "Panoptes will now be updated. Guard and connection are gone for about 3–8 minutes.",
     LAUNCHER_NUR_AM_AUTO: "The launcher update is only possible in the car at the moment.", "Der Launcher ist aktuell.": "The launcher is up to date.",
-    "Neue Version": "New version", "ist da.": "is available.", "Das Cockpit ist aktuell": "The Cockpit is up to date", "Version": "Version",
+    "Neue Version": "New version", "Läuft …": "Running …", "Aktuell": "Up to date", "ist da.": "is available.", "Das Cockpit ist aktuell": "The Cockpit is up to date", "Version": "Version",
     "Die Suche nach Updates ist aus (Einstellungen).": "Checking for updates is off (Settings).", "Herunterladen": "Download",
     "Jetzt installieren": "Install now", "Ja, installieren": "Yes, install", "Nein": "No", "Panoptes ist aktuell.": "Panoptes is up to date.",
     "Panoptes {version} jetzt installieren?": "Install Panoptes {version} now?",

@@ -247,7 +247,7 @@ class TestSicherheit(unittest.TestCase):
 class TestBereiche(unittest.TestCase):
     def test_sieben_bereiche_in_fester_reihenfolge(self):
         h = neu_look.hub_html("1.23")
-        ids = re.findall(r'class=bereich id="b_([a-z]+)"', h)
+        ids = re.findall(r'class="card bereichkarte" id="b_([a-z]+)"', h)
         self.assertEqual(ids, ["start", "car", "guard", "drive", "auto", "apps", "system"])
         namen = [n for _b, _i, n, _k in neu_look.BEREICHE]
         self.assertEqual(namen, ["Start", "Steuerung", "Kameras & Wächter", "Fahrten & Laden", "Regeln", "Apps & Display", "Einstellungen"])
@@ -267,6 +267,37 @@ class TestBereiche(unittest.TestCase):
     def test_englisch(self):
         for _b, _i, n, ks in neu_look.BEREICHE:
             self.assertIn(n, neu_look.EN)
+
+
+class TestEinklappen(unittest.TestCase):
+    """1.23.1: EINKLAPPEN_MUSTER.md - auf allen Unterseiten im neuen Look, nur einer offen, Sprung oeffnet, Assistent nie."""
+
+    def test_auf_jeder_unterseite(self):
+        for h in (ad.UPDATES_SEITE, ad.LAUNCHER_SEITE, neu_look.hub_html("1"), ev.ABOUT, ev.PANOPTES_SEITE):
+            x = ev._i18n(h)
+            self.assertIn("id=einklappen", x)
+            self.assertIn("window.EvcEinklappen", x)
+        self.assertNotIn("window.EvcEinklappen", ev._i18n(__import__("mein_auto_seite").seite("", "", ev.COCKPIT)))
+
+    def test_regeln_im_baustein(self):
+        js = neu_look.EINKLAPPEN_JS
+        self.assertIn("vis.length<2", js)                                  # Regel 3: eine Karte bleibt offen
+        self.assertIn("setze(x,x===a)", js)                                # Regel 2: nur einer offen
+        self.assertIn("hashchange", js)                                    # Regel 4: Sprungziele
+        self.assertIn("data-collapse-default')==='open'", js)              # Regel 5
+        self.assertIn("closest('.pan')", js)                               # Assistent nie
+        self.assertIn("data-collapse')!=='off'", js)
+        self.assertNotIn("localStorage", js)                               # Regel 6: kein Merken
+        self.assertIn("min-height:56px", neu_look.EINKLAPPEN_CSS)          # Regel 7
+
+    def test_bereiche_sind_abschnitte_mit_kopf(self):
+        h = neu_look.hub_html("1")
+        self.assertEqual(h.count('class="card bereichkarte"'), 7)
+        self.assertEqual(h.count("<h2 class=bereich>"), 7)
+
+    def test_updates_zustand_im_kopf(self):
+        for i in ("u_pz", "u_lz", "u_cz"):
+            self.assertIn("class=abzustand id=%s" % i, ad.UPDATES_SEITE)
 
 
 class TestLeseZugang(unittest.TestCase):

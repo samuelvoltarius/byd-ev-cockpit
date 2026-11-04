@@ -20,7 +20,7 @@ import asyncio, json, os, re, threading, time, urllib.error, urllib.parse, urlli
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.23.0"
+VERSION = "1.23.1"
 KARTE_STIL = "https://byd.serveone.at/tiles/style/surfmate-dark.json"   # Community-Karte (wie Panoptes/SurfMate)
 PING_URL = "https://byd.serveone.at/ev-cockpit/ping"   # NUR bei ausdruecklicher Einwilligung
 
@@ -1834,7 +1834,8 @@ def _i18n(h):
     if 'name=evc-neu' in h:
         # 1.21: Unterseite im Panoptes-Look: das alte erste <style> faellt weg, das gemeinsame Stylesheet kommt davor
         h = re.sub(r"<style>.*?</style>", "", h, count=1, flags=re.S)
-        h = h.replace('</head>', LOOK_CSS + RAHMEN_CSS + neu_look.UNI_CSS + '</head>', 1).replace('<body>', '<body>' + neu_look.ICONS, 1)
+        h = h.replace('</head>', LOOK_CSS + RAHMEN_CSS + neu_look.UNI_CSS + neu_look.EINKLAPPEN_CSS + '</head>', 1).replace('<body>', '<body>' + neu_look.ICONS, 1)
+        h = h.replace('</body>', neu_look.EINKLAPPEN_JS + '</body>', 1)       # 1.23.1: Abschnitte eingeklappt, nur einer offen
     elif '</head>' in h:
         h = h.replace('</head>', LOOK_CSS + ('' if 'evc-ohne-sprachfeld' in h else RAHMEN_CSS) + '</head>', 1)
     return h.replace('</body>', ('' if 'evc-ohne-sprachfeld' in h else RAHMEN_JS) + I18N_BODY + '</body>', 1) if '</body>' in h else h + I18N_BODY

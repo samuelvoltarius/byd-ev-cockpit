@@ -79,12 +79,61 @@ th{color:var(--ink-2);font-size:12.5px;font-weight:700}th:first-child,td:first-c
 .hub a svg{width:30px;height:30px;color:var(--aqua)}
 .hub a b{font:700 18px 'Sora',system-ui,sans-serif}
 .hub a small{font-size:13.5px}
-.bereich{display:flex;align-items:center;gap:10px;font:700 15px 'Sora',system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:22px 2px 0}
+.bereich{display:flex;align-items:center;gap:10px;font:700 17px 'Sora',system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--txt);margin:0}
+.bereichkarte .hub{margin:10px 0 4px}
 .bereich svg{width:24px;height:24px;color:var(--aqua)}
 .hub a.neu{background:linear-gradient(135deg,rgba(11,92,102,.45),rgba(10,34,56,.35))}
 @media(max-width:760px){.hub{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}}
 @media(max-width:480px){.hub{grid-template-columns:1fr}.w,.wrap{padding:6px 14px 24px}.dot2 b{display:none}}
 </style>"""
+
+# 1.23.1: Einklappen wie Panoptes 0.1.38.4 (EINKLAPPEN_MUSTER.md). Abschnitt = .card, deren erstes Kind eine Ueberschrift (h2/h3) ist,
+# oder [data-abschnitt]. Regeln: 1 Standard zu (nur der Kopf mit Pfeil), 2 nur einer offen, 3 eine einzige sichtbare Karte bleibt offen,
+# 4 #sprung oeffnet den passenden Abschnitt, 5 data-collapse-default="open" startet offen, 6 kein Merken ueber Seitenwechsel,
+# 7 Kopf >= 56 px, ganze Zeile tippbar (Knoepfe/Links darin behalten ihre Wirkung). Ausnahme: data-collapse="off".
+# Nie eingeklappt: Karten im Assistenten (.pan) und neu gezeichnete Karten behalten den offenen Abschnitt (gleiche id/Ueberschrift).
+EINKLAPPEN_CSS = r"""<style id=einklappen>
+.abschn>.abkopf{display:flex;align-items:center;gap:10px;min-height:56px;margin:-6px 0;cursor:pointer;user-select:none}
+.abschn>.abkopf::after{content:"";margin-left:auto;flex:0 0 auto;width:11px;height:11px;border-right:2.5px solid var(--aqua);border-bottom:2.5px solid var(--aqua);
+ transform:rotate(-135deg);margin-top:6px;transition:transform .15s}
+.abschn.zu>.abkopf::after{transform:rotate(45deg);margin-top:-4px}
+.abschn.zu>:not(.abkopf){display:none!important}
+.abschn.zu{padding-top:14px;padding-bottom:14px}
+.abschn:not(.zu)>.abkopf{margin-bottom:6px}
+.abkopf .abzustand{margin-left:auto;font:600 14px 'Manrope',system-ui,sans-serif;letter-spacing:0;text-transform:none;color:var(--ink-2)}
+.abkopf .abzustand.neu{color:var(--lime)}
+.abkopf:has(.abzustand:not(:empty))::after{margin-left:4px}
+</style>"""
+EINKLAPPEN_JS = r"""<script>(function(){
+ var OFFEN=null,AN=false;
+ function schluessel(k){return k.id||((kopf(k)||{}).textContent||'').trim().slice(0,60);}
+ function kopf(k){var h=k.firstElementChild;return (h&&/^H[23]$/.test(h.tagName))?h:(k.hasAttribute('data-abschnitt')?h:null);}
+ function karten(){return [].slice.call(document.querySelectorAll('.card,[data-abschnitt]')).filter(function(k){
+  return k.getAttribute('data-collapse')!=='off'&&!k.closest('.pan')&&!k.parentElement.closest('.abschn,[data-abschnitt]')&&kopf(k);});}
+ function sichtbar(k){return !(k.offsetParent===null&&getComputedStyle(k).position!=='fixed');}
+ function setze(k,auf){k.classList.toggle('zu',!auf);var h=k.querySelector(':scope > .abkopf');if(h)h.setAttribute('aria-expanded',auf?'true':'false');}
+ function oeffne(k,scrollen){var alle=karten();if(typeof k==='string')k=document.getElementById(k);if(!k)return;
+  var a=k.closest('.abschn');if(!a)return;OFFEN=schluessel(a);
+  alle.forEach(function(x){if(x.classList.contains('abschn'))setze(x,x===a);});
+  if(scrollen)a.scrollIntoView({block:'start',behavior:'smooth'});}
+ function verdrahte(){var alle=karten(),vis=alle.filter(sichtbar);
+  if(vis.length<2){alle.forEach(function(k){if(k.classList.contains('abschn'))setze(k,true);});return;}
+  alle.forEach(function(k){if(k.classList.contains('abschn'))return;var h=kopf(k);
+   k.classList.add('abschn');h.classList.add('abkopf');h.setAttribute('role','button');h.setAttribute('tabindex','0');
+   var los=function(ev){var t=ev.target;while(t&&t!==h){if(/^(A|BUTTON|INPUT|SELECT|LABEL|TEXTAREA)$/.test(t.tagName))return;t=t.parentNode;}
+    if(k.classList.contains('zu'))oeffne(k,false);else{setze(k,false);OFFEN='';}};
+   h.addEventListener('click',los);h.addEventListener('keydown',function(ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();los(ev);}});
+   var auf=(OFFEN!==null&&OFFEN===schluessel(k))||(OFFEN===null&&k.getAttribute('data-collapse-default')==='open');
+   setze(k,auf);if(auf)OFFEN=schluessel(k);});}
+ function sprung(){var id=decodeURIComponent((location.hash||'').slice(1));if(!id)return;var z=document.getElementById(id);if(z&&z.closest('.abschn'))oeffne(z,true);}
+ var T=null;function spaeter(){clearTimeout(T);T=setTimeout(function(){verdrahte();if(!AN){AN=true;sprung();}},60);}
+ window.EvcEinklappen={oeffne:oeffne,schliesseAlle:function(){OFFEN='';karten().forEach(function(k){if(k.classList.contains('abschn'))setze(k,false);});},neu:verdrahte};
+ function start(){verdrahte();sprung();AN=true;new MutationObserver(spaeter).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style','hidden']});
+  window.addEventListener('hashchange',sprung);
+  document.addEventListener('toggle',function(ev){var d=ev.target;if(d.tagName==='DETAILS'&&d.open&&d.classList.contains('akkd'))
+   [].slice.call(document.querySelectorAll('details.akkd[open]')).forEach(function(o){if(o!==d)o.open=false;});},true);}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();})();</script>"""
+
 
 ICONS = r"""<svg width="0" height="0" style="position:absolute">
  <symbol id="n-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
@@ -260,7 +309,7 @@ def hub_html(version="", sicht=None):
             k += ('<a href="#" onclick="try{localStorage.setItem(' + "'evc_lang'" + ',window.__LANG__===' + "'en'" + '?' + "'de'" + ':' + "'en'" +
                   ');}catch(e){}location.reload();return false"><svg><use href="#n-globe"/></svg><b>Deutsch / English</b><small>Sprache wechseln</small></a>')
         if k:
-            teile.append('<div class=bereich id="b_%s"><svg><use href="#n-%s"/></svg>%s</div><div class=hub>%s</div>' % (bid, ico, name.replace("&", "&amp;"), k))
+            teile.append('<div class="card bereichkarte" id="b_%s"><h2 class=bereich><svg><use href="#n-%s"/></svg>%s</h2><div class=hub>%s</div></div>' % (bid, ico, name.replace("&", "&amp;"), k))
     return nl.join(["<!doctype html><html lang=de><head><meta charset=utf-8>",
                     '<meta name=viewport content="width=device-width,initial-scale=1">',
                     "<title>EV-Cockpit — Mehr</title>", "<meta name=evc-neu content=1>", "<style>x</style></head><body><div class=w>",
