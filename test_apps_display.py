@@ -157,6 +157,26 @@ class TestLauncher(unittest.TestCase):
         self.assertIn("nicht installiert", ad.launcher_oeffnen(pv)["text"])
 
 
+class TestUpdates(unittest.TestCase):
+    def test_launcher_stand_nur_lesen(self):
+        pv = FakePv({("GET", "/api/appupdate/launcher"): (200, {"installiert": 12, "neuer": True, "verfuegbar": {"version": "1.4.0", "versionCode": 14}})})
+        r = ad.launcher_update_stand(pv)
+        self.assertEqual((r["neu"], r["text"]), ("1.4.0", ad.LAUNCHER_NUR_AM_AUTO))
+        self.assertEqual([a[0] for a in pv.aufrufe], ["GET"])          # nie installieren aus der Ferne
+        pv = FakePv({("GET", "/api/appupdate/launcher"): (200, {"installiert": 14, "neuer": False, "verfuegbar": {"version": "1.4.0"}})})
+        self.assertEqual(ad.launcher_update_stand(pv)["text"], "Der Launcher ist aktuell.")
+        pv = FakePv({("GET", "/api/appupdate/launcher"): (200, {"installiert": None})})
+        self.assertFalse(ad.launcher_update_stand(pv)["installiert"])
+
+    def test_seite_nutzt_den_bestehenden_panoptes_weg_mit_rueckfrage(self):
+        h = ad.UPDATES_SEITE
+        self.assertIn("/panoptes/update/starten", h)
+        self.assertIn("Ja, jetzt aktualisieren", h)
+        self.assertLess(h.index("function pFrage"), h.index("function pStart"))
+        self.assertNotIn("installieren'", h)
+        self.assertIn('href="/updates"', neu_look.hub_html("1"))
+
+
 class TestSicherheit(unittest.TestCase):
     def test_nur_die_vertragspfade(self):
         src = open(os.path.join(os.path.dirname(__file__), "apps_display.py"), encoding="utf-8").read()
@@ -169,7 +189,7 @@ class TestSicherheit(unittest.TestCase):
     def test_alle_texte_haben_englisch(self):
         for t in list(ad.TACHO_GRUENDE.values()) + [ad.TACHO_SONST, ad.TEXT_ALT, ad.TEXT_KOPPLUNG, ad.TEXT_WEG, ad.TEXT_ABGELAUFEN, ad.TEXT_NEUER]:
             self.assertIn(t, ad.EN, t)
-        for s in (ad.TACHO_SEITE, ad.LAUNCHER_SEITE):
+        for s in (ad.TACHO_SEITE, ad.LAUNCHER_SEITE, ad.UPDATES_SEITE):
             for t in re.findall(r"__T\('([^']+)'\)", s):
                 self.assertIn(t, ev._I18N, t)
             for t in re.findall(r"msg\('([^']+)'\)", s):

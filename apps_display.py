@@ -220,6 +220,25 @@ def launcher_oeffnen(pv):
     return _fehler(st, d)
 
 
+LAUNCHER_NUR_AM_AUTO = "Das Launcher-Update geht im Moment nur am Auto."
+
+
+@_sicher
+def launcher_update_stand(pv):
+    """Karte "Updates": Stand des Launchers (Recht launcher). Ein Update aus der Ferne gibt Panoptes 0.1.38 Kopplungen noch nicht frei
+    (nur {"aktion":"oeffnen"}); darum hier nur lesen und den Satz zeigen, bis der Vertrag UPDATE_API_CLIENTS.md steht."""
+    st, d = _anfrage(pv, STAND_PFAD)
+    if st != 200:
+        return _fehler(st, d)
+    v = d.get("verfuegbar") if isinstance(d.get("verfuegbar"), dict) else {}
+    inst = d.get("installiert")
+    if inst in (None, False, 0, ""):
+        return {"ok": True, "installiert": False, "text": "Der Launcher ist im Auto noch nicht installiert. Das geht nur am Auto."}
+    if d.get("neuer") is True and v.get("version"):
+        return {"ok": True, "installiert": True, "neu": str(v["version"])[:20], "text": LAUNCHER_NUR_AM_AUTO}
+    return {"ok": True, "installiert": True, "text": "Der Launcher ist aktuell."}
+
+
 # ---------------------------------------------------------------- Seiten
 
 TACHO_SEITE = """<!doctype html><html lang=de><head><meta charset=utf-8>
@@ -413,6 +432,39 @@ async function laden(still){
 laden();
 </script></body></html>"""
 
+UPDATES_SEITE = """<!doctype html><html lang=de><head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1"><title>EV-Cockpit — Updates</title>
+<meta name=evc-neu content=1>
+<style>x</style></head><body><div class=w>
+<h1>Updates</h1>
+<div class=sub>Hier sehen Sie, ob es neue Versionen gibt. Installiert wird nur, wenn Sie es bestätigen.</div>
+<div class=card><h3>Panoptes im Auto</h3><div class=sub id=u_ptext>⏳ Frage das Auto …</div><div id=u_pknopf></div></div>
+<div class=card><h3>Panoptes-Launcher</h3><div class=sub id=u_ltext>⏳ Frage das Auto …</div></div>
+<div class=card><h3>EV-Cockpit</h3><div class=sub id=u_ctext></div><div id=u_cknopf></div></div>
+</div>
+<script>
+const el=id=>document.getElementById(id);let UV='',UT=null;
+function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function pZeigen(r){const t=el('u_ptext'),k=el('u_pknopf');k.innerHTML='';
+ if(!r||!r.sichtbar){t.textContent=__T('Dafür braucht das Cockpit die Kopplung „Steuern einrichten“ (Startseite) und Panoptes ab 0.1.26.1.');return;}
+ UV=r.version||'';t.textContent=(r.zustand==='laeuft'?'⏳ ':'')+__T(r.text||'');
+ if(r.knopf)k.innerHTML='<button type=button onclick="pFrage()">⬆️ '+esc(__T('Panoptes aktualisieren'))+'</button>';}
+function pFrage(){el('u_pknopf').innerHTML='<div class=warn><b>'+esc(__T('Panoptes wird jetzt aktualisiert. Wächter und Verbindung sind ca. 3–8 Minuten weg.'))+'</b></div>'
+ +'<button type=button onclick="pStart()">'+esc(__T('Ja, jetzt aktualisieren'))+'</button> <button type=button class=sec onclick="pLaden()">'+esc(__T('Abbrechen'))+'</button>';}
+async function pStart(){el('u_pknopf').innerHTML='';el('u_ptext').textContent='⏳ '+__T('Sende …');
+ try{const r=await (await fetch('/panoptes/update/starten',{method:'POST',body:JSON.stringify({version:UV})})).json();
+  el('u_ptext').textContent=(r.ok?'⬆️ ':'⚠️ ')+__T(r.text||'');clearTimeout(UT);UT=setTimeout(pLaden,r.ok?12000:8000);}
+ catch(e){el('u_ptext').textContent='⚠️ '+__T('Das Cockpit erreicht sich selbst nicht – bitte neu starten.');}}
+async function pLaden(){let r=null;try{r=await (await fetch('/panoptes/update')).json();pZeigen(r);}catch(e){}
+ clearTimeout(UT);if(r&&r.zustand==='laeuft')UT=setTimeout(pLaden,12000);}
+async function lLaden(){try{const r=await (await fetch('/launcher/stand')).json();el('u_ltext').textContent=(r.neu?__T('Neue Version')+' '+r.neu+' '+__T('ist da.')+' ':'')+__T(r.text||'');}catch(e){el('u_ltext').textContent='⚠️';}}
+async function cLaden(){try{const r=await (await fetch('/updates/cockpit')).json();
+ el('u_ctext').textContent=r.neu?__T('Neue Version')+' '+r.neu+' '+__T('ist da.')+' '+(r.was_neu||''):(r.pruefen?__T('Das Cockpit ist aktuell')+' ('+r.version+').':__T('Version')+' '+r.version+'. '+__T('Die Suche nach Updates ist aus (Einstellungen).'));
+ el('u_cknopf').innerHTML=r.neu?'<a class=btn href="'+esc(r.url)+'" target=_blank rel=noopener>'+esc(__T('Herunterladen'))+' →</a>':'';}catch(e){}}
+pLaden();lLaden();cLaden();
+</script></body></html>"""
+
+
 EN = {
     "Was zeigt der Tacho?": "What does the instrument display show?",
     "Wähle, was hinter dem Lenkrad zu sehen ist. Das ändert nur die Anzeige, nicht das Auto.":
@@ -462,5 +514,16 @@ EN = {
     "Das hat nicht geklappt. Bitte noch einmal versuchen.": "That did not work. Please try again.",
     "Das Cockpit erreicht sich selbst nicht – bitte neu starten.": "The Cockpit cannot reach itself – please restart it.",
     "Das hat nicht geklappt.": "That did not work.",
+    "Updates": "Updates", "Panoptes im Auto": "Panoptes in the car", "Panoptes-Launcher": "Panoptes launcher", "EV-Cockpit": "EV-Cockpit",
+    "Hier sehen Sie, ob es neue Versionen gibt. Installiert wird nur, wenn Sie es bestätigen.":
+        "Here you can see whether there are new versions. Nothing is installed unless you confirm it.",
+    "Dafür braucht das Cockpit die Kopplung „Steuern einrichten“ (Startseite) und Panoptes ab 0.1.26.1.":
+        "The Cockpit needs the “Set up control” pairing (home page) and Panoptes 0.1.26.1 or newer for this.",
+    "Panoptes aktualisieren": "Update Panoptes", "Ja, jetzt aktualisieren": "Yes, update now", "Abbrechen": "Cancel", "Sende …": "Sending …",
+    "Panoptes wird jetzt aktualisiert. Wächter und Verbindung sind ca. 3–8 Minuten weg.":
+        "Panoptes will now be updated. Guard and connection are gone for about 3–8 minutes.",
+    LAUNCHER_NUR_AM_AUTO: "The launcher update is only possible in the car at the moment.", "Der Launcher ist aktuell.": "The launcher is up to date.",
+    "Neue Version": "New version", "ist da.": "is available.", "Das Cockpit ist aktuell": "The Cockpit is up to date", "Version": "Version",
+    "Die Suche nach Updates ist aus (Einstellungen).": "Checking for updates is off (Settings).", "Herunterladen": "Download",
     "Erst mit Panoptes verbinden (Mehr → Einstellungen).": "Connect to Panoptes first (More → Settings).",
 }

@@ -5473,6 +5473,14 @@ class H(BaseHTTPRequestHandler):
             self._send(_i18n(apps_display.TACHO_SEITE))
         elif p == "/launcher":
             self._send(_i18n(apps_display.LAUNCHER_SEITE))
+        elif p == "/updates":
+            self._send(_i18n(apps_display.UPDATES_SEITE))
+        elif p == "/launcher/stand":
+            self._send(json.dumps(apps_display.launcher_update_stand(_panoptes_obj() if _panoptes_gekoppelt() else None), ensure_ascii=False), "application/json")
+        elif p == "/updates/cockpit":
+            u = _STATE.get("update") or {}
+            self._send(json.dumps({"version": VERSION, "pruefen": bool(_CFG.get("update_check")), "neu": u.get("version") or "",
+                                   "was_neu": u.get("was_neu") or "", "url": u.get("url") or ""}, ensure_ascii=False), "application/json")
         elif p in ("/tacho/daten", "/launcher/daten"):
             # 1.23 Apps & Display: nur beim Oeffnen der Seite (bzw. alle 10 s, solange sie sichtbar ist) beim Auto nachfragen
             pv = _panoptes_obj() if _panoptes_gekoppelt() else None

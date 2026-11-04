@@ -105,6 +105,7 @@ ICONS = r"""<svg width="0" height="0" style="position:absolute">
  <symbol id="n-bolt" viewBox="0 0 24 24"><path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
  <symbol id="n-grid" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></g></symbol>
  <symbol id="n-tacho" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 17l4-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+ <symbol id="n-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
  <symbol id="n-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14.5 9a3 3 0 0 0-5 1.5c0 3 5 1.5 5 4.5a3 3 0 0 1-5 1.5M12 6.5v1.5M12 16v1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
 </svg>"""
 
@@ -242,6 +243,7 @@ BEREICHE = (
     ("system", "gear", "Einstellungen", (("/setup", "gear", "Einstellungen", "Datenquelle, Panoptes verbinden, Aussehen", None),
                                           ("/panoptes", "sat", "Panoptes", "Einstellungen aus dem Auto", "panoptes"),
                                           ("/handy", "phone", "Handy verbinden", "Panoptes-App mit QR koppeln", "panoptes"),
+                                          ("/updates", "up", "Updates", "Panoptes, Launcher, Cockpit", None),
                                           ("/about", "info", "Über", "Lizenzen, Datenschutz, Version", None))),
 )
 KACHELN = tuple((p, i, t, u) for _b, _i, _n, ks in BEREICHE for p, i, t, u, _w in ks)
@@ -271,5 +273,5 @@ EN = {
     "Mein Auto": "My car", "Akku, Reichweite, Status": "Battery, range, status", "Klima & Sitze": "Climate & seats",
     "Vorklimatisieren, Sitzheizung, Zusperren": "Pre-condition, seat heating, lock", "Über Nacht im Auto": "Overnight in the car",
     "Route planen": "Plan a route", "Mit Ladestopps": "With charging stops", "Tacho": "Instrument display",
-    "Startseite im Auto anordnen": "Arrange the home screen in the car",
+    "Startseite im Auto anordnen": "Arrange the home screen in the car", "Panoptes, Launcher, Cockpit": "Panoptes, launcher, Cockpit",
 }
