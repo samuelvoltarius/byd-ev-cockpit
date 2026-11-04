@@ -34,7 +34,7 @@ TEXT_KOPPLUNG = ("Dafür braucht das Cockpit die Kopplung „Steuern einrichten�
                  "Danach in Panoptes unter „Gekoppelte Geräte“ das Recht einschalten.")
 TEXT_WEG = "Das Auto antwortet gerade nicht. Bitte später noch einmal."
 TEXT_ABGELAUFEN = "Die Verbindung zu Panoptes ist abgelaufen. Bitte unter Mehr → Einstellungen neu verbinden."
-TEXT_NEUER = "Am Auto wurde gerade etwas geändert. Sie sehen jetzt den neuesten Stand."
+TEXT_NEUER = "Am Auto wurde gerade etwas geändert. Du siehst jetzt den neuesten Stand."
 
 
 def tacho_satz(grund):
@@ -437,7 +437,7 @@ UPDATES_SEITE = """<!doctype html><html lang=de><head><meta charset=utf-8>
 <meta name=evc-neu content=1>
 <style>x</style></head><body><div class=w>
 <h1>Updates</h1>
-<div class=sub>Hier sehen Sie, ob es neue Versionen gibt. Installiert wird nur, wenn Sie es bestätigen.</div>
+<div class=sub>Hier siehst du, ob es neue Versionen gibt. Installiert wird nur, wenn du es bestätigst.</div>
 <div class=card><h3>Panoptes im Auto</h3><div class=sub id=u_ptext>⏳ Frage das Auto …</div><div id=u_pknopf></div></div>
 <div class=card><h3>Panoptes-Launcher</h3><div class=sub id=u_ltext>⏳ Frage das Auto …</div></div>
 <div class=card><h3>EV-Cockpit</h3><div class=sub id=u_ctext></div><div id=u_cknopf></div></div>
@@ -515,7 +515,7 @@ EN = {
     "Das Cockpit erreicht sich selbst nicht – bitte neu starten.": "The Cockpit cannot reach itself – please restart it.",
     "Das hat nicht geklappt.": "That did not work.",
     "Updates": "Updates", "Panoptes im Auto": "Panoptes in the car", "Panoptes-Launcher": "Panoptes launcher", "EV-Cockpit": "EV-Cockpit",
-    "Hier sehen Sie, ob es neue Versionen gibt. Installiert wird nur, wenn Sie es bestätigen.":
+    "Hier siehst du, ob es neue Versionen gibt. Installiert wird nur, wenn du es bestätigst.":
         "Here you can see whether there are new versions. Nothing is installed unless you confirm it.",
     "Dafür braucht das Cockpit die Kopplung „Steuern einrichten“ (Startseite) und Panoptes ab 0.1.26.1.":
         "The Cockpit needs the “Set up control” pairing (home page) and Panoptes 0.1.26.1 or newer for this.",
