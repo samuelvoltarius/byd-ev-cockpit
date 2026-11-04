@@ -19,7 +19,7 @@ class TestOhnePanoptes(unittest.TestCase):
         e._CFG.clear()
         e._CFG.update({"vin": "TESTVIN0000000000", "planer": True, "planer_token": "0" * 32,
                        "planer_auto": "evc-1a2b3c4d"})
-        e._PANOPTES.update(key=None, obj=None)
+        e._PANOPTES.update(key=None, obj=None, aktiv=None)
         e._PAN_ID.update(t=0.0, auto="")
 
     def tearDown(self):
@@ -43,7 +43,7 @@ class TestOhnePanoptes(unittest.TestCase):
 
     def test_mit_panoptes_wird_dessen_kennung_genommen(self):
         e._CFG.update(panoptes=True, panoptes_url="http://100.1.2.3:8180", panoptes_code="byd-1-x")
-        e._PANOPTES["obj"] = object()
+        e._PANOPTES["aktiv"] = object()          # 1.23: der gerade benutzte Lese-Zugang
         with patch.object(panoptes_source, "identitaet", return_value="pan-777"):
             self.assertEqual(e._planer_kennung(), "pan-777")
         e._PAN_ID.update(t=0.0, auto="")

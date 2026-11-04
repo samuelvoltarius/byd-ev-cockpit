@@ -588,6 +588,8 @@ async function load(){
 function manualRefresh(){clearTimeout(TIMER);fetch('/jetzt',{method:'POST'}).catch(function(){}).then(function(){setTimeout(load,1500);});}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){clearTimeout(TIMER);load();}else clearTimeout(TIMER);});
 load();
+// 1.23: Sprung aus "Mehr" (7 Bereiche) direkt in eine Bedien-Kachel, z. B. /#k-klima
+(function(){const m=/^#k-(route|laden|klima|camping)$/.exec(location.hash||'');if(!m)return;const t=el('t_'+m[1]);if(!t||t.style.display==='none')return;if(!t.classList.contains('open'))kachelUm(m[1]);t.scrollIntoView({block:'start'});})();
 </script></body>"""
 
 HEAD = """<!doctype html><html lang=de><head><meta charset=utf-8>

@@ -395,10 +395,12 @@ from live_saeulen import Live
 import neu_look
 import anpassen
 import handy_verbinden
+import apps_display
 
 _LIVE = Live()
 
-_PANOPTES = {"key": None, "obj": None}
+_PANOPTES = {"key": None, "obj": None, "aktiv": None, "handy_kaputt": ""}
+_PANOPTES_K = {"key": None, "obj": None}      # 1.23: Cockpit-Kopplung (Art cockpit bzw. alt), getrennt vom Lese-Zugang
 _PAN_TEST = {"url": "", "jwt": "", "verbraucht": False, "kopplung_id": ""}   # JWT aus Test bzw. erlaubter Anfrage
 def _kartenquelle():
     """"community" | "osm" | "keine". Nur eine ausdrueckliche Wahl (ab 1.9.2) zaehlt; ohne Wahl werden gar keine
@@ -638,23 +640,70 @@ def _bruecke_einrichten():
 
 
 def _panoptes_obj():
-    """Kopplung (Vertrag v1.1): Der Kopplungs-Code ist einmal verwendbar - nach dem Tausch zaehlt nur der JWT,
-    der Code wird aus der Konfiguration geloescht."""
+    """Zugang fuer alles Lesen (und Tacho/Launcher). 1.23: Gibt es die Handy-Kopplung ("Steuern einrichten", Art handy), gilt NUR sie -
+    wie ueber die Bruecke schon seit 1.22. Sie liest alles, was die Cockpit-Kopplung liest (ExternGuard.LESEN gilt fuer jede Art) und
+    traegt die Rechte kamera/tacho/launcher; eine Alt-Kopplung ohne Art kann keine Rechte tragen. Geht sie nicht mehr (401, kein Code),
+    faellt das Cockpit still auf die Cockpit-Kopplung zurueck, solange es die noch gibt."""
     if not _panoptes_gekoppelt():
+        return None
+    if _CFG.get("panoptes_handy_jwt") and _PANOPTES.get("handy_kaputt") != _CFG["panoptes_handy_jwt"]:
+        o = _panoptes_obj_handy()
+    else:
+        o = _panoptes_obj_kopplung()
+    _PANOPTES["aktiv"] = o
+    return o
+
+
+def _panoptes_obj_handy():
+    _weg_einrichten()
+    from panoptes_source import Panoptes
+    key = (_CFG.get("panoptes_url"), "handy")
+    if _PANOPTES["key"] != key:
+        def merken(jwt, code_verbraucht=False):
+            _CFG["panoptes_handy_jwt"] = jwt
+            save_cfg(_CFG)
+        _PANOPTES.update(key=key, obj=Panoptes(key[0], "", _CFG["panoptes_handy_jwt"], jwt_gespeichert=merken))
+    _PANOPTES["obj"].jwt = _CFG["panoptes_handy_jwt"]        # still verlaengert (_handy_zugang_verlaengern) -> gleich weiter nutzen
+    return _PANOPTES["obj"]
+
+
+def _panoptes_obj_kopplung():
+    """Kopplung (Vertrag v1.1): Der Kopplungs-Code ist einmal verwendbar - nach dem Tausch zaehlt nur der JWT,
+    der Code wird aus der Konfiguration geloescht. Wird gebraucht fuer "weiteres Geraet koppeln" (nur Art cockpit) und solange
+    es keine Handy-Kopplung gibt."""
+    if not (_panoptes_gekoppelt() and (_CFG.get("panoptes_code") or _CFG.get("panoptes_jwt"))):
         return None
     _weg_einrichten()
     from panoptes_source import Panoptes
     key = (_CFG.get("panoptes_url"), _CFG.get("panoptes_code") or "jwt")
-    if _PANOPTES["key"] != key:
+    if _PANOPTES_K["key"] != key:
         def merken(jwt, code_verbraucht=False):
             _CFG["panoptes_jwt"] = jwt
             if code_verbraucht:
                 _CFG["panoptes_code"] = ""
-                _PANOPTES["key"] = (_CFG.get("panoptes_url"), "jwt")
+                _PANOPTES_K["key"] = (_CFG.get("panoptes_url"), "jwt")
             save_cfg(_CFG)
-        _PANOPTES.update(key=key, obj=Panoptes(key[0], _CFG.get("panoptes_code", ""), _CFG.get("panoptes_jwt", ""),
+        _PANOPTES_K.update(key=key, obj=Panoptes(key[0], _CFG.get("panoptes_code", ""), _CFG.get("panoptes_jwt", ""),
                                                jwt_gespeichert=merken))
-    return _PANOPTES["obj"]
+    return _PANOPTES_K["obj"]
+
+
+def _kopplung_erneuern():
+    """1.23: Liest das Cockpit ueber die Handy-Kopplung, bleibt der Zugang der Cockpit-Kopplung trotzdem gueltig (fuer "weiteres Geraet
+    koppeln" und als Rueckfall). Nur DIREKT: ueber die Bruecke gilt allein der Handy-Zugang, eine Antwort von dort gehoert nicht hierher."""
+    import panoptes_source as ps
+    try:
+        d = ps._http_direkt(_CFG["panoptes_url"].rstrip("/") + "/api/sitzung/erneuern", {}, jwt=_CFG["panoptes_jwt"], timeout=6)
+    except Exception:
+        return False
+    neu = str((d or {}).get("jwt") or (d or {}).get("token") or "")
+    if neu and neu != _CFG.get("panoptes_jwt") and neu != _CFG.get("panoptes_handy_jwt"):
+        _CFG["panoptes_jwt"] = neu
+        if _PANOPTES_K.get("obj") is not None:
+            _PANOPTES_K["obj"].jwt = neu
+        save_cfg(_CFG)
+        return True
+    return False
 
 
 _LETZT = {"t": 0.0, "zu_alt_bis": 0.0}
@@ -752,12 +801,17 @@ def _panoptes_runde(cache):
     if not st:
         _STATE["panoptes_erreichbar"] = False
         _STATE["panoptes_fehler"] = pv.letzter_fehler
+        if (pv.letzter_fehler == "kopplung_abgelaufen" and pv is _PANOPTES.get("obj") and (_PANOPTES.get("key") or (0, 0))[1] == "handy"
+                and (_CFG.get("panoptes_jwt") or _CFG.get("panoptes_code"))):
+            _PANOPTES["handy_kaputt"] = _CFG.get("panoptes_handy_jwt") or ""     # 1.23: Handy-Zugang gilt nicht mehr -> Cockpit-Kopplung
         return False
     st.pop("_quelle", None)
     if not _CFG.get("panoptes_code") and time.time() - float(_CFG.get("panoptes_erneuert") or 0) > 86400:
         try:
             from panoptes_source import sitzung_erneuern
             sitzung_erneuern(pv)                       # neuer JWT wird ueber jwt_gespeichert gesichert
+            if _CFG.get("panoptes_jwt") and pv is not _PANOPTES_K.get("obj"):
+                _kopplung_erneuern()
             _CFG["panoptes_erneuert"] = time.time()
         except Exception:
             _CFG["panoptes_erneuert"] = time.time() - 86400 + 6 * 3600   # aeltere Panoptes ohne Endpunkt: in 6 h wieder
@@ -1163,10 +1217,10 @@ def _planer_profil(tok):
 def _planer_kennung():
     """Welche auto-Kennung beim Planer gilt: mit Panoptes gekoppelt die von Panoptes (dieselbe Route und
     Rueckmeldung wie im Auto, stuendlich nachgefragt), sonst die eigene des Cockpits."""
-    if _CFG.get("panoptes") and _PANOPTES.get("obj") is not None:
+    if _CFG.get("panoptes") and _PANOPTES.get("aktiv") is not None:
         if time.time() - _PAN_ID["t"] > 3600:
             from panoptes_source import identitaet
-            _PAN_ID.update(t=time.time(), auto=identitaet(_PANOPTES["obj"]))
+            _PAN_ID.update(t=time.time(), auto=identitaet(_PANOPTES["aktiv"]))
         if _PAN_ID["auto"]:
             return _PAN_ID["auto"]
     return _CFG.get("planer_auto") or ""
@@ -1543,9 +1597,9 @@ COOL_TEMP = 19.0    # Zieltemperatur "Kuehlen" (bewaehrt)
 def _frischer_zustand():
     """Zustand direkt vor einem Cloud-Befehl: zuerst Panoptes im Auto (power_level), sonst die
     BYD-Cloud frisch abfragen. Nie den Cache nehmen - der kann Minuten alt sein."""
-    if _CFG.get("panoptes") and _PANOPTES.get("obj") is not None:
+    if _CFG.get("panoptes") and _PANOPTES.get("aktiv") is not None:
         try:
-            st = _PANOPTES["obj"].lies()
+            st = _PANOPTES["aktiv"].lies()
             if st and st.get("power_level") is not None:
                 return {"t": time.time(), "power_level": st.get("power_level"),
                         "gear": st.get("gear"), "speed": st.get("speed")}
@@ -1707,7 +1761,9 @@ _I18N.update({
     "Foto gespeichert": "Photo saved", "Solar wird automatisch angezeigt, sobald evcc oder Home Assistant Werte liefert.":
         "Solar appears automatically as soon as evcc or Home Assistant provides data.",
 })
-I18N_HEAD = ("<script>window.__TR__=" + json.dumps(_I18N, ensure_ascii=False, separators=(',',':')) + ";"
+_I18N.update(apps_display.EN)
+_I18N.update(neu_look.EN)
+I18N_HEAD =("<script>window.__TR__=" + json.dumps(_I18N, ensure_ascii=False, separators=(',',':')) + ";"
     "window.__LANG__=(function(){try{var s=localStorage.getItem('evc_lang');if(s==='de'||s==='en')return s;}catch(e){}"
     "return (navigator.language||'de').toLowerCase().indexOf('de')===0?'de':'en';})();"
     "window.__T=function(de){if(window.__LANG__!=='en'||de==null)return de;"
@@ -5413,10 +5469,20 @@ class H(BaseHTTPRequestHandler):
             self._send(_i18n(PANOPTES_SEITE))
         elif p == "/handy":
             self._send(_i18n(handy_verbinden.SEITE))
+        elif p == "/tacho":
+            self._send(_i18n(apps_display.TACHO_SEITE))
+        elif p == "/launcher":
+            self._send(_i18n(apps_display.LAUNCHER_SEITE))
+        elif p in ("/tacho/daten", "/launcher/daten"):
+            # 1.23 Apps & Display: nur beim Oeffnen der Seite (bzw. alle 10 s, solange sie sichtbar ist) beim Auto nachfragen
+            pv = _panoptes_obj() if _panoptes_gekoppelt() else None
+            r = apps_display.tacho_lesen(pv) if p == "/tacho/daten" else apps_display.launcher_lesen(pv)
+            self._send(json.dumps(r, ensure_ascii=False), "application/json")
         elif p == "/layout":
             self._send(json.dumps(anpassen.bereinigen(_CFG.get("layout"))), "application/json")
         elif p in ("/mehr", "/klassisch"):
-            self._send(_i18n(neu_look.hub_html(VERSION)))
+            self._send(_i18n(neu_look.hub_html(VERSION, {"panoptes": _panoptes_gekoppelt(),
+                                                          "steuern": bool(_CFG.get("panoptes_handy_jwt")) and _panoptes_gekoppelt()})))
         elif p in neu_look.SEITEN:
             # 1.21: Bereiche der frueheren alten Ansicht, je eine Seite im neuen Look
             stil = KARTE_STIL if _kartenquelle() == "community" else ""
@@ -5900,11 +5966,31 @@ class H(BaseHTTPRequestHandler):
                 return self._send(json.dumps({"ok": True}), "application/json")
             except Exception as e:
                 return self._send(json.dumps({"ok": False, "error": str(e)[:160]}), "application/json", 400)
+        if u.path in ("/tacho/waehlen", "/tacho/normal", "/launcher/speichern", "/launcher/standard", "/launcher/oeffnen"):
+            # 1.23 Apps & Display: Tacho-Auswahl und Launcher-Layout ueber die Kopplung (Rechte tacho/launcher, nur der Besitzer schaltet sie ein).
+            # Nur Anzeigen im Auto, nie ein Fahrzeugbefehl; nur auf Klick.
+            pv = _panoptes_obj() if _panoptes_gekoppelt() else None
+            try:
+                w = json.loads(raw or "{}")
+                w = w if isinstance(w, dict) else {}
+            except Exception:
+                w = {}
+            if u.path == "/tacho/waehlen":
+                r = apps_display.tacho_waehlen(pv, w.get("id"))
+            elif u.path == "/tacho/normal":
+                r = apps_display.tacho_normal(pv)
+            elif u.path == "/launcher/speichern":
+                r = apps_display.launcher_speichern(pv, w.get("layout"), w.get("basis"))
+            elif u.path == "/launcher/standard":
+                r = apps_display.launcher_standard(pv)
+            else:
+                r = apps_display.launcher_oeffnen(pv)
+            return self._send(json.dumps(r, ensure_ascii=False), "application/json")
         if u.path == "/handy/qr/anfrage":
             # Neue Handy-Kopplung (QR): erlaubt wird nur am Auto/in Telegram; hier nur anfragen und die Pruefzahl zeigen
             try:
                 import panoptes_source as ps
-                pv = _panoptes_obj() if _panoptes_gekoppelt() else None
+                pv = _panoptes_obj_kopplung()       # 1.23: nur die Cockpit-Kopplung darf das (Art cockpit)
                 if pv is None:
                     return self._send(json.dumps({"ok": False, "text": "Erst mit Panoptes verbinden (Mehr → Einstellungen)."}), "application/json")
                 pz = ps.neue_pruefzahl()
@@ -5924,7 +6010,7 @@ class H(BaseHTTPRequestHandler):
                 return self._send(json.dumps({"ok": False, "text": "Das hat nicht geklappt."}), "application/json")
         if u.path == "/handy/qr/status":
             try:
-                pv = _panoptes_obj() if _panoptes_gekoppelt() else None
+                pv = _panoptes_obj_kopplung()       # 1.23: nur die Cockpit-Kopplung darf das (Art cockpit)
                 aid = (json.loads(raw or "{}").get("id") or "")
                 if pv is None or aid != _QR_ANFRAGE.get("id") or time.time() > _QR_ANFRAGE.get("bis", 0):
                     return self._send(json.dumps({"status": "abgelaufen"}), "application/json")

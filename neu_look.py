@@ -79,6 +79,8 @@ th{color:var(--ink-2);font-size:12.5px;font-weight:700}th:first-child,td:first-c
 .hub a svg{width:30px;height:30px;color:var(--aqua)}
 .hub a b{font:700 18px 'Sora',system-ui,sans-serif}
 .hub a small{font-size:13.5px}
+.bereich{display:flex;align-items:center;gap:10px;font:700 15px 'Sora',system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:22px 2px 0}
+.bereich svg{width:24px;height:24px;color:var(--aqua)}
 .hub a.neu{background:linear-gradient(135deg,rgba(11,92,102,.45),rgba(10,34,56,.35))}
 @media(max-width:760px){.hub{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}}
 @media(max-width:480px){.hub{grid-template-columns:1fr}.w,.wrap{padding:6px 14px 24px}.dot2 b{display:none}}
@@ -97,6 +99,12 @@ ICONS = r"""<svg width="0" height="0" style="position:absolute">
  <symbol id="n-bell" viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15zM10 21h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
  <symbol id="n-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M11 18.5h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
  <symbol id="n-card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18M7 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+ <symbol id="n-home" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+ <symbol id="n-car" viewBox="0 0 24 24"><path d="M4 16v-3l2-5a2 2 0 0 1 1.9-1.4h8.2A2 2 0 0 1 18 8l2 5v3M3 16h18v3h-3v-1.5H6V19H3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7.5" cy="13.5" r="1" fill="currentColor"/><circle cx="16.5" cy="13.5" r="1" fill="currentColor"/></symbol>
+ <symbol id="n-route" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="6" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 18H15a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+ <symbol id="n-bolt" viewBox="0 0 24 24"><path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+ <symbol id="n-grid" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></g></symbol>
+ <symbol id="n-tacho" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 17l4-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
  <symbol id="n-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14.5 9a3 3 0 0 0-5 1.5c0 3 5 1.5 5 4.5a3 3 0 0 1-5 1.5M12 6.5v1.5M12 16v1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
 </svg>"""
 
@@ -215,28 +223,53 @@ def sektion_html(cockpit, pfad):
     return h
 
 
-KACHELN = (
-    # (Pfad, Symbol, Titel, Untertitel)
-    ("/setup", "gear", "Einstellungen", "Datenquelle, Panoptes verbinden, Aussehen"),
-    ("/panoptes", "sat", "Panoptes", "Einstellungen aus dem Auto"),
-    ("/energie", "plug", "Wallbox & Energie", "Wallbox, Solar, evcc"),
-    ("/laden", "coin", "Laden & Kosten", "Kosten, Ladungen, Ladekarten"),
-    ("/fahrten", "book", "Fahrtenbuch", "Fahrten ansehen, als CSV"),
-    ("/aufnahmen", "eye", "Wächter", "Aufnahmen ansehen"),
-    ("/karte", "map", "Karte", "Ladesäulen in der Nähe"),
-    ("/handy", "phone", "Handy verbinden", "Panoptes-App mit QR koppeln"),
-    ("/takt", "bell", "Abfrage & Meldungen", "Wie oft nachfragen, Laden fertig"),
-    ("/about", "info", "Über", "Lizenzen, Datenschutz, Version"),
+# 1.23: "Mehr" in den 7 Bereichen von Panoptes 0.1.38 (UI_AUFBAU_HANDY_VORGABE.md: dieselben Begriffe, Reihenfolge und Icons).
+# Was das Cockpit nicht kann, steht nicht da (ausgeblendet statt ausgegraut). sicht: "panoptes" = gekoppelt, "steuern" = Handy-Kopplung.
+BEREICHE = (
+    # (id, Icon, Name, Kacheln: (Pfad, Symbol, Titel, Untertitel, Bedingung))
+    ("start", "home", "Start", (("/", "home", "Mein Auto", "Akku, Reichweite, Status", None),)),
+    ("car", "car", "Steuerung", (("/#k-klima", "car", "Klima & Sitze", "Vorklimatisieren, Sitzheizung, Zusperren", "steuern"),
+                                  ("/#k-camping", "car", "Camping", "Über Nacht im Auto", "panoptes"))),
+    ("guard", "eye", "Kameras & Wächter", (("/aufnahmen", "eye", "Wächter", "Aufnahmen ansehen", None),)),
+    ("drive", "route", "Fahrten & Laden", (("/fahrten", "book", "Fahrtenbuch", "Fahrten ansehen, als CSV", None),
+                                            ("/#k-route", "route", "Route planen", "Mit Ladestopps", None),
+                                            ("/laden", "coin", "Laden & Kosten", "Kosten, Ladungen, Ladekarten", None),
+                                            ("/energie", "plug", "Wallbox & Energie", "Wallbox, Solar, evcc", None),
+                                            ("/karte", "map", "Karte", "Ladesäulen in der Nähe", None))),
+    ("auto", "bolt", "Regeln", (("/takt", "bell", "Abfrage & Meldungen", "Wie oft nachfragen, Laden fertig", None),)),
+    ("apps", "grid", "Apps & Display", (("/tacho", "tacho", "Tacho", "Was zeigt der Tacho?", "panoptes"),
+                                         ("/launcher", "grid", "Launcher einrichten", "Startseite im Auto anordnen", "panoptes"))),
+    ("system", "gear", "Einstellungen", (("/setup", "gear", "Einstellungen", "Datenquelle, Panoptes verbinden, Aussehen", None),
+                                          ("/panoptes", "sat", "Panoptes", "Einstellungen aus dem Auto", "panoptes"),
+                                          ("/handy", "phone", "Handy verbinden", "Panoptes-App mit QR koppeln", "panoptes"),
+                                          ("/about", "info", "Über", "Lizenzen, Datenschutz, Version", None))),
 )
+KACHELN = tuple((p, i, t, u) for _b, _i, _n, ks in BEREICHE for p, i, t, u, _w in ks)
 
 
-def hub_html(version=""):
-    """Seite "Mehr": grosse Kacheln mit Symbol, wenig Text (REGEL DAU)."""
+def hub_html(version="", sicht=None):
+    """Seite "Mehr": die 7 Bereiche, je Bereich grosse Kacheln mit Symbol, wenig Text (REGEL 50+). sicht=None zeigt alles."""
     nl = chr(10)
-    k = "".join('<a href="%s"><svg><use href="#n-%s"/></svg><b>%s</b><small>%s</small></a>' % (p, i, t.replace("&", "&amp;"), u) for p, i, t, u in KACHELN)
-    k += ('<a href="#" onclick="try{localStorage.setItem(' + "'evc_lang'" + ',window.__LANG__===' + "'en'" + '?' + "'de'" + ':' + "'en'" +
-          ');}catch(e){}location.reload();return false"><svg><use href="#n-globe"/></svg><b>Deutsch / English</b><small>Sprache wechseln</small></a>')
+    teile = []
+    for bid, ico, name, ks in BEREICHE:
+        k = "".join('<a href="%s"><svg><use href="#n-%s"/></svg><b>%s</b><small>%s</small></a>' % (p, i, t.replace("&", "&amp;"), u)
+                    for p, i, t, u, w in ks if sicht is None or w is None or sicht.get(w))
+        if bid == "system":
+            k += ('<a href="#" onclick="try{localStorage.setItem(' + "'evc_lang'" + ',window.__LANG__===' + "'en'" + '?' + "'de'" + ':' + "'en'" +
+                  ');}catch(e){}location.reload();return false"><svg><use href="#n-globe"/></svg><b>Deutsch / English</b><small>Sprache wechseln</small></a>')
+        if k:
+            teile.append('<div class=bereich id="b_%s"><svg><use href="#n-%s"/></svg>%s</div><div class=hub>%s</div>' % (bid, ico, name.replace("&", "&amp;"), k))
     return nl.join(["<!doctype html><html lang=de><head><meta charset=utf-8>",
                     '<meta name=viewport content="width=device-width,initial-scale=1">',
                     "<title>EV-Cockpit — Mehr</title>", "<meta name=evc-neu content=1>", "<style>x</style></head><body><div class=w>",
-                    "<h1>Mehr</h1><div class=hub>%s</div><div class=sub>Panoptes Cockpit %s</div></div></body></html>" % (k, version)])
+                    "<h1>Mehr</h1>%s<div class=sub>Panoptes Cockpit %s</div></div></body></html>" % ("".join(teile), version)])
+
+
+EN = {
+    "Start": "Home", "Steuerung": "Controls", "Kameras & Wächter": "Cameras & guard", "Fahrten & Laden": "Trips & charging",
+    "Regeln": "Rules", "Apps & Display": "Apps & display", "Einstellungen": "Settings",
+    "Mein Auto": "My car", "Akku, Reichweite, Status": "Battery, range, status", "Klima & Sitze": "Climate & seats",
+    "Vorklimatisieren, Sitzheizung, Zusperren": "Pre-condition, seat heating, lock", "Über Nacht im Auto": "Overnight in the car",
+    "Route planen": "Plan a route", "Mit Ladestopps": "With charging stops", "Tacho": "Instrument display",
+    "Startseite im Auto anordnen": "Arrange the home screen in the car",
+}
