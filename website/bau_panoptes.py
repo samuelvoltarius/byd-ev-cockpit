@@ -240,7 +240,7 @@ T = {
         ],
         "h_stand": "Stand der Entwicklung",
         # PFLEGE: Diese Tabelle bei JEDER Version mitpruefen. Nur Belegtes (FADEN_KOORDINATION.md, ROADMAP.md, FREEZE_*.md), Unsicheres nach unten.
-        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.38.9. „Fertig“ heißt: gebaut und getestet. „Nur bestimmte Autos“ heißt: hängt vom Modell ab. „Beta“ heißt: läuft, hat aber Einschränkungen.",
+        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.38.10. „Fertig“ heißt: gebaut und getestet. „Nur bestimmte Autos“ heißt: hängt vom Modell ab. „Beta“ heißt: läuft, hat aber Einschränkungen.",
         "stand_kopf": ("Funktion", "Stand"),
         "stand": [
             ("Wächter mit Personen-Erkennung, Abschreckung nur bei einer Person, Meldungen über Telegram", "Fertig"),
@@ -297,8 +297,8 @@ T = {
         "dl_anker": "installieren",
         "dl_bald": "Beta-Version {V}",
         # „Neu in …“-Kasten beim Download; erscheint nur, solange versionen.json genau diese Version meldet
-        "neu_version": "0.1.38.9", "neu_titel": "Neu in 0.1.38.9",
-        "neu": ["<b>Besitzer-Handy nur mit deinem Wort:</b> Panoptes macht kein Handy mehr von selbst zum Besitzer. Es fragt einmal: „Welches Gerät ist dein Handy?“ Antworten geht nur am Display oder mit Login.", "<b>Updates:</b> Selbst gestartet geht ein Update in P auch mit Zündung an, von selbst erst nach 10 Minuten Stand. Der Launcher kommt mit.", "<b>Schneller und ruhiger:</b> Panoptes startet schneller und beendet beim Neustart nur noch seine eigenen Teile. Andere Werkzeug-Apps im Auto bleiben in Ruhe, Panoptes weist auf sie hin.", "<b>Kein Hängen mehr</b> am Bildschirm, wenn du etwas speicherst. Die Karte zeigt ohne Netz sofort die Ersatzansicht.", "<b>Menüwege</b> in App und Telegram stimmen wieder (Einstellungen statt „System“). Der Hinweis zur Fahrtkamera bei DiLink 5 ist richtiggestellt.", "<b>Aus 0.1.38.8:</b> eigene Schalter für Hupe, Licht, Warnblinker und Aufsperren (ab Werk aus), Home Assistant schaltet freigegebene Tore, kleine Updates von selbst."],
+        "neu_version": "0.1.38.10", "neu_titel": "Neu in 0.1.38.10",
+        "neu": ["<b>Navi &amp; Fahrten</b> steht im Menü jetzt an zweiter Stelle und öffnet gleich die Navigation. Am Bildschirm im Auto heißt der Knopf einfach „Starten“.", "<b>Panoptes führt jetzt selbst:</b> „Starten“ öffnet die Panoptes-Karte mit Vorschau, los geht es mit Start. „Im Werksnavi öffnen“ bleibt als zweiter Knopf.", "<b>Bis zu fünf Zwischenstopps</b> in der Navigation. Für jede Etappe siehst du, wie viel Akku bei der Ankunft bleibt.", "<b>Ansagen nur, wenn du willst:</b> Die Sprachansagen sind ab Werk aus. Einschalten unter Einstellungen → Alle Einstellungen → Auto &amp; Anzeige → Navigation.", "<b>Wächter:</b> Er nimmt wieder jedes erkannte Fahrzeug und jede Person auf, auch nach nur einem Bild. Wer nur nah am Auto vorbeigeht, kommt in Telegram als Hinweis statt als Alarm (nur mit „Wächter: Hinweise“).", "<b>Handy:</b> Die Weboberfläche in der Handy-App zeigt nur, was das Handy darf; Laden braucht das neue Recht „Laden im Auto“. Wichtige Besitzer-Aktionen brauchen Fingerabdruck oder Face ID.", "<b>Schneller:</b> Panoptes startet Schritt für Schritt, du siehst für jeden Dienst, ob er bereit ist. Der Launcher holt sein Update auch übers Mobilnetz, wenn du das erlaubt hast.", "<b>Aus 0.1.38.9:</b> Besitzer-Handy nur nach deiner Antwort auf „Welches Gerät ist dein Handy?“, Menüwege stimmen wieder."],
         # Abschnitt „Tacho und Launcher“ ab 0.1.37 (Koordination 03.11.2026), Bilder: Vorschau/Emulator, Musterdaten
         "tl": {"h": "Tacho und Launcher <span class=\"bald\">ab 0.1.37</span>",
                "lead": "Seit 0.1.37, in 0.1.38 auf der Seite Apps &amp; Display → Display. Die Bilder sind Vorschaubilder und Emulator-Aufnahmen mit Musterdaten, nicht aus einem Auto. <a href=\"launcher.html\">Alles zum Panoptes Launcher</a>",
@@ -593,7 +593,7 @@ T = {
             ("Other services (BYD account, MQTT/smart home, ABRP, Stadia Maps, AI assistant)", "depends on the service; the input field tells you where your requests go", "only if you set them up yourself"),
         ],
         "h_stand": "Development status",
-        "stand_lead": "Honestly, what runs where, as of 0.1.38.9. \u201cDone\u201d means: built and tested. \u201cOnly some cars\u201d means: depends on the model. \u201cBeta\u201d means: it runs, but has limits.",
+        "stand_lead": "Honestly, what runs where, as of 0.1.38.10. \u201cDone\u201d means: built and tested. \u201cOnly some cars\u201d means: depends on the model. \u201cBeta\u201d means: it runs, but has limits.",
         "stand_kopf": ("Feature", "Status"),
         "stand": [
             ("Guard with person detection, deterrent only for a person, Telegram notifications", "Done"),
@@ -641,8 +641,8 @@ T = {
         "h_dl": "Download and install",
         "dl_anker": "install",
         "dl_bald": "Beta version {V}",
-        "neu_version": "0.1.38.9", "neu_titel": "New in 0.1.38.9",
-        "neu": ["<b>Owner phone only with your say:</b> Panoptes no longer makes a phone the owner by itself. It asks once: “Which device is your phone?” You can answer only on the display or with login.", "<b>Updates:</b> started by you, an update runs in P even with the ignition on; on its own only after 10 minutes parked. The launcher comes along.", "<b>Faster and calmer:</b> Panoptes starts faster and, when restarting, only stops its own parts. Other tool apps in the car are left alone, and Panoptes points them out.", "<b>No more freezing</b> on the screen when you save something. Without network the map shows the fallback view right away.", "<b>Menu paths</b> in the app and Telegram are right again (Settings instead of “System”). The dash camera note for DiLink 5 has been corrected.", "<b>From 0.1.38.8:</b> own switches for horn, lights, hazard lights and unlocking (off by default), Home Assistant operates released gates, small updates on their own."],
+        "neu_version": "0.1.38.10", "neu_titel": "New in 0.1.38.10",
+        "neu": ["<b>Navigation &amp; trips</b> is now second in the menu and opens the navigation right away. On the car screen the button is simply called “Start”.", "<b>Panoptes now guides you itself:</b> “Start” opens the Panoptes map with a preview, tap Start to go. “Open in car navigation” stays as a second button.", "<b>Up to five stops</b> in navigation. For each leg you see how much battery is left when you arrive.", "<b>Voice only if you want it:</b> voice prompts are off by default. Switch them on under Settings → All settings → Car &amp; display → Navigation.", "<b>Guard:</b> it again records every detected vehicle and person, even after a single frame. Someone who only walks past the car arrives in Telegram as a notice, not an alert (only with “Guard: notices” on).", "<b>Phone:</b> the web interface in the phone app only shows what the phone may do; charging needs the new “Charging in the car” permission. Key owner actions need fingerprint or Face ID.", "<b>Faster:</b> Panoptes starts step by step, and you see for each service whether it is ready. The launcher also updates over mobile data if you allowed that.", "<b>From 0.1.38.9:</b> owner phone only after you answer “Which device is your phone?”, menu paths are right again."],
         "tl": {"h": "Cluster and launcher <span class=\"bald\">from 0.1.37</span>",
                "lead": "Since 0.1.37, in 0.1.38 on the page Apps &amp; display → Display. The pictures are previews and emulator shots with sample data, not from a car. <a href=\"launcher.html\">All about the Panoptes Launcher</a>",
                "bilder": [("Panoptes cluster “Horizont”: speed, battery, range and the next turn arrow. There are five displays.", [("tacho-horizont", "tacho", "Panoptes cluster Horizont: 101 km/h, 64 percent battery, 287 km range, turn right in 350 m")]),
