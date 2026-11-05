@@ -119,7 +119,7 @@ ul.tgsi{list-style:none;padding:0;margin:14px 0}ul.tgsi li{padding:10px 0;border
     <div class="card"><h3>Nachsehen</h3><p>Wie geht’s dem Auto? Wo steht es? Wie voll ist der Akku? Dazu ein Kamerabild und deine Aufnahmen, wenn du danach fragst.</p></div>
     <div class="card"><h3>Wächter und Camping</h3><p>Den Wächter wecken oder schlafen legen. Camping ein- oder ausschalten, nur im Stand.</p></div>
     <div class="card"><h3>Update-Meldungen</h3><p>Bei „Nur melden“ schreibt der Bot „Panoptes … ist da“ mit dem Knopf „Jetzt installieren“ und fragt vorher noch einmal nach. Bei „Kleine Updates von selbst, große melden“ (Standard) kommen kleine Updates still, wenn das Auto mindestens 10 Minuten aus ist. Große meldet Panoptes vorher mit einer Zusammenfassung, du entscheidest. Nie während der Fahrt.</p></div>
-    <div class="card"><h3>Bilder und Videos</h3><p>Automatisch nur, wenn du „Bilder und Videos an Telegram senden“ einschaltest. Ab Werk ist das aus, dann kommt nur Text.</p></div>
+    <div class="card"><h3>Bilder und Videos</h3><p>Ab 0.1.38.11 schickt der Wächter seine Bilder ab Werk mit. Wer das ausgeschaltet hatte, behält das. Abschalten mit <code>/bilder aus</code> oder in Panoptes unter „Bilder und Videos an Telegram senden“.</p></div>
   </div>
   <div class="card tgnicht"><h3 style="margin:0 0 6px">Was bewusst nicht geht</h3><p style="margin:0">Über Telegram kannst du das Auto <b>nicht</b> aufsperren oder zusperren. Auch Klima, Hupe, Licht, Fenster und Laden starten oder stoppen gehen nicht. Den Tiermodus kannst du ansehen, aber nicht ein- oder ausschalten.</p></div>
   <h2 id="menue">So sieht das Menü aus</h2><p>Skizze, kein echter Chat. Knöpfe zu Befehlen, die du ausgeschaltet hast, siehst du gar nicht.</p>
@@ -142,7 +142,7 @@ ul.tgsi{list-style:none;padding:0;margin:14px 0}ul.tgsi li{padding:10px 0;border
     <li><b>Schlüssel.</b> Der Schlüssel bleibt verschlüsselt im Auto. Wer ihn hat, kann deinen Bot steuern. Gib ihn niemandem weiter.</li>
     <li><b>Du entscheidest.</b> Unter „Fernbefehle“ schaltest du einzelne Befehle aus: Wächter, Kamera, Standort, Akku, Dienste, Sicherung. Schickst du einen ausgeschalteten Befehl, sagt der Bot nur, dass er ausgeschaltet ist.</li>
     <li><b>Updates.</b> Nie während der Fahrt. Ab 0.1.38.8 kommen kleine Updates von selbst, wenn das Auto 10 Minuten steht. Alles andere nur so, wie du es unter Einstellungen → Alle Einstellungen → App-Updates einstellst.</li>
-    <li><b>Bilder.</b> Schickst du Bilder oder Videos, liegen sie bei Telegram.</li>
+    <li><b>Bilder.</b> Bilder und Videos liegen auf den Servern von Telegram. Darauf sind oft fremde Menschen zu sehen. Abschalten mit <code>/bilder aus</code>.</li>
     <li><b>Notaus.</b> Ab 0.1.38.8 schaltet <code>/aktionen aus</code> alle Fahrzeug-Aktionen (Hupe, Licht, Aufsperren) sofort ab. Einschalten geht nur am Auto.</li>
     <li><b>Abkoppeln.</b> Nur in Panoptes, unter „Bot wechseln oder entfernen“: „Anderes Telegram koppeln“ löst nur dein Konto, „Bot entfernen“ löscht auch den Schlüssel. Über Telegram selbst geht das nicht.</li>
   </ul>
