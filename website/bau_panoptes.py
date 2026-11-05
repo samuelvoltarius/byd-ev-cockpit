@@ -48,7 +48,7 @@ T = {
                  "chips": {"A": "nur bestimmte Autos", "B": "Beta"},
                  "gruppen": [
             ("Start", [
-                ("Leiste mit sieben Bereichen: Start, Steuerung, Kameras & Wächter, Fahrten & Laden, Regeln, Apps & Display, Einstellungen", ""),
+                ("Leiste mit sieben Bereichen: Start, Navi & Fahrten, Steuerung, Kameras & Wächter, Regeln, Apps & Display, Einstellungen", ""),
                 ("Startseite mit Ladestand, Reichweite, Standort, Zustand des Autos, Wächter heute und letzten Fahrten", ""),
                 ("Reichweite „heute“, gelernt aus deinen eigenen Fahrten", ""),
                 ("Schnellknöpfe: zusperren, vorklimatisieren, Kofferraum", "A"),
@@ -71,7 +71,7 @@ T = {
                 ("Tiermodus: hält das Klima für dein Tier an (nur eine Hilfe, keine Garantie)", "A"),
             ]),
             ("Kameras & Wächter", [
-                ("Wächter mit großem Schalter; du wählst, wann er aufnimmt (Erschütterung, KI überall, KI nur an privaten Orten)", ""),
+                ("Wächter mit großem Schalter, ab Werk an (nur Erschütterung), nach einmal bestätigtem Rechtshinweis. KI überall oder nur an privaten Orten wählst du selbst", ""),
                 ("Abschreckung am Bildschirm, nur wenn eine Person da ist", ""),
                 ("Schutz der 12-V-Batterie: Wächter legt sich rechtzeitig schlafen", ""),
                 ("Zeitplan für den Wächter, Bildbereiche festlegen, private Orte", ""),
@@ -87,6 +87,7 @@ T = {
             ("Fahrten & Laden", [
                 ("Karte mit Ladesäulen und freien Plätzen; Kartenquelle wählst du", ""),
                 ("Orte suchen und als Ziel ins Navi schicken; Ziel aus Google-Maps- oder Waze-Link", ""),
+                ("Ziel mit bis zu 5 Zwischenstopps direkt im Auto planen, Etappen mit Akku bei Ankunft. „Starten“ öffnet die Panoptes-Karte mit eigener Führung, das Werksnavi ist der zweite Knopf. Die Führung ist neu und wird gerade im Auto erprobt. Die Karte spricht nur, wenn du Sprachansagen einschaltest (ab Werk aus)", "B"),
                 ("„Reicht es noch?“ mit Ladestopp-Vorschlag", ""),
                 ("Günstigste Säule in der Nähe, mit deinem Preis", ""),
                 ("Fahrtenbuch mit großem Schalter, Verbrauch", ""),
@@ -127,7 +128,7 @@ T = {
             ]),
             ("Einstellungen", [
                 ("Kurze Einrichtung; freiwillige Schritte unter Einstellungen → Einrichtung → „Noch einrichten“", ""),
-                ("Updates in der App, per Knopf aus Telegram, vom Handy oder Cockpit (nur mit Erlaubnis); ohne WLAN fragt Panoptes vorher; danach richtet es sich selbst wieder ein", ""),
+                ("Updates in der App, per Knopf aus Telegram, vom Handy oder Cockpit (nur mit Erlaubnis); danach richtet es sich selbst wieder ein. Updates laden ab Werk auch über Mobilfunk; schaltest du das aus, lädt Panoptes nur im WLAN oder fragt vorher. Der Launcher folgt derselben Regel (ab 0.1.38.10)", ""),
                 ("Fehler melden in der App", ""),
                 ("Fernzugang über Tailscale, Brücke für Handy und PC (ab Werk aus)", ""),
                 ("Geräte koppeln mit Prüfzahl; Rechte je Gerät, Zusatzrechte nie von selbst", ""),
@@ -142,7 +143,7 @@ T = {
                  ]},
         "h_kann": "Was Panoptes kann",
         "kann": [
-            ("🚗", "Am Bildschirm im Auto", "Panoptes läuft als eigene App im Vollbild, mit großen Tasten. Während der Fahrt sind Einstellungen gesperrt; Start, Karte und Wächter bleiben erreichbar."),
+            ("🚗", "Am Bildschirm im Auto", "Panoptes läuft als eigene App im Vollbild, mit großen Tasten. Während der Fahrt sind Einstellungen gesperrt; Start, Navigation, Karte und Wächter bleiben erreichbar. Beim Start siehst du je Dienst, ob er bereit ist."),
             ("🧩", "Einrichtungshilfe", "Beim ersten Start führen dich drei kurze Bildschirme durch das Nötigste, alle Freigaben stehen auf einem Bildschirm. Alles Weitere findest du später unter „Noch einrichten“. Fast nichts ist vorausgewählt (nur „Gewohnheiten merken“ steht auf Ja, das bleibt im Auto); alles, was Daten nach außen schickt, bleibt aus, bis du es einschaltest. Was dein Auto nicht kann, überspringt er mit einer Erklärung."),
             ("🛡️", "Wächter mit KI-Erkennung", "Steht dein Auto, achten die Kameras auf das Umfeld. Du entscheidest selbst, wann aufgenommen wird: nur bei Erschütterung, mit KI-Erkennung überall oder nur an deinen privaten Orten wie Garage oder Einfahrt. Ohne Wahl nimmt er nur bei Erschütterung auf. Damit die 12-V-Batterie geschont wird, legt er sich schlafen; die Grenze richtet sich nach dem Batterietyp (Blei, AGM oder LFP)."),
             ("📹", "Dashcam <span class=\"bald\">ab 0.1.27</span>", "Bei einer Vollbremsung oder einem Stoß sichert Panoptes von selbst einen kurzen Clip aus allen Kameras, etwa 20 Sekunden davor und danach. Ohne Daueraufnahme. Die Clips bleiben im Auto oder auf dem USB-Stick und werden nie von selbst verschickt. Clips am Handy ansehen und speichern geht mit der <a href=\"/app/\">Handy-App</a> (Beta 4). Panoptes fragt dann „Behalten?“, sonst wird der Clip nach 72 Stunden gelöscht. Ab 0.1.36 merkt sich jeder Clip, was ihn ausgelöst hat (ohne Ort). In der Schweiz ist die Dashcam ab Werk aus. Ob Aufnahmen beim Fahren bei dir erlaubt sind, ist je nach Land verschieden, siehe <a href=\"hinweise.html\">Hinweise</a>."),
@@ -275,7 +276,7 @@ T = {
             ("Launcher als Startbildschirm (Schalter)", "Beta: ab Werk aus"),
             ("Home Assistant meldet smarte Geräte, Panoptes zeigt sie an", "Beta: ab Werk aus, nur Anzeige"),
             ("Home Assistant schaltet freigegebene Tore und Haustüren", "Beta: ab Werk aus, je Gerät einzeln erlauben"),
-            ("Eigene Schalter für Hupe, Licht, Warnblinker, Aufsperren; Notaus /aktionen in Telegram", "Fertig; ab Werk aus, einschalten nur am Auto"),
+            ("Eigene Schalter für Hupe, Licht, Warnblinker, Aufsperren; Notaus /aktionen in Telegram", "Fertig; ab Werk aus. Die Rechte dafür vergibst du nur am Bildschirm im Auto, nie aus der Ferne"),
             ("Kleine Updates von selbst, wenn das Auto 10 Minuten steht", "Fertig"),
             ("Sicherheitssysteme ausschalten nur nach Bestätigung", "Fertig"),
             ("„Laut Säule“ und „Günstigste in der Nähe“", "Fertig"),
@@ -298,7 +299,7 @@ T = {
         "dl_bald": "Beta-Version {V}",
         # „Neu in …“-Kasten beim Download; erscheint nur, solange versionen.json genau diese Version meldet
         "neu_version": "0.1.38.10", "neu_titel": "Neu in 0.1.38.10",
-        "neu": ["<b>Navi &amp; Fahrten</b> steht im Menü jetzt an zweiter Stelle und öffnet gleich die Navigation. Am Bildschirm im Auto heißt der Knopf einfach „Starten“.", "<b>Panoptes führt jetzt selbst:</b> „Starten“ öffnet die Panoptes-Karte mit Vorschau, los geht es mit Start. „Im Werksnavi öffnen“ bleibt als zweiter Knopf.", "<b>Bis zu fünf Zwischenstopps</b> in der Navigation. Für jede Etappe siehst du, wie viel Akku bei der Ankunft bleibt.", "<b>Ansagen nur, wenn du willst:</b> Die Sprachansagen sind ab Werk aus. Einschalten unter Einstellungen → Alle Einstellungen → Auto &amp; Anzeige → Navigation.", "<b>Wächter:</b> Er nimmt wieder jedes erkannte Fahrzeug und jede Person auf, auch nach nur einem Bild. Wer nur nah am Auto vorbeigeht, kommt in Telegram als Hinweis statt als Alarm (nur mit „Wächter: Hinweise“).", "<b>Handy:</b> Die Weboberfläche in der Handy-App zeigt nur, was das Handy darf; Laden braucht das neue Recht „Laden im Auto“. Wichtige Besitzer-Aktionen brauchen Fingerabdruck oder Face ID.", "<b>Schneller:</b> Panoptes startet Schritt für Schritt, du siehst für jeden Dienst, ob er bereit ist. Der Launcher holt sein Update auch übers Mobilnetz, wenn du das erlaubt hast.", "<b>Aus 0.1.38.9:</b> Besitzer-Handy nur nach deiner Antwort auf „Welches Gerät ist dein Handy?“, Menüwege stimmen wieder."],
+        "neu": ["<b>Navi &amp; Fahrten</b> steht im Menü jetzt an zweiter Stelle und öffnet gleich die Navigation. Am Bildschirm im Auto heißt der Knopf einfach „Starten“.", "<b>Panoptes führt jetzt selbst:</b> „Starten“ öffnet die Panoptes-Karte mit eigener Führung, los geht es mit Start. „Im Werksnavi öffnen“ bleibt als zweiter Knopf. Die Führung ist neu und wird gerade im Auto erprobt.", "<b>Bis zu fünf Zwischenstopps</b> in der Navigation. Für jede Etappe siehst du, wie viel Akku bei der Ankunft bleibt.", "<b>Ansagen nur, wenn du willst:</b> Die Sprachansagen sind ab Werk aus. Einschalten unter Einstellungen → Alle Einstellungen → Auto &amp; Anzeige → Navigation.", "<b>Wächter:</b> Er nimmt wieder jedes erkannte Fahrzeug und jede Person auf, auch nach nur einem Bild. Wer nur nah am Auto vorbeigeht, kommt in Telegram als Hinweis statt als Alarm (nur mit „Wächter: Hinweise“).", "<b>Handy:</b> Die Weboberfläche in der Handy-App zeigt nur, was das Handy darf; Laden braucht das neue Recht „Laden im Auto“. Wichtige Besitzer-Aktionen brauchen Fingerabdruck oder Face ID.", "<b>Schneller:</b> Panoptes startet Schritt für Schritt, du siehst für jeden Dienst, ob er bereit ist. Der Launcher holt sein Update auch übers Mobilnetz, wenn du das erlaubt hast.", "<b>Aus 0.1.38.9:</b> Besitzer-Handy nur nach deiner Antwort auf „Welches Gerät ist dein Handy?“, Menüwege stimmen wieder."],
         # Abschnitt „Tacho und Launcher“ ab 0.1.37 (Koordination 03.11.2026), Bilder: Vorschau/Emulator, Musterdaten
         "tl": {"h": "Tacho und Launcher <span class=\"bald\">ab 0.1.37</span>",
                "lead": "Seit 0.1.37, in 0.1.38 auf der Seite Apps &amp; Display → Display. Die Bilder sind Vorschaubilder und Emulator-Aufnahmen mit Musterdaten, nicht aus einem Auto. <a href=\"launcher.html\">Alles zum Panoptes Launcher</a>",
@@ -336,7 +337,7 @@ T = {
             ("Erster Start mit der Einrichtungshilfe.", "Öffne Panoptes am Bildschirm im Auto. Kurze Schritte führen dich durch das Nötigste, zum Beispiel Sprache, Hinweise bestätigen, <b>Autostart</b>, Anzeige über anderen Apps, Berechtigungen und <b>USB-Freigabe</b>. Alles Weitere (Wächter, Kartenquelle, Daten teilen, Blitzer, Telegram, Routenplaner, EV-Cockpit, Fernzugang) findest du danach unter „Noch einrichten“. Fast nichts ist vorausgewählt. Was Daten nach außen schickt, bleibt aus, bis du es selbst einschaltest."),
             ("Autostart freigeben.", "Damit Panoptes nach dem Einsteigen von selbst läuft, muss es in der BYD-App-Verwaltung erlaubt sein. Die Einrichtungshilfe öffnet die richtige Seite; dort nimmst du bei Panoptes den Haken bei der Autostart-Sperre weg. <b>BYD setzt diesen Schalter nach jeder Installation und jedem Update zurück.</b> Panoptes gibt ihn nach einem Update selbst wieder frei und sagt Bescheid, falls das nicht klappt. Auf DiLink 5 gibt es diese Verwaltung nicht, der Schritt entfällt."),
             ("USB-Freigabe bestätigen.", "Android fragt einmal „USB-Debugging zulassen?“. Setze den Haken bei <b>„Immer von diesem Computer zulassen“</b> und tippe auf <b>Zulassen</b>. Der „Computer“ ist dabei Panoptes selbst im Auto. Ohne Haken fragt Android nach jedem Neustart wieder."),
-            ("Am Handy oder PC öffnen (freiwillig).", "Mit eingerichtetem Fernzugang (Tailscale) öffnest du die Adresse deines Autos im Browser. Zum Anmelden brauchst du den <b>Zugangscode</b>, den du in der App am Auto unter <b>Start → Zugangscode</b> findest. Weitere Geräte, etwa das EV-Cockpit, erlaubst du unter <b>Einstellungen → Alle Einstellungen → Gerät koppeln</b>."),
+            ("Am Handy oder PC öffnen (freiwillig).", "Mit eingerichtetem Fernzugang (Tailscale) öffnest du die Adresse deines Autos im Browser. Zum Anmelden brauchst du den <b>Zugangscode</b>, den du am Bildschirm im Auto unter <b>Einstellungen → Erweitert (alt) → „Dein Zugangscode“</b> findest. Mit Telegram geht die Anmeldung auch per Prüfzahl. Weitere Geräte, etwa das EV-Cockpit, erlaubst du unter <b>Einstellungen → Alle Einstellungen → Gerät koppeln</b>."),
         ],
         "h_stolper": "Wenn etwas hakt",
         "stolper": [
@@ -402,7 +403,7 @@ T = {
                  "chips": {"A": "only some cars", "B": "beta"},
                  "gruppen": [
             ("Start", [
-                ("Bar with seven areas: Home, Controls, Cameras & guard, Trips & charging, Rules, Apps & display, Settings", ""),
+                ("Bar with seven areas: Home, Navigation & trips, Controls, Cameras & guard, Rules, Apps & display, Settings", ""),
                 ("Home page with charge, range, location, car status, guard today and recent trips", ""),
                 ("Range \u201ctoday\u201d, learned from your own trips", ""),
                 ("Quick buttons: lock, pre-condition, boot", "A"),
@@ -425,7 +426,7 @@ T = {
                 ("Pet mode: keeps the climate running for your pet (only an aid, no guarantee)", "A"),
             ]),
             ("Cameras & guard", [
-                ("Guard with a big switch; you choose when it records (bump, AI everywhere, AI only at private places)", ""),
+                ("Guard with a big switch, on by default (bump only), after you confirm the legal notice once. AI everywhere or only at private places is your choice", ""),
                 ("Deterrent on the screen, only when a person is there", ""),
                 ("12-volt battery protection: the guard goes to sleep in time", ""),
                 ("Guard schedule, watch areas, private places", ""),
@@ -441,6 +442,7 @@ T = {
             ("Trips & charging", [
                 ("Map with chargers and free spots; you choose the map source", ""),
                 ("Search places and send them to the navigation; destination from a Google Maps or Waze link", ""),
+                ("Plan a destination with up to 5 stops right in the car, legs with battery on arrival. “Start” opens the Panoptes map with its own guidance; the car navigation is the second button. The guidance is new and is being tested in the car right now. The map only speaks if you switch on voice prompts (off by default)", "B"),
                 ("\u201cWill it reach?\u201d with a charging stop suggestion", ""),
                 ("Cheapest charger nearby, with your price", ""),
                 ("Trip log with a big switch, consumption", ""),
@@ -481,7 +483,7 @@ T = {
             ]),
             ("Settings", [
                 ("Short setup; optional steps under Settings \u2192 Setup \u2192 \u201cNoch einrichten\u201d (still to set up)", ""),
-                ("Updates in the app, by button from Telegram, phone or Cockpit (only with permission); without Wi-Fi Panoptes asks first; afterwards it sets itself up again", ""),
+                ("Updates in the app, by button from Telegram, phone or Cockpit (only with permission); afterwards it sets itself up again. By default updates also download over mobile data; if you switch that off, Panoptes only downloads on Wi-Fi or asks first. The launcher follows the same rule (from 0.1.38.10)", ""),
                 ("Report a problem in the app", ""),
                 ("Remote access via Tailscale, bridge for phone and PC (off by default)", ""),
                 ("Pair devices with a check number; permissions per device, extra permissions never by themselves", ""),
@@ -496,7 +498,7 @@ T = {
                  ]},
         "h_kann": "What Panoptes does",
         "kann": [
-            ("🚗", "On the car screen", "Panoptes runs as its own full-screen app with large buttons. While driving, settings are locked; home, map and guard stay available."),
+            ("🚗", "On the car screen", "Panoptes runs as its own full-screen app with large buttons. While driving, settings are locked; home, navigation, map and guard stay available. At start-up you see for each service whether it is ready."),
             ("🧩", "Setup assistant", "On first start, three short screens guide you through the essentials, with all permissions on one screen. Everything else is under \u201cNoch einrichten\u201d (still to set up) later. Almost nothing is preselected (only \u201cremember habits\u201d is set to yes, and that stays in the car); anything that sends data out stays off until you turn it on. Whatever your car cannot do is skipped with an explanation."),
             ("🛡️", "Guard with AI detection", "While your car is parked, the cameras watch its surroundings. You decide when it records: only on impact, with AI detection everywhere, or only at your own private places such as your garage or driveway. Without a choice it only records on impact. To protect the 12 V battery it goes to sleep; the threshold follows the battery type (lead-acid, AGM or LFP)."),
             ("📹", "Dashcam <span class=\"bald\">from 0.1.27</span>", "On hard braking or a bump Panoptes saves a short clip from all cameras by itself, about 20 seconds before and after. No continuous recording. The clips stay in the car or on the USB stick and are never sent anywhere by themselves. You can watch and save clips on your phone with the <a href=\"/app/en/\">phone app</a> (beta 4). Panoptes then asks “Keep?”, otherwise the clip is deleted after 72 hours. From 0.1.36 every clip remembers what triggered it (without location). In Switzerland the dashcam is off by default. Whether recording while driving is allowed where you live differs by country, see the <a href=\"hinweise.html\">notes</a>."),
@@ -642,7 +644,7 @@ T = {
         "dl_anker": "install",
         "dl_bald": "Beta version {V}",
         "neu_version": "0.1.38.10", "neu_titel": "New in 0.1.38.10",
-        "neu": ["<b>Navigation &amp; trips</b> is now second in the menu and opens the navigation right away. On the car screen the button is simply called “Start”.", "<b>Panoptes now guides you itself:</b> “Start” opens the Panoptes map with a preview, tap Start to go. “Open in car navigation” stays as a second button.", "<b>Up to five stops</b> in navigation. For each leg you see how much battery is left when you arrive.", "<b>Voice only if you want it:</b> voice prompts are off by default. Switch them on under Settings → All settings → Car &amp; display → Navigation.", "<b>Guard:</b> it again records every detected vehicle and person, even after a single frame. Someone who only walks past the car arrives in Telegram as a notice, not an alert (only with “Guard: notices” on).", "<b>Phone:</b> the web interface in the phone app only shows what the phone may do; charging needs the new “Charging in the car” permission. Key owner actions need fingerprint or Face ID.", "<b>Faster:</b> Panoptes starts step by step, and you see for each service whether it is ready. The launcher also updates over mobile data if you allowed that.", "<b>From 0.1.38.9:</b> owner phone only after you answer “Which device is your phone?”, menu paths are right again."],
+        "neu": ["<b>Navigation &amp; trips</b> is now second in the menu and opens the navigation right away. On the car screen the button is simply called “Start”.", "<b>Panoptes now guides you itself:</b> “Start” opens the Panoptes map with its own guidance, tap Start to go. “Open in car navigation” stays as a second button. The guidance is new and is being tested in the car right now.", "<b>Up to five stops</b> in navigation. For each leg you see how much battery is left when you arrive.", "<b>Voice only if you want it:</b> voice prompts are off by default. Switch them on under Settings → All settings → Car &amp; display → Navigation.", "<b>Guard:</b> it again records every detected vehicle and person, even after a single frame. Someone who only walks past the car arrives in Telegram as a notice, not an alert (only with “Guard: notices” on).", "<b>Phone:</b> the web interface in the phone app only shows what the phone may do; charging needs the new “Charging in the car” permission. Key owner actions need fingerprint or Face ID.", "<b>Faster:</b> Panoptes starts step by step, and you see for each service whether it is ready. The launcher also updates over mobile data if you allowed that.", "<b>From 0.1.38.9:</b> owner phone only after you answer “Which device is your phone?”, menu paths are right again."],
         "tl": {"h": "Cluster and launcher <span class=\"bald\">from 0.1.37</span>",
                "lead": "Since 0.1.37, in 0.1.38 on the page Apps &amp; display → Display. The pictures are previews and emulator shots with sample data, not from a car. <a href=\"launcher.html\">All about the Panoptes Launcher</a>",
                "bilder": [("Panoptes cluster “Horizont”: speed, battery, range and the next turn arrow. There are five displays.", [("tacho-horizont", "tacho", "Panoptes cluster Horizont: 101 km/h, 64 percent battery, 287 km range, turn right in 350 m")]),
@@ -678,7 +680,7 @@ T = {
             ("First start with the setup assistant.", "Open Panoptes on the car screen. Short steps guide you through the essentials, for example language, confirming the notes, <b>autostart</b>, display over other apps, permissions and <b>USB access</b>. Everything else (guard, map source, data sharing, speed cameras, Telegram, route planner, EV Cockpit, remote access) is under \u201cNoch einrichten\u201d (still to set up) afterwards. Almost nothing is preselected. Anything that sends data out stays off until you turn it on yourself."),
             ("Allow autostart.", "For Panoptes to start by itself when you get in, it has to be allowed in BYD's app management. The setup assistant opens the right page; untick the autostart block for Panoptes there. <b>BYD resets this switch after every installation and update.</b> Panoptes turns it back on by itself after an update and tells you if that fails. DiLink 5 has no such app management, so the step is skipped."),
             ("Confirm USB access.", "Android asks once “Allow USB debugging?”. Tick <b>“Always allow from this computer”</b> and tap <b>Allow</b>. The “computer” is Panoptes itself in the car. Without the tick Android asks again after every restart."),
-            ("Open on your phone or PC (optional).", "With remote access (Tailscale) set up, open your car's address in a browser. To log in you need the <b>access code</b>, found in the app in the car under <b>Home → Access code</b>. You allow other devices, such as the EV Cockpit, under <b>Settings → All settings → Pair a device</b>."),
+            ("Open on your phone or PC (optional).", "With remote access (Tailscale) set up, open your car's address in a browser. To log in you need the <b>access code</b>, found on the car screen under <b>Settings → Advanced (old) → “Your access code”</b>. With Telegram you can also log in with a check number. You allow other devices, such as the EV Cockpit, under <b>Settings → All settings → Pair a device</b>."),
         ],
         "h_stolper": "If something goes wrong",
         "stolper": [
