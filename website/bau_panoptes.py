@@ -241,7 +241,7 @@ T = {
         ],
         "h_stand": "Stand der Entwicklung",
         # PFLEGE: Diese Tabelle bei JEDER Version mitpruefen. Nur Belegtes (FADEN_KOORDINATION.md, ROADMAP.md, FREEZE_*.md), Unsicheres nach unten.
-        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.38.12. „Fertig“ heißt: gebaut und getestet. „Nur bestimmte Autos“ heißt: hängt vom Modell ab. „Beta“ heißt: läuft, hat aber Einschränkungen.",
+        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.38.13. „Fertig“ heißt: gebaut und getestet. „Nur bestimmte Autos“ heißt: hängt vom Modell ab. „Beta“ heißt: läuft, hat aber Einschränkungen.",
         "stand_kopf": ("Funktion", "Stand"),
         "stand": [
             ("Wächter mit Personen-Erkennung, Abschreckung nur bei einer Person, Meldungen über Telegram", "Fertig"),
@@ -298,8 +298,8 @@ T = {
         "dl_anker": "installieren",
         "dl_bald": "Beta-Version {V}",
         # „Neu in …“-Kasten beim Download; erscheint nur, solange versionen.json genau diese Version meldet
-        "neu_version": "0.1.38.12", "neu_titel": "Neu in 0.1.38.12",
-        "neu": ["<b>Telegram auch bei abgestelltem Auto:</b> Der Bot ist ab Werk auch bei abgestelltem Auto erreichbar. Das kostet etwas Strom aus der Starterbatterie. Abschalten mit <code>/erreichbar aus</code>.", "<b>Schutz für die Starterbatterie:</b> Wird sie schwach, schläft der Bot von selbst. Wer die Erreichbarkeit ausgeschaltet hatte, behält das.", "<b>Aus 0.1.38.11:</b> Wächter-Bilder an Telegram ab Werk an (abschalten mit <code>/bilder aus</code>), ehrliche Startanzeige, Kamera spart Strom bei ausgeschalteter Zündung, Tacho-Größe stellst du selbst ein."],
+        "neu_version": "0.1.38.13", "neu_titel": "Neu in 0.1.38.13",
+        "neu": ["<b>Gang richtig angezeigt:</b> Bei abgestelltem Auto zeigt Panoptes keinen veralteten Gang mehr an; ein alter Gang-Wert gilt nicht mehr als Fahrt.", "<b>Aus 0.1.38.12:</b> Der Telegram-Bot ist ab Werk auch bei abgestelltem Auto erreichbar und schläft von selbst, wenn die Starterbatterie schwach wird. Abschalten mit <code>/erreichbar aus</code>.", "<b>Aus 0.1.38.11:</b> Wächter-Bilder an Telegram ab Werk an (abschalten mit <code>/bilder aus</code>), ehrliche Startanzeige, Tacho-Größe stellst du selbst ein."],
         # Abschnitt „Tacho und Launcher“ ab 0.1.37 (Koordination 03.11.2026), Bilder: Vorschau/Emulator, Musterdaten
         "tl": {"h": "Tacho und Launcher <span class=\"bald\">ab 0.1.37</span>",
                "lead": "Seit 0.1.37, in 0.1.38 auf der Seite Apps &amp; Display → Display. Die Bilder sind Vorschaubilder und Emulator-Aufnahmen mit Musterdaten, nicht aus einem Auto. <a href=\"launcher.html\">Alles zum Panoptes Launcher</a>",
@@ -595,7 +595,7 @@ T = {
             ("Other services (BYD account, MQTT/smart home, ABRP, Stadia Maps, AI assistant)", "depends on the service; the input field tells you where your requests go", "only if you set them up yourself"),
         ],
         "h_stand": "Development status",
-        "stand_lead": "Honestly, what runs where, as of 0.1.38.12. \u201cDone\u201d means: built and tested. \u201cOnly some cars\u201d means: depends on the model. \u201cBeta\u201d means: it runs, but has limits.",
+        "stand_lead": "Honestly, what runs where, as of 0.1.38.13. \u201cDone\u201d means: built and tested. \u201cOnly some cars\u201d means: depends on the model. \u201cBeta\u201d means: it runs, but has limits.",
         "stand_kopf": ("Feature", "Status"),
         "stand": [
             ("Guard with person detection, deterrent only for a person, Telegram notifications", "Done"),
@@ -643,8 +643,8 @@ T = {
         "h_dl": "Download and install",
         "dl_anker": "install",
         "dl_bald": "Beta version {V}",
-        "neu_version": "0.1.38.12", "neu_titel": "New in 0.1.38.12",
-        "neu": ["<b>Telegram also with the car off:</b> by default the bot is also reachable while the car is off. This uses a little power from the starter battery. Turn off with <code>/erreichbar aus</code>.", "<b>Protecting the starter battery:</b> if it gets weak, the bot goes to sleep by itself. If you had turned reachability off, it stays off.", "<b>From 0.1.38.11:</b> guard pictures to Telegram on by default (turn off with <code>/bilder aus</code>), honest start screen, camera saves power with the ignition off, you set the cluster size yourself."],
+        "neu_version": "0.1.38.13", "neu_titel": "New in 0.1.38.13",
+        "neu": ["<b>Gear shown correctly:</b> with the car switched off, Panoptes no longer shows an outdated gear; an old gear value no longer counts as driving.", "<b>From 0.1.38.12:</b> by default the Telegram bot is also reachable while the car is off and goes to sleep by itself when the starter battery gets weak. Turn off with <code>/erreichbar aus</code>.", "<b>From 0.1.38.11:</b> guard pictures to Telegram on by default (turn off with <code>/bilder aus</code>), honest start screen, you set the cluster size yourself."],
         "tl": {"h": "Cluster and launcher <span class=\"bald\">from 0.1.37</span>",
                "lead": "Since 0.1.37, in 0.1.38 on the page Apps &amp; display → Display. The pictures are previews and emulator shots with sample data, not from a car. <a href=\"launcher.html\">All about the Panoptes Launcher</a>",
                "bilder": [("Panoptes cluster “Horizont”: speed, battery, range and the next turn arrow. There are five displays.", [("tacho-horizont", "tacho", "Panoptes cluster Horizont: 101 km/h, 64 percent battery, 287 km range, turn right in 350 m")]),
