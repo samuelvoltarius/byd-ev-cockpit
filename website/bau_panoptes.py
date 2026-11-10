@@ -241,7 +241,7 @@ T = {
         ],
         "h_stand": "Stand der Entwicklung",
         # PFLEGE: Diese Tabelle bei JEDER Version mitpruefen. Nur Belegtes (FADEN_KOORDINATION.md, ROADMAP.md, FREEZE_*.md), Unsicheres nach unten.
-        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.38.13. „Fertig“ heißt: gebaut und getestet. „Nur bestimmte Autos“ heißt: hängt vom Modell ab. „Beta“ heißt: läuft, hat aber Einschränkungen.",
+        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.38.14. „Fertig“ heißt: gebaut und getestet. „Nur bestimmte Autos“ heißt: hängt vom Modell ab. „Beta“ heißt: läuft, hat aber Einschränkungen.",
         "stand_kopf": ("Funktion", "Stand"),
         "stand": [
             ("Wächter mit Personen-Erkennung, Abschreckung nur bei einer Person, Meldungen über Telegram", "Fertig"),
@@ -298,8 +298,8 @@ T = {
         "dl_anker": "installieren",
         "dl_bald": "Beta-Version {V}",
         # „Neu in …“-Kasten beim Download; erscheint nur, solange versionen.json genau diese Version meldet
-        "neu_version": "0.1.38.13", "neu_titel": "Neu in 0.1.38.13",
-        "neu": ["<b>Gang richtig angezeigt:</b> Bei abgestelltem Auto zeigt Panoptes keinen veralteten Gang mehr an; ein alter Gang-Wert gilt nicht mehr als Fahrt.", "<b>Aus 0.1.38.12:</b> Der Telegram-Bot ist ab Werk auch bei abgestelltem Auto erreichbar und schläft von selbst, wenn die Starterbatterie schwach wird. Abschalten mit <code>/erreichbar aus</code>.", "<b>Aus 0.1.38.11:</b> Wächter-Bilder an Telegram ab Werk an (abschalten mit <code>/bilder aus</code>), ehrliche Startanzeige, Tacho-Größe stellst du selbst ein."],
+        "neu_version": "0.1.38.14", "neu_titel": "Neu in 0.1.38.14",
+        "neu": ["<b>Nur noch die neue Oberfläche:</b> Das alte Design ist ganz weg, Aufnahmen und alle Seiten öffnen sich immer in der neuen Oberfläche.", "<b>Abstell-Meldung zuverlässig:</b> Sie kommt an, auch wenn der Bot gerade erst startet. Fahrten werden sicherer erkannt.", "<b>Karte</b> hängt beim Umschalten der Kartenquelle nicht mehr. Hängt die Anzeige doch, schickst du mit <code>/fehler</code> einen Fehlerbericht über Telegram.", "<b>Launcher</b> passt sich dem Bildschirm an. Die Größe wählst du selbst: Automatisch, Kleiner oder Größer. Seltenes steht unter „Erweitert“.", "<b>Navi:</b> von Ziel über Vorschau zu Start.", "<b>Zugangscode:</b> neue Karte „Dein Zugangscode“ unter Einstellungen → Alle Einstellungen → Verbindungen, verdeckt, „Zeigen“ fragt erst und verdeckt nach 60 Sekunden wieder. Nur am Bildschirm im Auto.", "<b>Aufnahmen:</b> „Zurück“ führt aus dem Video zur Liste. Fehlt eine Aufnahme, steht das da. Während der Fahrt bleiben Videos gesperrt.", "<b>Ehrlich:</b> 0.1.38.14 ist bisher nur im Emulator geprüft, noch nicht im Auto; das wird nachgeholt.", "<b>Aus 0.1.38.13:</b> kein veralteter Gang mehr bei abgestelltem Auto."],
         # Abschnitt „Tacho und Launcher“ ab 0.1.37 (Koordination 03.11.2026), Bilder: Vorschau/Emulator, Musterdaten
         "tl": {"h": "Tacho und Launcher <span class=\"bald\">ab 0.1.37</span>",
                "lead": "Seit 0.1.37, in 0.1.38 auf der Seite Apps &amp; Display → Display. Die Bilder sind Vorschaubilder und Emulator-Aufnahmen mit Musterdaten, nicht aus einem Auto. <a href=\"launcher.html\">Alles zum Panoptes Launcher</a>",
@@ -337,7 +337,7 @@ T = {
             ("Erster Start mit der Einrichtungshilfe.", "Öffne Panoptes am Bildschirm im Auto. Kurze Schritte führen dich durch das Nötigste, zum Beispiel Sprache, Hinweise bestätigen, <b>Autostart</b>, Anzeige über anderen Apps, Berechtigungen und <b>USB-Freigabe</b>. Alles Weitere (Wächter, Kartenquelle, Daten teilen, Blitzer, Telegram, Routenplaner, EV-Cockpit, Fernzugang) findest du danach unter „Noch einrichten“. Fast nichts ist vorausgewählt. Was Daten nach außen schickt, bleibt aus, bis du es selbst einschaltest."),
             ("Autostart freigeben.", "Damit Panoptes nach dem Einsteigen von selbst läuft, muss es in der BYD-App-Verwaltung erlaubt sein. Die Einrichtungshilfe öffnet die richtige Seite; dort nimmst du bei Panoptes den Haken bei der Autostart-Sperre weg. <b>BYD setzt diesen Schalter nach jeder Installation und jedem Update zurück.</b> Panoptes gibt ihn nach einem Update selbst wieder frei und sagt Bescheid, falls das nicht klappt. Auf DiLink 5 gibt es diese Verwaltung nicht, der Schritt entfällt."),
             ("USB-Freigabe bestätigen.", "Android fragt einmal „USB-Debugging zulassen?“. Setze den Haken bei <b>„Immer von diesem Computer zulassen“</b> und tippe auf <b>Zulassen</b>. Der „Computer“ ist dabei Panoptes selbst im Auto. Ohne Haken fragt Android nach jedem Neustart wieder."),
-            ("Am Handy oder PC öffnen (freiwillig).", "Mit eingerichtetem Fernzugang (Tailscale) öffnest du die Adresse deines Autos im Browser. Zum Anmelden brauchst du den <b>Zugangscode</b>, den du am Bildschirm im Auto unter <b>Einstellungen → Erweitert (alt) → „Dein Zugangscode“</b> findest. Mit Telegram geht die Anmeldung auch per Prüfzahl. Weitere Geräte, etwa das EV-Cockpit, erlaubst du unter <b>Einstellungen → Alle Einstellungen → Gerät koppeln</b>."),
+            ("Am Handy oder PC öffnen (freiwillig).", "Mit eingerichtetem Fernzugang (Tailscale) öffnest du die Adresse deines Autos im Browser. Zum Anmelden brauchst du den <b>Zugangscode</b>, den du am Bildschirm im Auto unter <b>Einstellungen → Alle Einstellungen → Verbindungen → „Dein Zugangscode“</b> findest (ab 0.1.38.14; „Zeigen“ fragt erst und verdeckt ihn nach 60 Sekunden wieder). Mit Telegram geht die Anmeldung auch per Prüfzahl. Weitere Geräte, etwa das EV-Cockpit, erlaubst du unter <b>Einstellungen → Alle Einstellungen → Gerät koppeln</b>."),
         ],
         "h_stolper": "Wenn etwas hakt",
         "stolper": [
@@ -595,7 +595,7 @@ T = {
             ("Other services (BYD account, MQTT/smart home, ABRP, Stadia Maps, AI assistant)", "depends on the service; the input field tells you where your requests go", "only if you set them up yourself"),
         ],
         "h_stand": "Development status",
-        "stand_lead": "Honestly, what runs where, as of 0.1.38.13. \u201cDone\u201d means: built and tested. \u201cOnly some cars\u201d means: depends on the model. \u201cBeta\u201d means: it runs, but has limits.",
+        "stand_lead": "Honestly, what runs where, as of 0.1.38.14. \u201cDone\u201d means: built and tested. \u201cOnly some cars\u201d means: depends on the model. \u201cBeta\u201d means: it runs, but has limits.",
         "stand_kopf": ("Feature", "Status"),
         "stand": [
             ("Guard with person detection, deterrent only for a person, Telegram notifications", "Done"),
@@ -643,8 +643,8 @@ T = {
         "h_dl": "Download and install",
         "dl_anker": "install",
         "dl_bald": "Beta version {V}",
-        "neu_version": "0.1.38.13", "neu_titel": "New in 0.1.38.13",
-        "neu": ["<b>Gear shown correctly:</b> with the car switched off, Panoptes no longer shows an outdated gear; an old gear value no longer counts as driving.", "<b>From 0.1.38.12:</b> by default the Telegram bot is also reachable while the car is off and goes to sleep by itself when the starter battery gets weak. Turn off with <code>/erreichbar aus</code>.", "<b>From 0.1.38.11:</b> guard pictures to Telegram on by default (turn off with <code>/bilder aus</code>), honest start screen, you set the cluster size yourself."],
+        "neu_version": "0.1.38.14", "neu_titel": "New in 0.1.38.14",
+        "neu": ["<b>Only the new interface:</b> the old design is gone; recordings and all pages always open in the new interface.", "<b>Parking message reliable:</b> it arrives even if the bot is just starting. Trips are detected more reliably.", "<b>Map</b> no longer freezes when you switch the map source. If the screen does hang, send an error report via Telegram with <code>/fehler</code>.", "<b>Launcher</b> adapts to your screen. You choose the size: Automatic, Smaller or Larger. Rarely used items are under \u201cAdvanced\u201d.", "<b>Navigation:</b> from destination to preview to start.", "<b>Access code:</b> new card \u201cYour access code\u201d under Settings → All settings → Connections, hidden; \u201cShow\u201d asks first and hides it again after 60 seconds. Only on the car screen.", "<b>Recordings:</b> \u201cBack\u201d takes you from the video to the list. If a recording is missing, it says so. Videos stay blocked while driving.", "<b>Honestly:</b> 0.1.38.14 has only been checked in the emulator so far, not yet in the car; that will follow.", "<b>From 0.1.38.13:</b> no outdated gear any more with the car switched off."],
         "tl": {"h": "Cluster and launcher <span class=\"bald\">from 0.1.37</span>",
                "lead": "Since 0.1.37, in 0.1.38 on the page Apps &amp; display → Display. The pictures are previews and emulator shots with sample data, not from a car. <a href=\"launcher.html\">All about the Panoptes Launcher</a>",
                "bilder": [("Panoptes cluster “Horizont”: speed, battery, range and the next turn arrow. There are five displays.", [("tacho-horizont", "tacho", "Panoptes cluster Horizont: 101 km/h, 64 percent battery, 287 km range, turn right in 350 m")]),
@@ -680,7 +680,7 @@ T = {
             ("First start with the setup assistant.", "Open Panoptes on the car screen. Short steps guide you through the essentials, for example language, confirming the notes, <b>autostart</b>, display over other apps, permissions and <b>USB access</b>. Everything else (guard, map source, data sharing, speed cameras, Telegram, route planner, EV Cockpit, remote access) is under \u201cNoch einrichten\u201d (still to set up) afterwards. Almost nothing is preselected. Anything that sends data out stays off until you turn it on yourself."),
             ("Allow autostart.", "For Panoptes to start by itself when you get in, it has to be allowed in BYD's app management. The setup assistant opens the right page; untick the autostart block for Panoptes there. <b>BYD resets this switch after every installation and update.</b> Panoptes turns it back on by itself after an update and tells you if that fails. DiLink 5 has no such app management, so the step is skipped."),
             ("Confirm USB access.", "Android asks once “Allow USB debugging?”. Tick <b>“Always allow from this computer”</b> and tap <b>Allow</b>. The “computer” is Panoptes itself in the car. Without the tick Android asks again after every restart."),
-            ("Open on your phone or PC (optional).", "With remote access (Tailscale) set up, open your car's address in a browser. To log in you need the <b>access code</b>, found on the car screen under <b>Settings → Advanced (old) → “Your access code”</b>. With Telegram you can also log in with a check number. You allow other devices, such as the EV Cockpit, under <b>Settings → All settings → Pair a device</b>."),
+            ("Open on your phone or PC (optional).", "With remote access (Tailscale) set up, open your car's address in a browser. To log in you need the <b>access code</b>, found on the car screen under <b>Settings → All settings → Connections → “Your access code”</b> (from 0.1.38.14; “Show” asks first and hides it again after 60 seconds). With Telegram you can also log in with a check number. You allow other devices, such as the EV Cockpit, under <b>Settings → All settings → Pair a device</b>."),
         ],
         "h_stolper": "If something goes wrong",
         "stolper": [
@@ -1396,6 +1396,7 @@ LNC = {
             ("Klima in der Leiste", "Temperatur und Gebläse mit Plus und Minus, dazu An und Aus. Bei manchen Autos zeigt er Stufen wie „Heizen 2“, „Neutral“ oder „Kühlen 1“."),
             ("Komfort", "Tipp auf „Komfort: Sitze, Lenkrad, Entfrosten“: Sitzheizung und Sitzlüftung für Fahrer und Beifahrer, Lenkradheizung, Umluft oder Frischluft, Front- und Heckscheibe entfrosten. Nur, soweit dein Auto das meldet. Kann Panoptes einen Wert nicht lesen, wird nichts geraten."),
             ("Apps nebeneinander", "Spotify und andere Medien-Apps öffnen neben dem Launcher. Geht nebeneinander nicht, öffnet die App im Vollbild."),
+            ("Größe", "Ab 0.1.38.14 passt sich der Launcher dem Bildschirm an. Die Größe wählst du selbst: Automatisch, Kleiner oder Größer. Seltenes steht in den Einstellungen unter „Erweitert“."),
             ("Bequem einrichten", "Am Auto im Stand, in der Panoptes-Oberfläche unter „Launcher einrichten“ oder am PC im EV-Cockpit ab 1.23."),
         ],
         "bilder": [("launcher386", "display", "Panoptes Launcher mit Musterdaten: Akku 86 Prozent, 262 km, Navigation in 40 km Ziel Wien, Wächter an, Uhr, unten die Leiste mit Haus-Knopf und Klima")],
@@ -1436,6 +1437,7 @@ LNC = {
             ("Climate in the bar", "Temperature and fan with plus and minus, plus on and off. On some cars it shows heating and cooling levels instead of degrees."),
             ("Comfort", "Tap “Comfort: seats, steering wheel, defrost”: seat heating and seat ventilation for driver and passenger, steering wheel heating, recirculation or fresh air, defrost front and rear window. Only as far as your car reports it. If Panoptes cannot read a value, it does not guess."),
             ("Apps side by side", "Spotify and other media apps open next to the launcher. If side by side is not possible, the app opens full screen."),
+            ("Size", "From 0.1.38.14 the launcher adapts to your screen. You choose the size: Automatic, Smaller or Larger. Rarely used settings are under “Advanced”."),
             ("Easy to set up", "In the car while parked, in the Panoptes interface under “Set up launcher”, or on your PC in the EV Cockpit from 1.23."),
         ],
         "bilder": [("launcher386", "display", "Panoptes Launcher with sample data: battery 86 percent, 262 km, navigation in 40 km to Vienna, guard on, clock, bottom bar with home button and climate")],
