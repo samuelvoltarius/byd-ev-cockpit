@@ -243,7 +243,7 @@ T = {
         ],
         "h_stand": "Stand der Entwicklung",
         # PFLEGE: Diese Tabelle bei JEDER Version mitpruefen. Nur Belegtes (FADEN_KOORDINATION.md, ROADMAP.md, FREEZE_*.md), Unsicheres nach unten.
-        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.39. „Fertig“ heißt: gebaut und getestet. „Nur bestimmte Autos“ heißt: hängt vom Modell ab. „Beta“ heißt: läuft, hat aber Einschränkungen.",
+        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.40. „Fertig“ heißt: gebaut und getestet. „Nur bestimmte Autos“ heißt: hängt vom Modell ab. „Beta“ heißt: läuft, hat aber Einschränkungen.",
         "stand_kopf": ("Funktion", "Stand"),
         "stand": [
             ("Wächter mit Personen-Erkennung, Abschreckung nur bei einer Person, Meldungen über Telegram", "Fertig"),
@@ -300,8 +300,8 @@ T = {
         "dl_anker": "installieren",
         "dl_bald": "Beta-Version {V}",
         # „Neu in …“-Kasten beim Download; erscheint nur, solange versionen.json genau diese Version meldet
-        "neu_version": "0.1.39", "neu_titel": "Neu in 0.1.39",
-        "neu": ["<b>Launcher-Reiter „Karte“:</b> Deine Navi-App neben einer Statusspalte mit Akku, Reichweite, Wächter, Musik und Kamera. Lässt sich die App nicht teilen, liegt oben eine schmale Statusleiste. Die erscheint nur, wenn du dem Launcher die Anzeige über anderen Apps erlaubst.", "<b>„Start“</b> neben der Karte bringt dich zurück zum vollen Launcher, die Navi läuft weiter.", "<b>Abstell- und Park-Meldungen</b> kommen auch an, wenn das Netz erst Stunden später zurück ist. Sie sind dann als „verspätet“ markiert.", "<b>Zurück-Taste</b> des Autos geht eine Seite zurück. Erst auf der Startseite legt sie Panoptes in den Hintergrund.", "<b>Überschrift</b> oben bleibt beim Scrollen gut lesbar.", "<b>Ehrlich:</b> 0.1.39 ist im Auto installiert und läuft. Den Reiter „Karte“ während der Fahrt erproben wir noch.", "<b>Aus 0.1.38.14:</b> nur noch die neue Oberfläche, Launcher passt sich dem Bildschirm an, Zugangscode unter Einstellungen → Alle Einstellungen → Verbindungen."],
+        "neu_version": "0.1.40", "neu_titel": "Neu in 0.1.40",
+        "neu": ["<b>Launcher selbst gestalten:</b> Unter Einstellungen → Erweitert wählst du ein Design (Dunkel, Hell, Kontrast oder Nacht), eine Akzentfarbe und ein eigenes Hintergrundbild.", "<b>Kacheln nach deinem Geschmack:</b> Kachelgröße und Kachelabstand stellst du selbst ein. Die Statusspalte bei „Karte“ stellst du dir selbst zusammen.", "<b>Neue Kacheln:</b> Schloss, Laden und Live-Kamera.", "<b>„Größe“ und „Hintergrund“</b> lassen sich im Launcher wieder auswählen.", "<b>Beim Hochfahren</b> starten Kamera- und Telegram-Dienst nicht mehr doppelt.", "<b>Ehrlich:</b> 0.1.40 ist bisher nur im Emulator geprüft, im Auto noch nicht erprobt. Das wird nachgeholt.", "<b>Aus 0.1.39:</b> Launcher-Reiter „Karte“ mit Statusspalte, Abstell- und Park-Meldungen kommen auch verspätet an, Zurück-Taste geht eine Seite zurück."],
         # Abschnitt „Tacho und Launcher“ ab 0.1.37 (Koordination 03.11.2026), Bilder: Vorschau/Emulator, Musterdaten
         "tl": {"h": "Tacho und Launcher <span class=\"bald\">ab 0.1.37</span>",
                "lead": "Seit 0.1.37, in 0.1.38 auf der Seite Apps &amp; Display → Display. Die Bilder sind Vorschaubilder und Emulator-Aufnahmen mit Musterdaten, nicht aus einem Auto. <a href=\"launcher.html\">Alles zum Panoptes Launcher</a>",
@@ -599,7 +599,7 @@ T = {
             ("Other services (BYD account, MQTT/smart home, ABRP, Stadia Maps, AI assistant)", "depends on the service; the input field tells you where your requests go", "only if you set them up yourself"),
         ],
         "h_stand": "Development status",
-        "stand_lead": "Honestly, what runs where, as of 0.1.39. \u201cDone\u201d means: built and tested. \u201cOnly some cars\u201d means: depends on the model. \u201cBeta\u201d means: it runs, but has limits.",
+        "stand_lead": "Honestly, what runs where, as of 0.1.40. \u201cDone\u201d means: built and tested. \u201cOnly some cars\u201d means: depends on the model. \u201cBeta\u201d means: it runs, but has limits.",
         "stand_kopf": ("Feature", "Status"),
         "stand": [
             ("Guard with person detection, deterrent only for a person, Telegram notifications", "Done"),
@@ -647,8 +647,8 @@ T = {
         "h_dl": "Download and install",
         "dl_anker": "install",
         "dl_bald": "Beta version {V}",
-        "neu_version": "0.1.39", "neu_titel": "New in 0.1.39",
-        "neu": ["<b>Launcher \u201cMap\u201d tab:</b> your navigation app next to a status column with battery, range, guard, music and camera. If the app cannot be split, a slim status bar sits at the top. It only appears if you allow the launcher to display over other apps.", "<b>\u201cStart\u201d</b> next to the map takes you back to the full launcher while navigation keeps running.", "<b>Switch-off and parking messages</b> arrive even if the network only returns hours later. They are then marked as \u201cdelayed\u201d.", "<b>The car's Back key</b> goes back one page. Only on the start page does it send Panoptes to the background.", "<b>The heading</b> at the top stays easy to read while scrolling.", "<b>Honestly:</b> 0.1.39 is installed in the car and runs. We are still testing the \u201cMap\u201d tab while driving.", "<b>From 0.1.38.14:</b> only the new interface, launcher adapts to your screen, access code under Settings → All settings → Connections."],
+        "neu_version": "0.1.40", "neu_titel": "New in 0.1.40",
+        "neu": ["<b>Design the launcher yourself:</b> under Settings → Advanced you choose a theme (Dark, Light, High contrast or Night), an accent colour and your own background picture.", "<b>Tiles the way you like:</b> you set tile size and tile spacing yourself. You put together the status column next to the \u201cMap\u201d yourself.", "<b>New tiles:</b> Lock, Charging and Live camera.", "<b>\u201cSize\u201d and \u201cBackground\u201d</b> can be selected in the launcher again.", "<b>At boot</b> the camera and Telegram services no longer start twice.", "<b>Honestly:</b> 0.1.40 has only been checked in the emulator so far, not yet tried in the car. That will follow.", "<b>From 0.1.39:</b> launcher \u201cMap\u201d tab with status column, switch-off and parking messages also arrive late, the Back key goes back one page."],
         "tl": {"h": "Cluster and launcher <span class=\"bald\">from 0.1.37</span>",
                "lead": "Since 0.1.37, in 0.1.38 on the page Apps &amp; display → Display. The pictures are previews and emulator shots with sample data, not from a car. <a href=\"launcher.html\">All about the Panoptes Launcher</a>",
                "bilder": [("Panoptes cluster “Horizont”: speed, battery, range and the next turn arrow. There are five displays.", [("tacho-horizont", "tacho", "Panoptes cluster Horizont: 101 km/h, 64 percent battery, 287 km range, turn right in 350 m")]),
@@ -1401,13 +1401,21 @@ LNC = {
             ("Komfort", "Tipp auf „Komfort: Sitze, Lenkrad, Entfrosten“: Sitzheizung und Sitzlüftung für Fahrer und Beifahrer, Lenkradheizung, Umluft oder Frischluft, Front- und Heckscheibe entfrosten. Nur, soweit dein Auto das meldet. Kann Panoptes einen Wert nicht lesen, wird nichts geraten."),
             ("Apps nebeneinander", "Spotify und andere Medien-Apps öffnen neben dem Launcher. Geht nebeneinander nicht, öffnet die App im Vollbild."),
             ("Reiter „Karte“", "Ab 0.1.39: deine Navi-App neben einer Statusspalte mit Akku, Reichweite, Wächter, Musik und Kamera. „Start“ führt zurück zum vollen Launcher, die Navi läuft weiter. Lässt sich die App nicht teilen, liegt oben eine schmale Statusleiste."),
-            ("Größe", "Ab 0.1.38.14 passt sich der Launcher automatisch dem Bildschirm an. Die Größenwahl von Hand kommt mit dem nächsten Update. Seltenes steht in den Einstellungen unter „Erweitert“."),
+            ("Selbst gestalten", "Ab 0.1.40 unter Einstellungen → Erweitert: Design Dunkel, Hell, Kontrast oder Nacht, eine Akzentfarbe, ein eigenes Hintergrundbild mit Abdunkelung (Automatisch, Schwach oder Stark), Kachelgröße und Kachelabstand. Die Statusspalte bei „Karte“ stellst du dir selbst zusammen."),
+            ("Neue Kacheln", "Ab 0.1.40: Schloss, Laden und Live-Kamera. Ist eine Seite voll, kommt eine neue Kachel auf eine neue Seite."),
+            ("Größe", "Der Launcher passt sich automatisch dem Bildschirm an. Wirkt trotzdem alles zu groß oder zu klein, wählst du in den Einstellungen unter „Größe“ Kleiner oder Größer. Ab 0.1.40 geht das wieder. Seltenes steht unter „Erweitert“."),
             ("Bequem einrichten", "Am Auto im Stand, in der Panoptes-Oberfläche unter „Launcher einrichten“ oder am PC im EV-Cockpit ab 1.23."),
         ],
-        "bilder": [("launcher39", "display", "Panoptes Launcher mit Musterdaten: Status mit 3D-Auto, 86 Prozent, Reifendruck, Musik, Reiter Status, Karte, Steuerung, Apps, Einstellungen, unten die Leiste mit Haus-Knopf und Klima")],
-        "bilder_cap": "Der Launcher 0.1.39 mit Musterdaten im Emulator. Kein echtes Auto. 3D-Modell: Nazh Design, CC BY 4.0.",
-        "bilder2": [("launcher39-erweitert", "display", "Launcher Erweitert: Statusleiste, Reiterleiste, Apps neben dem Launcher öffnen, Titel und Cover, Layout exportieren und importieren")],
-        "bilder2_cap": "Launcher-Einstellungen, Bereich „Erweitert“ (Emulator, Musterdaten).",
+        "bilder": [("launcher40", "display", "Panoptes Launcher 0.1.40 mit Musterdaten: Status mit Fahrzeug, 86 Prozent, Reifendruck, Musik, Reiter Status, Karte, Steuerung, Apps, Einstellungen, unten die Leiste mit Haus-Knopf und Klima 21 Grad"),
+                   ("launcher40-3d", "display", "Panoptes Launcher 0.1.40 mit 3D-Fahrzeug, ohne Fahrzeugdaten")],
+        "bilder_cap": "Der Launcher 0.1.40 im Emulator: links mit Musterdaten, rechts mit 3D-Fahrzeug ohne Fahrzeugdaten. Kein echtes Auto. 3D-Modell: Nazh Design, CC BY 4.0.",
+        "mehr": [([[("design40-dunkel", "display", "Design Dunkel"), ("design40-hell", "display", "Design Hell")],
+                   [("design40-kontrast", "display", "Design Kontrast, schwarz mit gelben Akzenten"), ("design40-nacht", "display", "Design Nacht, dunkel mit orangen Akzenten")]],
+                  "Die vier Designs ab 0.1.40: Dunkel, Hell, Kontrast und Nacht (Emulator, ohne Fahrzeugdaten)."),
+                 ([[("launcher40-erweitert", "display", "Launcher Erweitert: Design, Akzentfarbe, eigenes Hintergrundbild, Kachelabstand, Statusspalte bei Karte, Statusleiste"),
+                    ("launcher40-groesse", "display", "Größe: Automatisch passend zum Bildschirm, Kleiner, Größer")]],
+                  "Links Einstellungen → Erweitert, rechts die Größenwahl (Emulator)."),
+                 ],
         "inst_h": "So installierst du ihn",
         "inst_vorher": "Du brauchst Panoptes im Auto. Den Launcher holst du direkt aus Panoptes, du musst nichts herunterladen.",
         "inst": [
@@ -1430,6 +1438,8 @@ LNC = {
             "Fehlt ein Wert, zeigt er einen Strich. Er rät nichts.",
             "Die schmale Statusleiste über der Karte erscheint nur, wenn du dem Launcher die Anzeige über anderen Apps erlaubst. Bei hoher Bildschirmdichte ist „Kamera“ darin leicht abgeschnitten.",
             "Der Reiter „Karte“ (ab 0.1.39) läuft im Auto, ist aber noch nicht während der Fahrt erprobt. Wie sich der geteilte Bildschirm beim Rückwärtsgang verhält, ist noch offen.",
+            "Version 0.1.40 ist bisher nur im Emulator geprüft, im Auto noch nicht erprobt. Die neuen Designs (vor allem Kontrast und Nacht) und die neuen Kacheln zeigen sich erst im Alltag.",
+            "Eigenes Hintergrundbild: Ob die Dateiauswahl im Auto einen USB-Stick anzeigt, ist noch nicht geprüft. Gibt es keine Dateiauswahl, sagt der Launcher das. Bei einem sehr hellen Bild mit Abdunkelung „Schwach“ sind manche Symbole schwer lesbar. Wähle dann „Automatisch“ oder „Stark“.",
         ],
         "sicher": "<b>Beim Fahren:</b> Bearbeiten geht nur im Stand (Gang P). Video-Apps startet er nur in P, außer du hast in Panoptes den Hinweis „Verstanden, ich entscheide selbst“ bestätigt.",
         "erprobt": "Erprobt vor allem auf einem BYD Dolphin Surf (DiLink 3). Auf anderen Modellen kann manches fehlen oder anders sein.",
@@ -1447,13 +1457,21 @@ LNC = {
             ("Comfort", "Tap “Comfort: seats, steering wheel, defrost”: seat heating and seat ventilation for driver and passenger, steering wheel heating, recirculation or fresh air, defrost front and rear window. Only as far as your car reports it. If Panoptes cannot read a value, it does not guess."),
             ("Apps side by side", "Spotify and other media apps open next to the launcher. If side by side is not possible, the app opens full screen."),
             ("\u201cMap\u201d tab", "From 0.1.39: your navigation app next to a status column with battery, range, guard, music and camera. \u201cStart\u201d takes you back to the full launcher while navigation keeps running. If the app cannot be split, a slim status bar sits at the top."),
-            ("Size", "From 0.1.38.14 the launcher adapts to your screen automatically. Choosing the size by hand comes with the next update. Rarely used settings are under “Advanced”."),
+            ("Design it yourself", "From 0.1.40 under Settings → Advanced: theme Dark, Light, High contrast or Night, an accent colour, your own background picture with dimming (Automatic, Light or Strong), tile size and tile spacing. You put together the status column next to the \u201cMap\u201d yourself."),
+            ("New tiles", "From 0.1.40: Lock, Charging and Live camera. If a page is full, a new tile goes on a new page."),
+            ("Size", "The launcher adapts to your screen automatically. If everything still looks too big or too small, choose Smaller or Larger under \u201cSize\u201d in the settings. This works again from 0.1.40. Rarely used settings are under \u201cAdvanced\u201d."),
             ("Easy to set up", "In the car while parked, in the Panoptes interface under “Set up launcher”, or on your PC in the EV Cockpit from 1.23."),
         ],
-        "bilder": [("launcher39", "display", "Panoptes Launcher with sample data: status with 3D car, 86 percent, tyre pressure, music, tabs status, map, controls, apps, settings, bottom bar with home button and climate")],
-        "bilder_cap": "The launcher 0.1.39 with sample data in the emulator, shown in German. Not a real car. 3D model: Nazh Design, CC BY 4.0.",
-        "bilder2": [("launcher39-erweitert", "display", "Launcher advanced: status bar, tab bar, open apps next to the launcher, title and cover, export and import layout")],
-        "bilder2_cap": "Launcher settings, “Advanced” section (emulator, sample data, shown in German).",
+        "bilder": [("launcher40", "display", "Panoptes Launcher 0.1.40 with sample data: status with car, 86 percent, tyre pressure, music, tabs status, map, controls, apps, settings, bottom bar with home button and climate 21 degrees"),
+                   ("launcher40-3d", "display", "Panoptes Launcher 0.1.40 with 3D car, without vehicle data")],
+        "bilder_cap": "The launcher 0.1.40 in the emulator, shown in German: left with sample data, right with the 3D car and no vehicle data. Not a real car. 3D model: Nazh Design, CC BY 4.0.",
+        "mehr": [([[("design40-dunkel", "display", "Theme Dark"), ("design40-hell", "display", "Theme Light")],
+                   [("design40-kontrast", "display", "Theme High contrast, black with yellow accents"), ("design40-nacht", "display", "Theme Night, dark with orange accents")]],
+                  "The four themes from 0.1.40: Dark, Light, High contrast and Night (emulator, no vehicle data, shown in German)."),
+                 ([[("launcher40-erweitert", "display", "Launcher advanced: theme, accent colour, own background picture, tile spacing, status column next to the map, status bar"),
+                    ("launcher40-groesse", "display", "Size: automatic to fit the screen, smaller, larger")]],
+                  "Left Settings → Advanced, right the size choice (emulator, shown in German)."),
+                 ],
         "inst_h": "How to install it",
         "inst_vorher": "You need Panoptes in the car. You get the launcher straight from Panoptes, there is nothing to download yourself.",
         "inst": [
@@ -1476,6 +1494,8 @@ LNC = {
             "If a value is missing, it shows a dash. It does not guess.",
             "The slim status bar above the map only appears if you allow the launcher to display over other apps. At high screen density \u201cCamera\u201d in it is slightly cut off.",
             "The \u201cMap\u201d tab (from 0.1.39) runs in the car but has not yet been tested while driving. How the split screen behaves in reverse gear is still open.",
+            "Version 0.1.40 has only been checked in the emulator so far, not yet tried in the car. The new themes (especially High contrast and Night) and the new tiles will only show in daily use.",
+            "Own background picture: whether the file picker in the car shows a USB stick has not been checked yet. If there is no file picker, the launcher says so. With a very bright picture and dimming \u201cLight\u201d, some icons are hard to read. Then choose \u201cAutomatic\u201d or \u201cStrong\u201d.",
         ],
         "sicher": "<b>While driving:</b> editing only works while parked (gear P). Video apps only start in P, unless you confirmed the notice “Verstanden, ich entscheide selbst” (I understand, I decide myself) in Panoptes.",
         "erprobt": "Tested mainly on a BYD Dolphin Surf (DiLink 3). On other models some things may be missing or different.",
@@ -1494,8 +1514,8 @@ def launcher_seite(t):
     o.append('  <p style="margin:18px 0 0"><a href="./">%s</a></p>' % TG[t["lang"]]["zurueck"])
     o.append('  <h1 style="font-size:clamp(30px,5vw,44px)">%s</h1><p class="lead">%s</p>' % (g["h1"], g["lead"]))
     o.append('  <figure style="margin:18px 0">%s<figcaption>%s</figcaption></figure>' % (reihe(g["bilder"], t["pfad"], sofort=True), g["bilder_cap"]))
-    if g.get("bilder2"):
-        o.append('  <figure style="margin:18px 0">%s<figcaption>%s</figcaption></figure>' % (reihe(g["bilder2"], t["pfad"]), g["bilder2_cap"]))
+    for reihen, cap in g.get("mehr", []):
+        o.append('  <figure style="margin:18px 0">%s<figcaption>%s</figcaption></figure>' % ("".join(reihe(r, t["pfad"]) for r in reihen), cap))
     o.append('  <h2 id="kann">%s</h2>\n  <div class="tgk">' % g["kann_h"])
     for h, txt in g["kann"]:
         o.append('    <div class="card"><h3>%s</h3><p>%s</p></div>' % (h, txt))
