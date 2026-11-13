@@ -11,7 +11,7 @@ import sys
 
 # Version, Download-Link, Prüfsumme: NICHT hier, sondern in byd-community/public/versionen.json (siehe versionen_laden)
 HIER = os.path.dirname(os.path.abspath(__file__))
-ZIEL = os.path.join(HIER, "panoptes")
+ZIEL = os.environ.get("BYD_PANOPTES_ZIEL") or os.path.join(HIER, "panoptes")   # anderer Ordner nur fuer Vorschauen
 VORSCHAU = ""                   # mit --vorschau: noindex (Vorschau unter nicht verlinktem Pfad)
 NAME = "Alfred Aigner"
 QUELLE = ""                      # Ordner mit den Screenshots (aus main())          # laut Impressum (Medieninhaber), fuer den Haftungstext
@@ -1107,6 +1107,320 @@ WA_BLOCK = {'de': '  <style>.wa-box{display:flex;gap:28px;align-items:center;fle
 OBEN = ("🛡️", "📹", "📒", "🗺️", "💬", "🏠", "🏕️")      # diese 7 Funktionen sichtbar, der Rest aufklappbar
 
 
+# ---------------------------------------------------------------------------
+# Neuer Kopf (Entwurf 2, von Alfred am 13.11.2026 freigegeben). Geht erst mit 0.1.43.4 live,
+# wenn die Koordination den Livegang freigibt. Bis dahin AUS: Ohne BYD_NEUER_KOPF=1 baut die Seite
+# genau wie vorher. Vorschau: BYD_NEUER_KOPF=1 BYD_PANOPTES_ZIEL=<anderer Ordner> python -I bau_panoptes.py <bilder>
+# Nur eigene Bildschirmfotos mit Musterdaten, keine KI-Bilder, keine Emojis.
+# BILD-NEU = Stelle für frische Bildschirmfotos von 0.1.43.4 (neues Launcher-Design, Fahrzeugmodelle).
+# VIDEO-NEU = Stelle für das stumme 10-s-Bildschirmvideo mit Poster (ersetzt den Foto-Rundgang).
+# ---------------------------------------------------------------------------
+NEUER_KOPF = os.environ.get("BYD_NEUER_KOPF") == "1"
+KB = "/panoptes/bilder/"
+AB = "/app/bilder/"
+# Rundgang im Kopf: (Bild, Reiter-Name je Sprache, Alt-Text je Sprache). BILD-NEU / VIDEO-NEU
+RUNDGANG = [
+    (KB + "launcher40-display-dunkel.webp", ("Startbildschirm", "Home screen"),
+     ("Panoptes Launcher mit Musterdaten: Auto, 86 Prozent Akku, Reifendruck, Musik, unten Klima 21 Grad",
+      "Panoptes Launcher with sample data: car, 86 percent battery, tyre pressure, music, climate 21 degrees at the bottom")),
+    (KB + "startd39-display-dunkel.webp", ("Übersicht", "Overview"),
+     ("Panoptes Übersicht mit Musterdaten: 86 Prozent, 236 km, Schnellknöpfe Zusperren und Vorklimatisieren, Ladekosten 61,43 Euro im November",
+      "Panoptes overview with sample data: 86 percent, 236 km, quick buttons lock and pre-climatise, charging costs 61.43 euros in November")),
+    (KB + "waechter39-display-dunkel.webp", ("Wächter", "Guard"),
+     ("Panoptes Wächter mit Musterdaten: Ereignis gesichert, Behalten oder Nein danke, Wächter passt auf",
+      "Panoptes Guard with sample data: event saved, Keep or No thanks, Guard is watching")),
+    (KB + "laden39-display-dunkel.webp", ("Laden", "Charging"),
+     ("Panoptes Laden mit Musterdaten: 6 Ladungen, 149,1 kWh, etwa 61,43 Euro in 7 Tagen",
+      "Panoptes charging with sample data: 6 sessions, 149.1 kWh, about 61.43 euros in 7 days")),
+]
+RUNDGANG_START = 1    # Übersicht zuerst
+SYM = {   # Linien-Symbole (eigene SVG, keine Emojis)
+    "frei": '<path d="M20 12v8H4v-8"/><path d="M2 7h20v5H2z"/><path d="M12 20V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>',
+    "auto": '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
+    "zurueck": '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>',
+    "schloss": '<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+}
+KOPF2 = {
+    "de": {
+        "marke": "Panoptes · kostenlos · für BYD",
+        "h1": "Dein BYD kann <em>mehr.</em>",
+        "lead": '<b style="color:var(--text)">Panoptes holt es auf den Bildschirm im Auto:</b> ein Wächter, der aufpasst. Ladekosten, die stimmen. Ein Startbildschirm nach deinem Geschmack. Und dein Auto auch am Handy.',
+        "k1": "In 3 Schritten starten", "k2": "Was es kann",
+        "version": "Version %s · für DiLink 3, 4 und 5 · nicht von BYD",
+        "reiter_label": "Bildschirm im Auto",
+        "bildnote": "Echte Bildschirmfotos von Panoptes mit Musterdaten, kein echtes Auto.",
+        "vertrauen_label": "Darauf kannst du dich verlassen",
+        "vertrauen": [("frei", "Kostenlos", "Ohne Abo, ohne Werbung, Quellcode offen."),
+                      ("auto", "Jeden Tag im Einsatz", "Panoptes läuft täglich in einem BYD Dolphin Surf."),
+                      ("zurueck", "Alles zurück auf BYD", "Ein Tipp, und der BYD-Bildschirm ist wieder da."),
+                      ("schloss", "Du entscheidest", "Jede Verbindung schaltest du selbst ein und wieder aus.")],
+        "nutzen_h": "Vier Dinge, die du nicht mehr hergeben willst.",
+        "nutzen_lead": "Alles läuft direkt am großen Bildschirm in deinem Auto. Du schaltest nur ein, was du brauchst.",
+        "gut": "Gut zu wissen:",
+        "bloecke": [
+            ("WÄCHTER", "Dein Auto passt auf sich auf.",
+             "Steht dein Auto, achten die Kameras auf das Umfeld. Rüttelt jemand daran, sichert Panoptes einen Clip.",
+             ["Nur bei Erschütterung oder mit KI-Erkennung, du wählst", "Auf Wunsch eine Meldung über Telegram", "Du entscheidest, welche Clips du behältst"],
+             "Damit die 12-V-Batterie geschont wird, legt sich der Wächter rechtzeitig schlafen.",
+             (KB + "waechter39-display-dunkel.webp", "Wächter mit Musterdaten: Ereignis um 07:04 gesichert, Knöpfe Behalten und Nein danke"), None),
+            ("LADEN UND KOSTEN", "Du weißt, was dein Strom kostet.",
+             "Jede Ladung wird mitgeschrieben: zu Hause, an der Wallbox und unterwegs. Am Monatsende siehst du den Betrag in Euro.",
+             ["Kosten je Ladung und Monat, mit geschätztem Ladeverlust", "Wallbox und „Zu Hause laden“ mit Zeitfenster", "Reichweite passend zur Außentemperatur"],
+             "Die Kosten sind so genau wie dein eingetragener Strompreis.",
+             (KB + "laden39-display-dunkel.webp", "Laden mit Musterdaten: 6 Ladungen, 149,1 kWh, etwa 61,43 Euro"), None),
+            # BILD-NEU: Launcher-Bild durch 0.1.43.4 (neues Design, gerendertes Fahrzeugmodell) ersetzen.
+            # LAUNCHER-OHNE-PANOPTES: "Gut zu wissen" anpassen, sobald Paket S fertig ist.
+            ("LAUNCHER", "Dein Startbildschirm. So wie du ihn willst.",
+             "Der Panoptes Launcher zeigt dein Auto, deine Musik und deine Apps auf einen Blick. Mit großer Bedienung, wenn du es lieber deutlich magst.",
+             ["Fahrzeug-Startseite mit Akku, Reichweite und Reifen", "Jede Kachel frei verschieben, nur im Stand", "Zwei Fahrerprofile, Home-Assistant-Kachel"],
+             'Der Launcher ist freiwillig und kommt mit Panoptes. <a href="/launcher/">Alles zum Launcher</a>',
+             (KB + "launcher40-display-dunkel.webp", "Panoptes Launcher mit Musterdaten"), None),
+            ("FERNZUGANG", "Dein Auto in der Hosentasche.",
+             "Akku sehen, vorheizen, zusperren. Mit der Panoptes-App am Handy, auch unterwegs und verschlüsselt.",
+             ["Android-App und Web-App fürs iPhone", "Kopplung einmal per QR-Code am Auto", "Aufsperren nur mit deinem Fingerabdruck"],
+             'Die Handy-App ist noch Beta. <a href="/app/">Zur Handy-App</a>',
+             (KB + "startd39-display-dunkel.webp", "Panoptes Übersicht mit Musterdaten"),
+             (AB + "app-0.4.0-1-start.webp", "Panoptes-App am Handy mit Musterdaten: 72 Prozent, 191 km, Knöpfe Vorheizen und Zusperren")),
+        ],
+        "bildquelle": 'Alle Bilder: echte Bildschirmfotos mit Musterdaten. Autobild nach Modellen von Nazh Design, <a href="https://creativecommons.org/licenses/by/4.0/deed.de" rel="noopener">CC BY 4.0</a>, verändert.',
+        "netz_h": "Probieren ohne Risiko.",
+        "netz": "Gefällt dir der Launcher nicht, tippst du auf „Alles zurück auf BYD“. Dann ist der BYD-Startbildschirm wieder da. Und jede Verbindung von Panoptes nach außen schaltest du selbst ein und jederzeit wieder aus.",
+        "start_h": "In 3 Schritten im Auto.",
+        "start_lead": "Die Einrichtung machst du einmal. Danach kommen Updates direkt im Auto.",
+        "schritte": [("Herunterladen", "Lade Panoptes auf deinen PC oder Laptop. Die Datei ist geprüft und signiert."),
+                     ("Einmal aufs Auto bringen", "Am Auto die Entwickler-Freigabe einschalten und die App mit dem PC übertragen. Das geht einmalig."),
+                     ("Öffnen und loslegen", "Die Einrichtungshilfe führt dich durch das Nötigste. Alles Weitere schaltest du später ein.")],
+        "ehrlich": 'Ehrlich gesagt: Schritt 2 braucht etwas Geduld. Wie du in das Entwicklermenü kommst, hängt vom Modell ab. Die <a href="#schritte">ausführliche Anleitung</a> weiter unten erklärt jeden Handgriff, und in der Community hilft man dir.',
+        "schluss_h": "Mach mehr aus deinem BYD.",
+        "schluss": "Kostenlos, von Fahrern für Fahrer. Fragen beantwortet die Community in der WhatsApp-Gruppe.",
+        "s1": "Panoptes herunterladen", "s2": "Zur Community",
+        "klein": 'Privates Freizeitprojekt, kostenlos und ohne Gewähr, nicht mit BYD verbunden. Nutzung auf eigenes Risiko, bitte die <a href="/panoptes/hinweise.html">Hinweise</a> lesen. Am besten geprüft auf dem BYD Dolphin Surf (DiLink 3); DiLink 4 und 5 kennen wir aus Rückmeldungen der Community.',
+        "detail_h": "Alles im Detail",
+        "detail_lead": "Hier unten steht alles zum Nachschlagen: jede Funktion, die Anleitung Schritt für Schritt, Datenschutz und was wo läuft.",
+    },
+    "en": {
+        "marke": "Panoptes · free · for BYD",
+        "h1": "Your BYD can do <em>more.</em>",
+        "lead": '<b style="color:var(--text)">Panoptes brings it to the screen in your car:</b> a guard that keeps watch. Charging costs that add up. A home screen the way you like it. And your car on your phone, too.',
+        "k1": "Get started in 3 steps", "k2": "What it does",
+        "version": "Version %s · for DiLink 3, 4 and 5 · not made by BYD",
+        "reiter_label": "Screen in the car",
+        "bildnote": "Real screenshots of Panoptes with sample data, not a real car.",
+        "vertrauen_label": "What you can rely on",
+        "vertrauen": [("frei", "Free", "No subscription, no ads, open source code."),
+                      ("auto", "In use every day", "Panoptes runs every day in a BYD Dolphin Surf."),
+                      ("zurueck", "Everything back to BYD", "One tap and the BYD screen is back."),
+                      ("schloss", "You decide", "You switch every connection on and off yourself.")],
+        "nutzen_h": "Four things you will not want to give up.",
+        "nutzen_lead": "Everything runs right on the large screen in your car. You only switch on what you need.",
+        "gut": "Good to know:",
+        "bloecke": [
+            ("GUARD", "Your car looks after itself.",
+             "When your car is parked, the cameras watch the surroundings. If someone shakes it, Panoptes saves a clip.",
+             ["Only on a jolt or with AI detection, you choose", "A message via Telegram if you want", "You decide which clips to keep"],
+             "To protect the 12 V battery, the Guard goes to sleep in good time.",
+             (KB + "waechter39-display-dunkel.webp", "Guard with sample data: event at 07:04 saved, buttons Keep and No thanks"), None),
+            ("CHARGING AND COSTS", "You know what your electricity costs.",
+             "Every charge is logged: at home, at the wallbox and on the road. At the end of the month you see the amount in euros.",
+             ["Costs per charge and month, with estimated charging loss", "Wallbox and “Charge at home” with a time window", "Range that matches the outside temperature"],
+             "The costs are as accurate as the electricity price you enter.",
+             (KB + "laden39-display-dunkel.webp", "Charging with sample data: 6 sessions, 149.1 kWh, about 61.43 euros"), None),
+            # BILD-NEU / LAUNCHER-OHNE-PANOPTES (siehe DE)
+            ("LAUNCHER", "Your home screen. The way you want it.",
+             "The Panoptes Launcher shows your car, your music and your apps at a glance. With large controls, if you prefer things big and clear.",
+             ["Vehicle home page with battery, range and tyres", "Move every tile freely, only when parked", "Two driver profiles, Home Assistant tile"],
+             'The launcher is optional and comes with Panoptes. <a href="/launcher/en/">All about the launcher</a>',
+             (KB + "launcher40-display-dunkel.webp", "Panoptes Launcher with sample data"), None),
+            ("REMOTE ACCESS", "Your car in your pocket.",
+             "See the battery, pre-heat, lock. With the Panoptes app on your phone, also on the road and encrypted.",
+             ["Android app and web app for the iPhone", "Pair once with a QR code in the car", "Unlocking only with your fingerprint"],
+             'The phone app is still beta. <a href="/app/en/">To the phone app</a>',
+             (KB + "startd39-display-dunkel.webp", "Panoptes overview with sample data"),
+             (AB + "app-0.4.0-1-start.webp", "Panoptes app on a phone with sample data: 72 percent, 191 km, buttons Pre-heat and Lock")),
+        ],
+        "bildquelle": 'All pictures: real screenshots with sample data. Car image based on models by Nazh Design, <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>, modified.',
+        "netz_h": "Try it without risk.",
+        "netz": "If you do not like the launcher, tap “Everything back to BYD”. The BYD home screen is back. And you switch every outside connection of Panoptes on yourself and off again at any time.",
+        "start_h": "In your car in 3 steps.",
+        "start_lead": "You set it up once. After that, updates come straight to the car.",
+        "schritte": [("Download", "Download Panoptes to your PC or laptop. The file is checked and signed."),
+                     ("Get it into the car once", "Switch on developer access in the car and transfer the app from your PC. You only do this once."),
+                     ("Open and get going", "The setup assistant takes you through the essentials. Everything else you switch on later.")],
+        "ehrlich": 'To be honest: step 2 takes a little patience. How you get into the developer menu depends on the model. The <a href="#schritte">detailed guide</a> further down explains every step, and the community will help you.',
+        "schluss_h": "Get more out of your BYD.",
+        "schluss": "Free, by drivers for drivers. The community answers questions in the WhatsApp group.",
+        "s1": "Download Panoptes", "s2": "Join the community",
+        "klein": 'Private hobby project, free and without warranty, not affiliated with BYD. Use at your own risk, please read the <a href="/panoptes/en/hinweise.html">notes</a>. Best checked on the BYD Dolphin Surf (DiLink 3); DiLink 4 and 5 we know from community reports.',
+        "detail_h": "Everything in detail",
+        "detail_lead": "Down here you can look everything up: every feature, the step-by-step guide, privacy and what runs where.",
+    },
+}
+KOPF2_CSS = """
+.p2{--rand:clamp(1rem,4vw,2rem);--w:1180px;color:var(--text)}
+.p2 *{box-sizing:border-box}
+.p2 .huelle{max-width:var(--w);margin:0 auto;padding:0 var(--rand)}
+.p2 h1,.p2 h2,.p2 h3{font-family:var(--font-display);letter-spacing:-.02em;line-height:1.08;margin:0}
+.p2 p{line-height:1.6}
+.p2 .knopf{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:56px;padding:0 1.5rem;border-radius:999px;font-weight:700;font-size:1.05rem;text-decoration:none;transition:transform .15s ease,background-color .15s ease}
+.p2 .knopf:hover{text-decoration:none}
+.p2 .knopf.haupt{background:var(--accent-2);color:var(--on-grad)}
+.p2 .knopf.haupt:hover{transform:translateY(-1px)}
+.p2 .knopf.leer{border:1px solid var(--line-2);color:var(--text)}
+.p2 .knopf.leer:hover{background:rgba(127,127,127,.1)}
+.p2 .knopf:focus-visible{outline:none;box-shadow:var(--ring)}
+.p2 .kopfbild{position:relative;overflow:hidden;padding:clamp(2.5rem,7vw,5.5rem) 0 clamp(3rem,7vw,5rem);background:radial-gradient(1200px 520px at 78% 18%,rgba(56,189,248,.16),transparent 62%),radial-gradient(800px 420px at 8% 92%,rgba(34,197,94,.10),transparent 60%)}
+.p2 .kopf-raster{display:grid;gap:clamp(2rem,5vw,3.5rem);align-items:center}
+@media(min-width:980px){.p2 .kopf-raster{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}}
+.p2 .marke-klein{display:inline-flex;gap:.6rem;align-items:center;font-size:.85rem;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.p2 .marke-klein i{width:8px;height:8px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 0 4px rgba(34,197,94,.18)}
+.p2 h1{font-size:clamp(2.8rem,7vw,5.2rem);margin:1rem 0 1.1rem}
+.p2 h1 em{font-style:normal;color:var(--accent)}
+.p2 .lead2{font-size:clamp(1.08rem,1.9vw,1.25rem);color:var(--muted);max-width:40ch;margin:0 0 1.8rem}
+.p2 .knoepfe{display:flex;flex-wrap:wrap;gap:.75rem}
+.p2 .knoepfe .knopf{flex:1 1 220px}
+@media(min-width:600px){.p2 .knoepfe .knopf{flex:0 0 auto}}
+.p2 .version{margin-top:1rem;font-size:.92rem;color:var(--faint)}
+.p2 .buehne{position:relative}
+.p2 .bildschirm{position:relative;border-radius:22px;padding:10px;background:linear-gradient(160deg,#1b2735,#0b1119);box-shadow:0 40px 80px -30px rgba(0,0,0,.8),inset 0 0 0 1px rgba(255,255,255,.06)}
+.p2 .bildschirm .flaeche{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#09101a}
+.p2 .bildschirm img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .7s ease}
+.p2 .bildschirm img.an{opacity:1}
+.p2 .reiter{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1rem}
+.p2 .reiter button{min-height:44px;padding:0 1rem;border-radius:999px;border:1px solid var(--line-2);background:transparent;color:var(--muted);font:600 .92rem/1 var(--font-body);cursor:pointer;transition:background-color .15s ease,color .15s ease}
+.p2 .reiter button[aria-selected="true"]{background:var(--panel);color:var(--text);border-color:var(--accent)}
+.p2 .reiter button:focus-visible{outline:none;box-shadow:var(--ring)}
+.p2 .handy{position:absolute;right:-6px;bottom:-34px;width:17%;max-width:150px;min-width:90px;border-radius:20px;padding:5px;background:#0b1119;box-shadow:0 24px 50px -16px rgba(0,0,0,.85),inset 0 0 0 1px rgba(255,255,255,.08)}
+.p2 .handy img{display:block;width:100%;height:auto;max-width:100%;border-radius:15px}
+@media(max-width:599px){.p2 .handy{display:none}}
+.p2 .bildnote{font-size:.82rem;color:var(--faint);margin-top:.7rem}
+.p2 .vertrauen{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg-2)}
+.p2 .vertrauen ul{list-style:none;margin:0;padding:1.4rem 0;display:grid;gap:1.1rem 2rem;grid-template-columns:1fr}
+@media(min-width:700px){.p2 .vertrauen ul{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1050px){.p2 .vertrauen ul{grid-template-columns:repeat(4,1fr)}}
+.p2 .vertrauen li{display:flex;gap:.8rem;align-items:flex-start}
+.p2 .vertrauen svg{flex:none;width:26px;height:26px;color:var(--accent-2);margin-top:2px}
+.p2 .vertrauen b{display:block;font-family:var(--font-display);font-size:1.05rem}
+.p2 .vertrauen span{color:var(--muted);font-size:.95rem}
+.p2 .nutzen{padding:clamp(3.5rem,8vw,6.5rem) 0}
+.p2 .abschnitt-kopf{max-width:52ch;margin-bottom:clamp(2rem,5vw,3.5rem)}
+.p2 .abschnitt-kopf h2{font-size:clamp(1.9rem,4.4vw,3rem)}
+.p2 .abschnitt-kopf p{color:var(--muted);font-size:1.1rem;margin:.8rem 0 0}
+.p2 .block{display:grid;gap:clamp(1.4rem,4vw,3.5rem);align-items:center;padding:clamp(1.6rem,4vw,2.6rem) 0;border-top:1px solid var(--line)}
+@media(min-width:900px){.p2 .block{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}.p2 .block.rechts{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)}.p2 .block.rechts .text{order:2}}
+.p2 .block .etikett{font-family:var(--font-display);font-size:.9rem;font-weight:600;color:var(--accent);letter-spacing:.06em}
+.p2 .block h3{font-size:clamp(1.6rem,3.4vw,2.3rem);margin:.5rem 0 .8rem}
+.p2 .block .versprechen{font-size:1.12rem;color:var(--text);margin:0 0 1rem}
+.p2 .block ul{margin:0;padding:0;list-style:none;display:grid;gap:.55rem}
+.p2 .block li{position:relative;padding-left:1.5rem;color:var(--muted)}
+.p2 .block li::before{content:"";position:absolute;left:0;top:.62em;width:.6rem;height:.6rem;border-radius:3px;background:var(--accent-2)}
+.p2 .block .grenze{margin:1rem 0 0;font-size:.9rem;color:var(--faint)}
+.p2 .block .grenze b{color:var(--muted);font-weight:600}
+.p2 .block figure{margin:0}
+.p2 .rahmen{border-radius:16px;overflow:hidden;border:1px solid var(--line-2);box-shadow:0 30px 60px -30px rgba(0,0,0,.8);background:#09101a}
+.p2 .rahmen img{display:block;width:100%;height:auto}
+.p2 .doppel{position:relative;padding-right:clamp(0px,14%,120px)}
+.p2 .doppel .handy-bild{position:absolute;right:0;bottom:-18px;width:28%;max-width:200px;min-width:96px;border-radius:22px;padding:5px;background:#0b1119;box-shadow:0 24px 50px -16px rgba(0,0,0,.85),inset 0 0 0 1px rgba(255,255,255,.08)}
+.p2 .doppel .handy-bild img{display:block;width:100%;height:auto;border-radius:17px}
+.p2 .netz{padding:clamp(3rem,7vw,5rem) 0;background:var(--bg-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.p2 .netz .karte{display:grid;gap:1.5rem;align-items:center;max-width:980px}
+@media(min-width:800px){.p2 .netz .karte{grid-template-columns:auto 1fr}}
+.p2 .netz .zeichen{width:84px;height:84px;border-radius:24px;display:grid;place-items:center;background:rgba(34,197,94,.12);color:var(--accent-2)}
+.p2 .netz h2{font-size:clamp(1.6rem,3.6vw,2.4rem)}
+.p2 .netz p{color:var(--muted);font-size:1.08rem;margin:.6rem 0 0;max-width:62ch}
+.p2 .start{padding:clamp(3.5rem,8vw,6rem) 0}
+.p2 .schritte{list-style:none;margin:0;padding:0;display:grid;gap:1rem;counter-reset:s}
+@media(min-width:900px){.p2 .schritte{grid-template-columns:repeat(3,1fr);gap:1.4rem}}
+.p2 .schritte li{counter-increment:s;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:1.5rem 1.4rem 1.4rem}
+.p2 .schritte li::before{content:counter(s);display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--grad);color:var(--on-grad);font:700 1.15rem/1 var(--font-display);margin-bottom:1rem}
+.p2 .schritte h3{font-size:1.25rem;margin-bottom:.5rem}
+.p2 .schritte p{margin:0;color:var(--muted)}
+.p2 .ehrlich{margin:1.4rem 0 0;color:var(--muted);max-width:70ch}
+.p2 .schluss{padding:clamp(3.5rem,9vw,7rem) 0;background:radial-gradient(900px 400px at 15% 100%,rgba(56,189,248,.14),transparent 65%)}
+.p2 .schluss h2{font-size:clamp(2.1rem,5.4vw,3.6rem);max-width:18ch}
+.p2 .schluss p{color:var(--muted);font-size:1.12rem;max-width:52ch;margin:1rem 0 1.8rem}
+.p2 .kleingedruckt{font-size:.85rem;color:var(--faint);margin-top:2.2rem;max-width:80ch}
+.p2-detail{border-top:1px solid var(--line);margin-top:0;padding-top:2.4rem}
+@media (prefers-reduced-motion:reduce){.p2 .bildschirm img{transition:none}.p2 .knopf{transition:none}}
+"""
+KOPF2_JS = """<script>
+(function(){
+  var bilder=[].slice.call(document.querySelectorAll('#rundgang img')), knoepfe=[].slice.call(document.querySelectorAll('.p2 .reiter button'));
+  if(!bilder.length) return;
+  var i=%d, uhr=null, ruhig=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function zeige(n){ i=n; bilder.forEach(function(b,k){b.classList.toggle('an',k===n)}); knoepfe.forEach(function(k,j){k.setAttribute('aria-selected',j===n?'true':'false')}); }
+  knoepfe.forEach(function(k){ k.addEventListener('click',function(){ zeige(+k.dataset.zeige); clearInterval(uhr); }); });
+  if(!ruhig) uhr=setInterval(function(){ zeige((i+1)%%bilder.length); },4500);
+})();
+</script>"""
+
+
+def kopf2(t):
+    """Neuer Kopf der Produktseite (Entwurf 2). Läuft über die volle Breite und öffnet danach das .wrap für die bisherige Seite."""
+    de = t["lang"] == "de"
+    k = KOPF2[t["lang"]]
+    j = 0 if de else 1
+    svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">%s</svg>'
+    o = ['<style>%s</style>' % KOPF2_CSS, '<main class="p2">']
+    # 1 Einstieg
+    o.append('  <section class="kopfbild"><div class="huelle kopf-raster"><div>')
+    o.append('    <span class="marke-klein"><i></i>%s</span><h1>%s</h1><p class="lead2">%s</p>' % (k["marke"], k["h1"], k["lead"]))
+    o.append('    <div class="knoepfe"><a class="knopf haupt" href="#start">%s</a><a class="knopf leer" href="#nutzen">%s</a></div>' % (k["k1"], k["k2"]))
+    o.append('    <p class="version">%s</p></div>' % (k["version"] % sp("version", VERSION)))
+    o.append('    <!-- VIDEO-NEU: hier später das stumme 10-s-Bildschirmvideo (mit poster=) statt des Foto-Rundgangs. BILD-NEU: Fotos von 0.1.43.4 -->')
+    o.append('    <div class="buehne"><div class="bildschirm"><div class="flaeche" id="rundgang" aria-live="polite">')
+    for n, (src, namen, alts) in enumerate(RUNDGANG):
+        o.append('      <img%s src="%s" alt="%s" width="1280" height="720"%s data-reiter="%d">'
+                 % (' class="an"' if n == RUNDGANG_START else "", src, html.escape(alts[j]), "" if n == RUNDGANG_START else ' loading="lazy"', n))
+    o.append('    </div></div>')
+    o.append('    <div class="handy" aria-hidden="true"><img src="%sapp-0.4.0-1-start.webp" alt="" width="540" height="1170" loading="lazy"></div>' % AB)
+    o.append('    <div class="reiter" role="tablist" aria-label="%s">%s</div>' % (k["reiter_label"], "".join(
+        '<button type="button" role="tab" aria-selected="%s" data-zeige="%d">%s</button>' % ("true" if n == RUNDGANG_START else "false", n, namen[j])
+        for n, (src, namen, alts) in enumerate(RUNDGANG))))
+    o.append('    <p class="bildnote">%s</p></div>' % k["bildnote"])
+    o.append('  </div></section>')
+    # 2 Vertrauen
+    o.append('  <section class="vertrauen" aria-label="%s"><div class="huelle"><ul>' % k["vertrauen_label"])
+    for sym, b, s in k["vertrauen"]:
+        o.append('    <li>%s<div><b>%s</b><span>%s</span></div></li>' % (svg % SYM[sym], b, s))
+    o.append('  </ul></div></section>')
+    # 3 Nutzen
+    o.append('  <section class="nutzen" id="nutzen"><div class="huelle">')
+    o.append('    <div class="abschnitt-kopf"><h2>%s</h2><p>%s</p></div>' % (k["nutzen_h"], k["nutzen_lead"]))
+    for n, (nr, h, vers, punkte, grenze, gross, handy) in enumerate(k["bloecke"]):
+        o.append('    <article class="block%s"><div class="text"><span class="etikett">%s</span><h3>%s</h3><p class="versprechen">%s</p><ul>%s</ul>'
+                 '<p class="grenze"><b>%s</b> %s</p></div>' % (" rechts" if n % 2 else "", nr, h, vers, "".join("<li>%s</li>" % x for x in punkte), k["gut"], grenze))
+        bild_g = '<div class="rahmen"><img src="%s" alt="%s" width="1280" height="720" loading="lazy"></div>' % (gross[0], html.escape(gross[1]))
+        if handy:
+            o.append('      <figure class="doppel">%s<div class="handy-bild"><img src="%s" alt="%s" width="540" height="1170" loading="lazy"></div></figure></article>'
+                     % (bild_g, handy[0], html.escape(handy[1])))
+        else:
+            o.append('      <figure>%s</figure></article>' % bild_g)
+    o.append('    <p class="kleingedruckt">%s</p>' % k["bildquelle"])
+    o.append('  </div></section>')
+    # 4 Sicherheitsnetz
+    o.append('  <section class="netz"><div class="huelle"><div class="karte"><div class="zeichen" aria-hidden="true">'
+             '<svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>'
+             '</div><div><h2>%s</h2><p>%s</p></div></div></div></section>' % (k["netz_h"], k["netz"]))
+    # 5 Installation
+    o.append('  <section class="start" id="start"><div class="huelle">')
+    o.append('    <div class="abschnitt-kopf"><h2>%s</h2><p>%s</p></div>' % (k["start_h"], k["start_lead"]))
+    o.append('    <ol class="schritte">%s</ol>' % "".join("<li><h3>%s</h3><p>%s</p></li>" % x for x in k["schritte"]))
+    o.append('    <p class="ehrlich">%s</p>' % k["ehrlich"])
+    o.append('  </div></section>')
+    # 6 Schluss
+    o.append('  <section class="schluss"><div class="huelle"><h2>%s</h2><p>%s</p>' % (k["schluss_h"], k["schluss"]))
+    o.append('    <div class="knoepfe"><a class="knopf haupt" href="#%s" data-umami-event="download-weiter" data-umami-event-quelle="kopf2-schluss">%s</a>'
+             '<a class="knopf leer" href="%s" target="_blank" rel="noopener">%s</a></div>' % (t["dl_anker"], k["s1"], WHATSAPP, k["s2"]))
+    o.append('    <p class="kleingedruckt">%s</p></div></section>' % k["klein"])
+    o.append('</main>')
+    o.append(KOPF2_JS % RUNDGANG_START)
+    # Danach die bisherige Seite als Nachschlagewerk
+    o.append('<div class="wrap p2-detail">')
+    o.append('  <h2 id="details" style="margin-top:0">%s</h2><p class="lead">%s</p>' % (k["detail_h"], k["detail_lead"]))
+    return "\n".join(o)
+
+
+
 def seite(t):
     p = t["pfad"]
     de = t["lang"] == "de"
@@ -1114,13 +1428,16 @@ def seite(t):
     hier = "/panoptes/" if de else "/panoptes/en/"
     andere = "/panoptes/en/" if de else "/panoptes/"
     o = [kopf(t, t["title"], t["desc"], BASIS, BASIS + "en/", kanon, hier, andere)]
-    # Kopf: 3 Sätze + große Knöpfe
-    o.append('  <header class="kopfbereich"><span class="bd-eyebrow">%s</span><h1>%s – <span class="bd-grad-text">%s</span></h1>'
-             % (t["eyebrow"], t["h1a"], t["h1b"]))
-    o.append('  <div class="drei">%s</div>' % "".join("<p><b>%s</b> %s</p>" % x for x in t["drei"]))
-    o.append('  <div class="bd-knoepfe"><a class="bd-knopf gross haupt" href="#%s" data-umami-event="download-weiter" data-umami-event-quelle="hero">%s</a>'
-             '<a class="bd-knopf gross leer" href="#schritte">%s</a></div></header>' % (t["dl_anker"], t["hero_dl"], t["hero_anl"]))
-    o.append("  " + reihe([("startd39", "display", t["hero_alt_pc"]), ("startd39", "handy", t["hero_alt_handy"])], p, sofort=True))
+    if NEUER_KOPF:          # Entwurf 2 (geht mit 0.1.43.4 live, bis dahin aus)
+        o[0] = o[0].replace('<div class="wrap">\n', "")   # neuer Kopf läuft über die volle Breite
+        o.append(kopf2(t))
+    else:                   # Kopf: 3 Sätze + große Knöpfe
+        o.append('  <header class="kopfbereich"><span class="bd-eyebrow">%s</span><h1>%s – <span class="bd-grad-text">%s</span></h1>'
+                 % (t["eyebrow"], t["h1a"], t["h1b"]))
+        o.append('  <div class="drei">%s</div>' % "".join("<p><b>%s</b> %s</p>" % x for x in t["drei"]))
+        o.append('  <div class="bd-knoepfe"><a class="bd-knopf gross haupt" href="#%s" data-umami-event="download-weiter" data-umami-event-quelle="hero">%s</a>'
+                 '<a class="bd-knopf gross leer" href="#schritte">%s</a></div></header>' % (t["dl_anker"], t["hero_dl"], t["hero_anl"]))
+        o.append("  " + reihe([("startd39", "display", t["hero_alt_pc"]), ("startd39", "handy", t["hero_alt_handy"])], p, sofort=True))
     o.append('  <div class="bd-hinweis"><p>%s</p></div>' % t["wichtig"])
     # Ist das was für mich?
     o.append('  <h2 id="fuer-mich">%s</h2>\n  <div class="bd-kacheln">' % t["h_fuer_mich"])
