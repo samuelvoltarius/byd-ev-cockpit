@@ -988,7 +988,7 @@ def diagramm_schmal(s):
 
 # ---- Gemeinsames Aussehen (byd-design.css), gleiches Menü und gleicher Fuß wie alle Seiten von byd.serveone.at ----
 # Vorlage: F:\byd-community\werkzeuge\bau_seiten.py (Homepage-Sitzung, 27.10.2026). Menü/Fuß hier gleich halten.
-CSS_V = "8"
+CSS_V = "10"
 JS_V = "3"
 UMAMI = ('<script defer src="https://analytics.serveone.at/script.js" data-website-id="a7e62dac-cb0b-4ff5-a0cd-4a9b0778cf3b" '
          'data-domains="byd.serveone.at" data-do-not-track="true" data-exclude-search="true"></script>')
@@ -996,14 +996,14 @@ FAVICON = ("<link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://ww
            "%3Crect width='32' height='32' rx='8' fill='%230a0e14'/%3E%3Cpath d='M18 4 8 18h6l-2 10 12-16h-7z' fill='%2338bdf8'/%3E%3C/svg%3E\">")
 WA = "https://chat.whatsapp.com/BzFXEFK2hj05vxX4nVTFPv?mode=gi_t"
 MENUE = {
-    "de": {"start": "/", "eintraege": [("/#karte", "Karte"), ("/ev/", "Routenplaner"), ("/panoptes/", "Panoptes"),
+    "de": {"start": "/", "eintraege": [("/#karte", "Karte"), ("/ev/", "Routenplaner"), ("/panoptes/", "Panoptes"), ("/launcher/", "Launcher"),
                                        ("/ev-cockpit/", "EV-Cockpit"), ("/app/", "Handy-App"), ("/guide", "Anleitungen")],
            "menue": "Menü", "o": "en", "o_kurz": "EN", "o_lang": "English",
            "fuss": [("/impressum", "Impressum"), ("/datenschutz", "Datenschutz"), ("/nutzungsbedingungen", "Nutzungsbedingungen"),
                     ("/guide", "Anleitungen"), ("/community/", "Panoptes-Community"), (WA, "WhatsApp-Gruppe")],
            "klein": "Privates Freizeitprojekt, kostenlos und ohne Gewähr. Nicht verbunden mit BYD Auto Co., Ltd. "
                     "„BYD“ und Modellnamen sind Marken ihrer jeweiligen Inhaber."},
-    "en": {"start": "/en/", "eintraege": [("/en/#karte", "Map"), ("/ev/", "Route planner"), ("/panoptes/en/", "Panoptes"),
+    "en": {"start": "/en/", "eintraege": [("/en/#karte", "Map"), ("/ev/", "Route planner"), ("/panoptes/en/", "Panoptes"), ("/launcher/en/", "Launcher"),
                                           ("/ev-cockpit/en/", "EV Cockpit"), ("/app/en/", "Phone app"), ("/en/guide", "Guides")],
            "menue": "Menu", "o": "de", "o_kurz": "DE", "o_lang": "Deutsch",
            "fuss": [("/en/impressum", "Imprint"), ("/en/datenschutz", "Privacy"), ("/en/nutzungsbedingungen", "Terms of use"),
