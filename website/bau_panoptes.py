@@ -243,7 +243,7 @@ T = {
         ],
         "h_stand": "Stand der Entwicklung",
         # PFLEGE: Diese Tabelle bei JEDER Version mitpruefen. Nur Belegtes (FADEN_KOORDINATION.md, ROADMAP.md, FREEZE_*.md), Unsicheres nach unten.
-        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.43.3. „Fertig“ heißt: gebaut und getestet. „Nur bestimmte Autos“ heißt: hängt vom Modell ab. „Beta“ heißt: läuft, hat aber Einschränkungen.",
+        "stand_lead": "Ehrlich, was wo läuft, Stand 0.1.43.4. „Fertig“ heißt: gebaut und getestet. „Nur bestimmte Autos“ heißt: hängt vom Modell ab. „Beta“ heißt: läuft, hat aber Einschränkungen.",
         "stand_kopf": ("Funktion", "Stand"),
         "stand": [
             ("Wächter mit Personen-Erkennung, Abschreckung nur bei einer Person, Meldungen über Telegram", "Fertig"),
@@ -300,8 +300,8 @@ T = {
         "dl_anker": "installieren",
         "dl_bald": "Beta-Version {V}",
         # „Neu in …“-Kasten beim Download; erscheint nur, solange versionen.json genau diese Version meldet
-        "neu_version": "0.1.43.3", "neu_titel": "Neu in 0.1.43.3",
-        "neu": ["<b>Patch-Update zu 0.1.43.2:</b> Alles aus 0.1.43.2, 0.1.43.1 und 0.1.43 gilt weiter.", "<b>Dock mit Namen:</b> Unter jedem Dock-Symbol im Launcher steht jetzt sein Name. Die Symbole haben einen einheitlichen Stil.", "<b>Feste Leiste:</b> Neben dem Klima gibt es Sitzheizung (Fahrer) und Umluft, wenn das Auto die Werte liefert und Platz ist.", "<b>Assistent-Knopf:</b> Sind die Sprachbefehle eingeschaltet, gibt es im Launcher einen Assistent-Knopf und die Seite „Was kann ich sagen?“. Dort kannst du einen Satz auch antippen.", "<b>Update:</b> Der Launcher kommt beim Panoptes-Update zuverlässig mit. Wird er übersprungen, steht der Grund dabei.", "<b>Ehrlich:</b> 0.1.43.3 ist im Auto installiert und läuft (App und Launcher). Den Musiktitel mit CarPlay am Dolphin Surf konnten wir noch nicht prüfen.", "<b>Aus 0.1.43.2:</b> „Einfach“ oder „Alle Funktionen“, Einrichtung mit höchstens drei Empfehlungen, ein einfacherer Launcher mit dem einmaligen Angebot „Als Startbildschirm einrichten?“ und das Sprachmodell per Tipp. 0.1.43.2 ist im Auto installiert und läuft (App und Launcher).", "<b>Aus 0.1.43.1:</b> Die Startkarte zeigt nur, was du eingeschaltet hast. Die Wächter-Anzeige zeigt nicht mehr fälschlich „aus“. Der Musiktitel kommt auch ohne Benachrichtigungszugriff. „Bildschirm im Auto“ hat einen eigenen Reiter. 0.1.43.1 ist im Auto installiert und läuft.", "<b>Aus 0.1.43:</b> Launcher-Vorlage „Fahrzeug“, Launcher und Tacho frei gestalten (nur im Stand), „Große Bedienung“ und „Alles zurück auf BYD“, Haus-Kachel, zwei Fahrerprofile, Tempolimit-Schild (wenn die Route ein Limit liefert), Sprachbefehle ohne Internet und Live-Umgebung. 0.1.43 ist im Auto installiert und läuft.", "<b>Nur bei bestimmten Autos:</b> Navi-Hinweise im BYD-Kombi nur bei Dual-OS-Autos mit DiLink 3 und 4, nie beim Dolphin Surf. Tacho-Designs, „Tacho gestalten“ und „Kamera &amp; Video im Tacho“ erscheinen im Tacho nur bei Autos, deren Tacho fremde Anzeigen erlaubt. Beim Dolphin Surf gibt es sie nur als Vorschau unter Display → Tacho."],
+        "neu_version": "0.1.43.4", "neu_titel": "Neu in 0.1.43.4",
+        "neu": ["<b>Patch-Update zu 0.1.43.3:</b> Alles aus 0.1.43.3, 0.1.43.2, 0.1.43.1 und 0.1.43 gilt weiter.", "<b>Launcher neu gestaltet:</b> Ruhige Plaketten für Schloss, Fenster und Laden. Das Auto ist für fünf Modelle ein 3D-Bild, für sieben weitere ein frei lizenziertes Foto.", "<b>Auto antippen:</b> Ein Fenster öffnet die Rückfrage, nur im Stand. Türen, Kofferraum und Haube zeigen nur ihren Zustand. Warnplaketten gibt es für Gurt, Kofferraum, Haube und Reifendruck.", "<b>Kamera und Aufnahmen:</b> Eine Kamera-Kachel mit Vorwahl der Kamera und die Liste „Aufnahmen“. Eine Aufnahme lädst du per QR aufs Handy, eine Datei vom Handy schickst du per QR ins Auto. Beides nur im selben WLAN.", "<b>Launcher ohne Panoptes:</b> Er startet auch allein. Kacheln, die Panoptes brauchen, zeigen dann einen ruhigen Hinweis. Updates bestätigst du selbst im Android-Installer.", "<b>Mehr Sprachen:</b> Den Launcher gibt es jetzt auch auf Spanisch, Portugiesisch und Türkisch.", "<b>Ehrlich:</b> 0.1.43.4 ist im Auto installiert und läuft (App und Launcher). Einzeln am Auto geprüft sind die Neuerungen noch nicht: neues Design, Fahrzeugbild und Tippzonen, Kamera-Kachel und Aufnahmen, Datei per QR und der Launcher ohne Panoptes. Den Musiktitel mit CarPlay am Dolphin Surf konnten wir noch nicht prüfen.", "<b>Aus 0.1.43.3:</b> Namen unter den Dock-Symbolen, Sitzheizung (Fahrer) und Umluft in der festen Leiste, der Assistent-Knopf und ein zuverlässiges Launcher-Update. 0.1.43.3 ist im Auto installiert und läuft (App und Launcher).", "<b>Aus 0.1.43.2:</b> „Einfach“ oder „Alle Funktionen“, Einrichtung mit höchstens drei Empfehlungen, ein einfacherer Launcher mit dem einmaligen Angebot „Als Startbildschirm einrichten?“ und das Sprachmodell per Tipp. 0.1.43.2 ist im Auto installiert und läuft (App und Launcher).", "<b>Aus 0.1.43.1:</b> Die Startkarte zeigt nur, was du eingeschaltet hast. Die Wächter-Anzeige zeigt nicht mehr fälschlich „aus“. Der Musiktitel kommt auch ohne Benachrichtigungszugriff. „Bildschirm im Auto“ hat einen eigenen Reiter. 0.1.43.1 ist im Auto installiert und läuft.", "<b>Aus 0.1.43:</b> Launcher-Vorlage „Fahrzeug“, Launcher und Tacho frei gestalten (nur im Stand), „Große Bedienung“ und „Alles zurück auf BYD“, Haus-Kachel, zwei Fahrerprofile, Tempolimit-Schild (wenn die Route ein Limit liefert), Sprachbefehle ohne Internet und Live-Umgebung. 0.1.43 ist im Auto installiert und läuft.", "<b>Nur bei bestimmten Autos:</b> Navi-Hinweise im BYD-Kombi nur bei Dual-OS-Autos mit DiLink 3 und 4, nie beim Dolphin Surf. Tacho-Designs, „Tacho gestalten“ und „Kamera &amp; Video im Tacho“ erscheinen im Tacho nur bei Autos, deren Tacho fremde Anzeigen erlaubt. Beim Dolphin Surf gibt es sie nur als Vorschau unter Display → Tacho."],
         # Abschnitt „Tacho und Launcher“ ab 0.1.37 (Koordination 03.11.2026), Bilder: Vorschau/Emulator, Musterdaten
         "tl": {"h": "Tacho und Launcher <span class=\"bald\">ab 0.1.37</span>",
                "lead": "Seit 0.1.37, in 0.1.38 auf der Seite Apps &amp; Display → Display. Die Bilder sind Vorschaubilder und Emulator-Aufnahmen mit Musterdaten, nicht aus einem Auto. <a href=\"launcher.html\">Alles zum Panoptes Launcher</a>",
@@ -599,7 +599,7 @@ T = {
             ("Other services (BYD account, MQTT/smart home, ABRP, Stadia Maps, AI assistant)", "depends on the service; the input field tells you where your requests go", "only if you set them up yourself"),
         ],
         "h_stand": "Development status",
-        "stand_lead": "Honestly, what runs where, as of 0.1.43.3. \u201cDone\u201d means: built and tested. \u201cOnly some cars\u201d means: depends on the model. \u201cBeta\u201d means: it runs, but has limits.",
+        "stand_lead": "Honestly, what runs where, as of 0.1.43.4. \u201cDone\u201d means: built and tested. \u201cOnly some cars\u201d means: depends on the model. \u201cBeta\u201d means: it runs, but has limits.",
         "stand_kopf": ("Feature", "Status"),
         "stand": [
             ("Guard with person detection, deterrent only for a person, Telegram notifications", "Done"),
@@ -647,8 +647,8 @@ T = {
         "h_dl": "Download and install",
         "dl_anker": "install",
         "dl_bald": "Beta version {V}",
-        "neu_version": "0.1.43.3", "neu_titel": "New in 0.1.43.3",
-        "neu": ["<b>Patch update for 0.1.43.2:</b> everything from 0.1.43.2, 0.1.43.1 and 0.1.43 still applies.", "<b>Dock with names:</b> every dock icon in the launcher now has its name underneath. The icons share one style.", "<b>Fixed bar:</b> next to the climate control there is seat heating (driver) and recirculation, if the car provides the values and there is room.", "<b>Assistant button:</b> if voice commands are switched on, the launcher has an assistant button and the page \u201cWhat can I say?\u201d. You can also tap a sentence there.", "<b>Update:</b> the launcher reliably comes along with the Panoptes update. If it is skipped, the reason is shown.", "<b>Honestly:</b> 0.1.43.3 is installed and running in the car (app and launcher). The music title with CarPlay on the Dolphin Surf could not be checked yet.", "<b>From 0.1.43.2:</b> \u201cSimple\u201d or \u201cAll features\u201d, setup with at most three recommendations, a simpler launcher with the one-time offer \u201cSet up as home screen?\u201d and the voice model with a tap. 0.1.43.2 is installed and running in the car (app and launcher).", "<b>From 0.1.43.1:</b> the start card only shows what you have switched on. The Guard display no longer wrongly shows \u201coff\u201d. The music title also comes without notification access. \u201cScreen in the car\u201d has a tab of its own. 0.1.43.1 is installed and running in the car.", "<b>From 0.1.43:</b> launcher template \u201cVehicle\u201d, design the launcher and cluster freely (only when parked), \u201cLarge controls\u201d and \u201cEverything back to BYD\u201d, Home tile, two driver profiles, speed limit sign (when the route provides a limit), voice commands without internet and live surroundings. 0.1.43 is installed and running in the car.", "<b>Only on some cars:</b> navigation hints in the BYD instrument cluster only on dual-OS cars with DiLink 3 and 4, never on the Dolphin Surf. Cluster designs, \u201cDesign the cluster\u201d and \u201cCamera &amp; video in the cluster\u201d appear in the cluster only on cars whose cluster allows other displays. On the Dolphin Surf they are only a preview under Display → Instrument cluster."],
+        "neu_version": "0.1.43.4", "neu_titel": "New in 0.1.43.4",
+        "neu": ["<b>Patch update for 0.1.43.3:</b> everything from 0.1.43.3, 0.1.43.2, 0.1.43.1 and 0.1.43 still applies.", "<b>Launcher redesigned:</b> calm badges for lock, windows and charging. The car is a 3D picture for five models and a freely licensed photo for seven more.", "<b>Tap the car:</b> a window opens the confirmation, only when parked. Doors, boot and bonnet only show their state. There are warning badges for seat belt, boot, bonnet and tyre pressure.", "<b>Camera and recordings:</b> a camera tile with camera preselection and the list \u201cRecordings\u201d. You load a recording onto your phone via QR and send a file from your phone to the car via QR. Both only on the same Wi-Fi.", "<b>Launcher without Panoptes:</b> it also starts on its own. Tiles that need Panoptes then show a calm hint. You confirm updates yourself in the Android installer.", "<b>More languages:</b> the launcher is now also available in Spanish, Portuguese and Turkish.", "<b>Honestly:</b> 0.1.43.4 is installed and running in the car (app and launcher). The new features have not yet been checked one by one in the car: new design, vehicle picture and tap zones, camera tile and recordings, file via QR and the launcher without Panoptes. The music title with CarPlay on the Dolphin Surf could not be checked yet.", "<b>From 0.1.43.3:</b> names under the dock icons, seat heating (driver) and recirculation in the fixed bar, the assistant button and a reliable launcher update. 0.1.43.3 is installed and running in the car (app and launcher).", "<b>From 0.1.43.2:</b> \u201cSimple\u201d or \u201cAll features\u201d, setup with at most three recommendations, a simpler launcher with the one-time offer \u201cSet up as home screen?\u201d and the voice model with a tap. 0.1.43.2 is installed and running in the car (app and launcher).", "<b>From 0.1.43.1:</b> the start card only shows what you have switched on. The Guard display no longer wrongly shows \u201coff\u201d. The music title also comes without notification access. \u201cScreen in the car\u201d has a tab of its own. 0.1.43.1 is installed and running in the car.", "<b>From 0.1.43:</b> launcher template \u201cVehicle\u201d, design the launcher and cluster freely (only when parked), \u201cLarge controls\u201d and \u201cEverything back to BYD\u201d, Home tile, two driver profiles, speed limit sign (when the route provides a limit), voice commands without internet and live surroundings. 0.1.43 is installed and running in the car.", "<b>Only on some cars:</b> navigation hints in the BYD instrument cluster only on dual-OS cars with DiLink 3 and 4, never on the Dolphin Surf. Cluster designs, \u201cDesign the cluster\u201d and \u201cCamera &amp; video in the cluster\u201d appear in the cluster only on cars whose cluster allows other displays. On the Dolphin Surf they are only a preview under Display → Instrument cluster."],
         "tl": {"h": "Cluster and launcher <span class=\"bald\">from 0.1.37</span>",
                "lead": "Since 0.1.37, in 0.1.38 on the page Apps &amp; display → Display. The pictures are previews and emulator shots with sample data, not from a car. <a href=\"launcher.html\">All about the Panoptes Launcher</a>",
                "bilder": [("Panoptes cluster “Horizont”: speed, battery, range and the next turn arrow. From 0.1.42 there are 20 designs, in the cluster only on cars whose cluster allows other displays.", [("tacho-horizont", "tacho", "Panoptes cluster Horizont: 101 km/h, 64 percent battery, 287 km range, turn right in 350 m")]),
@@ -1108,21 +1108,20 @@ OBEN = ("🛡️", "📹", "📒", "🗺️", "💬", "🏠", "🏕️")      # 
 
 
 # ---------------------------------------------------------------------------
-# Neuer Kopf (Entwurf 2, von Alfred am 13.11.2026 freigegeben). Geht erst mit 0.1.43.4 live,
-# wenn die Koordination den Livegang freigibt. Bis dahin AUS: Ohne BYD_NEUER_KOPF=1 baut die Seite
-# genau wie vorher. Vorschau: BYD_NEUER_KOPF=1 BYD_PANOPTES_ZIEL=<anderer Ordner> python -I bau_panoptes.py <bilder>
+# Neuer Kopf (Entwurf 2, von Alfred am 13.11.2026 freigegeben). Mit 0.1.43.4 live geschaltet
+# (Freigabe Koordination 14.11.2026). Ab Werk AN; BYD_NEUER_KOPF=0 baut den alten Kopf. Vorschau: BYD_NEUER_KOPF=1 BYD_PANOPTES_ZIEL=<anderer Ordner> python -I bau_panoptes.py <bilder>
 # Nur eigene Bildschirmfotos mit Musterdaten, keine KI-Bilder, keine Emojis.
 # BILD-NEU = Stelle für frische Bildschirmfotos von 0.1.43.4 (neues Launcher-Design, Fahrzeugmodelle).
 # VIDEO-NEU = Stelle für das stumme 10-s-Bildschirmvideo mit Poster (ersetzt den Foto-Rundgang).
 # ---------------------------------------------------------------------------
-NEUER_KOPF = os.environ.get("BYD_NEUER_KOPF") == "1"
+NEUER_KOPF = os.environ.get("BYD_NEUER_KOPF", "1") == "1"   # seit 0.1.43.4 live (14.11.2026); BYD_NEUER_KOPF=0 baut den alten Kopf
 KB = "/panoptes/bilder/"
 AB = "/app/bilder/"
 # Rundgang im Kopf: (Bild, Reiter-Name je Sprache, Alt-Text je Sprache). BILD-NEU / VIDEO-NEU
 RUNDGANG = [
-    (KB + "launcher40-display-dunkel.webp", ("Startbildschirm", "Home screen"),
-     ("Panoptes Launcher mit Musterdaten: Auto, 86 Prozent Akku, Reifendruck, Musik, unten Klima 21 Grad",
-      "Panoptes Launcher with sample data: car, 86 percent battery, tyre pressure, music, climate 21 degrees at the bottom")),
+    (KB + "launcher434-display-dunkel.webp", ("Startbildschirm", "Home screen"),
+     ("Panoptes Launcher 0.1.43.4 im Stand: Dolphin Surf als 3D-Bild, Plakette Verriegelt, Fenster-Knöpfe, unten die Leiste",
+      "Panoptes Launcher 0.1.43.4 when parked: Dolphin Surf as a 3D picture, badge Locked, window buttons, bar at the bottom (shown in German)")),
     (KB + "startd39-display-dunkel.webp", ("Übersicht", "Overview"),
      ("Panoptes Übersicht mit Musterdaten: 86 Prozent, 236 km, Schnellknöpfe Zusperren und Vorklimatisieren, Ladekosten 61,43 Euro im November",
       "Panoptes overview with sample data: 86 percent, 236 km, quick buttons lock and pre-climatise, charging costs 61.43 euros in November")),
@@ -1133,7 +1132,7 @@ RUNDGANG = [
      ("Panoptes Laden mit Musterdaten: 6 Ladungen, 149,1 kWh, etwa 61,43 Euro in 7 Tagen",
       "Panoptes charging with sample data: 6 sessions, 149.1 kWh, about 61.43 euros in 7 days")),
 ]
-RUNDGANG_START = 1    # Übersicht zuerst
+RUNDGANG_START = 0    # neuer Launcher zuerst (seit 0.1.43.4)
 SYM = {   # Linien-Symbole (eigene SVG, keine Emojis)
     "frei": '<path d="M20 12v8H4v-8"/><path d="M2 7h20v5H2z"/><path d="M12 20V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>',
     "auto": '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
@@ -1148,7 +1147,7 @@ KOPF2 = {
         "k1": "In 3 Schritten starten", "k2": "Was es kann",
         "version": "Version %s · für DiLink 3, 4 und 5 · nicht von BYD",
         "reiter_label": "Bildschirm im Auto",
-        "bildnote": "Echte Bildschirmfotos von Panoptes mit Musterdaten, kein echtes Auto.",
+        "bildnote": "Echte Bildschirmfotos aus dem Emulator, kein echtes Auto.",
         "vertrauen_label": "Darauf kannst du dich verlassen",
         "vertrauen": [("frei", "Kostenlos", "Ohne Abo, ohne Werbung, Quellcode offen."),
                       ("auto", "Jeden Tag im Einsatz", "Panoptes läuft täglich in einem BYD Dolphin Surf."),
@@ -1168,13 +1167,11 @@ KOPF2 = {
              ["Kosten je Ladung und Monat, mit geschätztem Ladeverlust", "Wallbox und „Zu Hause laden“ mit Zeitfenster", "Reichweite passend zur Außentemperatur"],
              "Die Kosten sind so genau wie dein eingetragener Strompreis.",
              (KB + "laden39-display-dunkel.webp", "Laden mit Musterdaten: 6 Ladungen, 149,1 kWh, etwa 61,43 Euro"), None),
-            # BILD-NEU: Launcher-Bild durch 0.1.43.4 (neues Design, gerendertes Fahrzeugmodell) ersetzen.
-            # LAUNCHER-OHNE-PANOPTES: "Gut zu wissen" anpassen, sobald Paket S fertig ist.
             ("LAUNCHER", "Dein Startbildschirm. So wie du ihn willst.",
              "Der Panoptes Launcher zeigt dein Auto, deine Musik und deine Apps auf einen Blick. Mit großer Bedienung, wenn du es lieber deutlich magst.",
-             ["Fahrzeug-Startseite mit Akku, Reichweite und Reifen", "Jede Kachel frei verschieben, nur im Stand", "Zwei Fahrerprofile, Home-Assistant-Kachel"],
-             'Der Launcher ist freiwillig und kommt mit Panoptes. <a href="/launcher/">Alles zum Launcher</a>',
-             (KB + "launcher40-display-dunkel.webp", "Panoptes Launcher mit Musterdaten"), None),
+             ["Dein Auto als 3D-Bild, Fenster per Tipp nur im Stand", "Ruhige Hinweise zu Gurt, Kofferraum und Reifendruck", "Kamera-Kachel, Aufnahmen und jede Kachel frei verschieben"],
+             'Der Launcher ist freiwillig und läuft ab 0.1.43.4 auch ohne Panoptes. <a href="/launcher/">Alles zum Launcher</a>',
+             (KB + "launcher434-plaketten-display-dunkel.webp", "Panoptes Launcher 0.1.43.4 in Fahrt: Dolphin Surf als 3D-Bild, Plaketten Fahrer nicht angeschnallt, Kofferraum offen, Reifendruck prüfen"), None),
             ("FERNZUGANG", "Dein Auto in der Hosentasche.",
              "Akku sehen, vorheizen, zusperren. Mit der Panoptes-App am Handy, auch unterwegs und verschlüsselt.",
              ["Android-App und Web-App fürs iPhone", "Kopplung einmal per QR-Code am Auto", "Aufsperren nur mit deinem Fingerabdruck"],
@@ -1182,7 +1179,7 @@ KOPF2 = {
              (KB + "startd39-display-dunkel.webp", "Panoptes Übersicht mit Musterdaten"),
              (AB + "app-0.4.0-1-start.webp", "Panoptes-App am Handy mit Musterdaten: 72 Prozent, 191 km, Knöpfe Vorheizen und Zusperren")),
         ],
-        "bildquelle": 'Alle Bilder: echte Bildschirmfotos mit Musterdaten. Autobild nach Modellen von Nazh Design, <a href="https://creativecommons.org/licenses/by/4.0/deed.de" rel="noopener">CC BY 4.0</a>, verändert.',
+        "bildquelle": 'Alle Bilder: echte Bildschirmfotos aus dem Emulator, teils mit Musterdaten. Autobild: Dolphin Surf nach einem Modell von Nazh Design, <a href="https://creativecommons.org/licenses/by/4.0/deed.de" rel="noopener">CC BY 4.0</a>, verändert.',
         "netz_h": "Probieren ohne Risiko.",
         "netz": "Gefällt dir der Launcher nicht, tippst du auf „Alles zurück auf BYD“. Dann ist der BYD-Startbildschirm wieder da. Und jede Verbindung von Panoptes nach außen schaltest du selbst ein und jederzeit wieder aus.",
         "start_h": "In 3 Schritten im Auto.",
@@ -1205,7 +1202,7 @@ KOPF2 = {
         "k1": "Get started in 3 steps", "k2": "What it does",
         "version": "Version %s · for DiLink 3, 4 and 5 · not made by BYD",
         "reiter_label": "Screen in the car",
-        "bildnote": "Real screenshots of Panoptes with sample data, not a real car.",
+        "bildnote": "Real screenshots from the emulator, not a real car.",
         "vertrauen_label": "What you can rely on",
         "vertrauen": [("frei", "Free", "No subscription, no ads, open source code."),
                       ("auto", "In use every day", "Panoptes runs every day in a BYD Dolphin Surf."),
@@ -1225,12 +1222,11 @@ KOPF2 = {
              ["Costs per charge and month, with estimated charging loss", "Wallbox and “Charge at home” with a time window", "Range that matches the outside temperature"],
              "The costs are as accurate as the electricity price you enter.",
              (KB + "laden39-display-dunkel.webp", "Charging with sample data: 6 sessions, 149.1 kWh, about 61.43 euros"), None),
-            # BILD-NEU / LAUNCHER-OHNE-PANOPTES (siehe DE)
             ("LAUNCHER", "Your home screen. The way you want it.",
              "The Panoptes Launcher shows your car, your music and your apps at a glance. With large controls, if you prefer things big and clear.",
-             ["Vehicle home page with battery, range and tyres", "Move every tile freely, only when parked", "Two driver profiles, Home Assistant tile"],
-             'The launcher is optional and comes with Panoptes. <a href="/launcher/en/">All about the launcher</a>',
-             (KB + "launcher40-display-dunkel.webp", "Panoptes Launcher with sample data"), None),
+             ["Your car as a 3D picture, windows with a tap only when parked", "Calm hints for seat belt, boot and tyre pressure", "Camera tile, recordings and every tile moved freely"],
+             'The launcher is optional and from 0.1.43.4 also runs without Panoptes. <a href="/launcher/en/">All about the launcher</a>',
+             (KB + "launcher434-plaketten-display-dunkel.webp", "Panoptes Launcher 0.1.43.4 while driving: Dolphin Surf as a 3D picture, badges driver not buckled up, boot open, check tyre pressure (shown in German)"), None),
             ("REMOTE ACCESS", "Your car in your pocket.",
              "See the battery, pre-heat, lock. With the Panoptes app on your phone, also on the road and encrypted.",
              ["Android app and web app for the iPhone", "Pair once with a QR code in the car", "Unlocking only with your fingerprint"],
@@ -1238,7 +1234,7 @@ KOPF2 = {
              (KB + "startd39-display-dunkel.webp", "Panoptes overview with sample data"),
              (AB + "app-0.4.0-1-start.webp", "Panoptes app on a phone with sample data: 72 percent, 191 km, buttons Pre-heat and Lock")),
         ],
-        "bildquelle": 'All pictures: real screenshots with sample data. Car image based on models by Nazh Design, <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>, modified.',
+        "bildquelle": 'All pictures: real screenshots from the emulator, partly with sample data. Car image: Dolphin Surf based on a model by Nazh Design, <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>, modified.',
         "netz_h": "Try it without risk.",
         "netz": "If you do not like the launcher, tap “Everything back to BYD”. The BYD home screen is back. And you switch every outside connection of Panoptes on yourself and off again at any time.",
         "start_h": "In your car in 3 steps.",
@@ -1293,6 +1289,7 @@ KOPF2_CSS = """
 .p2 .handy img{display:block;width:100%;height:auto;max-width:100%;border-radius:15px}
 @media(max-width:599px){.p2 .handy{display:none}}
 .p2 .bildnote{font-size:.82rem;color:var(--faint);margin-top:.7rem}
+@media(min-width:600px){.p2 .bildnote{padding-right:19%}}
 .p2 .vertrauen{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg-2)}
 .p2 .vertrauen ul{list-style:none;margin:0;padding:1.4rem 0;display:grid;gap:1.1rem 2rem;grid-template-columns:1fr}
 @media(min-width:700px){.p2 .vertrauen ul{grid-template-columns:repeat(2,1fr)}}
@@ -1366,7 +1363,7 @@ def kopf2(t):
     o.append('    <span class="marke-klein"><i></i>%s</span><h1>%s</h1><p class="lead2">%s</p>' % (k["marke"], k["h1"], k["lead"]))
     o.append('    <div class="knoepfe"><a class="knopf haupt" href="#start">%s</a><a class="knopf leer" href="#nutzen">%s</a></div>' % (k["k1"], k["k2"]))
     o.append('    <p class="version">%s</p></div>' % (k["version"] % sp("version", VERSION)))
-    o.append('    <!-- VIDEO-NEU: hier später das stumme 10-s-Bildschirmvideo (mit poster=) statt des Foto-Rundgangs. BILD-NEU: Fotos von 0.1.43.4 -->')
+    # VIDEO-NEU: hier später das stumme 10-s-Bildschirmvideo (mit poster=) statt des Foto-Rundgangs.
     o.append('    <div class="buehne"><div class="bildschirm"><div class="flaeche" id="rundgang" aria-live="polite">')
     for n, (src, namen, alts) in enumerate(RUNDGANG):
         o.append('      <img%s src="%s" alt="%s" width="1280" height="720"%s data-reiter="%d">'
@@ -1709,7 +1706,7 @@ LNC = {
         "title": "Panoptes Launcher – Panoptes",
         "desc": "Der Panoptes Launcher: eigener Startbildschirm im Auto mit Klima, Komfort und Apps. Was er kann, wie du ihn installierst und wie du zurückkommst.",
         "h1": "Panoptes Launcher",
-        "lead": "Ein eigener Startbildschirm für den Bildschirm in deinem Auto, im Panoptes-Stil. Er läuft als eigene App neben dem BYD-Startbildschirm, auf Wunsch auch als Startbildschirm. Er ist freiwillig und braucht Panoptes.",
+        "lead": "Ein eigener Startbildschirm für den Bildschirm in deinem Auto, im Panoptes-Stil. Er läuft als eigene App neben dem BYD-Startbildschirm, auf Wunsch auch als Startbildschirm. Er ist freiwillig. Mit Panoptes zeigt er alles, ab 0.1.43.4 läuft er auch ohne Panoptes.",
         "kann_h": "Was kann der Launcher?",
         "kann": [
             ("Seiten mit Kacheln", "Akku und Reichweite, Navigation, Musik, Wächter, Uhr und deine Apps auf einen Blick. Kacheln kannst du verschieben und vergrößern."),
@@ -1733,13 +1730,20 @@ LNC = {
             ("Einfacher Start", "Ab 0.1.43.2: keine Layout-Frage mehr beim ersten Start. Einmal kommt das Angebot „Als Startbildschirm einrichten?“, nur im Stand und mit „Später“. In den Einstellungen stehen oben fünf Zeilen, der Rest unter „Mehr“. Neue Kacheln wählst du zuerst aus einer Grundauswahl, der Rest steht unter „Weitere Kacheln …“."),
             ("Dock und Leiste", "Ab 0.1.43.3: Unter jedem Dock-Symbol steht sein Name, die Symbole haben einen einheitlichen Stil. In der festen Leiste neben dem Klima gibt es Sitzheizung (Fahrer) und Umluft, wenn das Auto die Werte liefert und Platz ist."),
             ("Assistent", "Ab 0.1.43.3, wenn die Sprachbefehle eingeschaltet sind: ein Assistent-Knopf und die Seite „Was kann ich sagen?“. Dort kannst du einen Satz auch antippen."),
+            ("Neues Design und Fahrzeugbild", "Ab 0.1.43.4: ruhige Plaketten für Schloss, Fenster und Laden. Das Auto ist für fünf Modelle ein 3D-Bild, für sieben weitere ein frei lizenziertes Foto; die Namensnennung steht unter dem Bild. Ein Fenster antippen öffnet die Rückfrage, nur im Stand. Türen, Kofferraum und Haube zeigen nur ihren Zustand. Warnplaketten für Gurt, Kofferraum, Haube und Reifendruck."),
+            ("Kamera und Aufnahmen", "Ab 0.1.43.4: eine Kamera-Kachel mit Vorwahl der Kamera und die Liste „Aufnahmen“. Eine Aufnahme lädst du per QR aufs Handy, eine Datei vom Handy schickst du per QR ins Auto. Beides nur im selben WLAN."),
+            ("Ohne Panoptes", "Ab 0.1.43.4 startet der Launcher auch allein. Kacheln, die Panoptes brauchen, zeigen einen ruhigen Hinweis. Updates kommen dann aus dem Panoptes-Release, du bestätigst jedes im Android-Installer. Dafür fragt er nach „Unbekannte Apps installieren“, nach dem Standort nur, wenn du es erlaubst."),
+            ("Mehr Sprachen", "Ab 0.1.43.4 auch auf Spanisch, Portugiesisch und Türkisch."),
             ("Größe", "Der Launcher passt sich automatisch dem Bildschirm an. Wirkt trotzdem alles zu groß oder zu klein, wählst du in den Einstellungen unter „Größe“ Kleiner oder Größer. Ab 0.1.40 geht das wieder. Seltenes steht unter „Erweitert“."),
             ("Bequem einrichten", "Am Auto im Stand, in der Panoptes-Oberfläche unter „Launcher einrichten“ oder am PC im EV-Cockpit ab 1.23."),
         ],
-        "bilder": [("launcher40", "display", "Panoptes Launcher 0.1.40 mit Musterdaten: Status mit Fahrzeug, 86 Prozent, Reifendruck, Musik, Reiter Status, Karte, Steuerung, Apps, Einstellungen, unten die Leiste mit Haus-Knopf und Klima 21 Grad"),
-                   ("launcher40-3d", "display", "Panoptes Launcher 0.1.40 mit 3D-Fahrzeug, ohne Fahrzeugdaten")],
-        "bilder_cap": "Der Launcher 0.1.40 im Emulator: links mit Musterdaten, rechts mit 3D-Fahrzeug ohne Fahrzeugdaten. Kein echtes Auto. 3D-Modell: Nazh Design, CC BY 4.0.",
-        "mehr": [([[("design40-dunkel", "display", "Design Dunkel"), ("design40-hell", "display", "Design Hell")],
+        "bilder": [("launcher434", "display", "Panoptes Launcher 0.1.43.4 im Stand: Dolphin Surf als 3D-Bild, Plakette Verriegelt, Fenster-Knöpfe, unten die Leiste"),
+                   ("launcher434-plaketten", "display", "Panoptes Launcher 0.1.43.4 in Fahrt: Plaketten Fahrer nicht angeschnallt, Kofferraum offen, Reifendruck prüfen")],
+        "bilder_cap": "Der Launcher 0.1.43.4 im Emulator, Vorlage „Fahrzeug“: links im Stand, rechts in Fahrt mit Warnplaketten. Kein echtes Auto. 3D-Modell: Nazh Design, CC BY 4.0, verändert.",
+        "mehr": [([[("launcher40", "display", "Panoptes Launcher 0.1.40 mit Musterdaten: Status mit Fahrzeug, 86 Prozent, Reifendruck, Musik, Reiter Status, Karte, Steuerung, Apps, Einstellungen, unten die Leiste mit Haus-Knopf und Klima 21 Grad"),
+                   ("launcher40-3d", "display", "Panoptes Launcher 0.1.40 mit 3D-Fahrzeug, ohne Fahrzeugdaten")]],
+                  "Der frühere Launcher 0.1.40 im Emulator: links mit Musterdaten, rechts mit 3D-Fahrzeug ohne Fahrzeugdaten. Kein echtes Auto. 3D-Modell: Nazh Design, CC BY 4.0."),
+                 ([[("design40-dunkel", "display", "Design Dunkel"), ("design40-hell", "display", "Design Hell")],
                    [("design40-kontrast", "display", "Design Kontrast, schwarz mit gelben Akzenten"), ("design40-nacht", "display", "Design Nacht, dunkel mit orangen Akzenten")]],
                   "Die vier Designs ab 0.1.40: Dunkel, Hell, Kontrast und Nacht (Emulator, ohne Fahrzeugdaten)."),
                  ([[("launcher40-erweitert", "display", "Launcher Erweitert: Design, Akzentfarbe, eigenes Hintergrundbild, Kachelabstand, Statusspalte bei Karte, Statusleiste"),
@@ -1747,7 +1751,7 @@ LNC = {
                   "Links Einstellungen → Erweitert, rechts die Größenwahl (Emulator)."),
                  ],
         "inst_h": "So installierst du ihn",
-        "inst_vorher": "Du brauchst Panoptes im Auto. Den Launcher holst du direkt aus Panoptes, du musst nichts herunterladen.",
+        "inst_vorher": "Mit Panoptes im Auto holst du den Launcher direkt aus Panoptes, du musst nichts herunterladen. Ohne Panoptes (ab 0.1.43.4) liegt die Launcher-Datei beim <a href=\"https://github.com/samuelvoltarius/panoptes/releases/latest\" target=\"_blank\" rel=\"noopener\">Panoptes-Release</a>; du bringst sie so ins Auto wie Panoptes, siehe <a href=\"./#installieren\">Anleitung</a>.",
         "inst": [
             ("Panoptes öffnen.", "Am Bildschirm im Auto: <b>Apps &amp; Display → Display</b>."),
             ("Installieren.", "In der Karte <b>„Panoptes Launcher“</b> auf <b>„Installieren und aktivieren“</b> tippen. Ohne WLAN fragt Panoptes vorher, ob es über mobile Daten laden darf."),
@@ -1774,6 +1778,7 @@ LNC = {
             "0.1.43.1 ist im Auto installiert und läuft (App und Launcher). Den Musiktitel mit CarPlay konnten wir dort noch nicht prüfen, weil dafür der Panoptes Launcher als Startbildschirm laufen muss.",
             "0.1.43.2 ist im Auto installiert und läuft (App und Launcher).",
             "0.1.43.3 ist im Auto installiert und läuft (App und Launcher).",
+            "0.1.43.4 ist im Auto installiert und läuft (App und Launcher). Einzeln am Auto geprüft sind die Neuerungen noch nicht: neues Design, Fahrzeugbild und Tippzonen, Kamera-Kachel und Aufnahmen, Datei per QR und der Launcher ohne Panoptes.",
             "Das Tempolimit-Schild erscheint nur mit aktiver Panoptes-Route und nur, wenn die Route ein Limit liefert. Sonst bleibt es leer.",
             "Sprachbefehle: Das Sprachmodell ist nicht in der App. Ab 0.1.43.2 lädst du es per Tipp unter Einstellungen → Alle Einstellungen → Datenfreigaben (Deutsch ca. 46 MB, Englisch ca. 41 MB). Von selbst lädt Panoptes nichts. Fehlt es, sagt Panoptes das.",
             "Ob „Musik beim Start weiterspielen“ bei jeder Fahrt greift, ist noch offen. Es wirkt, wenn der Launcher neu startet.",
@@ -1786,7 +1791,7 @@ LNC = {
         "title": "Panoptes Launcher – Panoptes",
         "desc": "The Panoptes Launcher: your own home screen in the car with climate, comfort and apps. What it does, how to install it and how to get back.",
         "h1": "Panoptes Launcher",
-        "lead": "Your own home screen for the screen in your car, in the Panoptes style. It runs as a separate app next to the BYD home screen, or as your home screen if you want. It is optional and needs Panoptes.",
+        "lead": "Your own home screen for the screen in your car, in the Panoptes style. It runs as a separate app next to the BYD home screen, or as your home screen if you want. It is optional. With Panoptes it shows everything, from 0.1.43.4 it also runs without Panoptes.",
         "kann_h": "What can the launcher do?",
         "kann": [
             ("Pages with tiles", "Battery and range, navigation, music, guard, clock and your apps at a glance. You can move and resize tiles."),
@@ -1810,13 +1815,20 @@ LNC = {
             ("Simpler start", "From 0.1.43.2: no layout question on first start any more. You are offered \u201cSet up as home screen?\u201d once, only when parked and with \u201cLater\u201d. Settings show five rows at the top, the rest under \u201cMore\u201d. New tiles come from a basic selection first, the rest is under \u201cMore tiles …\u201d."),
             ("Dock and bar", "From 0.1.43.3: every dock icon has its name underneath, the icons share one style. The fixed bar next to the climate control has seat heating (driver) and recirculation, if the car provides the values and there is room."),
             ("Assistant", "From 0.1.43.3, if voice commands are switched on: an assistant button and the page \u201cWhat can I say?\u201d. You can also tap a sentence there."),
+            ("New design and vehicle picture", "From 0.1.43.4: calm badges for lock, windows and charging. The car is a 3D picture for five models and a freely licensed photo for seven more; the credit is shown under the picture. Tapping a window opens the confirmation, only when parked. Doors, boot and bonnet only show their state. Warning badges for seat belt, boot, bonnet and tyre pressure."),
+            ("Camera and recordings", "From 0.1.43.4: a camera tile with camera preselection and the list \u201cRecordings\u201d. You load a recording onto your phone via QR and send a file from your phone to the car via QR. Both only on the same Wi-Fi."),
+            ("Without Panoptes", "From 0.1.43.4 the launcher also starts on its own. Tiles that need Panoptes show a calm hint. Updates then come from the Panoptes release and you confirm each one in the Android installer. For this it asks for \u201cInstall unknown apps\u201d, and for location only if you allow it."),
+            ("More languages", "From 0.1.43.4 also in Spanish, Portuguese and Turkish."),
             ("Size", "The launcher adapts to your screen automatically. If everything still looks too big or too small, choose Smaller or Larger under \u201cSize\u201d in the settings. This works again from 0.1.40. Rarely used settings are under \u201cAdvanced\u201d."),
             ("Easy to set up", "In the car while parked, in the Panoptes interface under “Set up launcher”, or on your PC in the EV Cockpit from 1.23."),
         ],
-        "bilder": [("launcher40", "display", "Panoptes Launcher 0.1.40 with sample data: status with car, 86 percent, tyre pressure, music, tabs status, map, controls, apps, settings, bottom bar with home button and climate 21 degrees"),
-                   ("launcher40-3d", "display", "Panoptes Launcher 0.1.40 with 3D car, without vehicle data")],
-        "bilder_cap": "The launcher 0.1.40 in the emulator, shown in German: left with sample data, right with the 3D car and no vehicle data. Not a real car. 3D model: Nazh Design, CC BY 4.0.",
-        "mehr": [([[("design40-dunkel", "display", "Theme Dark"), ("design40-hell", "display", "Theme Light")],
+        "bilder": [("launcher434", "display", "Panoptes Launcher 0.1.43.4 when parked: Dolphin Surf as a 3D picture, badge Locked, window buttons, bar at the bottom"),
+                   ("launcher434-plaketten", "display", "Panoptes Launcher 0.1.43.4 while driving: badges driver not buckled up, boot open, check tyre pressure")],
+        "bilder_cap": "The launcher 0.1.43.4 in the emulator, \u201cVehicle\u201d template, shown in German: left when parked, right while driving with warning badges. Not a real car. 3D model: Nazh Design, CC BY 4.0, modified.",
+        "mehr": [([[("launcher40", "display", "Panoptes Launcher 0.1.40 with sample data: status with car, 86 percent, tyre pressure, music, tabs status, map, controls, apps, settings, bottom bar with home button and climate 21 degrees"),
+                   ("launcher40-3d", "display", "Panoptes Launcher 0.1.40 with 3D car, without vehicle data")]],
+                  "The earlier launcher 0.1.40 in the emulator, shown in German: left with sample data, right with the 3D car and no vehicle data. Not a real car. 3D model: Nazh Design, CC BY 4.0."),
+                 ([[("design40-dunkel", "display", "Theme Dark"), ("design40-hell", "display", "Theme Light")],
                    [("design40-kontrast", "display", "Theme High contrast, black with yellow accents"), ("design40-nacht", "display", "Theme Night, dark with orange accents")]],
                   "The four themes from 0.1.40: Dark, Light, High contrast and Night (emulator, no vehicle data, shown in German)."),
                  ([[("launcher40-erweitert", "display", "Launcher advanced: theme, accent colour, own background picture, tile spacing, status column next to the map, status bar"),
@@ -1824,7 +1836,7 @@ LNC = {
                   "Left Settings → Advanced, right the size choice (emulator, shown in German)."),
                  ],
         "inst_h": "How to install it",
-        "inst_vorher": "You need Panoptes in the car. You get the launcher straight from Panoptes, there is nothing to download yourself.",
+        "inst_vorher": "With Panoptes in the car you get the launcher straight from Panoptes, there is nothing to download yourself. Without Panoptes (from 0.1.43.4) the launcher file is in the <a href=\"https://github.com/samuelvoltarius/panoptes/releases/latest\" target=\"_blank\" rel=\"noopener\">Panoptes release</a>; you get it into the car the same way as Panoptes, see the <a href=\"./#install\">guide</a>.",
         "inst": [
             ("Open Panoptes.", "On the car screen: <b>Apps &amp; display → Display</b>."),
             ("Install.", "In the <b>“Panoptes Launcher”</b> card, tap <b>“Install and activate”</b>. Without Wi-Fi, Panoptes asks first whether it may use mobile data."),
@@ -1851,6 +1863,7 @@ LNC = {
             "0.1.43.1 is installed and running in the car (app and launcher). The music title with CarPlay could not be checked there yet, because that needs the Panoptes Launcher as the home screen.",
             "0.1.43.2 is installed and running in the car (app and launcher).",
             "0.1.43.3 is installed and running in the car (app and launcher).",
+            "0.1.43.4 is installed and running in the car (app and launcher). The new features have not yet been checked one by one in the car: new design, vehicle picture and tap zones, camera tile and recordings, file via QR and the launcher without Panoptes.",
             "The speed limit sign only appears with an active Panoptes route and only when the route provides a limit. Otherwise it stays empty.",
             "Voice commands: the voice model is not in the app. From 0.1.43.2 you download it with a tap under Settings → All settings → Data sharing (German about 46 MB, English about 41 MB). Panoptes never downloads it by itself. If it is missing, Panoptes says so.",
             "Whether \u201cResume music at start\u201d works on every drive is still open. It takes effect when the launcher restarts.",
