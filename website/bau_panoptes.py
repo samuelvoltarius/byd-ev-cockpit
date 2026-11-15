@@ -1384,8 +1384,8 @@ def kopf2(t):
     o.append('  <section class="nutzen" id="nutzen"><div class="huelle">')
     o.append('    <div class="abschnitt-kopf"><h2>%s</h2><p>%s</p></div>' % (k["nutzen_h"], k["nutzen_lead"]))
     for n, (nr, h, vers, punkte, grenze, gross, handy) in enumerate(k["bloecke"]):
-        o.append('    <article class="block%s"><div class="text"><span class="etikett">%s</span><h3>%s</h3><p class="versprechen">%s</p><ul>%s</ul>'
-                 '<p class="grenze"><b>%s</b> %s</p></div>' % (" rechts" if n % 2 else "", nr, h, vers, "".join("<li>%s</li>" % x for x in punkte), k["gut"], grenze))
+        o.append('    <article class="block%s" id="%s"><div class="text"><span class="etikett">%s</span><h3>%s</h3><p class="versprechen">%s</p><ul>%s</ul>'
+                 '<p class="grenze"><b>%s</b> %s</p></div>' % (" rechts" if n % 2 else "", BLOCK_IDS[n], nr, h, vers, "".join("<li>%s</li>" % x for x in punkte), k["gut"], grenze))
         bild_g = '<div class="rahmen"><img src="%s" alt="%s" width="1280" height="720" loading="lazy"></div>' % (gross[0], html.escape(gross[1]))
         if handy:
             o.append('      <figure class="doppel">%s<div class="handy-bild"><img src="%s" alt="%s" width="540" height="1170" loading="lazy"></div></figure></article>'
@@ -1416,6 +1416,178 @@ def kopf2(t):
     o.append('  <h2 id="details" style="margin-top:0">%s</h2><p class="lead">%s</p>' % (k["detail_h"], k["detail_lead"]))
     return "\n".join(o)
 
+
+# ---------------------------------------------------------------- Tacho-Bereich und Sprungmarken (15.11.2026)
+# 20 Designs: Bilder vom echten Renderer (surfmate v0.1.43.7, web/shared/tacho-designs.js + tacho-galerie.js),
+# Musterwerte 101 km/h, 34 kW, 64 %, 287 km, D, 14 °C, 14:30, in 350 m rechts. Dateien tg20-<name>-tacho-dunkel.webp.
+TG20 = [("klar", "Klar", "Clear"), ("sport", "Sport", "Sport"), ("nacht", "Nacht", "Night"), ("horizont", "Horizont", "Horizon"),
+        ("route", "Route", "Route"), ("analog", "Analog", "Analog"), ("retro", "Retro", "Retro"), ("minimal", "Minimal", "Minimal"),
+        ("futur", "Futur", "Future"), ("rennen", "Rennen", "Racing"), ("eco", "Eco", "Eco"), ("gross", "Groß & klar", "Big & clear"),
+        ("sonne", "Sonne", "Sunlight"), ("karte", "Karte", "Map"), ("abbiegen", "Abbiegen", "Turn"), ("bogen", "Bogen", "Arc"),
+        ("saeulen", "Säulen", "Columns"), ("chrono", "Chrono", "Chrono"), ("kacheln", "Kacheln", "Tiles"), ("tunnel", "Tunnel", "Tunnel")]
+
+TACHO2 = {
+    "de": {
+        "h": "Tacho: 20 Designs, eigener Tacho, Kamera beim Blinken",
+        "lead": "Panoptes kann im Tacho hinter dem Lenkrad eine eigene Anzeige zeigen. Das geht nur bei Autos, deren Tacho das erlaubt. "
+                "Bei allen anderen, auch beim Dolphin Surf, siehst du die Designs nur als Vorschau in Panoptes.",
+        "d_h": "Alle 20 Designs",
+        "d_text": "Du wählst in Panoptes unter <b>Apps &amp; Display</b> → <b>Display</b> → <b>Was zeigt der Tacho?</b> ein Bild aus. "
+                  "„Normal“ holt den BYD-Tacho zurück. Nichts im Tacho blinkt oder pulsiert.",
+        "d_note": "Diese Bilder hat Panoptes selbst gezeichnet, mit Musterwerten am PC: 101 km/h, 64 % Akku, 287 km, in 350 m rechts. Sie sind nicht im Auto aufgenommen. Antippen zeigt ein Bild groß.",
+        "alt": "Tacho-Design %s mit Musterwerten: 101 km/h, 34 kW, 64 Prozent Akku, 287 km",
+        "g_h": "Deinen eigenen Tacho gestalten",
+        "g_text": "Unter <b>Apps &amp; Display</b> → <b>Display</b> → <b>Tacho</b> → <b>Erweitert</b> → <b>Tacho gestalten</b> baust du dir deinen eigenen Tacho.",
+        "g": ["<b>Frei platzieren:</b> Du schiebst jedes Teil mit dem Finger dorthin, wo du es willst. An der grünen Ecke ziehst du es größer.",
+              "<b>Teile zur Auswahl:</b> ein Rundinstrument (Tempo, Leistung oder Akku), eine große Zahl, ein Balken, dazu Gang, Navi-Pfeil und Uhr.",
+              "<b>Farben und Hintergrund:</b> Farbe für jedes Teil, als Hintergrund eine Farbe, ein Verlauf oder ein kleines eigenes Bild.",
+              "<b>Start:</b> leer oder mit einem der 20 Designs als Vorlage.",
+              "<b>Als Datei sichern:</b> Du speicherst deinen Tacho als Datei und lädst ihn später wieder, auch auf einem anderen Auto.",
+              "<b>Sicher:</b> Die Geschwindigkeit ist immer drauf. Zu blasse Farben macht Panoptes selbst kräftiger. Bearbeiten geht nur im Stand."],
+        "g_ehrlich": "<b>Ehrlich:</b> Am Auto noch nicht geprüft sind die Lesbarkeit der Schrift im Tacho und das Sichern als Datei im Browser des Autos.",
+        "k_h": "Kamera im Tacho beim Blinken",
+        "k_text": "Wenn du blinkst, kann der Tacho das Bild der Seitenkamera zeigen, links oder rechts. Kurz nach dem Blinken ist es wieder weg. "
+                  "Ab Werk ist das aus. Du schaltest es unter <b>Display</b> → <b>Tacho</b> → <b>Kamera &amp; Video im Tacho</b> ein, im Stand.",
+        "k": ["Beim Warnblinker und im Rückwärtsgang kommt kein Seitenbild.",
+              "Beim Rückwärtsfahren zeigt der Tacho das Heckbild nur, wenn du vorher bestätigst, dass dein Tacho dabei kein eigenes BYD-Bild zeigt.",
+              "Rundumsicht nur in P. Ein Video nur in P bei 0 km/h, ohne Ton.",
+              "Das alles geht nur bei Autos, deren Tacho Panoptes-Anzeigen erlaubt."],
+        "k_surf": "<b>Dolphin Surf:</b> Hier gibt es den Seitenblick beim Blinken auf dem Bildschirm in der Mitte. Du schaltest ihn im Launcher ein.",
+        "k_ehrlich": "<b>Ehrlich:</b> Wo genau das Kamerabild im Tacho sitzt, haben wir am Auto noch nicht angesehen.",
+        "n_h": "Navi und Apps auf dem Tacho",
+        "b_h": "Launcher und Bildschirm sperren",
+        "kopieren": "Link zu diesem Abschnitt kopieren", "kopiert": "Link kopiert",
+    },
+    "en": {
+        "h": "Cluster: 20 designs, your own cluster, camera when indicating",
+        "lead": "Panoptes can show its own display in the instrument cluster behind the steering wheel. This only works on cars whose cluster allows it. "
+                "On all other cars, including the Dolphin Surf, you only see the designs as a preview in Panoptes.",
+        "d_h": "All 20 designs",
+        "d_text": "In Panoptes, go to <b>Apps &amp; display</b> → <b>Display</b> → <b>What does the cluster show?</b> and pick a picture. "
+                  "“Normal” brings back the BYD cluster. Nothing in the cluster flashes or pulses.",
+        "d_note": "Panoptes drew these pictures itself, with sample values on a PC: 101 km/h, 64 % battery, 287 km, turn right in 350 m. They were not taken in a car. Tap a picture to see it large.",
+        "alt": "Cluster design %s with sample values: 101 km/h, 34 kW, 64 percent battery, 287 km",
+        "g_h": "Design your own cluster",
+        "g_text": "Under <b>Apps &amp; display</b> → <b>Display</b> → <b>Cluster</b> → <b>Advanced</b> → <b>Design cluster</b> you build your own cluster.",
+        "g": ["<b>Place freely:</b> drag each part with your finger to where you want it. Pull the green corner to make it bigger.",
+              "<b>Parts to choose from:</b> a round gauge (speed, power or battery), a large number, a bar, plus gear, navigation arrow and clock.",
+              "<b>Colours and background:</b> a colour for each part, and as background a colour, a gradient or a small picture of your own.",
+              "<b>Start:</b> empty or with one of the 20 designs as a template.",
+              "<b>Save as a file:</b> save your cluster as a file and load it again later, also on another car.",
+              "<b>Safe:</b> the speed is always shown. Colours that are too pale are made stronger by Panoptes. Editing only works when parked."],
+        "g_ehrlich": "<b>Honestly:</b> not yet checked in the car are how readable the text is in the cluster and saving as a file in the car's browser.",
+        "k_h": "Camera in the cluster when indicating",
+        "k_text": "When you indicate, the cluster can show the picture of the side camera, left or right. Shortly after indicating it is gone again. "
+                  "By default this is off. Switch it on under <b>Display</b> → <b>Cluster</b> → <b>Camera &amp; video in the cluster</b>, when parked.",
+        "k": ["With the hazard lights and in reverse there is no side picture.",
+              "When reversing, the cluster only shows the rear picture if you have confirmed that your cluster does not show its own BYD picture then.",
+              "Surround view only in P. A video only in P at 0 km/h, without sound.",
+              "All of this only works on cars whose cluster allows Panoptes displays."],
+        "k_surf": "<b>Dolphin Surf:</b> here you get the side view when indicating on the centre screen. You switch it on in the launcher.",
+        "k_ehrlich": "<b>Honestly:</b> we have not yet looked in the car at where exactly the camera picture sits in the cluster.",
+        "n_h": "Navigation and apps in the cluster",
+        "b_h": "Launcher and screen lock",
+        "kopieren": "Copy link to this section", "kopiert": "Link copied",
+    },
+}
+
+# Sprungmarken: kurze deutsche Namen auf beiden Sprachen; alte Marken leiten weiter.
+MARKEN_ALIAS = {"tacho-launcher": "tacho", "tacho-test": "navi", "community": "whatsapp", "fernzugang": "handy",
+                "hilfe": "fragen", "anleitung": "schritte", "kamera": "kameras", "designs": "tacho-designs"}
+MARKEN_KNOPF = ["details", "fuer-mich", "whatsapp", "funktionen", "alle-funktionen", "camping", "tacho", "tacho-designs",
+                "tacho-gestalten", "tacho-kamera", "navi", "bildschirm", "bilder", "brauchst", "installieren", "install",
+                "schritte", "fragen", "datenschutz", "zusammenhang", "stand", "hinweise", "nutzen", "start",
+                "waechter", "laden", "launcher", "handy", "funktionen-start", "steuerung", "kameras", "fahrten", "regeln",
+                "apps-display", "einstellungen"]
+BLOCK_IDS = ["waechter", "laden", "launcher", "handy"]
+GRUPPEN_IDS = ["funktionen-start", "steuerung", "kameras", "fahrten", "regeln", "apps-display", "einstellungen"]
+
+MARKEN_CSS = ("<style>[id]{scroll-margin-top:96px}"
+              ".mk-knopf{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;margin-left:6px;padding:0;"
+              "border:0;border-radius:8px;background:transparent;color:var(--mut,#8a99a8);cursor:pointer;vertical-align:middle;opacity:.7}"
+              ".mk-knopf:hover,.mk-knopf:focus-visible{opacity:1;background:var(--panel-2,rgba(127,127,127,.15))}"
+              ".mk-knopf svg{width:18px;height:18px}.mk-ok{font-size:14px;font-weight:600;color:var(--accent-2,#7fe3c4);margin-left:4px;vertical-align:middle}"
+              ".tg20{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin:12px 0}"
+              ".tg20 figure{margin:0}.tg20 a{display:block}.tg20 img{display:block;width:100%;height:auto;border-radius:10px}"
+              ".tg20 figcaption{font-size:15px;font-weight:600;margin-top:5px}"
+              "</style>")
+
+MARKEN_JS = """<script>(function(){
+var A=%s, T=%s;
+var I='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+function oeffne(e){for(var d=e;d;d=d.parentElement){if(d.tagName==='DETAILS')d.open=true;}}
+function geh(){var h=location.hash.slice(1);if(!h)return;try{h=decodeURIComponent(h);}catch(x){}
+  var id=A[h]||h,e=document.getElementById(id);if(!e)return;oeffne(e);
+  if(id!==h&&history.replaceState)history.replaceState(null,'','#'+id);
+  setTimeout(function(){e.scrollIntoView();},0);}
+function kopiere(t,ok,nein){if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(ok,nein);return;}
+  var a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();
+  var g=false;try{g=document.execCommand('copy');}catch(x){}document.body.removeChild(a);g?ok():nein();}
+[].forEach.call(document.querySelectorAll('[data-mk]'),function(e){
+  var z=/^H[23]$/.test(e.tagName)?e:e.querySelector('summary,h2,h3');if(!z)return;
+  var b=document.createElement('button');b.type='button';b.className='mk-knopf';b.title=T.k;b.setAttribute('aria-label',T.k);b.innerHTML=I;
+  b.addEventListener('click',function(v){v.preventDefault();v.stopPropagation();
+    var url=location.origin+location.pathname+'#'+e.id;
+    kopiere(url,function(){var s=document.createElement('span');s.className='mk-ok';s.setAttribute('role','status');s.textContent=T.ok;b.after(s);setTimeout(function(){s.remove();},2200);},
+      function(){location.hash=e.id;});});
+  z.appendChild(b);});
+window.addEventListener('hashchange',geh);
+if(location.hash)geh();
+})();</script>"""
+
+
+def tacho_bereich(t, p):
+    """Tacho-Abschnitt (15.11.2026): 20 Designs, Editor, Kamera beim Blinken, Navi/Apps, Launcher-Bilder."""
+    g = TACHO2[t["lang"]]
+    de = t["lang"] == "de"
+    o = ['  <h2 id="tacho">%s</h2><p class="lead">%s</p>' % (g["h"], g["lead"])]
+    o.append('  <h3 id="tacho-designs">%s</h3><p>%s</p>' % (g["d_h"], g["d_text"]))
+    o.append('  <div class="tg20">')
+    for n, nde, nen in TG20:
+        name = nde if de else nen
+        o.append('    <figure>%s<figcaption>%s</figcaption></figure>' % (bild("tg20-" + n, "tacho", g["alt"] % name, p), html.escape(name)))
+    o.append('  </div><p class="bd-muted" style="font-size:15px">%s</p>' % g["d_note"])
+    if t.get("tl"):
+        aus = [x for x in t["tl"]["bilder"] if x[1][0][0] == "tacho-auswahl"]
+        if aus:
+            cap, bilder = aus[0]
+            o.append('  <div class="galerie"><figure>%s<figcaption><b>%s</b></figcaption></figure></div>' % (reihe(bilder, p), html.escape(cap)))
+    o.append('  <h3 id="tacho-gestalten">%s</h3><p>%s</p><ul class="liste">%s</ul><p>%s</p>'
+             % (g["g_h"], g["g_text"], "".join("<li>%s</li>" % x for x in g["g"]), g["g_ehrlich"]))
+    o.append('  <h3 id="tacho-kamera">%s</h3><p>%s</p><ul class="liste">%s</ul><p>%s</p><p>%s</p>'
+             % (g["k_h"], g["k_text"], "".join("<li>%s</li>" % x for x in g["k"]), g["k_surf"], g["k_ehrlich"]))
+    if t.get("tacho"):
+        tc = t["tacho"]
+        o.append('  <h3 id="navi">%s</h3>' % g["n_h"])
+        o.append('  <div class="card">%s<h3>%s</h3><ol class="liste">%s</ol><p>%s</p><h3>%s</h3><ul class="liste">%s</ul></div>'
+                 % ("".join("<p>%s</p>" % x for x in tc["intro"]), tc["h_schritte"], "".join("<li>%s</li>" % x for x in tc["schritte"]),
+                    tc["bekommen"], tc["h_gut"], "".join("<li>%s</li>" % x for x in tc["gut"])))
+    if t.get("tl"):
+        rest = [x for x in t["tl"]["bilder"] if x[1][0][0] in ("launcher39", "sperre")]
+        if rest:
+            o.append('  <h3 id="bildschirm">%s</h3><p><a href="launcher.html">%s</a></p>\n  <div class="galerie">'
+                     % (g["b_h"], "Alles zum Panoptes Launcher" if de else "All about the Panoptes launcher"))
+            for cap, bilder in rest:
+                o.append('    <figure>%s<figcaption><b>%s</b></figcaption></figure>' % (reihe(bilder, p), html.escape(cap)))
+            o.append("  </div>")
+    return o
+
+
+def marken_fertig(seite_html, t):
+    """data-mk an die Ziel-Elemente, alte interne Links auf neue Marken, CSS und JS anhängen."""
+    import re as _re, json
+    for m in MARKEN_KNOPF:
+        seite_html = _re.sub(r'(<(?:h2|h3|details|article|section)\b[^>]*\sid="%s")' % _re.escape(m), r'\1 data-mk', seite_html, count=1)
+    seite_html = seite_html.replace('href="#tacho-launcher"', 'href="#tacho"').replace('href="#tacho-test"', 'href="#navi"')
+    g = TACHO2[t["lang"]]
+    alias = dict(MARKEN_ALIAS)
+    if t["dl_anker"] != "installieren":
+        alias["installieren"] = t["dl_anker"]
+    else:
+        alias["install"] = "installieren"
+    js = MARKEN_JS % (json.dumps(alias, ensure_ascii=False), json.dumps({"k": g["kopieren"], "ok": g["kopiert"]}, ensure_ascii=False))
+    i = seite_html.rindex('<footer class="bd-fuss">')
+    return seite_html[:i] + MARKEN_CSS + "\n" + js + "\n" + seite_html[i:]
 
 
 def seite(t):
@@ -1458,9 +1630,10 @@ def seite(t):
     if t.get("alle"):
         al = t["alle"]
         o.append('  <h2 id="alle-funktionen">%s</h2><p class="lead">%s</p>' % (al["h"], al["lead"]))
-        for titel, punkte in al["gruppen"]:
+        assert len(al["gruppen"]) == len(GRUPPEN_IDS)
+        for gi, (titel, punkte) in enumerate(al["gruppen"]):
             zeilen = "".join("<li>%s%s</li>" % (html.escape(x), (' <span class="bald">%s</span>' % al["chips"][c]) if c else "") for x, c in punkte)
-            o.append('  <details class="bd-auf"><summary>%s (%d)</summary><ul class="liste">%s</ul></details>' % (html.escape(titel), len(punkte), zeilen))
+            o.append('  <details class="bd-auf" id="%s"><summary>%s (%d)</summary><ul class="liste">%s</ul></details>' % (GRUPPEN_IDS[gi], html.escape(titel), len(punkte), zeilen))
     # Camping: ganz, aber aufklappbar (Anker #camping bleibt)
     o.append('  <details class="bd-auf" id="camping"><summary>%s</summary><p class="lead">%s</p>\n  <div class="verb">'
              % (t["camp_detail"], t["camp_lead"]))
@@ -1472,20 +1645,8 @@ def seite(t):
         teile = reihe([x for x in bilder if x[1] != "handy"] + [x for x in bilder if x[1] == "handy"], p)
         o.append('    <figure>%s<figcaption><b>%s</b></figcaption></figure>' % (teile, html.escape(cap)))
     o.append("  </div></details>")
-    # Tacho und Launcher (Bilder), ab 0.1.37
-    if t.get("tl"):
-        tl = t["tl"]
-        o.append('  <h2 id="tacho-launcher">%s</h2><p class="lead">%s</p>\n  <div class="galerie">' % (tl["h"], tl["lead"]))
-        for cap, bilder in tl["bilder"]:
-            o.append('    <figure>%s<figcaption><b>%s</b></figcaption></figure>' % (reihe(bilder, p), html.escape(cap)))
-        o.append("  </div>")
-    # Tacho-Test (Beta), ab 0.1.30
-    if t.get("tacho"):
-        tc = t["tacho"]
-        o.append('  <h2 id="tacho-test">%s</h2>' % tc["h"])
-        o.append('  <div class="card">%s<h3>%s</h3><ol class="liste">%s</ol><p>%s</p><h3>%s</h3><ul class="liste">%s</ul></div>'
-                 % ("".join("<p>%s</p>" % x for x in tc["intro"]), tc["h_schritte"], "".join("<li>%s</li>" % x for x in tc["schritte"]),
-                    tc["bekommen"], tc["h_gut"], "".join("<li>%s</li>" % x for x in tc["gut"])))
+    # Tacho (15.11.2026): 20 Designs, Editor, Kamera beim Blinken, Navi/Apps, Launcher-Bilder
+    o.extend(tacho_bereich(t, p))
     # Bilder: 3 sichtbar, Rest aufklappbar
     o.append('  <h2 id="bilder">%s</h2><p class="lead">%s</p>\n  <div class="galerie">' % (t["h_bilder"], t["bilder_lead"]))
     for i, (cap, bilder) in enumerate(t["bilder"]):
@@ -1520,7 +1681,7 @@ def seite(t):
     for h, txt in t["anl"]:
         o.append("    <li><b>%s</b> %s</li>" % (h, txt))
     o.append("  </ol></details>")
-    o.append('  <details class="bd-auf"><summary>%s</summary><ul class="liste">%s</ul></details>'
+    o.append('  <details class="bd-auf" id="fragen"><summary>%s</summary><ul class="liste">%s</ul></details>'
              % (t["h_stolper"], "".join("<li>%s</li>" % x for x in t["stolper"])))
     o.append('  <div class="card"><p style="margin-top:0">%s</p><p style="margin-bottom:0">%s</p></div>' % (t["dl_code"], t["dl_ds"]))
     # Daten: Kurzfassung sichtbar, Einzelheiten aufklappbar
@@ -1556,7 +1717,7 @@ def seite(t):
     o.append('  <h2 id="hinweise">%s</h2>\n  <div class="card"><p style="margin-top:0">%s</p><p style="margin-bottom:0"><a href="hinweise.html">%s →</a></p></div>'
              % (t["h_hinweise"], html.escape(t["hinweise_kurz"]), t["alle_hinweise"]))
     o.append(fuss(t, andere))
-    return "\n".join(o)
+    return marken_fertig("\n".join(o), t)
 
 
 # Unterseite „Telegram verbinden“ (04.11.2026). Fakten nur aus dem Code rel-0.1.38.5 (Belege: TELEGRAM_FAKTEN.md im Notizordner).
