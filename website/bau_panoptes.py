@@ -1403,6 +1403,7 @@ def kopf2(t):
     o.append('    <div class="abschnitt-kopf"><h2>%s</h2><p>%s</p></div>' % (k["start_h"], k["start_lead"]))
     o.append('    <ol class="schritte">%s</ol>' % "".join("<li><h3>%s</h3><p>%s</p></li>" % x for x in k["schritte"]))
     o.append('    <p class="ehrlich">%s</p>' % k["ehrlich"])
+    o.append('    <p class="ehrlich">%s</p>' % EINFACH[t["lang"]]["hinweis_dl"])
     o.append('  </div></section>')
     # 6 Schluss
     o.append('  <section class="schluss"><div class="huelle"><h2>%s</h2><p>%s</p>' % (k["schluss_h"], k["schluss"]))
@@ -1493,8 +1494,8 @@ TACHO2 = {
 
 # Sprungmarken: kurze deutsche Namen auf beiden Sprachen; alte Marken leiten weiter.
 MARKEN_ALIAS = {"tacho-launcher": "tacho", "tacho-test": "navi", "community": "whatsapp", "fernzugang": "handy",
-                "hilfe": "fragen", "anleitung": "schritte", "kamera": "kameras", "designs": "tacho-designs"}
-MARKEN_KNOPF = ["details", "fuer-mich", "whatsapp", "funktionen", "alle-funktionen", "camping", "tacho", "tacho-designs",
+                "hilfe": "fragen", "anleitung": "schritte", "kamera": "kameras", "designs": "tacho-designs", "einfach": "einfach-installieren", "ohne-pc": "einfach-installieren"}
+MARKEN_KNOPF = ["einfach-installieren", "nur-launcher", "einfach-hakt", "details", "fuer-mich", "whatsapp", "funktionen", "alle-funktionen", "camping", "tacho", "tacho-designs",
                 "tacho-gestalten", "tacho-kamera", "navi", "bildschirm", "bilder", "brauchst", "installieren", "install",
                 "schritte", "fragen", "datenschutz", "zusammenhang", "stand", "hinweise", "nutzen", "start",
                 "waechter", "laden", "launcher", "handy", "funktionen-start", "steuerung", "kameras", "fahrten", "regeln",
@@ -1534,6 +1535,168 @@ function kopiere(t,ok,nein){if(navigator.clipboard&&window.isSecureContext){navi
 window.addEventListener('hashchange',geh);
 if(location.hash)geh();
 })();</script>"""
+
+
+# ---------------------------------------------------------------- Einfache Installation mit der Handy-App (15.11.2026, Handy 0.5.0)
+# Bilder: Emulator-Aufnahmen aus installer-bilder/ (ei*-handy = Handy, eil4..eil9-display = Autobildschirm im Emulator).
+EINFACH = {
+    "de": {
+        "h": "Einfache Installation, ohne PC <span class=\"bald\">Beta</span>",
+        "lead": "Mit einem Android-Handy bringst du Panoptes und den Launcher ins Auto, ganz ohne PC. Das macht die Handy-App ab 0.5.0 mit „Ins Auto installieren“.",
+        "warn": "<b>Ganz neu:</b> Am echten Auto haben wir das mit dem Handy noch nicht ausprobiert. Nur am eigenen Auto, auf eigenes Risiko. "
+                "Hast du es probiert? Sag uns über die <a href=\"/#wunsch\">Wunsch-Box</a> oder die <a href=\"%s\" target=\"_blank\" rel=\"noopener\">WhatsApp-Gruppe</a>, "
+                "ob es geklappt hat und welches Auto du hast.",
+        "iphone": "<b>Nur mit Android-Handy.</b> Mit dem iPhone geht das nicht. Dort bleibt der Weg mit dem PC, weiter unten bei „Herunterladen und installieren“.",
+        "brauch_h": "Das brauchst du",
+        "brauch": ["Ein Android-Handy mit der <a href=\"/app/\">Panoptes-App</a> ab 0.5.0.",
+                   "Etwa 15 Minuten im stehenden Auto, der Bildschirm im Auto ist an.",
+                   "Mobile Daten am Handy. Die Apps sind zusammen etwa 90 MB groß."],
+        "start": ("Los geht's", "Öffne die Panoptes-App am Handy und tippe auf „Ins Auto installieren“. Später findest du das unter Einstellungen.",
+                  [("ei01", "handy", "Handy-App: Knopf Ins Auto installieren")]),
+        "schritte": [
+            ("Entwickler-Freigabe am Auto", "Schalte am Auto im Entwickler-Menü „Wireless ADB“ ein. Wie du dorthin kommst, steht für dein Modell in der <a href=\"/guide\">Anleitung</a>.",
+             [("ei02", "handy", "Schritt 1 von 6: Entwickler-Freigabe am Auto einschalten")]),
+            ("Handy und Auto ins selbe WLAN", "Verbinde das Handy mit dem WLAN des Autos, oder das Auto mit dem Hotspot deines Handys. Dann tippst du auf „Weiter“.",
+             [("ei03", "handy", "Schritt 2 von 6: Handy und Auto ins selbe WLAN")]),
+            ("Auto finden und am Auto bestätigen", "Die App sucht dein Auto von selbst. Beim ersten Mal fragt das Auto „USB-Debugging zulassen?“. "
+             "Setze am Bildschirm im Auto den Haken bei „Immer von diesem Computer zulassen“ und tippe auf „Zulassen“.",
+             [("ei04", "handy", "Schritt 3 von 6: Die App sucht das Auto im WLAN"), ("ei05", "handy", "Schritt 3 von 6: Jetzt am Auto bestätigen")]),
+            ("Auswählen", "Wähle „Panoptes und Launcher“ (empfohlen), „Nur Launcher“ oder „Nur Panoptes“ und tippe auf „Laden und installieren“.",
+             [("ei06", "handy", "Schritt 4 von 6: Was soll aufs Auto? Panoptes und Launcher, nur Launcher oder nur Panoptes")]),
+            ("Laden, prüfen, installieren", "Die App lädt die Apps, prüft, dass sie echt sind, und bringt sie ins Auto. Ist eine Datei nicht echt, installiert sie nichts. "
+             "Lass das Auto an und das Handy in der Nähe.",
+             [("ei07a", "handy", "Schritt 5 von 6: Panoptes wird geladen"), ("ei07b", "handy", "Schritt 5 von 6: Panoptes wird ins Auto übertragen, der Launcher ist echt"),
+              ("ei07c", "handy", "Schritt 5 von 6: Panoptes ist im Auto, der Launcher wird übertragen")]),
+            ("Fertig: am Auto einrichten", "Öffne Panoptes am Bildschirm im Auto. Kurze Schritte führen dich durch das Nötigste. "
+             "Wenn Panoptes fragt, erlaubst du am Auto die Anzeige über anderen Apps und den Autostart. Fragt Android wieder „USB-Debugging zulassen?“, "
+             "setze den Haken bei „Immer zulassen“: Diesmal ist Panoptes selbst der „Computer“. Zum Schluss den Launcher als Startbildschirm: "
+             "im Launcher „Einstellungen“ → „Als Startbildschirm einrichten“ → „Einschalten“.",
+             [("ei08o", "handy", "Schritt 6 von 6: Fertig, Panoptes und Launcher sind im Auto"), ("ei08u", "handy", "Schritt 6 von 6: Launcher als Startbildschirm einrichten"),
+              ("eil5", "display", "Autobildschirm im Emulator: Launcher-Einstellungen mit Als Startbildschirm einrichten"),
+              ("eil7", "display", "Autobildschirm im Emulator: Panoptes Launcher als Startbildschirm einschalten")]),
+        ],
+        "danach": "Updates kommen danach von selbst. Zurück zu BYD geht es jederzeit mit „Alles zurück auf BYD“.",
+        "l_h": "Nur den Launcher installieren",
+        "l_lead": "Der Launcher läuft auch ohne Panoptes und hält sich selbst aktuell. Mach zuerst die Schritte 1 bis 3 wie oben.",
+        "l": [("Wähle „Nur Launcher“ und tippe auf „Laden und installieren“.", [("eil1", "handy", "Nur Launcher ausgewählt")]),
+              ("Die App lädt den Launcher, prüft ihn und bringt ihn ins Auto. Das dauert nur kurz.",
+               [("eil2a", "handy", "Der Launcher wird geladen"), ("eil2b", "handy", "Der Launcher wird ins Auto übertragen")]),
+              ("Bei „Fertig“ öffnest du den Panoptes Launcher am Bildschirm im Auto.",
+               [("eil3", "handy", "Fertig: Panoptes Launcher ist im Auto"), ("eil4", "display", "Autobildschirm im Emulator: Panoptes Launcher ist offen")]),
+              ("Tippe dort auf „Einstellungen“ und ganz oben auf „Als Startbildschirm einrichten“. Ohne Panoptes fragt der Launcher „Stehst du?“: Tippe im Stand auf „Ja, ich stehe“.",
+               [("eil5", "display", "Autobildschirm im Emulator: Launcher-Einstellungen"), ("eil6", "display", "Autobildschirm im Emulator: Frage Stehst du?")]),
+              ("Tippe auf „Einschalten“ und im Hinweis auf „OK“. Android zeigt dann die Auswahl der Start-App: Tippe auf „Panoptes Launcher“.",
+               [("eil7", "display", "Autobildschirm im Emulator: Einschalten"), ("eil8", "display", "Autobildschirm im Emulator: Hinweis mit OK"),
+                ("eil9", "display", "Autobildschirm im Emulator: Auswahl der Start-App mit Panoptes Launcher")]),
+              ("Den Musiktitel erlaubst du bei Bedarf am Auto mit „Zugriff erlauben“.", [])],
+        "f_h": "Wenn etwas hakt",
+        "f": ["<b>„Auto nicht gefunden“:</b> Ist „Wireless ADB“ am Auto an? Sind Handy und Auto im selben WLAN? Sonst tippst du die Adresse des Autos in der App selbst ein. Du siehst sie am Auto in den WLAN-Einstellungen oder am Handy in der Liste der Hotspot-Geräte.",
+              "<b>„Am Auto nicht bestätigt“:</b> Tippe am Bildschirm im Auto auf „Zulassen“. Kam keine Frage, schalte „Wireless ADB“ aus und wieder ein.",
+              "<b>„Kein Internet am Handy“:</b> Schalte die mobilen Daten ein. Schon geladene Apps bleiben am Handy und müssen nicht neu geladen werden.",
+              "<b>„Die Datei ist nicht echt“:</b> Zu deiner Sicherheit wird dann nichts installiert. Versuche es einfach später noch einmal."],
+        "f_bild": [("ei90", "handy", "Auto nicht gefunden: Adresse selbst eingeben")],
+        "note": "Die Bilder kommen aus dem Emulator, nicht aus einem echten Auto. Das Bild „Jetzt am Auto bestätigen“ ist nachgestellt. "
+                "Bei der Auswahl der Start-App steht im Auto statt „Pixel Launcher“ der BYD-Startbildschirm.",
+        "hinweis_dl": "<b>Neu, ohne PC:</b> Mit einem Android-Handy geht es jetzt einfacher, siehe <a href=\"#einfach-installieren\">Einfache Installation (Beta)</a>. "
+                      "Der Weg mit dem PC steht hier darunter und bleibt.",
+        "schritt": "Schritt %d von 6",
+    },
+    "en": {
+        "h": "Easy installation, without a PC <span class=\"bald\">beta</span>",
+        "lead": "With an Android phone you bring Panoptes and the launcher into the car, without a PC. The phone app does this from 0.5.0 with “Install in the car”.",
+        "warn": "<b>Brand new:</b> we have not yet tried this with a phone on a real car. Only on your own car, at your own risk. "
+                "Have you tried it? Tell us through the <a href=\"/en/#wunsch\">wish box</a> or the <a href=\"%s\" target=\"_blank\" rel=\"noopener\">WhatsApp group</a> "
+                "whether it worked and which car you have.",
+        "iphone": "<b>Android phones only.</b> This does not work with an iPhone. There the way with a PC stays, further down under “Download and install”.",
+        "brauch_h": "What you need",
+        "brauch": ["An Android phone with the <a href=\"/app/en/\">Panoptes app</a> 0.5.0 or newer.",
+                   "About 15 minutes in the parked car, with the car screen switched on.",
+                   "Mobile data on the phone. The apps are about 90 MB together."],
+        "start": ("Let's go", "Open the Panoptes app on your phone and tap “Install in the car”. Later you find this under Settings.",
+                  [("ei01", "handy", "Phone app: Install in the car button (in German)")]),
+        "schritte": [
+            ("Developer access in the car", "In the car, switch on “Wireless ADB” in the developer menu. How to get there for your model is in the <a href=\"/en/guide.html\">guide</a>.",
+             [("ei02", "handy", "Step 1 of 6: switch on developer access in the car (in German)")]),
+            ("Phone and car on the same Wi-Fi", "Connect the phone to the car's Wi-Fi, or the car to your phone's hotspot. Then tap “Next”.",
+             [("ei03", "handy", "Step 2 of 6: phone and car in the same Wi-Fi (in German)")]),
+            ("Find the car and confirm in the car", "The app looks for your car by itself. The first time, the car asks “Allow USB debugging?”. "
+             "On the car screen, tick “Always allow from this computer” and tap “Allow”.",
+             [("ei04", "handy", "Step 3 of 6: the app looks for the car in the Wi-Fi (in German)"), ("ei05", "handy", "Step 3 of 6: now confirm in the car (in German)")]),
+            ("Choose", "Choose “Panoptes and launcher” (recommended), “Launcher only” or “Panoptes only” and tap “Download and install”.",
+             [("ei06", "handy", "Step 4 of 6: what goes into the car? (in German)")]),
+            ("Download, check, install", "The app downloads the apps, checks that they are genuine and brings them into the car. If a file is not genuine, nothing is installed. "
+             "Keep the car on and the phone close by.",
+             [("ei07a", "handy", "Step 5 of 6: Panoptes is downloading (in German)"), ("ei07b", "handy", "Step 5 of 6: Panoptes is being transferred to the car (in German)"),
+              ("ei07c", "handy", "Step 5 of 6: Panoptes is in the car (in German)")]),
+            ("Done: set up in the car", "Open Panoptes on the car screen. Short steps guide you through what is needed. "
+             "When Panoptes asks, allow display over other apps and autostart in the car. If Android asks “Allow USB debugging?” again, "
+             "tick “Always allow”: this time Panoptes itself is the “computer”. Finally the launcher as home screen: "
+             "in the launcher “Settings” → “Set up as home screen” → “Switch on”.",
+             [("ei08o", "handy", "Step 6 of 6: done, Panoptes and launcher are in the car (in German)"), ("ei08u", "handy", "Step 6 of 6: set up the launcher as home screen (in German)"),
+              ("eil5", "display", "Car screen in the emulator: launcher settings (in German)"),
+              ("eil7", "display", "Car screen in the emulator: switch on the Panoptes launcher as home screen (in German)")]),
+        ],
+        "danach": "Updates then come by themselves. You can go back to BYD at any time with “Everything back to BYD”.",
+        "l_h": "Install the launcher only",
+        "l_lead": "The launcher also runs without Panoptes and keeps itself up to date. First do steps 1 to 3 as above.",
+        "l": [("Choose “Launcher only” and tap “Download and install”.", [("eil1", "handy", "Launcher only selected (in German)")]),
+              ("The app downloads the launcher, checks it and brings it into the car. This only takes a moment.",
+               [("eil2a", "handy", "The launcher is downloading (in German)"), ("eil2b", "handy", "The launcher is being transferred (in German)")]),
+              ("At “Done”, open the Panoptes launcher on the car screen.",
+               [("eil3", "handy", "Done: the Panoptes launcher is in the car (in German)"), ("eil4", "display", "Car screen in the emulator: the launcher is open (in German)")]),
+              ("Tap “Settings” there and at the top “Set up as home screen”. Without Panoptes the launcher first asks “Are you parked?”: confirm it while parked.",
+               [("eil5", "display", "Car screen in the emulator: launcher settings (in German)"), ("eil6", "display", "Car screen in the emulator: question Are you parked? (in German)")]),
+              ("Tap “Switch on” and “OK” in the notice. Android then shows the choice of home app: tap “Panoptes Launcher”.",
+               [("eil7", "display", "Car screen in the emulator: switch on (in German)"), ("eil8", "display", "Car screen in the emulator: notice with OK (in German)"),
+                ("eil9", "display", "Car screen in the emulator: choice of home app with Panoptes Launcher (in German)")]),
+              ("If you want the music title, allow it in the car with “Allow access”.", [])],
+        "f_h": "If something goes wrong",
+        "f": ["<b>“Car not found”:</b> is “Wireless ADB” on in the car? Are phone and car in the same Wi-Fi? Otherwise type the car's address into the app yourself. You see it in the car's Wi-Fi settings or on the phone in the list of hotspot devices.",
+              "<b>“Not confirmed in the car”:</b> tap “Allow” on the car screen. If no question came, switch “Wireless ADB” off and on again.",
+              "<b>“No internet on the phone”:</b> switch on mobile data. Apps already downloaded stay on the phone and need not be downloaded again.",
+              "<b>“The file is not genuine”:</b> for your safety nothing is installed then. Simply try again later."],
+        "f_bild": [("ei90", "handy", "Car not found: enter the address yourself (in German)")],
+        "note": "The pictures come from the emulator, not from a real car, with the app in German. The picture “Now confirm in the car” is re-created. "
+                "In the car, the choice of home app shows the BYD home screen instead of “Pixel Launcher”.",
+        "hinweis_dl": "<b>New, without a PC:</b> with an Android phone it is now easier, see <a href=\"#einfach-installieren\">Easy installation (beta)</a>. "
+                      "The way with a PC is below and stays.",
+        "schritt": "Step %d of 6",
+    },
+}
+
+EINFACH_CSS = ("<style>.ei-schritte{list-style:none;padding:0;margin:14px 0}.ei-schritte>li{margin:0 0 22px}"
+               ".ei-schritte h3{margin:0 0 4px}.ei-bilder{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0;align-items:flex-start}"
+               ".ei-bilder a{display:block}.ei-bilder img{display:block;height:auto;border-radius:10px}"
+               ".ei-bilder .hoch img{width:170px}.ei-bilder .breit img{width:min(100%,420px)}"
+               "@media (max-width:560px){.ei-bilder .hoch img{width:calc((100vw - 52px)/2)}.ei-bilder .breit img{width:100%}}"
+               "</style>")
+
+
+def einfach_bilder(bilder, p):
+    if not bilder:
+        return ""
+    return '<div class="ei-bilder">%s</div>' % "".join(
+        bild(n, a, alt, p, klasse="hoch" if a == "handy" else "breit") for n, a, alt in bilder)
+
+
+def einfach_bereich(t, p):
+    g = EINFACH[t["lang"]]
+    o = [EINFACH_CSS, '  <h2 id="einfach-installieren">%s</h2><p class="lead">%s</p>' % (g["h"], g["lead"])]
+    o.append('  <div class="bd-hinweis warn"><p>%s</p></div>' % (g["warn"] % WHATSAPP))
+    o.append('  <div class="bd-hinweis"><p>%s</p></div>' % g["iphone"])
+    o.append('  <h3>%s</h3><ul class="liste">%s</ul>' % (g["brauch_h"], "".join("<li>%s</li>" % x for x in g["brauch"])))
+    o.append('  <ol class="ei-schritte">')
+    h, txt, b = g["start"]
+    o.append('    <li><h3>%s</h3><p>%s</p>%s</li>' % (h, txt, einfach_bilder(b, p)))
+    for i, (h, txt, b) in enumerate(g["schritte"], 1):
+        o.append('    <li><h3>%s: %s</h3><p>%s</p>%s</li>' % (g["schritt"] % i, h, txt, einfach_bilder(b, p)))
+    o.append('  </ol><p>%s</p>' % g["danach"])
+    o.append('  <details class="bd-auf" id="nur-launcher"><summary>%s</summary><p>%s</p><ol class="ei-schritte">%s</ol></details>'
+             % (g["l_h"], g["l_lead"], "".join('<li><p>%s</p>%s</li>' % (txt, einfach_bilder(b, p)) for txt, b in g["l"])))
+    o.append('  <details class="bd-auf" id="einfach-hakt"><summary>%s</summary><ul class="liste">%s</ul>%s</details>'
+             % (g["f_h"], "".join("<li>%s</li>" % x for x in g["f"]), einfach_bilder(g["f_bild"], p)))
+    o.append('  <p class="bd-muted" style="font-size:15px">%s</p>' % g["note"])
+    return o
 
 
 def tacho_bereich(t, p):
@@ -1659,9 +1822,11 @@ def seite(t):
     # Was du brauchst
     o.append('  <h2 id="brauchst">%s</h2>\n  <div class="card"><ul class="liste">%s</ul></div>'
              % (t["h_brauch"], "".join("<li>%s</li>" % x for x in t["brauch"])))
+    # Einfache Installation (Handy 0.5.0)
+    o.extend(einfach_bereich(t, p))
     # Download
     o.append('  <span id="download"></span><h2 id="%s">%s<span class="bald">%s</span></h2>' % (t["dl_anker"], t["h_dl"], t["dl_bald"]))
-    o.append('  <div class="card"><p style="margin-top:0">%s</p>' % t["dl_text"])
+    o.append('  <div class="card"><div class="bd-hinweis" style="margin-top:0"><p>%s</p></div><p>%s</p>' % (EINFACH[t["lang"]]["hinweis_dl"], t["dl_text"]))
     if t.get("neu") and t.get("neu_version") == VERSION:
         o.append('    <h3>%s</h3><ul class="liste">%s</ul>' % (t["neu_titel"], "".join("<li>%s</li>" % x for x in t["neu"])))
     if t.get("bekannt"):
