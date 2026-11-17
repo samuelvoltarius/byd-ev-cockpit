@@ -1119,12 +1119,12 @@ KB = "/panoptes/bilder/"
 AB = "/app/bilder/"
 # Rundgang im Kopf: (Bild, Reiter-Name je Sprache, Alt-Text je Sprache). BILD-NEU / VIDEO-NEU
 RUNDGANG = [
-    (KB + "launcher4310-display-dunkel.webp", ("Startbildschirm", "Home screen"),
-     ("Panoptes Launcher 0.1.43.10, Design Dunkel: Dolphin Surf als 3D-Bild, Reifendruck, Gang P, 86 Prozent, Musik, unten Klima 21 Grad",
-      "Panoptes Launcher 0.1.43.10, dark design: Dolphin Surf as a 3D picture, tyre pressure, gear P, 86 percent, music, climate 21 degrees at the bottom (shown in German)")),
-    (KB + "launcher4310-hell-display-dunkel.webp", ("Hell", "Light"),
-     ("Panoptes Launcher 0.1.43.10 im Design Hell, gleiche Ansicht",
-      "Panoptes Launcher 0.1.43.10 in the light design, same view (shown in German)")),
+    (KB + "launcher43111-display-dunkel.webp", ("Startbildschirm", "Home screen"),
+     ("Panoptes Launcher, Design Dunkel: Dolphin Surf als 3D-Bild mit Nennung darunter, Reifendruck, Gang P, 86 Prozent, Musik, unten Klima 21 Grad",
+      "Panoptes Launcher, dark design: Dolphin Surf as a 3D picture with the credit below it, tyre pressure, gear P, 86 percent, music, climate 21 degrees at the bottom (shown in German)")),
+    (KB + "launcher43111-hell-display-dunkel.webp", ("Hell", "Light"),
+     ("Panoptes Launcher im Design Hell, gleiche Ansicht",
+      "Panoptes Launcher in the light design, same view (shown in German)")),
     (KB + "start4310-zu-display-dunkel.webp", ("Übersicht", "Overview"),
      ("Panoptes Übersicht mit Musterdaten: 86 Prozent, 236 km, geparkt und abgeschlossen, Schnellknöpfe Zusperren und Vorklimatisieren",
       "Panoptes overview with sample data: 86 percent, 236 km, parked and locked, quick buttons lock and pre-climatise (shown in German)")),
